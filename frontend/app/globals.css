@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #F96331;
+  --color-brand-hover: #e85220;
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #1e293b;
+    --primary: #F96331;
+    --primary-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #f8fafc;
+    --ring: #F96331;
+    --radius: 1rem;
+  }
+}
+
+body {
+  background-color: #ffffff !important;
+  color: #1e293b;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
