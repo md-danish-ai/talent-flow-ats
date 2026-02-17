@@ -1,0 +1,53 @@
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# -----------------------
+# Virtual Environments
+# -----------------------
+venv/
+.env/
+.env.local/
+.env.production/
+.venv/
+
+# -----------------------
+# FastAPI / Uvicorn
+# -----------------------
+*.log
+logs/
+
+# -----------------------
+# Build / Distribution
+# -----------------------
+build/
+dist/
+*.egg-info/
+
+# -----------------------
+# Testing / Coverage
+# -----------------------
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+
+# -----------------------
+# IDE / Editor
+# -----------------------
+.vscode/
+.idea/
+
+# -----------------------
+# OS files
+# -----------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------
+# Database (optional)
+# -----------------------
+*.sqlite3
