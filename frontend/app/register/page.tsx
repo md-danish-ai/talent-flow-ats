@@ -63,6 +63,7 @@ export default function RegisterPage() {
                     className="w-full rounded-2xl border border-slate-100 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:border-[#F96331]/30 focus:bg-white focus:ring-4 focus:ring-[#F96331]/5"
                     value={formData.name}
                     onChange={handleChange}
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -81,6 +82,7 @@ export default function RegisterPage() {
                     className="w-full rounded-2xl border border-slate-100 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:border-[#F96331]/30 focus:bg-white focus:ring-4 focus:ring-[#F96331]/5"
                     value={formData.email}
                     onChange={handleChange}
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -99,6 +101,7 @@ export default function RegisterPage() {
                     className="w-full rounded-2xl border border-slate-100 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:border-[#F96331]/30 focus:bg-white focus:ring-4 focus:ring-[#F96331]/5"
                     value={formData.password}
                     onChange={handleChange}
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
