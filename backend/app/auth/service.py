@@ -4,48 +4,47 @@ from app.auth.utils import hash_password, verify_password, generate_jwt
 def signup_user(data):
     conn = get_db()
     cur = conn.cursor()
-    
-    # Check if mobile already exists
+
     cur.execute("SELECT id FROM users WHERE mobile=%s", (data.mobile,))
     if cur.fetchone():
         cur.close()
         conn.close()
         return {"error": "Mobile already registered"}
-    
-    hashed_password = hash_password(data.password)
-    
+
+    hashed_password = hash_password(data.mobile)
+
     try:
         cur.execute("""
             INSERT INTO users (
                 username, mobile, email, password,
-                role, is_active, created_by
+                testlevel, role, is_active, created_by
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, username, role
         """, (
             data.username,
             data.mobile,
             data.email,
             hashed_password,
+            data.testlevel,
             "user",
             True,
             None
         ))
-        
+
         user = cur.fetchone()
         conn.commit()
+
     except Exception as e:
         conn.rollback()
-        cur.close()
-        conn.close()
         return {"error": str(e)}
 
-    cur.close()
-    conn.close()
-    
-    # Generate token for the new user
+    finally:
+        cur.close()
+        conn.close()
+
     token = generate_jwt(user)
-    
+
     return {
         "message": "Signup successfully",
         "token": token,
