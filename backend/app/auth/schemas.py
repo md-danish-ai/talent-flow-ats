@@ -1,13 +1,13 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 
-class RegisterSchema(BaseModel):
-    email: EmailStr
+class SignUpSchema(BaseModel):
+    username: str
+    mobile: str
     password: str
+    email: Optional[str] = None
 
-class LoginSchema(BaseModel):
-    email: EmailStr
-    password: str    
-
-class TokenSchema(BaseModel):
-    access_token: str
-    token_type: str = "bearer"    
+class SignInSchema(BaseModel):
+   username: Optional[str] = None
+   mobile: str
+   password: str
