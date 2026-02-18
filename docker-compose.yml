@@ -1,0 +1,11 @@
+name: talent-flow-ats
+
+services:
+  backend:
+    container_name: talent-flow-backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "4000:4000"
+    restart: always

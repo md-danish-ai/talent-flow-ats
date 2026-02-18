@@ -9,6 +9,7 @@ Before getting started, ensure you have the following installed on your system:
 - **Node.js**: v18 or higher (using v20 recommended)
 - **Python**: v3.9 or higher
 - **npm**: (comes with Node.js)
+- **Docker & Docker Compose**: (for containerized execution)
 
 ## Getting Started
 
@@ -73,6 +74,28 @@ The frontend is built with Next.js and React.
     ```
 
     The frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+### 4. Docker Setup (Recommended)
+
+You can run the application (currently backend only) using Docker Compose for a consistent environment.
+
+1.  Start the services:
+    ```bash
+    docker-compose up -d --build
+    ```
+2.  Check running containers:
+    ```bash
+    docker-compose ps
+    ```
+3.  View logs:
+    ```bash
+    docker-compose logs -f backend
+    ```
+4.  Stop services:
+    ```bash
+    docker-compose down
+    ```
+
 
 ## Project Structure
 
