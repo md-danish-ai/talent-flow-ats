@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { signInSchema, type SignInFormValues } from "@/lib/validations/auth";
-import { useSignIn } from "@/lib/hooks/use-auth";
+import { useSignIn } from "@/lib/react-query/user/use-auth";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
