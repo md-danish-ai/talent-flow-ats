@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { log } from 'console';
+import { useRouter } from "next/navigation";
 
 interface ProfileDropdownProps {
     isOpen: boolean;
@@ -9,6 +11,13 @@ interface ProfileDropdownProps {
 }
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onToggle }) => {
+    const router = useRouter()
+
+    const logout = () => {
+        document.cookie = "role=; Max-Age=0; path=/";
+        document.cookie = "auth_token=; Max-Age=0; path=/";
+        router.push("/sign-in")
+    }
     return (
         <div className="relative">
             <button
@@ -53,6 +62,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onTogg
                             <button
                                 className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
                                 onClick={() => {
+                                    logout()
                                     onToggle();
                                     console.log('Logging out...');
                                 }}

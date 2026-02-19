@@ -12,7 +12,7 @@ interface SidebarProps {
     // No props needed now, using context
 }
 
-// YouTube-style Nav Item for Desktop
+// Nav Item for Desktop
 const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onToggleSection, onClose, onExpand }: {
     section: NavSection;
     pathname: string;
