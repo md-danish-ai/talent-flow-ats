@@ -1,14 +1,30 @@
-from fastapi import APIRouter
-from app.auth.schemas import RegisterSchema, LoginSchema, TokenSchema
-from app.auth.service import AuthService
+from fastapi import APIRouter, HTTPException, status
+from app.auth.schemas import SignUpSchema, SignInSchema
+from app.auth.service import signup_user, signin_user
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
-auth_service = AuthService()
+router = APIRouter()
 
-@router.post("/register", response_model=dict)
-async def register(user_data: RegisterSchema):
-    return await auth_service.register_user(user_data.dict())
+@router.post("/signup", status_code=status.HTTP_201_CREATED)
+async def signup(data: SignUpSchema):
+    result = signup_user(data)
 
-@router.post("/login", response_model=TokenSchema)
-async def login(user_data: LoginSchema):
-    return await auth_service.login_user(user_data.dict())
+    if "error" in result:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["error"]
+        )
+
+    return result
+
+
+@router.post("/signin", status_code=status.HTTP_200_OK)
+async def signin(data: SignInSchema):
+    result = signin_user(data)
+
+    if "error" in result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=result["error"]
+        )
+
+    return result
