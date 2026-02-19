@@ -56,9 +56,24 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR base branch
+      - name: Check PR branching constraints
         run: |
-          if [[ "${{ github.base_ref }}" != "develop" ]] && [[ "${{ github.head_ref }}" =~ ^(feat/|feature/) ]]; then
-            echo "Error: Pull requests from feature branches must target the 'develop' branch."
+          BASE_BRANCH="${{ github.base_ref }}"
+          HEAD_BRANCH="${{ github.head_ref }}"
+          
+          echo "PR Base: $BASE_BRANCH"
+          echo "PR Head: $HEAD_BRANCH"
+          
+          # Rule 1: Only 'develop' can target 'main'
+          if [[ "$BASE_BRANCH" == "main" ]] && [[ "$HEAD_BRANCH" != "develop" ]]; then
+            echo "Error: Only the 'develop' branch can target 'main'. PRs from '$HEAD_BRANCH' are not allowed."
             exit 1
           fi
+          
+          # Rule 2: Feature/Fix branches must target 'develop'
+          if [[ "$BASE_BRANCH" != "develop" ]] && [[ "$HEAD_BRANCH" =~ ^(feat/|feature/|fix/|hotfix/) ]]; then
+            echo "Error: Pull requests from feature/fix branches must target the 'develop' branch, not '$BASE_BRANCH'."
+            exit 1
+          fi
+          
+          echo "Branching constraints satisfied."

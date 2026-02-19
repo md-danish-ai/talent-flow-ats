@@ -51,7 +51,6 @@ def signup_user(data):
         "user": user
     }
 
-
 def signin_user(data):
     conn = get_db()
     cur = conn.cursor()
@@ -67,8 +66,32 @@ def signin_user(data):
     if not user["is_active"]:
         return {"error": "Account is inactive"}
 
-    if data.username and user["username"] != data.username:
+    if not verify_password(data.password, user["password"]):
         return {"error": "Invalid credentials"}
+
+    token = generate_jwt(user)
+    return {
+        "message": "Login successfully",
+        "token": token,
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "role": user["role"]
+        }
+    }
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""SELECT id, username, password, role, is_active FROM users WHERE mobile=%s""", (data.mobile,))
+
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not user:
+        return {"error": "Invalid credentials"}
+        
+    if not user["is_active"]:
+        return {"error": "Account is inactive"}
 
     if not verify_password(data.password, user["password"]):
         return {"error": "Invalid credentials"}
