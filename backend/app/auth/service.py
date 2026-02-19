@@ -22,12 +22,12 @@ def signup_user(data):
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, username, role
         """, (
-            data.username,
+            data.name,
             data.mobile,
             data.email,
             hashed_password,
-            data.testlevel,
-            "user",
+            data.testLevel.value,
+            data.role.value,
             True,
             None
         ))
@@ -52,33 +52,6 @@ def signup_user(data):
     }
 
 def signin_user(data):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("""SELECT id, username, password, role, is_active FROM users WHERE mobile=%s""", (data.mobile,))
-
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
-
-    if not user:
-        return {"error": "Invalid credentials"}
-        
-    if not user["is_active"]:
-        return {"error": "Account is inactive"}
-
-    if not verify_password(data.password, user["password"]):
-        return {"error": "Invalid credentials"}
-
-    token = generate_jwt(user)
-    return {
-        "message": "Login successfully",
-        "token": token,
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "role": user["role"]
-        }
-    }
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""SELECT id, username, password, role, is_active FROM users WHERE mobile=%s""", (data.mobile,))

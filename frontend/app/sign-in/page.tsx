@@ -1,29 +1,60 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, Phone, UserPlus } from "lucide-react";
+import { ArrowRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { signInSchema, type SignInFormValues } from "@/lib/validations/auth";
+import { useSignIn } from "@/lib/hooks/use-auth";
+
+function getErrorMessage(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "message" in error)
+    return String((error as { message: string }).message);
+  return "Invalid value";
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    document.cookie = `role=${role}; path=/`;
-    document.cookie = `auth_token=static-token; path=/`;
+  const signInMutation = useSignIn();
 
-    if (role === "admin") {
-      router.push("/admin/dashboard");
-    } else {
-      router.push("/user/dashboard");
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      mobile: "",
+      password: "",
+    } as SignInFormValues,
+    validators: {
+      onChange: signInSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setServerError(null);
+      try {
+        const response = await signInMutation.mutateAsync(value);
+
+        // Store auth token and role in cookies
+        document.cookie = `role=${response.user?.role ?? role}; path=/`;
+        document.cookie = `auth_token=${response.access_token}; path=/`;
+
+        const userRole = response.user?.role ?? role;
+        if (userRole === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard");
+        }
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        setServerError(
+          error.message ?? "Sign in failed. Please check your credentials.",
+        );
+      }
+    },
+  });
 
   return (
     <div className="flex min-h-screen overflow-hidden font-sans">
@@ -69,8 +100,26 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Server Error */}
+          {serverError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600"
+            >
+              {serverError}
+            </motion.div>
+          )}
+
           {/* Form */}
-          <form className="space-y-5" onSubmit={handleLogin}>
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
             {/* Role Selection */}
             <div>
               <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -115,48 +164,76 @@ export default function LoginPage() {
             </div>
 
             {/* Mobile Number */}
-            <div className="group">
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Mobile Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                <input
-                  type="tel"
-                  required
-                  placeholder="+91 98765 43210"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                />
-              </div>
-            </div>
+            <form.Field name="mobile">
+              {(field) => (
+                <div className="group">
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    Mobile Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
+                        field.state.meta.errors.length > 0
+                          ? "border-red-300"
+                          : "border-slate-200"
+                      }`}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                        {getErrorMessage(field.state.meta.errors[0])}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.Field>
 
             {/* Password */}
-            <div className="group">
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Password
-                </label>
-                <Link
-                  href="#"
-                  className="text-[11px] font-bold text-brand-primary hover:underline"
-                >
-                  Forgot?
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
+            <form.Field name="password">
+              {(field) => (
+                <div className="group">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      Password
+                    </label>
+                    <Link
+                      href="#"
+                      className="text-[11px] font-bold text-brand-primary hover:underline"
+                    >
+                      Forgot?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
+                        field.state.meta.errors.length > 0
+                          ? "border-red-300"
+                          : "border-slate-200"
+                      }`}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                        {getErrorMessage(field.state.meta.errors[0])}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.Field>
 
             {/* Remember me */}
             <div className="flex items-center gap-2">
@@ -174,13 +251,29 @@ export default function LoginPage() {
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-primary/20 transition-all hover:bg-brand-hover active:scale-[0.98]"
+            <form.Subscribe
+              selector={(state) => [state.isSubmitting, state.canSubmit]}
             >
-              <span>Sign In</span>
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </button>
+              {([isSubmitting, canSubmit]) => (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !canSubmit}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Signing In…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Sign In</span>
+                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              )}
+            </form.Subscribe>
           </form>
 
           <p className="mt-6 text-center text-[13px] text-slate-400">
