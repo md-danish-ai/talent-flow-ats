@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
 
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className={`p-6 flex items-center border-b border-slate-100 h-[73px]
+                    <div className={`p-6 flex items-center border-b border-slate-200 h-[73px]
             ${isCollapsed && !isMobileOpen ? 'justify-center' : 'justify-between'}
           `}>
                         <SidebarLogo isCollapsed={isCollapsed} isOpen={isMobileOpen} onClose={closeMobileSidebar} />
