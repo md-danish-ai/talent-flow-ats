@@ -10,9 +10,10 @@ app = FastAPI(title="Talent Flow ATS")
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 
+
 @app.get("/")
 def health_check():
-    return {"status": "OK"}
+    return {"message":"FastAPI server is running 🚀"}
 
 
 # ✅ Run server only when executed directly
