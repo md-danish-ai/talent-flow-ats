@@ -8,6 +8,7 @@ interface SidebarContextType {
     isCollapsed: boolean;
     toggleSidebar: () => void;
     closeMobileSidebar: () => void;
+    expandSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);

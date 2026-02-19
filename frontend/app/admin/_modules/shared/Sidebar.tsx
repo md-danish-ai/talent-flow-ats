@@ -13,15 +13,15 @@ interface SidebarProps {
 }
 
 // YouTube-style Nav Item for Desktop
-const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onToggleSection, onClose }: {
+const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onToggleSection, onClose, onExpand }: {
     section: NavSection;
     pathname: string;
     expandedSection: string | null;
     isCollapsed: boolean;
     onToggleSection: (title: string) => void;
     onClose: () => void;
+    onExpand: () => void;
 }) => {
-    // ... (rest of the component remains same)
     const isSectionActive = section.items.some(item => pathname === item.href);
     const isContentOpen = expandedSection === section.title;
 
@@ -29,6 +29,7 @@ const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onTog
         return (
             <div className="relative group flex flex-col items-center">
                 <button
+                    onClick={onExpand}
                     className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all
           ${isSectionActive ? 'bg-orange-50 text-[#F96331]' : 'text-slate-500 hover:bg-orange-50 hover:text-[#F96331]'}
         `}
@@ -102,7 +103,7 @@ const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onTog
 
 export const Sidebar: React.FC<SidebarProps> = () => {
     const pathname = usePathname();
-    const { isMobileOpen, isCollapsed, toggleSidebar, closeMobileSidebar } = useSidebarContext();
+    const { isMobileOpen, isCollapsed, toggleSidebar, closeMobileSidebar, expandSidebar } = useSidebarContext();
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
     const toggleSection = (title: string) => {
@@ -168,6 +169,10 @@ export const Sidebar: React.FC<SidebarProps> = () => {
                                 isCollapsed={isCollapsed}
                                 onToggleSection={toggleSection}
                                 onClose={closeMobileSidebar}
+                                onExpand={() => {
+                                    expandSidebar();
+                                    toggleSection(section.title);
+                                }}
                             />
                         ))}
                     </nav>

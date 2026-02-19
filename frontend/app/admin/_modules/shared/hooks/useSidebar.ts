@@ -29,10 +29,15 @@ export function useSidebar() {
         setIsMobileOpen(false);
     };
 
+    const expandSidebar = () => {
+        setIsCollapsed(false);
+    };
+
     return {
         isMobileOpen,
         isCollapsed,
         toggleSidebar,
         closeMobileSidebar,
+        expandSidebar,
     };
 }
