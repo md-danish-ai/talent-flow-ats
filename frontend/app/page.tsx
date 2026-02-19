@@ -21,7 +21,7 @@ import {
   TEST_LEVELS,
   ROLES,
 } from "@/lib/validations/auth";
-import { useSignUp } from "@/lib/hooks/use-auth";
+import { useSignUp } from "@/lib/react-query/user/use-auth";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
