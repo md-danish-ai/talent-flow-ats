@@ -46,6 +46,7 @@ class SignUpSchema(BaseModel):
 class SignInSchema(BaseModel):
     mobile: str
     password: str
+    role: RoleEnum
 
     @validator("mobile")
     def validate_mobile(cls, value):
