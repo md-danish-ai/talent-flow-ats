@@ -6,7 +6,7 @@ Talent Flow ATS is a modern application designed to streamline the recruitment p
 
 Before getting started, ensure you have the following installed on your system:
 
-- **Node.js**: v18 or higher (using v20 recommended)
+- **Node.js**: v18 or higher (using v24.13.0 recommended)
 - **Python**: v3.9 or higher
 - **npm**: (comes with Node.js)
 - **Docker & Docker Compose**: (for containerized execution)
