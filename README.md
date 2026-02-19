@@ -6,7 +6,7 @@ Talent Flow ATS is a modern application designed to streamline the recruitment p
 
 Before getting started, ensure you have the following installed on your system:
 
-- **Node.js**: v18 or higher (using v20 recommended)
+- **Node.js**: v18 or higher (using v24.13.0 recommended)
 - **Python**: v3.9 or higher
 - **npm**: (comes with Node.js)
 - **Docker & Docker Compose**: (for containerized execution)
@@ -105,3 +105,23 @@ You can run the application (currently backend only) using Docker Compose for a 
 - `frontend/`: Contains the Next.js application logic.
     - `app/`: Next.js App Router structure.
     - `public/`: Static assets.
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for Continuous Integration. The pipeline is configured in [.github/workflows/ci.yml](file:///.github/workflows/ci.yml) and runs on every push to any branch and pull requests to `develop` and `main`.
+
+### Checks Performed:
+- **Backend**: Linting with `ruff`.
+- **Frontend**: Linting with `eslint` and Build check with `next build`.
+- **Branch Enforcement**: Ensures that Pull Requests from feature branches target the `develop` branch.
+
+## Branching Strategy
+
+To maintain a clean and stable codebase, follow this branching strategy:
+
+1.  **Feature Branches**: Create branches named `feat/*` or `feature/*` for new features or bug fixes.
+2.  **Develop Branch**: All feature branches MUST be merged into `develop` via a Pull Request.
+3.  **Main Branch**: Stable releases are merged from `develop` into `main`.
+
+> [!IMPORTANT]
+> Always target `develop` when creating a Pull Request from a feature branch.
