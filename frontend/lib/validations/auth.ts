@@ -33,6 +33,7 @@ export const signInSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(128, "Password is too long"),
+  role: z.enum(ROLES),
 });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;
