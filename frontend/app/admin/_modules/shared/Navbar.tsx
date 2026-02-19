@@ -8,11 +8,7 @@ import { NotificationDropdown } from './components/NotificationDropdown';
 import { ProfileDropdown } from './components/ProfileDropdown';
 import { useSidebarContext } from './components/SidebarProvider';
 
-interface NavbarProps {
-    // No props needed now, using context
-}
-
-export const Navbar: React.FC<NavbarProps> = () => {
+export const Navbar = () => {
     const { toggleSidebar } = useSidebarContext();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);

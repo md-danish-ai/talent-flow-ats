@@ -8,9 +8,6 @@ import { ADMIN_NAV_LINKS, NavSection } from '../constants/navigation';
 import { SidebarLogo } from './components/SidebarLogo';
 import { useSidebarContext } from './components/SidebarProvider';
 
-interface SidebarProps {
-    // No props needed now, using context
-}
 
 // Nav Item for Desktop
 const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onToggleSection, onClose, onExpand }: {
@@ -101,7 +98,7 @@ const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onTog
     );
 };
 
-export const Sidebar: React.FC<SidebarProps> = () => {
+export const Sidebar = () => {
     const pathname = usePathname();
     const { isMobileOpen, isCollapsed, toggleSidebar, closeMobileSidebar, expandSidebar } = useSidebarContext();
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
