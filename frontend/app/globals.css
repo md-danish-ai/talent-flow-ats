@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
-@theme {
-  --color-brand-primary: #F96331;
-  --color-brand-hover: #e85220;
+@media screen {
+  @theme {
+    --color-brand-primary: #F96331;
+    --color-brand-hover: #e85220;
+    --color-slate-50: #f8fafc;
+    --color-slate-100: #f1f5f9;
+    --color-slate-200: #e2e8f0;
+    --color-slate-900: #0f172a;
+  }
 }
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #1e293b;
+    --background: #fbfcfd;
+    --foreground: #0f172a;
     --primary: #F96331;
     --primary-foreground: #ffffff;
     --border: #e2e8f0;
-    --input: #f8fafc;
-    --ring: #F96331;
-    --radius: 1rem;
+    --input: #ffffff;
+    --ring: rgba(249, 99, 49, 0.2);
+    --radius: 0.75rem;
   }
 }
 
@@ -22,4 +28,19 @@ body {
   background-color: #ffffff !important;
   color: #1e293b;
   font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Global Pointer Cursor for Interactive Elements */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+/* Base transitions for buttons */
+button,
+a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
