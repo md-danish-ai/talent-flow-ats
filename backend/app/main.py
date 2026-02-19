@@ -11,4 +11,4 @@ app.include_router(users_router, prefix="/users", tags=["Users"])
 
 @app.get("/")
 def health_check():
-    return {"status": "OK"}
+    return {"message":"FastAPI server is running 🚀"}
