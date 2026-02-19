@@ -6,12 +6,10 @@ import { usePathname } from 'next/navigation';
 import { ADMIN_NAV_LINKS, NavSection } from '../constants/navigation';
 
 import { SidebarLogo } from './components/SidebarLogo';
+import { useSidebarContext } from './components/SidebarProvider';
 
 interface SidebarProps {
-    isOpen: boolean; // Mobile open state (drawer)
-    isCollapsed: boolean; // Desktop collapsed state (mini/full)
-    onClose: () => void;
-    onToggle?: () => void;
+    // No props needed now, using context
 }
 
 // YouTube-style Nav Item for Desktop
@@ -23,6 +21,7 @@ const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onTog
     onToggleSection: (title: string) => void;
     onClose: () => void;
 }) => {
+    // ... (rest of the component remains same)
     const isSectionActive = section.items.some(item => pathname === item.href);
     const isContentOpen = expandedSection === section.title;
 
@@ -101,8 +100,9 @@ const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onTog
     );
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, onToggle }) => {
+export const Sidebar: React.FC<SidebarProps> = () => {
     const pathname = usePathname();
+    const { isMobileOpen, isCollapsed, toggleSidebar, closeMobileSidebar } = useSidebarContext();
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
     const toggleSection = (title: string) => {
@@ -112,10 +112,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, 
     return (
         <>
             {/* Mobile Backdrop */}
-            {isOpen && (
+            {isMobileOpen && (
                 <div
                     className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 min-[900px]:hidden"
-                    onClick={onClose}
+                    onClick={closeMobileSidebar}
                 />
             )}
 
@@ -124,11 +124,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, 
         fixed top-0 left-0 bottom-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out
         min-[900px]:static min-[900px]:translate-x-0
         ${isCollapsed ? 'w-20' : 'w-[280px]'}
-        ${isOpen ? 'translate-x-0 w-80' : '-translate-x-full min-[900px]:translate-x-0'}
+        ${isMobileOpen ? 'translate-x-0 w-80' : '-translate-x-full min-[900px]:translate-x-0'}
       `}>
                 {/* Edge Toggle Button - Desktop Only */}
                 <button
-                    onClick={() => onToggle?.()}
+                    onClick={toggleSidebar}
                     className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-400 hover:text-[#F96331] hover:border-[#F96331] shadow-sm z-50 transition-all"
                 >
                     <svg
@@ -142,12 +142,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, 
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
                     <div className={`p-6 flex items-center border-b border-slate-100 h-[73px]
-            ${isCollapsed && !isOpen ? 'justify-center' : 'justify-between'}
+            ${isCollapsed && !isMobileOpen ? 'justify-center' : 'justify-between'}
           `}>
-                        <SidebarLogo isCollapsed={isCollapsed} isOpen={isOpen} onClose={onClose} />
+                        <SidebarLogo isCollapsed={isCollapsed} isOpen={isMobileOpen} onClose={closeMobileSidebar} />
 
-                        {isOpen && (
-                            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg min-[900px]:hidden">
+                        {isMobileOpen && (
+                            <button onClick={closeMobileSidebar} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg min-[900px]:hidden">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, 
                                 expandedSection={expandedSection}
                                 isCollapsed={isCollapsed}
                                 onToggleSection={toggleSection}
-                                onClose={onClose}
+                                onClose={closeMobileSidebar}
                             />
                         ))}
                     </nav>
@@ -186,13 +186,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, 
                                             <li key={item.label}>
                                                 <Link
                                                     href={item.href}
-                                                    onClick={onClose}
+                                                    onClick={closeMobileSidebar}
                                                     className={`
-                            flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                            ${isActive
+                             flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+                             ${isActive
                                                             ? 'bg-orange-50 text-[#F96331]'
                                                             : 'text-slate-600 hover:bg-orange-50 hover:text-[#F96331]'}
-                          `}
+                           `}
                                                 >
                                                     {item.label}
                                                 </Link>

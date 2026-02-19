@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { SearchInput } from './components/SearchInput';
 import { NotificationDropdown } from './components/NotificationDropdown';
 import { ProfileDropdown } from './components/ProfileDropdown';
+import { useSidebarContext } from './components/SidebarProvider';
 
 interface NavbarProps {
-    onMenuClick: () => void;
+    // No props needed now, using context
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
+export const Navbar: React.FC<NavbarProps> = () => {
+    const { toggleSidebar } = useSidebarContext();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [notifications] = useState([]); // Empty notifications for now
@@ -40,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     <div className="flex items-center gap-4">
                         <button
                             className="min-[900px]:hidden text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
-                            onClick={onMenuClick}
+                            onClick={toggleSidebar}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
