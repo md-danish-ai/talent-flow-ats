@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { signInSchema, type SignInFormValues } from "@/lib/validations/auth";
-import { useSignIn } from "@/lib/hooks/use-auth";
+import { useSignIn } from "@/lib/react-query/user/use-auth";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -28,6 +28,7 @@ export default function LoginPage() {
     defaultValues: {
       mobile: "",
       password: "",
+      role: role as "user" | "admin",
     } as SignInFormValues,
     validators: {
       onChange: signInSchema,
@@ -38,10 +39,10 @@ export default function LoginPage() {
         const response = await signInMutation.mutateAsync(value);
 
         // Store auth token and role in cookies
-        document.cookie = `role=${response.user?.role ?? role}; path=/`;
+        document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
 
-        const userRole = response.user?.role ?? role;
+        const userRole = response.user?.role ?? value.role;
         if (userRole === "admin") {
           router.push("/admin/dashboard");
         } else {
@@ -121,47 +122,61 @@ export default function LoginPage() {
             }}
           >
             {/* Role Selection */}
-            <div>
-              <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Select Your Role
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label
-                  className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
-                    role === "admin"
-                      ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                    className="hidden"
-                    checked={role === "admin"}
-                    onChange={(e) => setRole(e.target.value)}
-                  />
-                  Admin
-                </label>
-                <label
-                  className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
-                    role === "user"
-                      ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="user"
-                    className="hidden"
-                    checked={role === "user"}
-                    onChange={(e) => setRole(e.target.value)}
-                  />
-                  User
-                </label>
-              </div>
-            </div>
+            <form.Field name="role">
+              {(field) => (
+                <div>
+                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    Select Your Role
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label
+                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
+                        field.state.value === "admin"
+                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value="admin"
+                        className="hidden"
+                        checked={field.state.value === "admin"}
+                        onChange={(e) => {
+                          field.handleChange(
+                            e.target.value as "admin" | "user",
+                          );
+                          setRole(e.target.value);
+                        }}
+                      />
+                      Admin
+                    </label>
+                    <label
+                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
+                        field.state.value === "user"
+                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value="user"
+                        className="hidden"
+                        checked={field.state.value === "user"}
+                        onChange={(e) => {
+                          field.handleChange(
+                            e.target.value as "admin" | "user",
+                          );
+                          setRole(e.target.value);
+                        }}
+                      />
+                      User
+                    </label>
+                  </div>
+                </div>
+              )}
+            </form.Field>
 
             {/* Mobile Number */}
             <form.Field name="mobile">
