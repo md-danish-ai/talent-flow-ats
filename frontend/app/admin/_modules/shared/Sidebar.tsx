@@ -8,7 +8,11 @@ import { ADMIN_NAV_LINKS, NavSection } from '../constants/navigation';
 import { SidebarLogo } from './components/SidebarLogo';
 import { useSidebarContext } from './components/SidebarProvider';
 
-// YouTube-style Nav Item for Desktop
+interface SidebarProps {
+    // No props needed now, using context
+}
+
+// Nav Item for Desktop
 const DesktopNavItem = ({ section, pathname, expandedSection, isCollapsed, onToggleSection, onClose, onExpand }: {
     section: NavSection;
     pathname: string;
