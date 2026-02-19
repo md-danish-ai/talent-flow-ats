@@ -9,3 +9,33 @@ services:
     ports:
       - "4000:4000"
     restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: talent_flow_ats
+      DB_USER: postgres
+      DB_PASSWORD: Pass2020NothingSpecial
+      SECRET_KEY: supersecretkey1234567890123456
+
+  db:
+    container_name: talent-flow-postgres
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: talent_flow_ats
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Pass2020NothingSpecial
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
