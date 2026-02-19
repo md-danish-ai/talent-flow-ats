@@ -18,3 +18,4 @@ psycopg2-binary
 python-dotenv
 bcrypt
 jwt
+ruff==0.9.6
