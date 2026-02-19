@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { log } from 'console';
 import { useRouter } from "next/navigation";
 
 interface ProfileDropdownProps {
