@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #F96331;
-  --color-brand-hover: #e85220;
+  --color-brand-primary: #e85631;
+  --color-brand-hover: ##e85631;
 }
 
 @layer base {
   :root {
     --background: #ffffff;
     --foreground: #1e293b;
-    --primary: #F96331;
+    --primary: #e85631;
     --primary-foreground: #ffffff;
     --border: #e2e8f0;
     --input: #f8fafc;
-    --ring: #F96331;
+    --ring: #e85631;
     --radius: 1rem;
   }
 }
