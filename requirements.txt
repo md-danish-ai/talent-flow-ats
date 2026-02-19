@@ -17,6 +17,7 @@ uvicorn==0.39.0
 psycopg2-binary
 python-dotenv
 bcrypt
+PyJWT
 jwt
 ruff==0.9.6
-jwt
+
