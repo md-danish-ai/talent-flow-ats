@@ -99,5 +99,5 @@ Used only where interactivity is mandatory:
 ### Best Practices
 
 - **Prefer Server Components**: Only add `"use client"` at the leaf nodes or specifically for interactive containers.
-- **Absolute Imports**: Always use `@/` aliases (e.g., `@/components/ui/Card`).
+- **Absolute Imports**: Always use `@/` aliases (e.g., `@components/ui-elements/Card`).
 - **Domain Isolation**: Code inside `features/admin` should generally not import from `features/user`.

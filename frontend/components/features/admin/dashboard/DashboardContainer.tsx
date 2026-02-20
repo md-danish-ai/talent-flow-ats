@@ -1,5 +1,6 @@
 import React from "react";
-import { Card } from "@/components/ui/Card";
+import { Card } from "@components/ui-elements/Card";
+import { PageHeader } from "@components/ui-elements/PageHeader";
 
 import { StatCard } from "./components/StatCard";
 import { ActivityItem } from "./components/ActivityItem";
@@ -94,14 +95,10 @@ export const DashboardContainer: React.FC = () => {
 
   return (
     <div className="space-y-10 py-2">
-      <header>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          System Overview
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Manage applicants, papers and monitor candidate performance.
-        </p>
-      </header>
+      <PageHeader
+        title="System Overview"
+        description="Manage applicants, papers and monitor candidate performance."
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
