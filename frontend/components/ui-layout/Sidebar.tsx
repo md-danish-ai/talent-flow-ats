@@ -130,34 +130,43 @@ const DesktopNavItem = ({
         </svg>
       </button>
 
-      {isContentOpen && (
-        <div className="pl-6 space-y-1 animate-in slide-in-from-top-1 duration-200">
-          {section.items.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item
-              ${
-                pathname === item.href
-                  ? "text-[#F96331] font-bold bg-orange-50/50"
-                  : "text-slate-500 hover:text-[#F96331] hover:bg-orange-50/50"
-              }
-            `}
-            >
-              <div
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 
-                ${
-                  pathname === item.href
-                    ? "bg-[#F96331] scale-110"
-                    : "bg-slate-300 group-hover/item:bg-[#F96331]"
-                }`}
-              />
-              {item.label}
-            </Link>
-          ))}
+      {/* Animated collapsible — grid-rows trick for smooth open & close */}
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isContentOpen
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden min-h-0">
+          <div className="pl-6 space-y-1 pt-1 pb-1">
+            {section.items.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onClose}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item
+                  ${
+                    pathname === item.href
+                      ? "text-[#F96331] font-bold bg-orange-50/50"
+                      : "text-slate-500 hover:text-[#F96331] hover:bg-orange-50/50"
+                  }
+                `}
+              >
+                <div
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200
+                    ${
+                      pathname === item.href
+                        ? "bg-[#F96331] scale-110"
+                        : "bg-slate-300 group-hover/item:bg-[#F96331]"
+                    }`}
+                />
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -171,7 +180,15 @@ export const Sidebar = () => {
     closeMobileSidebar,
     expandSidebar,
   } = useSidebar();
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  // On mount, seed the expanded section with whichever collapsible contains
+  // the active route — so on refresh the selected section is always open.
+  const [expandedSection, setExpandedSection] = useState<string | null>(() => {
+    const active = ADMIN_NAV_LINKS.find(
+      (s) =>
+        s.type !== "item" && s.items.some((item) => pathname === item.href),
+    );
+    return active ? active.title : null;
+  });
 
   const toggleSection = (title: string) => {
     setExpandedSection(expandedSection === title ? null : title);
@@ -274,69 +291,105 @@ export const Sidebar = () => {
             ))}
           </nav>
 
-          {/* Mobile Navigation List (Flat Version) */}
-          <nav className="min-[900px]:hidden flex-1 overflow-y-auto p-4 space-y-4 mt-4">
+          {/* Mobile Navigation List (Collapsible) */}
+          <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
             {ADMIN_NAV_LINKS.map((section) => {
               const isItem = section.type === "item";
+              const isSectionActive = isItem
+                ? pathname === section.href
+                : section.items.some((item) => pathname === item.href);
+              const isContentOpen = expandedSection === section.title;
 
               if (isItem) {
-                const isActive = pathname === section.href;
                 return (
                   <Link
                     key={section.title}
                     href={section.href!}
                     onClick={closeMobileSidebar}
-                    className={`
-                      flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all
-                      ${
-                        isActive
-                          ? "bg-orange-50 text-[#F96331]"
-                          : "text-slate-700 hover:bg-orange-50 hover:text-[#F96331]"
-                      }
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+                      ${isSectionActive ? "text-[#F96331] bg-orange-50/30" : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"}
                     `}
                   >
-                    <span className="mr-3">{section.icon}</span>
-                    {section.title}
+                    <span
+                      className={
+                        isSectionActive ? "text-[#F96331]" : "text-slate-400"
+                      }
+                    >
+                      {section.icon}
+                    </span>
+                    <span className="font-semibold">{section.title}</span>
                   </Link>
                 );
               }
 
               return (
-                <div key={section.title} className="pt-4 first:pt-0">
-                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-3 px-4">
-                    {section.title}
-                  </h4>
-                  <ul className="space-y-1">
-                    {section.items.map((item) => {
-                      const isActive = pathname === item.href;
-                      return (
-                        <li key={item.label}>
+                <div key={section.title} className="space-y-1">
+                  {/* Collapsible Header Button */}
+                  <button
+                    onClick={() => toggleSection(section.title)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+                      ${isSectionActive ? "text-[#F96331] bg-orange-50/30" : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={
+                          isSectionActive ? "text-[#F96331]" : "text-slate-400"
+                        }
+                      >
+                        {section.icon}
+                      </span>
+                      <span className="font-semibold">{section.title}</span>
+                    </div>
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${isContentOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Animated collapsible — grid-rows trick for smooth open & close */}
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out ${
+                      isContentOpen
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden min-h-0">
+                      <div className="pl-6 space-y-1 pt-1 pb-1">
+                        {section.items.map((item) => (
                           <Link
+                            key={item.label}
                             href={item.href}
                             onClick={closeMobileSidebar}
-                            className={`
-                              flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item
                               ${
-                                isActive
-                                  ? "bg-orange-50 text-[#F96331]"
-                                  : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
+                                pathname === item.href
+                                  ? "text-[#F96331] font-bold bg-orange-50/50"
+                                  : "text-slate-500 hover:text-[#F96331] hover:bg-orange-50/50"
                               }
-                              `}
+                            `}
                           >
                             <div
-                              className={`w-1.5 h-1.5 rounded-full mr-3 transition-all duration-200 
-                              ${
-                                isActive
-                                  ? "bg-[#F96331] scale-110"
-                                  : "bg-slate-300 group-hover:bg-[#F96331]"
-                              }`}
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-200
+                                ${pathname === item.href ? "bg-[#F96331] scale-110" : "bg-slate-300 group-hover/item:bg-[#F96331]"}
+                              `}
                             />
                             {item.label}
                           </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })}
