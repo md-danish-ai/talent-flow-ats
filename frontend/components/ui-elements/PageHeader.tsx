@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Typography } from "./Typography";
 
 interface PageHeaderProps {
   title: string;
@@ -14,10 +15,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <header className={cn("mb-8", className)}>
-      <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+      <Typography variant="h1" weight="extrabold" color="text-slate-900">
         {title}
-      </h1>
-      {description && <p className="text-slate-500 mt-1">{description}</p>}
+      </Typography>
+      {description && (
+        <Typography variant="body2" color="text-slate-500" className="mt-1">
+          {description}
+        </Typography>
+      )}
     </header>
   );
 };
