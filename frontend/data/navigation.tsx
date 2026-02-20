@@ -5,17 +5,19 @@ export interface NavItem {
   href: string;
 }
 
+export type NavSectionType = "item" | "collapsible";
+
 export interface NavSection {
   title: string;
   icon: React.ReactNode;
-  items: NavItem[];
-  href?: string;
+  type: NavSectionType;
+  href?: string; // Used when type is "item"
+  items: NavItem[]; // Used when type is "collapsible"
 }
 
 export const ADMIN_NAV_LINKS: NavSection[] = [
   {
     title: "Dashboard",
-    href: "/admin/dashboard",
     icon: (
       <svg
         className="w-5 h-5"
@@ -31,6 +33,8 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
         />
       </svg>
     ),
+    type: "item",
+    href: "/admin/dashboard",
     items: [],
   },
   {
@@ -50,6 +54,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
         />
       </svg>
     ),
+    type: "collapsible",
     items: [
       { label: "Prepare Questions", href: "/admin/questions" },
       { label: "Multiple Choice", href: "/admin/questions/mcq" },
@@ -76,6 +81,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
         />
       </svg>
     ),
+    type: "collapsible",
     items: [
       { label: "Paper Setup", href: "/admin/paper/setup" },
       { label: "Company Contact", href: "/admin/paper/contact-details" },
@@ -102,6 +108,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
         />
       </svg>
     ),
+    type: "collapsible",
     items: [
       { label: "View All Results", href: "/admin/results" },
       { label: "Performance Analytics", href: "/admin/results/analytics" },
@@ -130,6 +137,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
         />
       </svg>
     ),
+    type: "collapsible",
     items: [
       { label: "Super Admin Panel", href: "/admin/settings/panel" },
       { label: "Authentication", href: "/admin/settings/auth" },

@@ -1,9 +1,9 @@
 import React from "react";
-import { Sidebar } from "@/components/shared/Sidebar";
-import { Navbar } from "@/components/shared/Navbar";
-import { Footer } from "@/components/shared/Footer";
-import { Container } from "@/components/shared/Container";
-import { SidebarProvider } from "@/components/shared/components/SidebarProvider";
+import { Sidebar } from "@components/ui-layout/Sidebar";
+import { Navbar } from "@components/ui-layout/Navbar";
+import { Footer } from "@components/ui-layout/Footer";
+import { Container } from "@components/ui-layout/Container";
+import { SidebarProvider } from "@components/ui-layout/SidebarProvider";
 
 export default function AdminLayout({
   children,
@@ -22,7 +22,7 @@ export default function AdminLayout({
             <Container>{children}</Container>
           </main>
 
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </div>
     </SidebarProvider>

@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV_LINKS, NavSection } from "./constants/navigation";
+import { ADMIN_NAV_LINKS, NavSection } from "@/data/navigation";
 
-import { SidebarLogo } from "./components/SidebarLogo";
-import { useSidebarContext } from "./components/SidebarProvider";
+import { SidebarLogo } from "./SidebarLogo";
+import { useSidebar } from "./SidebarProvider";
 
 // Nav Item for Desktop
 const DesktopNavItem = ({
@@ -26,34 +26,27 @@ const DesktopNavItem = ({
   onClose: () => void;
   onExpand: () => void;
 }) => {
-  const isDirectLink = !!section.href;
-  const isSectionActive = isDirectLink
+  const isItem = section.type === "item";
+  const isSectionActive = isItem
     ? pathname === section.href
     : section.items.some((item) => pathname === item.href);
   const isContentOpen = expandedSection === section.title;
 
   if (isCollapsed) {
+    const Component = isItem ? Link : "button";
+    const props = isItem ? { href: section.href } : { onClick: onExpand };
+
     return (
       <div className="relative group flex flex-col items-center">
-        {isDirectLink ? (
-          <Link
-            href={section.href!}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all
-            ${isSectionActive ? "bg-orange-50 text-[#F96331]" : "text-slate-500 hover:bg-orange-50 hover:text-[#F96331]"}
-          `}
-          >
-            {section.icon}
-          </Link>
-        ) : (
-          <button
-            onClick={onExpand}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all
-            ${isSectionActive ? "bg-orange-50 text-[#F96331]" : "text-slate-500 hover:bg-orange-50 hover:text-[#F96331]"}
-          `}
-          >
-            {section.icon}
-          </button>
-        )}
+        {/* @ts-expect-error - Dynamic component props */}
+        <Component
+          {...props}
+          className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all
+          ${isSectionActive ? "bg-orange-50 text-[#F96331]" : "text-slate-500 hover:bg-orange-50 hover:text-[#F96331]"}
+        `}
+        >
+          {section.icon}
+        </Component>
 
         <div className="absolute left-full ml-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
           <div className="p-3 border-b border-slate-100 bg-slate-50">
@@ -61,7 +54,7 @@ const DesktopNavItem = ({
               {section.title}
             </span>
           </div>
-          {!isDirectLink && (
+          {!isItem && (
             <div className="p-1">
               {section.items.map((item) => (
                 <Link
@@ -79,15 +72,22 @@ const DesktopNavItem = ({
     );
   }
 
-  if (isDirectLink) {
+  if (isItem) {
     return (
       <Link
         href={section.href!}
+        onClick={onClose}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-        ${isSectionActive ? "text-[#F96331] bg-orange-50/30" : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"}
-      `}
+          ${isSectionActive ? "text-[#F96331] bg-orange-50/30" : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"}
+        `}
       >
-        <span className={isSectionActive ? "text-[#F96331]" : "text-slate-400"}>
+        <span
+          className={
+            isSectionActive
+              ? "text-[#F96331]"
+              : "text-slate-400 group-hover:text-slate-600"
+          }
+        >
           {section.icon}
         </span>
         <span className="font-semibold">{section.title}</span>
@@ -131,13 +131,13 @@ const DesktopNavItem = ({
       </button>
 
       {isContentOpen && (
-        <div className="pl-11 space-y-1 animate-in slide-in-from-top-1 duration-200">
+        <div className="pl-6 space-y-1 animate-in slide-in-from-top-1 duration-200">
           {section.items.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={onClose}
-              className={`block px-3 py-2 rounded-lg text-sm transition-colors
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item
               ${
                 pathname === item.href
                   ? "text-[#F96331] font-bold bg-orange-50/50"
@@ -145,6 +145,14 @@ const DesktopNavItem = ({
               }
             `}
             >
+              <div
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 
+                ${
+                  pathname === item.href
+                    ? "bg-[#F96331] scale-110"
+                    : "bg-slate-300 group-hover/item:bg-[#F96331]"
+                }`}
+              />
               {item.label}
             </Link>
           ))}
@@ -162,7 +170,7 @@ export const Sidebar = () => {
     toggleSidebar,
     closeMobileSidebar,
     expandSidebar,
-  } = useSidebarContext();
+  } = useSidebar();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const toggleSection = (title: string) => {
@@ -183,7 +191,7 @@ export const Sidebar = () => {
       <aside
         className={`
         fixed top-0 left-0 bottom-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out
-        min-[900px]:static min-[900px]:translate-x-0
+        min-[900px]:relative min-[900px]:translate-x-0
         ${isCollapsed ? "w-20" : "w-[280px]"}
         ${isMobileOpen ? "translate-x-0 w-80" : "-translate-x-full min-[900px]:translate-x-0"}
       `}
@@ -267,57 +275,71 @@ export const Sidebar = () => {
           </nav>
 
           {/* Mobile Navigation List (Flat Version) */}
-          <nav className="min-[900px]:hidden flex-1 overflow-y-auto p-4 space-y-8 mt-4">
-            {ADMIN_NAV_LINKS.map((section) => (
-              <div key={section.title}>
-                {section.href ? (
+          <nav className="min-[900px]:hidden flex-1 overflow-y-auto p-4 space-y-4 mt-4">
+            {ADMIN_NAV_LINKS.map((section) => {
+              const isItem = section.type === "item";
+
+              if (isItem) {
+                const isActive = pathname === section.href;
+                return (
                   <Link
-                    href={section.href}
+                    key={section.title}
+                    href={section.href!}
                     onClick={closeMobileSidebar}
                     className={`
-                       flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                       ${
-                         pathname === section.href
-                           ? "bg-orange-50 text-[#F96331]"
-                           : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
-                       }
-                     `}
+                      flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all
+                      ${
+                        isActive
+                          ? "bg-orange-50 text-[#F96331]"
+                          : "text-slate-700 hover:bg-orange-50 hover:text-[#F96331]"
+                      }
+                    `}
                   >
                     <span className="mr-3">{section.icon}</span>
-                    <span className="font-semibold">{section.title}</span>
+                    {section.title}
                   </Link>
-                ) : (
-                  <>
-                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-4 px-3">
-                      {section.title}
-                    </h4>
-                    <ul className="space-y-1">
-                      {section.items.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                          <li key={item.label}>
-                            <Link
-                              href={item.href}
-                              onClick={closeMobileSidebar}
-                              className={`
-                                 flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                                 ${
-                                   isActive
-                                     ? "bg-orange-50 text-[#F96331]"
-                                     : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
-                                 }
-                               `}
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </>
-                )}
-              </div>
-            ))}
+                );
+              }
+
+              return (
+                <div key={section.title} className="pt-4 first:pt-0">
+                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-3 px-4">
+                    {section.title}
+                  </h4>
+                  <ul className="space-y-1">
+                    {section.items.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <li key={item.label}>
+                          <Link
+                            href={item.href}
+                            onClick={closeMobileSidebar}
+                            className={`
+                              flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all
+                              ${
+                                isActive
+                                  ? "bg-orange-50 text-[#F96331]"
+                                  : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
+                              }
+                              `}
+                          >
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full mr-3 transition-all duration-200 
+                              ${
+                                isActive
+                                  ? "bg-[#F96331] scale-110"
+                                  : "bg-slate-300 group-hover:bg-[#F96331]"
+                              }`}
+                            />
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
           </nav>
         </div>
       </aside>
