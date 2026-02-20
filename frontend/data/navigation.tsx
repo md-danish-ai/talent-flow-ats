@@ -56,7 +56,6 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
     ),
     type: "collapsible",
     items: [
-      { label: "Prepare Questions", href: "/admin/questions" },
       { label: "Multiple Choice", href: "/admin/questions/mcq" },
       { label: "Image Based MCQ", href: "/admin/questions/image-mcq" },
       { label: "Subjective Questions", href: "/admin/questions/subjective" },
@@ -88,7 +87,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
       { label: "Lead Generation", href: "/admin/paper/lead-generation" },
       { label: "Typing Test", href: "/admin/paper/typing-test" },
       { label: "Reset User", href: "/admin/paper/reset-user" },
-      { label: "Daily Papers", href: "/admin/paper/today-papers" },
+      { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
     ],
   },
   {
@@ -109,10 +108,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
       </svg>
     ),
     type: "collapsible",
-    items: [
-      { label: "View All Results", href: "/admin/results" },
-      { label: "Performance Analytics", href: "/admin/results/analytics" },
-    ],
+    items: [{ label: "View All Results", href: "/admin/results" }],
   },
   {
     title: "Settings",
@@ -139,8 +135,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
     ),
     type: "collapsible",
     items: [
-      { label: "Super Admin Panel", href: "/admin/settings/panel" },
-      { label: "Authentication", href: "/admin/settings/auth" },
+      { label: "Allow Authenticated Users", href: "/admin/settings/auth" },
       { label: "Subject Management", href: "/admin/settings/add-subject" },
     ],
   },
