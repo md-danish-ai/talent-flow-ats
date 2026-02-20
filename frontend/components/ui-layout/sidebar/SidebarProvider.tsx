@@ -21,9 +21,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   // Close mobile sidebar on window resize if larger than 900px
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 900) {
-        setIsMobileOpen(false);
-      }
+      if (window.innerWidth >= 900) setIsMobileOpen(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -31,19 +29,14 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const toggleSidebar = () => {
     if (window.innerWidth < 900) {
-      setIsMobileOpen(!isMobileOpen);
+      setIsMobileOpen((prev) => !prev);
     } else {
-      setIsCollapsed(!isCollapsed);
+      setIsCollapsed((prev) => !prev);
     }
   };
 
-  const closeMobileSidebar = () => {
-    setIsMobileOpen(false);
-  };
-
-  const expandSidebar = () => {
-    setIsCollapsed(false);
-  };
+  const closeMobileSidebar = () => setIsMobileOpen(false);
+  const expandSidebar = () => setIsCollapsed(false);
 
   return (
     <SidebarContext.Provider
@@ -68,5 +61,5 @@ export const useSidebarContext = () => {
   return context;
 };
 
-// Aliasing for backward compatibility with recent changes
+// Alias for backward compatibility
 export const useSidebar = useSidebarContext;

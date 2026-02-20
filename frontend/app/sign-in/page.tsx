@@ -15,8 +15,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { signInSchema, type SignInFormValues } from "@/lib/validations/auth";
-import { useSignIn } from "@/lib/react-query/user/use-auth";
+import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
+import { useSignIn } from "@lib/react-query/user/use-auth";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -50,6 +50,8 @@ export default function LoginPage() {
         // Store auth token and role in cookies
         document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
+        // Store user info for profile display
+        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(response.user))}; path=/`;
 
         const userRole = response.user?.role ?? value.role;
         if (userRole === "admin") {

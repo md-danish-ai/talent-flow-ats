@@ -17,9 +17,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createUser, getUserByEmail } from "@/lib/api/users";
-import type { User, CreateUserPayload } from "@/lib/api/users";
-import type { ApiError } from "@/lib/api/client";
+import { createUser, getUserByEmail } from "@lib/api/users";
+import type { User, CreateUserPayload } from "@lib/api/users";
+import type { ApiError } from "@lib/api/client";
 
 // ─── Query Keys ──────────────────────────────────────────────────────────
 
