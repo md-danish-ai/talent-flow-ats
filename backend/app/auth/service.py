@@ -22,12 +22,12 @@ def signup_user(data):
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, username, role
         """, (
-            data.username,
+            data.name,
             data.mobile,
             data.email,
             hashed_password,
-            data.testlevel,
-            "user",
+            data.testLevel.value,
+            data.role.value,
             True,
             None
         ))
@@ -47,7 +47,7 @@ def signup_user(data):
 
     return {
         "message": "Signup successfully",
-        "token": token,
+        "access_token": token,
         "user": user
     }
 
@@ -61,48 +61,73 @@ def signin_user(data):
     conn.close()
 
     if not user:
-        return {"error": "Invalid credentials"}
+        return {"error": "User does not exist"}
         
     if not user["is_active"]:
         return {"error": "Account is inactive"}
 
     if not verify_password(data.password, user["password"]):
-        return {"error": "Invalid credentials"}
+        return {"error": "User does not exist"}
+
+    if str(user["role"]) != str(data.role.value):
+        return {"error": f"Invalid role for this account. Expected {user['role']}"}
 
     token = generate_jwt(user)
     return {
         "message": "Login successfully",
-        "token": token,
+        "access_token": token,
         "user": {
             "id": user["id"],
             "username": user["username"],
             "role": user["role"]
         }
     }
+
+def create_admin(data):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("""SELECT id, username, password, role, is_active FROM users WHERE mobile=%s""", (data.mobile,))
 
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
+    cur.execute("SELECT id FROM users WHERE mobile=%s", (data.mobile,))
+    if cur.fetchone():
+        cur.close()
+        conn.close()
+        return {"error": "Mobile already registered"}
 
-    if not user:
-        return {"error": "Invalid credentials"}
-        
-    if not user["is_active"]:
-        return {"error": "Account is inactive"}
+    hashed_password = hash_password(data.mobile)
 
-    if not verify_password(data.password, user["password"]):
-        return {"error": "Invalid credentials"}
+    try:
+        cur.execute("""
+            INSERT INTO users (
+                username, mobile, email, password,
+                role, is_active, created_by
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, username, role
+        """, (
+            data.name,
+            data.mobile,
+            data.email,
+            hashed_password,
+            "admin",
+            True,
+            None
+        ))
+
+        user = cur.fetchone()
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        return {"error": str(e)}
+
+    finally:
+        cur.close()
+        conn.close()
 
     token = generate_jwt(user)
+
     return {
-        "message": "Login successfully",
+        "message": "Admin created successfully",
         "token": token,
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "role": user["role"]
-        }
-    }
+        "user": user
+    } 

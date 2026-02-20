@@ -3,24 +3,35 @@ from typing import Optional
 from enum import Enum
 import re
 
+
+# ─── Shared Enums (single source of truth for both backend & frontend) ────
+
 class TestLevelEnum(str, Enum):
-    beginner = "beginner"
-    intermediate = "intermediate"
-    advanced = "advanced"
+    fresher = "fresher"
+    qa = "QA"
+    team_lead = "team-lead"
+
+class RoleEnum(str, Enum):
+    user = "user"
+    admin = "admin"
+
+
+# ─── Sign Up Schema ──────────────────────────────────────────────────────
 
 class SignUpSchema(BaseModel):
-    username: str
+    name: str
     mobile: str
-    testlevel: TestLevelEnum
+    testLevel: TestLevelEnum
+    role: RoleEnum = RoleEnum.user
     email: Optional[EmailStr] = None
 
-    @validator("username")
+    @validator("name")
     def validate_full_name(cls, value):
         value = value.strip()
         if len(value.split()) < 2:
-            raise ValueError("Username must be full name")
+            raise ValueError("Name must be full name (first and last)")
         if not re.match(r"^[A-Za-z ]+$", value):
-            raise ValueError("Username must contain only letters")
+            raise ValueError("Name must contain only letters")
         return value
 
     @validator("mobile")
@@ -29,16 +40,13 @@ class SignUpSchema(BaseModel):
             raise ValueError("Mobile must be 10 digits")
         return value
 
-    @validator("testlevel")
-    def validate_testlevel(cls, value):
-        if value not in TestLevelEnum:
-            raise ValueError(f"Testlevel must be one of {[e.value for e in TestLevelEnum]}")
-        return value
 
+# ─── Sign In Schema ──────────────────────────────────────────────────────
 
 class SignInSchema(BaseModel):
     mobile: str
     password: str
+    role: RoleEnum
 
     @validator("mobile")
     def validate_mobile(cls, value):
@@ -52,3 +60,23 @@ class SignInSchema(BaseModel):
             raise ValueError("Password must be 10 digits")
         return value
 
+
+class CreateAdminSchema(BaseModel):
+    name: str
+    mobile: str
+    email: Optional[EmailStr] = None
+
+    @validator("name")
+    def validate_full_name(cls, value):
+        value = value.strip()
+        if len(value.split()) < 2:
+            raise ValueError("Name must be full name (first and last)")
+        if not re.match(r"^[A-Za-z ]+$", value):
+            raise ValueError("Name must contain only letters")
+        return value
+
+    @validator("mobile")
+    def validate_mobile(cls, value):
+        if not re.match(r"^[0-9]{10}$", value):
+            raise ValueError("Mobile must be 10 digits")
+        return value

@@ -1,32 +1,30 @@
-import React from 'react';
-import { Sidebar } from './_modules/shared/Sidebar';
-import { Navbar } from './_modules/shared/Navbar';
-import { Footer } from './_modules/shared/Footer';
-import { Container } from '@/components/shared/Container';
-import { SidebarProvider } from './_modules/shared/components/SidebarProvider';
+import React from "react";
+import { Sidebar } from "@/components/shared/Sidebar";
+import { Navbar } from "@/components/shared/Navbar";
+import { Footer } from "@/components/shared/Footer";
+import { Container } from "@/components/shared/Container";
+import { SidebarProvider } from "@/components/shared/components/SidebarProvider";
 
 export default function AdminLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <SidebarProvider>
-            <div className="flex min-h-screen bg-[#F8FAFC]">
-                <Sidebar />
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-[#F8FAFC]">
+        <Sidebar />
 
-                <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    <Navbar />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <Navbar />
 
-                    <main className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto">
-                        <Container>
-                            {children}
-                        </Container>
-                    </main>
+          <main className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto">
+            <Container>{children}</Container>
+          </main>
 
-                    <Footer />
-                </div>
-            </div>
-        </SidebarProvider>
-    );
+          <Footer />
+        </div>
+      </div>
+    </SidebarProvider>
+  );
 }
