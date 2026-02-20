@@ -1,23 +1,35 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getInitials } from "@lib/auth/user-utils";
+import type { CurrentUser } from "@lib/auth/user-utils";
 
 interface ProfileDropdownProps {
+  user: CurrentUser | null;
   isOpen: boolean;
   onToggle: () => void;
 }
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  user,
   isOpen,
   onToggle,
 }) => {
   const router = useRouter();
 
+  // Derived display values — fall back gracefully if cookie not yet parsed
+  const displayName = user?.username ?? "User";
+  const displayRole = user?.role
+    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+    : "Guest";
+  const initials = user?.username ? getInitials(user.username) : "?";
+
   const logout = () => {
     document.cookie = "role=; Max-Age=0; path=/";
     document.cookie = "auth_token=; Max-Age=0; path=/";
+    document.cookie = "user_info=; Max-Age=0; path=/";
     router.push("/sign-in");
   };
 
@@ -27,8 +39,8 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="flex items-center cursor-pointer group p-1 rounded-full hover:bg-slate-50 transition-all outline-none"
         onClick={onToggle}
       >
-        <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#F96331] font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-orange-100 transition-all shadow-sm">
-          MJ
+        <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#F96331] font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-orange-100 transition-all shadow-sm select-none">
+          {initials}
         </div>
       </button>
 
@@ -37,15 +49,15 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         <div className="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
           {/* User Profile Info in Dropdown */}
           <div className="px-4 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#F96331] font-black shadow-sm shrink-0">
-              MJ
+            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#F96331] font-black shadow-sm shrink-0 select-none">
+              {initials}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 leading-tight truncate">
-                Manish Joshi
+                {displayName}
               </p>
               <p className="text-[11px] text-[#F96331] font-semibold mt-0.5 uppercase tracking-wide">
-                Super Admin
+                {displayRole}
               </p>
             </div>
           </div>
@@ -79,11 +91,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
             <div className="border-t border-slate-50 my-1 pt-1">
               <button
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all font-bold"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
                 onClick={() => {
                   logout();
                   onToggle();
-                  console.log("Logging out...");
                 }}
               >
                 <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">

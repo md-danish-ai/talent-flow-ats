@@ -19,8 +19,8 @@ import {
   signUpSchema,
   type SignUpFormValues,
   TEST_LEVELS,
-} from "@/lib/validations/auth";
-import { useSignUp } from "@/lib/react-query/user/use-auth";
+} from "@lib/validations/auth";
+import { useSignUp } from "@lib/react-query/user/use-auth";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;

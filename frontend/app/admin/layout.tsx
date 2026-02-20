@@ -1,28 +1,35 @@
 import React from "react";
 import { Sidebar } from "@components/ui-layout/Sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
-import { Footer } from "@components/ui-layout/Footer";
 import { Container } from "@components/ui-layout/Container";
 import { SidebarProvider } from "@components/ui-layout/sidebar/SidebarProvider";
+import { getCurrentUser } from "@lib/auth/get-current-user";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Runs on the server at request time — no client JS, no extra render
+  const user = await getCurrentUser();
+
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-[#F8FAFC]">
-        <Sidebar />
+      {/* Full-height column: Navbar on top, then sidebar+content row below */}
+      <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+        {/* Navbar — full width */}
+        <Navbar user={user} />
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Navbar />
+        {/* Body row: Sidebar + Main Content side by side */}
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
 
-          <main className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto">
+          <main
+            className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto min-w-0"
+            style={{ backgroundColor: "var(--layout-bg)" }}
+          >
             <Container>{children}</Container>
           </main>
-
-          {/* <Footer /> */}
         </div>
       </div>
     </SidebarProvider>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { NavSection } from "@/data/navigation";
+import { NavSection } from "@data/navigation";
 
 interface CollapsedNavItemProps {
   section: NavSection;

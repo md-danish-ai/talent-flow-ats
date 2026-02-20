@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { NavSection } from "@/data/navigation";
+import { NavSection } from "@data/navigation";
 import { NAV_ACTIVE, NAV_IDLE, ICON_ACTIVE, ICON_IDLE } from "./styles";
 
 interface CollapsibleHeaderProps {

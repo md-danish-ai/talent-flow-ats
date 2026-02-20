@@ -3,12 +3,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { NotificationDropdown } from "@components/ui-elements/NotificationDropdown";
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
 import { useSidebar } from "./sidebar/index";
+import type { CurrentUser } from "@lib/auth/user-utils";
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  user: CurrentUser | null;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const { toggleSidebar } = useSidebar();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -38,7 +42,7 @@ export const Navbar: React.FC = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 h-[73px] flex items-center">
+    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-transparent h-[73px] flex items-center">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -98,6 +102,7 @@ export const Navbar: React.FC = () => {
 
             <div ref={dropdownRef}>
               <ProfileDropdown
+                user={user}
                 isOpen={isProfileOpen}
                 onToggle={() => {
                   setIsProfileOpen(!isProfileOpen);

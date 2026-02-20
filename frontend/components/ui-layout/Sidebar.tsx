@@ -2,14 +2,9 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV_LINKS } from "@/data/navigation";
+import { ADMIN_NAV_LINKS } from "@data/navigation";
 
-import {
-  SidebarLogo,
-  useSidebar,
-  NavItem,
-  CollapsedNavItem,
-} from "./sidebar/index";
+import { useSidebar, NavItem, CollapsedNavItem } from "./sidebar/index";
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -47,7 +42,7 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 bottom-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out
+          fixed top-0 left-0 bottom-0 z-50 bg-white border-r border-transparent transition-all duration-300 ease-in-out
           min-[900px]:relative min-[900px]:translate-x-0
           ${isCollapsed ? "w-20" : "w-[280px]"}
           ${isMobileOpen ? "translate-x-0 w-80" : "-translate-x-full min-[900px]:translate-x-0"}
@@ -74,42 +69,6 @@ export const Sidebar = () => {
         </button>
 
         <div className="flex flex-col h-full overflow-hidden">
-          {/* Header */}
-          <div
-            className={`p-6 flex items-center border-b border-slate-200 h-[73px] ${
-              isCollapsed && !isMobileOpen
-                ? "justify-center"
-                : "justify-between"
-            }`}
-          >
-            <SidebarLogo
-              isCollapsed={isCollapsed}
-              isOpen={isMobileOpen}
-              onClose={closeMobileSidebar}
-            />
-
-            {isMobileOpen && (
-              <button
-                onClick={closeMobileSidebar}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg min-[900px]:hidden"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
-
           {/* Desktop nav — collapsed (icons only) */}
           {isCollapsed && (
             <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">

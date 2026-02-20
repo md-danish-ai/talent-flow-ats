@@ -10,7 +10,7 @@ import { apiClient, type ApiRequestOptions } from "./client";
 import type {
   SignInFormValues,
   SignUpFormValues,
-} from "@/lib/validations/auth";
+} from "@lib/validations/auth";
 
 // ─── Response Types ──────────────────────────────────────────────────────
 

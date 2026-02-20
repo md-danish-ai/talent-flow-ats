@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { NavSection } from "@/data/navigation";
+import { NavSection } from "@data/navigation";
 import { NAV_ACTIVE, NAV_IDLE, ICON_ACTIVE, ICON_IDLE } from "./styles";
 
 interface NavItemLinkProps {
