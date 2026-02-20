@@ -22,7 +22,6 @@ class SignUpSchema(BaseModel):
     name: str
     mobile: str
     testLevel: TestLevelEnum
-    role: RoleEnum = RoleEnum.user
     email: Optional[EmailStr] = None
 
     @validator("name")
@@ -46,7 +45,6 @@ class SignUpSchema(BaseModel):
 class SignInSchema(BaseModel):
     mobile: str
     password: str
-    role: RoleEnum
 
     @validator("mobile")
     def validate_mobile(cls, value):

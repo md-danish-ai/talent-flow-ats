@@ -27,7 +27,7 @@ def signup_user(data):
             data.email,
             hashed_password,
             data.testLevel.value,
-            data.role.value,
+            "user",
             True,
             None
         ))
@@ -69,8 +69,6 @@ def signin_user(data):
     if not verify_password(data.password, user["password"]):
         return {"error": "User does not exist"}
 
-    if str(user["role"]) != str(data.role.value):
-        return {"error": f"Invalid role for this account. Expected {user['role']}"}
 
     token = generate_jwt(user)
     return {
