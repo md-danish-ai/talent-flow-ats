@@ -3,7 +3,7 @@ import { Sidebar } from "@components/ui-layout/Sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
 import { Footer } from "@components/ui-layout/Footer";
 import { Container } from "@components/ui-layout/Container";
-import { SidebarProvider } from "@components/ui-layout/SidebarProvider";
+import { SidebarProvider } from "@components/ui-layout/sidebar/SidebarProvider";
 
 export default function AdminLayout({
   children,
