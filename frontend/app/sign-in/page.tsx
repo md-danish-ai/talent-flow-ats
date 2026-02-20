@@ -1,7 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Phone,
+  UserPlus,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +28,7 @@ function getErrorMessage(error: unknown): string {
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = useState("user");
+  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signInMutation = useSignIn();
@@ -131,28 +140,6 @@ export default function LoginPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <label
                       className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
-                        field.state.value === "admin"
-                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="role"
-                        value="admin"
-                        className="hidden"
-                        checked={field.state.value === "admin"}
-                        onChange={(e) => {
-                          field.handleChange(
-                            e.target.value as "admin" | "user",
-                          );
-                          setRole(e.target.value);
-                        }}
-                      />
-                      Admin
-                    </label>
-                    <label
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
                         field.state.value === "user"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                           : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
@@ -172,6 +159,28 @@ export default function LoginPage() {
                         }}
                       />
                       User
+                    </label>
+                    <label
+                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
+                        field.state.value === "admin"
+                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value="admin"
+                        className="hidden"
+                        checked={field.state.value === "admin"}
+                        onChange={(e) => {
+                          field.handleChange(
+                            e.target.value as "admin" | "user",
+                          );
+                          setRole(e.target.value);
+                        }}
+                      />
+                      Admin
                     </label>
                   </div>
                 </div>
@@ -214,23 +223,17 @@ export default function LoginPage() {
             <form.Field name="password">
               {(field) => (
                 <div className="group">
-                  <div className="mb-1.5 flex items-center justify-between">
+                  <div className="mb-1.5">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                       Password
                     </label>
-                    <Link
-                      href="#"
-                      className="text-[11px] font-bold text-brand-primary hover:underline"
-                    >
-                      Forgot?
-                    </Link>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
+                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-12 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
                         field.state.meta.errors.length > 0
                           ? "border-red-300"
                           : "border-slate-200"
@@ -239,6 +242,17 @@ export default function LoginPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 focus:outline-none transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-[18px] w-[18px]" />
+                      ) : (
+                        <Eye className="h-[18px] w-[18px]" />
+                      )}
+                    </button>
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
@@ -249,21 +263,6 @@ export default function LoginPage() {
                 </div>
               )}
             </form.Field>
-
-            {/* Remember me */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="remember"
-                className="h-4 w-4 rounded border-slate-200 text-brand-primary focus:ring-brand-primary"
-              />
-              <label
-                htmlFor="remember"
-                className="cursor-pointer text-[13px] font-medium text-slate-500"
-              >
-                Keep me logged in
-              </label>
-            </div>
 
             {/* Submit */}
             <form.Subscribe
@@ -291,15 +290,17 @@ export default function LoginPage() {
             </form.Subscribe>
           </form>
 
-          <p className="mt-6 text-center text-[13px] text-slate-400">
-            New to TalentFlow?{" "}
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
-            >
-              Create an account <UserPlus className="h-3.5 w-3.5" />
-            </Link>
-          </p>
+          {role === "user" && (
+            <p className="mt-6 text-center text-[13px] text-slate-400">
+              New to TalentFlow?{" "}
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
+              >
+                Create an account <UserPlus className="h-3.5 w-3.5" />
+              </Link>
+            </p>
+          )}
         </motion.div>
       </div>
 
