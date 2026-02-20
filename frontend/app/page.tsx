@@ -19,7 +19,6 @@ import {
   signUpSchema,
   type SignUpFormValues,
   TEST_LEVELS,
-  ROLES,
 } from "@/lib/validations/auth";
 import { useSignUp } from "@/lib/react-query/user/use-auth";
 
@@ -33,7 +32,6 @@ function getErrorMessage(error: unknown): string {
 export default function RegisterPage() {
   const router = useRouter();
   const [isTestLevelOpen, setIsTestLevelOpen] = useState(false);
-  const [isRoleOpen, setIsRoleOpen] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signUpMutation = useSignUp();
@@ -65,16 +63,10 @@ export default function RegisterPage() {
 
   const levelLabels: Record<(typeof TEST_LEVELS)[number], string> = {
     fresher: "Fresher",
-    QA: "QA",
+    QA: "Quality Analyst",
     "team-lead": "Team Lead",
   };
   const levels = TEST_LEVELS.map((id) => ({ id, label: levelLabels[id] }));
-
-  const roleLabels: Record<(typeof ROLES)[number], string> = {
-    user: "User",
-    admin: "Admin",
-  };
-  const roles = ROLES.map((id) => ({ id, label: roleLabels[id] }));
 
   return (
     <div className="flex min-h-screen overflow-hidden font-sans">
@@ -264,10 +256,10 @@ export default function RegisterPage() {
                     <AnimatePresence>
                       {isTestLevelOpen && (
                         <motion.div
-                          initial={{ opacity: 0, y: 8 }}
+                          initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 8 }}
-                          className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl"
+                          exit={{ opacity: 0, y: 4 }}
+                          className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl"
                         >
                           {levels.map((level) => (
                             <button
@@ -285,69 +277,6 @@ export default function RegisterPage() {
                             >
                               {level.label}
                               {field.state.value === level.id && (
-                                <Check className="h-4 w-4" />
-                              )}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              )}
-            </form.Field>
-
-            {/* Role Dropdown */}
-            <form.Field name="role">
-              {(field) => (
-                <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Select Your Role
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsRoleOpen(!isRoleOpen)}
-                      className={`flex w-full items-center justify-between rounded-xl border bg-white py-3.5 px-4 text-left text-[15px] outline-none transition-all ${
-                        isRoleOpen
-                          ? "border-brand-primary/40 ring-2 ring-brand-primary/10"
-                          : "border-slate-200"
-                      }`}
-                    >
-                      <span className="font-medium text-slate-800">
-                        {roles.find((r) => r.id === field.state.value)?.label}
-                      </span>
-                      <ChevronDown
-                        className={`h-5 w-5 text-slate-400 transition-transform ${
-                          isRoleOpen ? "rotate-180 text-brand-primary" : ""
-                        }`}
-                      />
-                    </button>
-
-                    <AnimatePresence>
-                      {isRoleOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 8 }}
-                          className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl"
-                        >
-                          {roles.map((role) => (
-                            <button
-                              key={role.id}
-                              type="button"
-                              onClick={() => {
-                                field.handleChange(role.id);
-                                setIsRoleOpen(false);
-                              }}
-                              className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-all ${
-                                field.state.value === role.id
-                                  ? "bg-brand-primary/5 text-brand-primary"
-                                  : "text-slate-600 hover:bg-slate-50"
-                              }`}
-                            >
-                              {role.label}
-                              {field.state.value === role.id && (
                                 <Check className="h-4 w-4" />
                               )}
                             </button>
