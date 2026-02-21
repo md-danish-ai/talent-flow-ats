@@ -2,12 +2,24 @@
 
 @media screen {
   @theme {
-    --color-brand-primary: #e85631;
-    --color-brand-hover: #e85631;
+    --color-brand-primary: #f96331;
+    --color-brand-secondary: #e85631;
+    --color-brand-muted: #fef1ec;
+    --color-brand-hover: #e05225;
+
+    --color-brand-secondary: #2196f3;
+    --color-brand-success: #4caf50;
+    --color-brand-error: #f44336;
+    --color-brand-warning: #ff9800;
+
     --color-slate-50: #f8fafc;
     --color-slate-100: #f1f5f9;
     --color-slate-200: #e2e8f0;
     --color-slate-900: #0f172a;
+
+    --font-size-tiny: 11px;
+    --font-size-small: 13px;
+    --font-size-medium: 15px;
   }
 }
 

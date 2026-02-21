@@ -46,31 +46,34 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const colorStyles = {
-      primary: "bg-[#F96331] text-white hover:bg-[#E05225]", // theme orange
-      secondary: "bg-[#673ab7] text-white hover:bg-[#5e35b1]",
-      success: "bg-[#00e676] text-white hover:bg-[#00c853]",
-      error: "bg-[#f44336] text-white hover:bg-[#e53935]",
-      warning:
-        "bg-[#ff9800] text-slate-800 hover:bg-[#f57c00] hover:text-white",
-      default: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+      primary: "bg-brand-primary text-white hover:bg-brand-hover",
+      secondary: "bg-brand-secondary text-white hover:opacity-90",
+      success: "bg-brand-success text-white hover:opacity-90",
+      error: "bg-brand-error text-white hover:opacity-90",
+      warning: "bg-brand-warning text-slate-800 hover:opacity-90",
+      default: "bg-slate-100 text-slate-900 hover:bg-slate-200",
     };
 
     const outlineStyles = {
-      primary: "border border-[#F96331] text-[#F96331] hover:bg-orange-50",
-      secondary: "border border-[#673ab7] text-[#673ab7] hover:bg-[#ede7f6]",
-      success: "border border-[#00e676] text-[#00e676] hover:bg-[#e8f5e9]",
-      error: "border border-[#f44336] text-[#f44336] hover:bg-[#ffebee]",
-      warning: "border border-[#ff9800] text-[#ff9800] hover:bg-[#fff3e0]",
-      default: "border border-gray-200 text-gray-700 hover:bg-gray-50",
+      primary:
+        "border border-brand-primary text-brand-primary hover:bg-brand-muted",
+      secondary:
+        "border border-brand-secondary text-brand-secondary hover:bg-blue-50/50",
+      success:
+        "border border-brand-success text-brand-success hover:bg-green-50/50",
+      error: "border border-brand-error text-brand-error hover:bg-red-50/50",
+      warning:
+        "border border-brand-warning text-brand-warning hover:bg-orange-50/50",
+      default: "border border-slate-200 text-slate-700 hover:bg-slate-50",
     };
 
     const textStyles = {
-      primary: "text-[#F96331] hover:bg-orange-50",
-      secondary: "text-[#673ab7] hover:bg-[#ede7f6]",
-      success: "text-[#00e676] hover:bg-[#e8f5e9]",
-      error: "text-[#f44336] hover:bg-[#ffebee]",
-      warning: "text-[#ff9800] hover:bg-[#fff3e0]",
-      default: "text-gray-500 hover:bg-gray-100",
+      primary: "text-brand-primary hover:bg-brand-muted",
+      secondary: "text-brand-secondary hover:bg-blue-50/50",
+      success: "text-brand-success hover:bg-green-50/50",
+      error: "text-brand-error hover:bg-red-50/50",
+      warning: "text-brand-warning hover:bg-orange-50/50",
+      default: "text-slate-500 hover:bg-slate-100",
     };
 
     let variantStyles = "";
@@ -81,11 +84,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     else if (variant === "text" || variant === "ghost")
       variantStyles = textStyles[color];
     else if (variant === "link")
-      variantStyles = "text-[#F96331] underline-offset-4 hover:underline";
+      variantStyles = "text-brand-primary underline-offset-4 hover:underline";
     else if (variant === "action") {
       variantStyles = isActive
-        ? "bg-orange-50 text-[#F96331]"
-        : "text-slate-400 hover:text-[#F96331] hover:bg-orange-50";
+        ? "bg-brand-muted text-brand-primary"
+        : "text-slate-400 hover:text-brand-primary hover:bg-brand-muted";
     }
 
     const sizes = {
@@ -101,7 +104,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const shadowClass = shadow
-      ? "shadow-[0_8px_16px_rgba(249,99,49,0.24)]"
+      ? "shadow-[0_8px_16px_theme(colors.brand-primary/24%)]"
       : "";
     const animationClass =
       animate === "scale"
@@ -114,7 +117,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#F96331] disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
           variantStyles,
           sizes[size],
           shadowClass,

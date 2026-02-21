@@ -16,7 +16,7 @@ import {
   TableRow,
   TableCollapsibleRow,
 } from "@components/ui-elements/Table";
-import { Filter, Search, RotateCcw, Plus } from "lucide-react";
+import { Filter, Search, RotateCcw, Plus, ListChecks } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 
 export default function MCQPage() {
@@ -39,7 +39,14 @@ export default function MCQPage() {
   return (
     <>
       <MainCard
-        title="Multiple Choice Questions"
+        title={
+          <>
+            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+              <ListChecks size={20} />
+            </div>
+            Multiple Choice Questions
+          </>
+        }
         className="mb-6"
         bodyClassName="p-0 flex flex-row items-stretch"
         action={

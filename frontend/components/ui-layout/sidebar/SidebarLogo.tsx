@@ -24,7 +24,7 @@ export const SidebarLogo: React.FC<SidebarLogoProps> = ({
       className="flex items-center gap-2"
       onClick={onClose}
     >
-      <div className="w-8 h-8 bg-[#F96331] rounded-lg flex items-center justify-center text-white font-bold shrink-0">
+      <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-bold shrink-0">
         A
       </div>
       {showFullLogo && (

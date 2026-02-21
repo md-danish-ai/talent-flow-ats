@@ -15,8 +15,8 @@ export const StatCard: React.FC<StatCardProps> = ({
   icon,
 }) => {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-5 hover:border-[#F96331]/30 hover:shadow-[0_20px_25px_-5px_rgba(249,99,49,0.1),0_8px_10px_-6px_rgba(249,99,49,0.1)] transition-all group">
-      <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-[#F96331] group-hover:scale-110 transition-transform">
+    <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-5 hover:border-brand-primary/30 hover:shadow-[0_20px_25px_-5px_theme(colors.brand-primary/10%),0_8px_10px_-6px_theme(colors.brand-primary/10%)] transition-all group">
+      <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-[var(--color-brand-primary)] group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <div>

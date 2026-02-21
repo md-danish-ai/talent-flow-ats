@@ -26,8 +26,8 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
 
   const iconCls = `w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
     isSectionActive
-      ? "bg-orange-50 text-[#F96331]"
-      : "text-slate-500 hover:bg-orange-50 hover:text-[#F96331]"
+      ? "bg-orange-50 text-brand-primary"
+      : "text-slate-500 hover:bg-orange-50 hover:text-brand-primary"
   }`;
 
   return (
@@ -57,8 +57,8 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
                 href={item.href}
                 className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                   pathname === item.href
-                    ? "text-[#F96331] font-bold bg-orange-50"
-                    : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
+                    ? "text-brand-primary font-bold bg-orange-50"
+                    : "text-slate-600 hover:bg-orange-50 hover:text-brand-primary"
                 }`}
               >
                 {item.label}

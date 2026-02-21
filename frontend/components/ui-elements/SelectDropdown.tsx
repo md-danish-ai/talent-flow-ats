@@ -63,7 +63,7 @@ export function SelectDropdown({
         color="default"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl border bg-white py-3.5 px-4 text-left text-[15px] outline-none transition-all hover:bg-white",
+          "flex w-full items-center justify-between rounded-xl border bg-white py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-white",
           isOpen
             ? "border-brand-primary ring-1 ring-brand-primary"
             : error
@@ -112,7 +112,7 @@ export function SelectDropdown({
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-all mb-0.5 last:mb-0 justify-between",
+                    "flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-between",
                     value === option.id
                       ? "bg-brand-primary/5 text-brand-primary hover:bg-brand-primary/10"
                       : "text-slate-600 hover:bg-slate-50",

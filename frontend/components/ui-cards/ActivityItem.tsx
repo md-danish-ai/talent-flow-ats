@@ -29,7 +29,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({
           <Typography variant="body3" color="text-slate-500">
             {action}
           </Typography>
-          <Typography variant="body3" weight="bold" color="text-[#F96331]">
+          <Typography variant="body3" weight="bold" color="text-brand-primary">
             {target}
           </Typography>
         </div>

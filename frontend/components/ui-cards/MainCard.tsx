@@ -4,7 +4,7 @@ import { Typography } from "@components/ui-elements/Typography";
 
 interface MainCardProps {
   /** Card heading shown in the header bar */
-  title: string;
+  title: React.ReactNode;
   /** Optional element rendered on the right side of the header (e.g. a button or link) */
   action?: React.ReactNode;
   /** Main body content of the card (optional if using children) */
@@ -31,12 +31,17 @@ export const MainCard: React.FC<MainCardProps> = ({
     >
       {/* Header */}
       <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-        <Typography variant="h4" as="h3">
+        <Typography
+          variant="h4"
+          as="h3"
+          weight="extrabold"
+          className="flex items-center gap-2.5 text-slate-900"
+        >
           {title}
         </Typography>
 
         {action && (
-          <div className="shrink-0 text-sm font-semibold text-[#F96331]">
+          <div className="shrink-0 text-sm font-semibold text-[var(--color-brand-primary)]">
             {action}
           </div>
         )}

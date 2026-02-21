@@ -121,7 +121,7 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600"
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-small font-medium text-red-600"
             >
               {serverError}
             </motion.div>
@@ -150,7 +150,7 @@ export default function LoginPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <Typography
                       as="label"
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
+                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "user"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                           : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
@@ -175,7 +175,7 @@ export default function LoginPage() {
                     </Typography>
                     <Typography
                       as="label"
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
+                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "admin"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                           : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
@@ -285,7 +285,7 @@ export default function LoginPage() {
                   color="primary"
                   shadow
                   disabled={isSubmitting || !canSubmit}
-                  className="w-full py-3.5 text-[15px] font-bold"
+                  className="w-full py-3.5 text-medium font-bold"
                 >
                   {isSubmitting ? (
                     <>
@@ -321,10 +321,7 @@ export default function LoginPage() {
       </div>
 
       {/* ===== RIGHT SIDE — Orange brand panel with parallax bg ===== */}
-      <div
-        className="hidden lg:flex lg:w-[50%]  bg-primary relative items-center justify-center overflow-hidden"
-        style={{ backgroundColor: "#f96331db" }}
-      >
+      <div className="hidden lg:flex w-1/2 relative bg-brand-primary flex-col items-center justify-center p-12 overflow-hidden">
         <Image
           src="/ag.svg"
           alt="Arcgate Logo"

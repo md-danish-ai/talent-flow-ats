@@ -108,7 +108,7 @@ export default function RegisterPage() {
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600"
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-small font-medium text-red-600"
             >
               {serverError}
             </motion.div>
@@ -271,7 +271,7 @@ export default function RegisterPage() {
                   color="primary"
                   shadow
                   disabled={isSubmitting || !canSubmit}
-                  className="w-full py-3.5 text-[15px] font-bold mt-2"
+                  className="w-full py-3.5 text-medium font-bold mt-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -291,7 +291,7 @@ export default function RegisterPage() {
 
           <Link
             href="/sign-in"
-            className="mt-6 flex items-center justify-center gap-1 text-[13px] text-slate-400 transition-colors hover:text-brand-primary"
+            className="mt-6 flex items-center justify-center gap-1 text-small text-slate-400 transition-colors hover:text-brand-primary"
           >
             Already have an account?{" "}
             <Typography
@@ -307,10 +307,7 @@ export default function RegisterPage() {
       </div>
 
       {/* ===== RIGHT SIDE — Orange brand panel with parallax bg ===== */}
-      <div
-        className="hidden lg:flex lg:w-[50%] relative items-center justify-center overflow-hidden"
-        style={{ backgroundColor: "#f96331db" }}
-      >
+      <div className="hidden lg:flex w-1/2 relative bg-brand-primary flex-col items-center justify-center p-12 overflow-hidden">
         <Image
           src="/ag.svg"
           alt="Arcgate Logo"

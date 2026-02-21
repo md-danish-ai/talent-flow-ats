@@ -78,7 +78,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 as="span"
                 variant="body5"
                 weight="bold"
-                className="bg-[#F96331]/10 text-[#F96331] px-2 py-0.5 rounded-full uppercase"
+                className="bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] px-2 py-0.5 rounded-full uppercase"
               >
                 New
               </Typography>

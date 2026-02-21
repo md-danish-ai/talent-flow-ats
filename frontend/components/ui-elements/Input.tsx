@@ -26,7 +26,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={inputType}
           className={cn(
-            "w-full rounded-xl border bg-white py-3.5 px-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+            "w-full rounded-xl border bg-white py-3.5 px-4 text-medium text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
             error ? "border-red-300" : "border-slate-200",

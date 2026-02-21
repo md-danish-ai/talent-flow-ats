@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="flex items-center gap-2 text-[#F96331]"
+              className="flex items-center gap-2 text-[var(--color-brand-primary)]"
             >
               <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
                 <Image

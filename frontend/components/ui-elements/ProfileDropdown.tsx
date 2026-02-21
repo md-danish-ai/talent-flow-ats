@@ -45,7 +45,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="group p-1 rounded-full outline-none"
         onClick={onToggle}
       >
-        <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#F96331] font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-orange-100 transition-all shadow-sm select-none">
+        <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[var(--color-brand-primary)] font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-orange-100 transition-all shadow-sm select-none">
           {initials}
         </div>
       </Button>
@@ -66,7 +66,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             {/* User Profile Info in Dropdown */}
             {/* ... rest of the dropdown content ... */}
             <div className="px-4 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#F96331] font-black shadow-sm shrink-0 select-none">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[var(--color-brand-primary)] font-black shadow-sm shrink-0 select-none">
                 {initials}
               </div>
               <div className="min-w-0">
@@ -80,7 +80,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 <Typography
                   variant="body5"
                   weight="semibold"
-                  className="text-[#F96331] mt-0.5 uppercase tracking-wide"
+                  className="text-[var(--color-brand-primary)] mt-0.5 uppercase tracking-wide"
                 >
                   {displayRole}
                 </Typography>
@@ -97,7 +97,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               </Typography>
               <Link
                 href="/admin/profile"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-orange-50 hover:text-[#F96331] transition-all"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-orange-50 hover:text-[var(--color-brand-primary)] transition-all"
                 onClick={onToggle}
               >
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-white transition-colors">

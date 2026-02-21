@@ -38,7 +38,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         type="text"
         placeholder={placeholder}
         suppressHydrationWarning
-        className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#F96331] focus:border-[#F96331] sm:text-sm transition-all shadow-sm"
+        className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[var(--color-brand-primary)] focus:border-[var(--color-brand-primary)] sm:text-sm transition-all shadow-sm"
       />
     </div>
   );
