@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { NAV_ACTIVE, NAV_IDLE } from "./styles";
 
 interface NavSubItemProps {
   label: string;
@@ -22,20 +23,18 @@ export const NavSubItem: React.FC<NavSubItemProps> = ({
     <Link
       href={href}
       onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item ${
-        isActive
-          ? "text-brand-primary font-bold bg-orange-50/50"
-          : "text-slate-500 hover:text-brand-primary hover:bg-orange-50/50"
+      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors group/item ${
+        isActive ? NAV_ACTIVE : NAV_IDLE
       }`}
     >
       <div
         className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
           isActive
-            ? "bg-brand-primary scale-110"
-            : "bg-slate-300 group-hover/item:bg-brand-primary"
+            ? "bg-brand-primary scale-125"
+            : "bg-slate-300 dark:bg-slate-700 group-hover/item:bg-brand-primary"
         }`}
       />
-      {label}
+      <span className="truncate">{label}</span>
     </Link>
   );
 };

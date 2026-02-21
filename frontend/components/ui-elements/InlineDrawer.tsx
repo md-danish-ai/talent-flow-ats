@@ -32,15 +32,15 @@ export const InlineDrawer: React.FC<InlineDrawerProps> = ({
             ease: [0.23, 1, 0.32, 1], // Consistently matching the smooth easing
           }}
           className={cn(
-            "bg-white border-l border-slate-200 flex flex-col hidden sm:flex shrink-0 overflow-hidden h-full",
+            "bg-card border-l border-border flex flex-col hidden sm:flex shrink-0 overflow-hidden h-full transition-colors",
             className,
           )}
         >
-          <div className="flex flex-row items-center justify-between px-4 border-b border-gray-100 h-[61px] w-[320px] shrink-0">
+          <div className="flex flex-row items-center justify-between px-4 border-b border-border h-[61px] w-[320px] shrink-0">
             <Typography
               variant="body1"
               weight="semibold"
-              className="text-gray-800"
+              className="text-foreground"
             >
               {title}
             </Typography>
@@ -54,7 +54,7 @@ export const InlineDrawer: React.FC<InlineDrawerProps> = ({
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto w-[320px] flex flex-col">
+          <div className="flex-1 overflow-y-auto w-[320px] flex flex-col bg-card">
             {children}
           </div>
         </motion.div>

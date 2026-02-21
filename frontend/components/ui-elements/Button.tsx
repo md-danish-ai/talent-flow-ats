@@ -20,7 +20,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | "rounded-icon"
     | "small"
     | "medium"
-    | "large";
+    | "large"
+    | "auto";
   shadow?: boolean;
   animate?: "none" | "scale" | "slide";
   isActive?: boolean;
@@ -50,30 +51,34 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: "bg-brand-secondary text-white hover:opacity-90",
       success: "bg-brand-success text-white hover:opacity-90",
       error: "bg-brand-error text-white hover:opacity-90",
-      warning: "bg-brand-warning text-slate-800 hover:opacity-90",
-      default: "bg-slate-100 text-slate-900 hover:bg-slate-200",
+      warning:
+        "bg-brand-warning text-slate-900 hover:opacity-90 transition-colors",
+      default: "bg-muted text-foreground hover:bg-muted/80 transition-colors",
     };
 
     const outlineStyles = {
       primary:
-        "border border-brand-primary text-brand-primary hover:bg-brand-muted",
+        "border border-brand-primary text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10",
       secondary:
-        "border border-brand-secondary text-brand-secondary hover:bg-blue-50/50",
+        "border border-brand-secondary text-brand-secondary hover:bg-brand-secondary/5",
       success:
-        "border border-brand-success text-brand-success hover:bg-green-50/50",
-      error: "border border-brand-error text-brand-error hover:bg-red-50/50",
+        "border border-brand-success text-brand-success hover:bg-brand-success/5",
+      error:
+        "border border-brand-error text-brand-error hover:bg-brand-error/5",
       warning:
-        "border border-brand-warning text-brand-warning hover:bg-orange-50/50",
-      default: "border border-slate-200 text-slate-700 hover:bg-slate-50",
+        "border border-brand-warning text-brand-warning hover:bg-brand-warning/5",
+      default:
+        "border border-border text-foreground hover:bg-brand-primary/5 hover:border-brand-primary/20 transition-colors",
     };
 
     const textStyles = {
-      primary: "text-brand-primary hover:bg-brand-muted",
-      secondary: "text-brand-secondary hover:bg-blue-50/50",
-      success: "text-brand-success hover:bg-green-50/50",
-      error: "text-brand-error hover:bg-red-50/50",
-      warning: "text-brand-warning hover:bg-orange-50/50",
-      default: "text-slate-500 hover:bg-slate-100",
+      primary: "text-brand-primary hover:bg-brand-primary/10",
+      secondary: "text-brand-secondary hover:bg-brand-secondary/10",
+      success: "text-brand-success hover:bg-brand-success/10",
+      error: "text-brand-error hover:bg-brand-error/10",
+      warning: "text-brand-warning hover:bg-brand-warning/10",
+      default:
+        "text-muted-foreground hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
     };
 
     let variantStyles = "";
@@ -87,8 +92,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variantStyles = "text-brand-primary underline-offset-4 hover:underline";
     else if (variant === "action") {
       variantStyles = isActive
-        ? "bg-brand-muted text-brand-primary"
-        : "text-slate-400 hover:text-brand-primary hover:bg-brand-muted";
+        ? "bg-brand-primary/20 dark:bg-brand-primary/30 text-brand-primary font-bold shadow-sm"
+        : "text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10 transition-colors";
     }
 
     const sizes = {
@@ -101,6 +106,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       icon: "h-10 w-10 rounded-full justify-center p-0",
       "icon-sm": "h-8 w-8 rounded-full justify-center p-0",
       "rounded-icon": "w-10 h-10 rounded-xl justify-center",
+      auto: "h-auto",
     };
 
     const shadowClass = shadow

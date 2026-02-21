@@ -24,7 +24,7 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
     variant="text"
     color="default"
     onClick={onToggle}
-    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-all group ${
       isActive ? NAV_ACTIVE : NAV_IDLE
     }`}
   >
@@ -32,7 +32,7 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
       <Typography variant="span" className={isActive ? ICON_ACTIVE : ICON_IDLE}>
         {section.icon}
       </Typography>
-      <Typography variant="body4" weight="semibold" as="span">
+      <Typography variant="body4" weight="semibold" as="span" color="inherit">
         {section.title}
       </Typography>
     </div>

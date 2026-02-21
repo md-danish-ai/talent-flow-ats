@@ -21,7 +21,7 @@ export const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "bg-[#212f3d] text-white [&_tr]:hover:bg-transparent",
+      "bg-slate-950 dark:bg-slate-950 text-white border-b border-border [&_tr]:hover:bg-transparent transition-colors",
       className,
     )}
     {...props}
@@ -35,7 +35,7 @@ export const TableBody = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={cn("[&_tr:last-child]:border-0 bg-white", className)}
+    className={cn("[&_tr:last-child]:border-0 bg-card", className)}
     {...props}
   />
 ));
@@ -48,7 +48,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-gray-200 transition-colors hover:bg-gray-50",
+      "border-b border-border transition-colors hover:bg-brand-primary/5",
       className,
     )}
     {...props}
@@ -63,7 +63,7 @@ export const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-[61px] px-4 text-left font-medium text-white align-middle [&:has([role=checkbox])]:pr-0 whitespace-nowrap",
+      "h-[61px] px-4 text-left font-bold text-white align-middle [&:has([role=checkbox])]:pr-0 whitespace-nowrap",
       className,
     )}
     {...props}
@@ -77,7 +77,7 @@ export const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("px-4 py-4 align-middle text-slate-700", className)}
+    className={cn("px-4 py-4 align-middle text-foreground", className)}
     {...props}
   />
 ));
@@ -123,10 +123,7 @@ export const TableCollapsibleRow = React.forwardRef<
       <AnimatePresence initial={false}>
         {isExpanded && (
           <TableRow className="hover:bg-transparent">
-            <TableCell
-              colSpan={colSpan}
-              className="p-0 border-b border-gray-200"
-            >
+            <TableCell colSpan={colSpan} className="p-0 border-b border-border">
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
@@ -135,7 +132,7 @@ export const TableCollapsibleRow = React.forwardRef<
                   duration: 0.3,
                   ease: [0.23, 1, 0.32, 1],
                 }}
-                className="overflow-hidden bg-slate-50/40"
+                className="overflow-hidden bg-muted/40"
               >
                 {expandedContent}
               </motion.div>

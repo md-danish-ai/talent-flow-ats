@@ -45,7 +45,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="group p-1 rounded-full outline-none"
         onClick={onToggle}
       >
-        <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[var(--color-brand-primary)] font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-orange-100 transition-all shadow-sm select-none">
+        <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center text-brand-primary font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-brand-primary/10 transition-all shadow-sm select-none">
           {initials}
         </div>
       </Button>
@@ -61,26 +61,25 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               duration: 0.3,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden py-1 origin-top-right"
+            className="absolute right-0 mt-3 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden py-1 origin-top-right transition-colors"
           >
             {/* User Profile Info in Dropdown */}
-            {/* ... rest of the dropdown content ... */}
-            <div className="px-4 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[var(--color-brand-primary)] font-black shadow-sm shrink-0 select-none">
+            <div className="px-4 py-4 border-b border-border bg-muted/20 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-brand-primary font-black shadow-sm shrink-0 select-none">
                 {initials}
               </div>
               <div className="min-w-0">
                 <Typography
                   variant="body3"
                   weight="bold"
-                  className="text-slate-900 leading-tight truncate"
+                  className="text-foreground leading-tight truncate"
                 >
                   {displayName}
                 </Typography>
                 <Typography
                   variant="body5"
                   weight="semibold"
-                  className="text-[var(--color-brand-primary)] mt-0.5 uppercase tracking-wide"
+                  className="text-brand-primary mt-0.5 uppercase tracking-wide"
                 >
                   {displayRole}
                 </Typography>
@@ -91,16 +90,16 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="text-slate-400 uppercase tracking-widest px-3 py-1.5"
+                className="text-muted-foreground/60 uppercase tracking-widest px-3 py-1.5"
               >
                 Settings
               </Typography>
               <Link
                 href="/admin/profile"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-orange-50 hover:text-[var(--color-brand-primary)] transition-all"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-all"
                 onClick={onToggle}
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-white transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-background transition-colors">
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -118,7 +117,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 My Profile
               </Link>
 
-              <div className="border-t border-slate-50 my-1 pt-1">
+              <div className="border-t border-border my-1 pt-1">
                 <Button
                   variant="ghost"
                   color="error"
@@ -128,7 +127,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                     onToggle();
                   }}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0">
                     <svg
                       className="w-4 h-4"
                       fill="none"

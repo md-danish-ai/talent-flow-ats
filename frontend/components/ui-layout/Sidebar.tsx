@@ -43,7 +43,7 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 bottom-0 z-50 bg-white border-r border-transparent transition-all duration-300 ease-in-out
+          fixed top-0 left-0 bottom-0 z-50 bg-background border-r border-transparent transition-all duration-300 ease-in-out
           min-[900px]:relative min-[900px]:translate-x-0
           ${isCollapsed ? "w-20" : "w-[280px]"}
           ${isMobileOpen ? "translate-x-0 w-80" : "-translate-x-full min-[900px]:translate-x-0"}
@@ -55,7 +55,7 @@ export const Sidebar = () => {
           color="default"
           size="icon-sm"
           onClick={toggleSidebar}
-          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full shadow-sm z-50"
+          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full shadow-sm z-50"
         >
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "" : "rotate-180"}`}

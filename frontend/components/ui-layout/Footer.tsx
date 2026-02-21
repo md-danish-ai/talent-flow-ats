@@ -19,10 +19,18 @@ export const Footer: React.FC = () => {
             © {new Date().getFullYear()} Arcgate. All rights reserved.
           </Typography>
           <div className="flex gap-6">
-            <Typography variant="body5" as="a" className="hover:text-[var(--color-brand-primary)]">
+            <Typography
+              variant="body5"
+              as="a"
+              className="hover:text-[var(--color-brand-primary)]"
+            >
               Privacy Policy
             </Typography>
-            <Typography variant="body5" as="a" className="hover:text-[var(--color-brand-primary)]">
+            <Typography
+              variant="body5"
+              as="a"
+              className="hover:text-[var(--color-brand-primary)]"
+            >
               Terms of Service
             </Typography>
           </div>

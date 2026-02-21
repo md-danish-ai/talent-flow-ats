@@ -9,6 +9,7 @@ import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { useSidebar } from "./sidebar/index";
 import type { CurrentUser } from "@lib/auth/user-utils";
+import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -44,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-transparent h-[73px] flex items-center">
+    <header className="sticky top-0 z-30 w-full bg-background border-b border-transparent h-[73px] flex items-center transition-colors">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -65,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                 variant="body1"
                 weight="bold"
                 as="span"
-                className="text-slate-900 tracking-tight hidden sm:block"
+                className="text-foreground tracking-tight hidden sm:block"
               >
                 ArcInterview
               </Typography>
@@ -98,7 +99,8 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             <SearchInput />
           </div> */}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div ref={notificationsRef}>
               <NotificationDropdown
                 isOpen={isNotificationsOpen}

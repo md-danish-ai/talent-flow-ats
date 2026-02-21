@@ -64,13 +64,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               duration: 0.3,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
+            className="absolute right-0 mt-3 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right transition-colors"
           >
-            <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-border bg-muted/20 flex items-center justify-between">
               <Typography
                 variant="body3"
                 weight="bold"
-                className="text-slate-900"
+                className="text-foreground"
               >
                 Notifications
               </Typography>
@@ -78,7 +78,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 as="span"
                 variant="body5"
                 weight="bold"
-                className="bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] px-2 py-0.5 rounded-full uppercase"
+                className="bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded-full uppercase"
               >
                 New
               </Typography>
@@ -86,14 +86,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
             <div className="max-h-[400px] overflow-y-auto">
               {notifications.length > 0 ? (
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-border">
                   {/* Notification items would go here */}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                     <svg
-                      className="w-8 h-8 text-slate-300"
+                      className="w-8 h-8 text-muted-foreground/30"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -109,11 +109,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   <Typography
                     variant="body3"
                     weight="bold"
-                    className="text-slate-900 mb-1"
+                    className="text-foreground mb-1"
                   >
                     No new notifications
                   </Typography>
-                  <Typography variant="body5" className="text-slate-500">
+                  <Typography variant="body5" className="text-muted-foreground">
                     We&apos;ll let you know when something important happens.
                   </Typography>
                 </div>
@@ -121,7 +121,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             </div>
 
             {notifications.length > 0 && (
-              <div className="p-3 border-t border-slate-50 bg-slate-50/30">
+              <div className="p-3 border-t border-border bg-muted/30">
                 <Button
                   variant="ghost"
                   color="primary"

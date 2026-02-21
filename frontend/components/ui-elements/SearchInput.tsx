@@ -21,7 +21,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     >
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <svg
-          className="h-4 w-4 text-slate-400"
+          className="h-4 w-4 text-muted-foreground/60"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -38,7 +38,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         type="text"
         placeholder={placeholder}
         suppressHydrationWarning
-        className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[var(--color-brand-primary)] focus:border-[var(--color-brand-primary)] sm:text-sm transition-all shadow-sm"
+        className="block w-full pl-10 pr-3 py-2 border border-border rounded-xl leading-5 bg-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:bg-card focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm transition-all shadow-sm"
       />
     </div>
   );

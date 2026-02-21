@@ -61,28 +61,29 @@ export function SelectDropdown({
         type="button"
         variant="ghost"
         color="default"
+        size="auto"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl border bg-white py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-white",
+          "flex w-full items-center justify-between rounded-xl border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
           isOpen
             ? "border-brand-primary ring-1 ring-brand-primary"
             : error
-              ? "border-red-300"
-              : "border-slate-200",
+              ? "border-destructive/50"
+              : "border-border",
           className,
         )}
       >
         <span
           className={cn(
-            "font-medium truncate mr-2",
-            selectedOption ? "text-slate-800" : "text-slate-400",
+            "font-medium truncate mr-2 transition-colors",
+            selectedOption ? "text-foreground" : "text-muted-foreground/40",
           )}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-5 w-5 text-slate-400 flex-shrink-0 transition-transform",
+            "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
             isOpen && "rotate-180 text-brand-primary",
           )}
         />
@@ -96,7 +97,7 @@ export function SelectDropdown({
             exit={{ opacity: 0, y: placement === "top" ? 4 : -4 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute left-0 right-0 z-50 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl",
+              "absolute left-0 right-0 z-50 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-xl transition-colors",
               placementStyles,
             )}
           >
@@ -112,10 +113,10 @@ export function SelectDropdown({
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-between",
+                    "flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0",
                     value === option.id
-                      ? "bg-brand-primary/5 text-brand-primary hover:bg-brand-primary/10"
-                      : "text-slate-600 hover:bg-slate-50",
+                      ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+                      : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
                   )}
                 >
                   {option.label}

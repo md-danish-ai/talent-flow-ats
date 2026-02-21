@@ -32,7 +32,7 @@ export const SidebarLogo: React.FC<SidebarLogoProps> = ({
           variant="body1"
           weight="bold"
           as="span"
-          className="text-slate-900 tracking-tight whitespace-nowrap"
+          className="text-foreground tracking-tight whitespace-nowrap"
         >
           ArcInterview
         </Typography>

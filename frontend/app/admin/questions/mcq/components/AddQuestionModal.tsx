@@ -48,7 +48,7 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                 <input
                   type="radio"
                   name="correctOption"
-                  className="w-[18px] h-[18px] text-brand-primary border-slate-300 focus:ring-brand-primary cursor-pointer accent-brand-primary mr-2"
+                  className="w-[18px] h-[18px] text-brand-primary border-border focus:ring-brand-primary cursor-pointer accent-brand-primary mr-2"
                 />
               }
             />

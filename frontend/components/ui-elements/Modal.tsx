@@ -52,14 +52,14 @@ export const Modal: React.FC<ModalProps> = ({
               duration: 0.3,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className={`relative z-10 w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden ${className}`}
+            className={`relative z-10 w-full max-w-4xl bg-card rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden ${className}`}
           >
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0 bg-card">
                 <Typography
                   variant="body1"
                   weight="semibold"
-                  className="text-gray-900"
+                  className="text-foreground"
                 >
                   {title}
                 </Typography>
@@ -73,7 +73,9 @@ export const Modal: React.FC<ModalProps> = ({
                 </Button>
               </div>
             )}
-            <div className="p-6 overflow-y-auto bg-white">{children}</div>
+            <div className="p-6 overflow-y-auto bg-card text-foreground">
+              {children}
+            </div>
           </motion.div>
         </div>
       )}

@@ -15,11 +15,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   return (
     <header className={cn("mb-8", className)}>
-      <Typography variant="h1" weight="extrabold" color="text-slate-900">
+      <Typography variant="h1" weight="extrabold">
         {title}
       </Typography>
       {description && (
-        <Typography variant="body2" color="text-slate-500" className="mt-1">
+        <Typography variant="body2" className="mt-1">
           {description}
         </Typography>
       )}

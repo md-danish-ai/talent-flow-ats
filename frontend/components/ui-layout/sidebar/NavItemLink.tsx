@@ -23,14 +23,14 @@ export const NavItemLink: React.FC<NavItemLinkProps> = ({
     <Link
       href={section.href!}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all group ${
         isActive ? NAV_ACTIVE : NAV_IDLE
       }`}
     >
       <Typography variant="span" className={isActive ? ICON_ACTIVE : ICON_IDLE}>
         {section.icon}
       </Typography>
-      <Typography variant="body4" weight="semibold" as="span">
+      <Typography variant="body4" weight="semibold" as="span" color="inherit">
         {section.title}
       </Typography>
     </Link>

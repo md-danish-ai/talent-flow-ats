@@ -17,27 +17,27 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-background p-8 transition-colors">
       <div className="mx-auto max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-white p-12 shadow-sm border border-slate-100"
+          className="rounded-3xl bg-card p-12 shadow-sm border border-border transition-colors"
         >
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-lg shadow-brand-primary/20">
                 <User className="h-6 w-6" />
               </div>
               <div>
                 <Typography
                   variant="h2"
                   weight="black"
-                  className="text-slate-900"
+                  className="text-foreground"
                 >
                   User Dashboard
                 </Typography>
-                <Typography variant="body2" className="text-slate-500">
+                <Typography variant="body2" className="text-muted-foreground">
                   Welcome back to your workspace
                 </Typography>
               </div>
@@ -54,15 +54,18 @@ export default function UserDashboard() {
             </Button>
           </div>
 
-          <div className="rounded-2xl bg-orange-50 p-6 border border-orange-100">
+          <div className="rounded-2xl bg-brand-primary/10 p-6 border border-brand-primary/20">
             <Typography
               variant="body1"
               weight="bold"
-              className="text-orange-900"
+              className="text-brand-primary"
             >
-              User login in successfully
+              Logged in successfully
             </Typography>
-            <Typography variant="body2" className="text-orange-600 mt-1">
+            <Typography
+              variant="body2"
+              className="text-muted-foreground mt-1 text-opacity-80"
+            >
               You can now browse and apply for new opportunities.
             </Typography>
           </div>

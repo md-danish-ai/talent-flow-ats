@@ -18,7 +18,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative w-full group">
         {startIcon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-primary flex items-center justify-center">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors group-focus-within:text-brand-primary flex items-center justify-center">
             {startIcon}
           </div>
         )}
@@ -26,10 +26,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={inputType}
           className={cn(
-            "w-full rounded-xl border bg-white py-3.5 px-4 text-medium text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+            "w-full rounded-xl border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
-            error ? "border-red-300" : "border-slate-200",
+            error ? "border-brand-error/50" : "border-border",
             className,
           )}
           {...props}
@@ -41,12 +41,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             color="default"
             size="icon-sm"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-primary"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-brand-primary"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </Button>
         ) : endIcon ? (
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-primary flex items-center justify-center">
+          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors group-focus-within:text-brand-primary flex items-center justify-center">
             {endIcon}
           </div>
         ) : null}

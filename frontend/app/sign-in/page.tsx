@@ -153,7 +153,7 @@ export default function LoginPage() {
                       className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "user"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
+                          : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
                       }`}
                     >
                       <input
@@ -178,7 +178,7 @@ export default function LoginPage() {
                       className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "admin"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
+                          : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
                       }`}
                     >
                       <input

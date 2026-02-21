@@ -41,7 +41,7 @@ export default function MCQPage() {
       <MainCard
         title={
           <>
-            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
             Multiple Choice Questions
@@ -92,14 +92,10 @@ export default function MCQPage() {
                   key={row.id}
                   colSpan={6}
                   expandedContent={
-                    <div className="m-4 md:my-4 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                       {/* Header */}
-                      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <Typography
-                          variant="body3"
-                          weight="semibold"
-                          className="text-slate-800"
-                        >
+                      <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
+                        <Typography variant="body3" weight="semibold">
                           Options & Answer
                         </Typography>
                       </div>
@@ -107,58 +103,58 @@ export default function MCQPage() {
                       {/* Inner Table */}
                       <div className="overflow-x-auto pb-1">
                         <Table>
-                          <TableHeader className="bg-transparent text-slate-800 [&_tr]:border-b-0 border-b border-slate-200">
+                          <TableHeader className="bg-transparent [&_tr]:border-b-0 border-b border-border">
                             <TableRow className="hover:bg-transparent border-0">
-                              <TableHead className="font-semibold text-slate-800 px-5 py-3 h-auto w-[120px]">
+                              <TableHead className="font-semibold text-white px-5 py-3 h-auto w-[120px]">
                                 Option
                               </TableHead>
-                              <TableHead className="font-semibold text-slate-800 px-5 py-3 h-auto">
+                              <TableHead className="font-semibold text-white px-5 py-3 h-auto">
                                 Value
                               </TableHead>
-                              <TableHead className="font-semibold text-slate-800 px-5 py-3 text-right h-auto w-[150px]">
+                              <TableHead className="font-semibold text-white px-5 py-3 text-right h-auto w-[150px]">
                                 Is Correct
                               </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody className="[&_tr:last-child]:border-0 bg-transparent">
-                            <TableRow className="border-b border-slate-100 bg-red-50/30 hover:bg-red-50/50 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-slate-800">
+                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                              <TableCell className="px-5 py-3 font-medium text-foreground">
                                 A
                               </TableCell>
-                              <TableCell className="px-5 py-3 text-slate-600">
+                              <TableCell className="px-5 py-3 text-muted-foreground">
                                 Sample Option A
                               </TableCell>
                               <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
                                 Incorrect
                               </TableCell>
                             </TableRow>
-                            <TableRow className="border-b border-slate-100 bg-green-50/30 hover:bg-green-50/50 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-slate-800">
+                            <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
+                              <TableCell className="px-5 py-3 font-medium text-foreground">
                                 B
                               </TableCell>
-                              <TableCell className="px-5 py-3 text-slate-600">
+                              <TableCell className="px-5 py-3 text-muted-foreground">
                                 Sample Option B
                               </TableCell>
-                              <TableCell className="px-5 py-3 text-right text-green-600 font-medium">
+                              <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
                                 Correct
                               </TableCell>
                             </TableRow>
-                            <TableRow className="border-b border-slate-100 bg-red-50/30 hover:bg-red-50/50 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-slate-800">
+                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                              <TableCell className="px-5 py-3 font-medium text-foreground">
                                 C
                               </TableCell>
-                              <TableCell className="px-5 py-3 text-slate-600">
+                              <TableCell className="px-5 py-3 text-muted-foreground">
                                 Sample Option C
                               </TableCell>
                               <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
                                 Incorrect
                               </TableCell>
                             </TableRow>
-                            <TableRow className="border-b border-slate-100 bg-red-50/30 hover:bg-red-50/50 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-slate-800">
+                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                              <TableCell className="px-5 py-3 font-medium text-foreground">
                                 D
                               </TableCell>
-                              <TableCell className="px-5 py-3 text-slate-600">
+                              <TableCell className="px-5 py-3 text-muted-foreground">
                                 Sample Option D
                               </TableCell>
                               <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
@@ -170,17 +166,17 @@ export default function MCQPage() {
                       </div>
 
                       {/* Footer Notes */}
-                      <div className="px-5 py-3 bg-slate-50 border-t border-slate-200">
+                      <div className="px-5 py-3 bg-muted/20 border-t border-border">
                         <Typography
                           variant="body3"
                           weight="semibold"
-                          className="text-slate-800 inline-block mr-1"
+                          className="inline-block mr-1"
                         >
                           Explanation:
                         </Typography>
                         <Typography
                           variant="body3"
-                          className="text-slate-600 inline-block"
+                          className="text-muted-foreground inline-block"
                         >
                           This is a sample explanation for the multiple choice
                           question. It expands seamlessly below the row.
@@ -213,7 +209,7 @@ export default function MCQPage() {
                 as="label"
                 variant="body3"
                 weight="medium"
-                className="block mb-1.5 text-slate-700"
+                className="block mb-1.5 text-foreground"
               >
                 Subject
               </Typography>
@@ -226,7 +222,7 @@ export default function MCQPage() {
                   { id: "Comprehension", label: "Comprehension" },
                 ]}
                 placement="bottom"
-                className="h-10 py-2 text-sm"
+                className="text-sm"
               />
             </div>
 
@@ -235,7 +231,7 @@ export default function MCQPage() {
                 as="label"
                 variant="body3"
                 weight="medium"
-                className="block mb-1.5 text-slate-700"
+                className="block mb-1.5 text-foreground"
               >
                 Search Question
               </Typography>
@@ -243,7 +239,7 @@ export default function MCQPage() {
                 <Input
                   type="text"
                   placeholder="Search Question---"
-                  className="h-10 py-2 text-sm"
+                  className="text-sm"
                   startIcon={<Search className="w-4 h-4" />}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -251,7 +247,7 @@ export default function MCQPage() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 flex justify-center mt-auto">
+            <div className="pt-6 border-t border-border flex justify-center mt-auto">
               <Button
                 variant="outline"
                 color="primary"
