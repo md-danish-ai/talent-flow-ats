@@ -56,7 +56,6 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
     ),
     type: "collapsible",
     items: [
-      { label: "Prepare Questions", href: "/admin/questions" },
       { label: "Multiple Choice", href: "/admin/questions/mcq" },
       { label: "Image Based MCQ", href: "/admin/questions/image-mcq" },
       { label: "Subjective Questions", href: "/admin/questions/subjective" },
@@ -88,7 +87,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
       { label: "Lead Generation", href: "/admin/paper/lead-generation" },
       { label: "Typing Test", href: "/admin/paper/typing-test" },
       { label: "Reset User", href: "/admin/paper/reset-user" },
-      { label: "Daily Papers", href: "/admin/paper/today-papers" },
+      { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
     ],
   },
   {
@@ -109,10 +108,7 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
       </svg>
     ),
     type: "collapsible",
-    items: [
-      { label: "View All Results", href: "/admin/results" },
-      { label: "Performance Analytics", href: "/admin/results/analytics" },
-    ],
+    items: [{ label: "View All Results", href: "/admin/results" }],
   },
   {
     title: "Settings",
@@ -139,9 +135,33 @@ export const ADMIN_NAV_LINKS: NavSection[] = [
     ),
     type: "collapsible",
     items: [
-      { label: "Super Admin Panel", href: "/admin/settings/panel" },
-      { label: "Authentication", href: "/admin/settings/auth" },
+      { label: "Allow Authenticated Users", href: "/admin/settings/auth" },
       { label: "Subject Management", href: "/admin/settings/add-subject" },
     ],
   },
+  ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
+    ? [
+        {
+          title: "Packages",
+          icon: (
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          ),
+          type: "item" as NavSectionType,
+          href: "/admin/packages",
+          items: [],
+        },
+      ]
+    : []),
 ];

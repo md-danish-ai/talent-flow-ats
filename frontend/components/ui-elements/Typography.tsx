@@ -23,7 +23,8 @@ export type TypographyWeight =
   | "semibold"
   | "bold"
   | "extrabold"
-  | "black";
+  | "black"
+  | "inherit";
 
 interface TypographyProps {
   variant?: TypographyVariant;
@@ -59,6 +60,7 @@ const weightStyles: Record<TypographyWeight, string> = {
   bold: "font-bold",
   extrabold: "font-extrabold",
   black: "font-black",
+  inherit: "font-[inherit]",
 };
 
 const defaultWeights: Record<TypographyVariant, TypographyWeight> = {
@@ -73,21 +75,21 @@ const defaultWeights: Record<TypographyVariant, TypographyWeight> = {
   body3: "normal",
   body4: "medium",
   body5: "medium",
-  span: "normal",
+  span: "inherit",
 };
 
 const defaultColors: Record<TypographyVariant, string> = {
-  h1: "text-slate-900",
-  h2: "text-slate-900",
-  h3: "text-slate-900",
-  h4: "text-slate-900",
-  h5: "text-slate-900",
-  h6: "text-slate-900",
-  body1: "text-slate-600",
-  body2: "text-slate-500",
-  body3: "text-slate-600",
-  body4: "text-slate-500",
-  body5: "text-slate-400",
+  h1: "text-foreground",
+  h2: "text-foreground",
+  h3: "text-foreground",
+  h4: "text-foreground",
+  h5: "text-foreground",
+  h6: "text-foreground",
+  body1: "text-muted-foreground",
+  body2: "text-muted-foreground",
+  body3: "text-muted-foreground",
+  body4: "text-muted-foreground",
+  body5: "text-muted-foreground",
   span: "text-inherit",
 };
 

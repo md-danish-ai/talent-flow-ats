@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -15,41 +17,57 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-background p-8 transition-colors">
       <div className="mx-auto max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl bg-white p-12 shadow-sm border border-slate-100"
+          className="rounded-3xl bg-card p-12 shadow-sm border border-border transition-colors"
         >
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F96331] text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary text-white shadow-lg shadow-brand-primary/20">
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-slate-900">
+                <Typography
+                  variant="h2"
+                  weight="black"
+                  className="text-foreground"
+                >
                   User Dashboard
-                </h1>
-                <p className="text-slate-500">Welcome back to your workspace</p>
+                </Typography>
+                <Typography variant="body2" className="text-muted-foreground">
+                  Welcome back to your workspace
+                </Typography>
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              color="default"
+              size="sm"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200"
+              className="flex items-center gap-2 font-bold"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
-            </button>
+            </Button>
           </div>
 
-          <div className="rounded-2xl bg-orange-50 p-6 border border-orange-100">
-            <p className="text-lg font-bold text-orange-900">
-              User login in successfully
-            </p>
-            <p className="text-orange-600 mt-1">
+          <div className="rounded-2xl bg-brand-primary/10 p-6 border border-brand-primary/20">
+            <Typography
+              variant="body1"
+              weight="bold"
+              className="text-brand-primary"
+            >
+              Logged in successfully
+            </Typography>
+            <Typography
+              variant="body2"
+              className="text-muted-foreground mt-1 text-opacity-80"
+            >
               You can now browse and apply for new opportunities.
-            </p>
+            </Typography>
           </div>
         </motion.div>
       </div>

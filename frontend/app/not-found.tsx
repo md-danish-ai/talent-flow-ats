@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 export default function NotFound() {
   return (
@@ -33,9 +35,13 @@ export default function NotFound() {
           }}
           className="relative"
         >
-          <h1 className="text-[12rem] font-black leading-none text-white drop-shadow-2xl lg:text-[18rem]">
+          <Typography
+            as="h1"
+            variant="h1"
+            className="text-[12rem] font-black leading-none text-white drop-shadow-2xl lg:text-[18rem]"
+          >
             404
-          </h1>
+          </Typography>
           <motion.div
             animate={{
               y: [0, -20, 0],
@@ -59,13 +65,19 @@ export default function NotFound() {
           transition={{ delay: 0.2, duration: 0.6 }}
           className="-mt-8 lg:-mt-12"
         >
-          <h2 className="text-3xl font-bold text-slate-800 lg:text-5xl">
+          <Typography
+            variant="h2"
+            className="text-3xl font-bold text-slate-800 lg:text-5xl"
+          >
             Lost in candidates?
-          </h2>
-          <p className="mt-4 max-w-md text-lg font-medium text-slate-500 lg:text-xl">
+          </Typography>
+          <Typography
+            variant="body1"
+            className="mt-4 max-w-md font-medium text-slate-500 lg:text-xl"
+          >
             The page you are looking for has been moved, deleted, or never
             existed in our database.
-          </p>
+          </Typography>
         </motion.div>
 
         {/* Action buttons */}
@@ -82,13 +94,16 @@ export default function NotFound() {
             <Home className="h-5 w-5" />
             Go to Home
           </Link>
-          <button
+          <Button
+            variant="outline"
+            color="default"
+            size="lg"
+            className="rounded-2xl border-2 px-8 py-4 text-lg font-extrabold"
             onClick={() => window.history.back()}
-            className="group flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-8 py-4 text-lg font-extrabold text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-95"
           >
             <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
             Go Back
-          </button>
+          </Button>
         </motion.div>
 
         {/* Branding */}
@@ -98,9 +113,12 @@ export default function NotFound() {
           transition={{ delay: 0.8, duration: 1 }}
           className="mt-20"
         >
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+          <Typography
+            variant="body3"
+            className="font-bold uppercase tracking-[0.2em] text-slate-400"
+          >
             TalentFlow ATS
-          </p>
+          </Typography>
         </motion.div>
       </div>
     </div>

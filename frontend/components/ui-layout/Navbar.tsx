@@ -5,8 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { NotificationDropdown } from "@components/ui-elements/NotificationDropdown";
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
+import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 import { useSidebar } from "./sidebar/index";
 import type { CurrentUser } from "@lib/auth/user-utils";
+import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -42,13 +45,13 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-transparent h-[73px] flex items-center">
+    <header className="sticky top-0 z-30 w-full bg-background border-b border-transparent h-[73px] flex items-center transition-colors">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="flex items-center gap-2 text-[#F96331]"
+              className="flex items-center gap-2 text-[var(--color-brand-primary)]"
             >
               <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
                 <Image
@@ -59,13 +62,21 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   className="object-cover w-full h-full"
                 />
               </div>
-              <span className="font-bold text-slate-900 text-lg tracking-tight hidden sm:block">
+              <Typography
+                variant="body1"
+                weight="bold"
+                as="span"
+                className="text-foreground tracking-tight hidden sm:block"
+              >
                 ArcInterview
-              </span>
+              </Typography>
             </Link>
 
-            <button
-              className="min-[900px]:hidden text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+            <Button
+              variant="ghost"
+              color="default"
+              size="icon-sm"
+              className="min-[900px]:hidden"
               onClick={toggleSidebar}
             >
               <svg
@@ -81,14 +92,15 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
 
           {/* <div className="flex items-center gap-4 flex-1 justify-center max-w-2xl px-4">
             <SearchInput />
           </div> */}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div ref={notificationsRef}>
               <NotificationDropdown
                 isOpen={isNotificationsOpen}
