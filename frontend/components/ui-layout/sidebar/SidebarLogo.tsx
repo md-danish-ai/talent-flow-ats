@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 
+import { Typography } from "@components/ui-elements/Typography";
+
 interface SidebarLogoProps {
   isCollapsed: boolean;
   isOpen: boolean;
@@ -26,9 +28,14 @@ export const SidebarLogo: React.FC<SidebarLogoProps> = ({
         A
       </div>
       {showFullLogo && (
-        <span className="font-bold text-slate-900 text-lg tracking-tight whitespace-nowrap">
+        <Typography
+          variant="body1"
+          weight="bold"
+          as="span"
+          className="text-slate-900 tracking-tight whitespace-nowrap"
+        >
           ArcInterview
-        </span>
+        </Typography>
       )}
     </Link>
   );

@@ -32,9 +32,14 @@ export const StatCard: React.FC<StatCardProps> = ({
           >
             {value}
           </Typography>
-          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+          <Typography
+            variant="body5"
+            weight="semibold"
+            as="span"
+            className="text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded"
+          >
             {change}
-          </span>
+          </Typography>
         </div>
       </div>
     </div>

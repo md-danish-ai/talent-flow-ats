@@ -1,15 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Phone,
-  UserPlus,
-} from "lucide-react";
+import { ArrowRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +9,9 @@ import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
 import { useSignIn } from "@lib/react-query/user/use-auth";
+import { Input } from "@components/ui-elements/Input";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -28,7 +23,6 @@ function getErrorMessage(error: unknown): string {
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = useState("user");
-  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signInMutation = useSignIn();
@@ -99,17 +93,27 @@ export default function LoginPage() {
                 className="h-[40px] w-auto"
               />
             </div>
-            <p className="ml-1 mt-2 text-[14px] font-medium italic text-slate-400">
+            <Typography
+              variant="body3"
+              italic
+              className="ml-1 mt-2 text-slate-400"
+            >
               Elevating recruitment experiences
-            </p>
+            </Typography>
           </div>
 
           {/* Welcome heading */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-800">Welcome Back</h2>
-            <p className="mt-1 text-[13px] text-slate-400">
+            <Typography
+              variant="h2"
+              weight="bold"
+              className="text-xl text-slate-800"
+            >
+              Welcome Back
+            </Typography>
+            <Typography variant="body3" className="mt-1 text-slate-400">
               Please enter your details to sign in
-            </p>
+            </Typography>
           </div>
 
           {/* Server Error */}
@@ -136,11 +140,16 @@ export default function LoginPage() {
             <form.Field name="role">
               {(field) => (
                 <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-2 block uppercase tracking-wider text-slate-500"
+                  >
                     Select Your Role
-                  </label>
+                  </Typography>
                   <div className="grid grid-cols-2 gap-3">
-                    <label
+                    <Typography
+                      as="label"
                       className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
                         field.state.value === "user"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
@@ -160,9 +169,12 @@ export default function LoginPage() {
                           setRole(e.target.value);
                         }}
                       />
-                      User
-                    </label>
-                    <label
+                      <Typography variant="body4" weight="bold" as="span">
+                        User
+                      </Typography>
+                    </Typography>
+                    <Typography
+                      as="label"
                       className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
                         field.state.value === "admin"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
@@ -182,8 +194,10 @@ export default function LoginPage() {
                           setRole(e.target.value);
                         }}
                       />
-                      Admin
-                    </label>
+                      <Typography variant="body4" weight="bold" as="span">
+                        Admin
+                      </Typography>
+                    </Typography>
                   </div>
                 </div>
               )}
@@ -193,19 +207,19 @@ export default function LoginPage() {
             <form.Field name="mobile">
               {(field) => (
                 <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                  >
                     Mobile Number
-                  </label>
+                  </Typography>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
+                    <Input
                       type="tel"
                       placeholder="+91 98765 43210"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
+                      startIcon={<Phone className="h-[18px] w-[18px]" />}
+                      error={field.state.meta.errors.length > 0}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -213,9 +227,12 @@ export default function LoginPage() {
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                      <Typography
+                        variant="body5"
+                        className="mt-1 font-medium text-red-500"
+                      >
                         {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
+                      </Typography>
                     )}
                 </div>
               )}
@@ -226,74 +243,71 @@ export default function LoginPage() {
               {(field) => (
                 <div className="group">
                   <div className="mb-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <Typography
+                      as="label"
+                      variant="h6"
+                      className="uppercase tracking-wider text-slate-500"
+                    >
                       Password
-                    </label>
+                    </Typography>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
-                      type={showPassword ? "text" : "password"}
+                    <Input
+                      type="password"
                       placeholder="••••••••"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-12 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
+                      startIcon={<Lock className="h-[18px] w-[18px]" />}
+                      error={field.state.meta.errors.length > 0}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 focus:outline-none transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-[18px] w-[18px]" />
-                      ) : (
-                        <Eye className="h-[18px] w-[18px]" />
-                      )}
-                    </button>
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                      <Typography
+                        variant="body5"
+                        className="mt-1 font-medium text-red-500"
+                      >
                         {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
+                      </Typography>
                     )}
                 </div>
               )}
             </form.Field>
 
-            {/* Submit */}
             <form.Subscribe
               selector={(state) => [state.isSubmitting, state.canSubmit]}
             >
               {([isSubmitting, canSubmit]) => (
-                <button
+                <Button
                   type="submit"
+                  variant="primary"
+                  color="primary"
+                  shadow
                   disabled={isSubmitting || !canSubmit}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 text-[15px] font-bold"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Signing In…</span>
+                      <Typography variant="span">Signing In…</Typography>
                     </>
                   ) : (
                     <>
-                      <span>Sign In</span>
+                      <Typography variant="span">Sign In</Typography>
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </>
                   )}
-                </button>
+                </Button>
               )}
             </form.Subscribe>
           </form>
 
           {role === "user" && (
-            <p className="mt-6 text-center text-[13px] text-slate-400">
+            <Typography
+              variant="body4"
+              className="mt-6 text-center text-slate-400"
+            >
               New to TalentFlow?{" "}
               <Link
                 href="/"
@@ -301,7 +315,7 @@ export default function LoginPage() {
               >
                 Create an account <UserPlus className="h-3.5 w-3.5" />
               </Link>
-            </p>
+            </Typography>
           )}
         </motion.div>
       </div>

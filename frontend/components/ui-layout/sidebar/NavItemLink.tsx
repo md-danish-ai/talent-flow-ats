@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { NavSection } from "@data/navigation";
 import { NAV_ACTIVE, NAV_IDLE, ICON_ACTIVE, ICON_IDLE } from "./styles";
+import { Typography } from "@components/ui-elements/Typography";
 
 interface NavItemLinkProps {
   section: NavSection;
@@ -26,8 +27,12 @@ export const NavItemLink: React.FC<NavItemLinkProps> = ({
         isActive ? NAV_ACTIVE : NAV_IDLE
       }`}
     >
-      <span className={isActive ? ICON_ACTIVE : ICON_IDLE}>{section.icon}</span>
-      <span className="font-semibold">{section.title}</span>
+      <Typography variant="span" className={isActive ? ICON_ACTIVE : ICON_IDLE}>
+        {section.icon}
+      </Typography>
+      <Typography variant="body4" weight="semibold" as="span">
+        {section.title}
+      </Typography>
     </Link>
   );
 };

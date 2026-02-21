@@ -7,8 +7,8 @@ interface MainCardProps {
   title: string;
   /** Optional element rendered on the right side of the header (e.g. a button or link) */
   action?: React.ReactNode;
-  /** Main body content of the card */
-  content: React.ReactNode;
+  /** Main body content of the card (optional if using children) */
+  children?: React.ReactNode;
   /** Extra classes on the outer wrapper */
   className?: string;
   /** Extra classes on the content body */
@@ -18,14 +18,14 @@ interface MainCardProps {
 export const MainCard: React.FC<MainCardProps> = ({
   title,
   action,
-  content,
+  children,
   className = "",
   bodyClassName = "",
 }) => {
   return (
     <div
       className={cn(
-        "flex flex-col bg-white rounded-xl border border-slate-200/60 shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_20px_25px_-5px_rgba(249,99,49,0.1),0_8px_10px_-6px_rgba(249,99,49,0.1)] hover:border-[#F96331]/30",
+        "flex flex-col bg-white rounded-xl border border-slate-200/60 shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)]",
         className,
       )}
     >
@@ -44,7 +44,7 @@ export const MainCard: React.FC<MainCardProps> = ({
 
       {/* Body */}
       <div className={cn("p-5 flex-1 flex flex-col", bodyClassName)}>
-        {content}
+        {children}
       </div>
     </div>
   );

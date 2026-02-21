@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ADMIN_NAV_LINKS } from "@data/navigation";
+import { Button } from "@components/ui-elements/Button";
 
 import { useSidebar, NavItem, CollapsedNavItem } from "./sidebar/index";
 
@@ -49,9 +50,12 @@ export const Sidebar = () => {
         `}
       >
         {/* Collapse toggle button — desktop only */}
-        <button
+        <Button
+          variant="ghost"
+          color="default"
+          size="icon-sm"
           onClick={toggleSidebar}
-          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full items-center justify-center text-slate-400 hover:text-[#F96331] hover:border-[#F96331] shadow-sm z-50 transition-all"
+          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full shadow-sm z-50"
         >
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "" : "rotate-180"}`}
@@ -66,7 +70,32 @@ export const Sidebar = () => {
               d="M9 5l7 7-7 7"
             />
           </svg>
-        </button>
+        </Button>
+
+        {/* Mobile toggle button */}
+        <div className="flex items-center justify-between p-4 min-[900px]:hidden">
+          <Button
+            variant="ghost"
+            color="default"
+            size="icon-sm"
+            className="min-[900px]:hidden"
+            onClick={toggleSidebar}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </Button>
+        </div>
 
         <div className="flex flex-col h-full overflow-hidden">
           {/* Desktop nav — collapsed (icons only) */}

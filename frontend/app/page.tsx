@@ -1,26 +1,22 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Loader2,
-  Mail,
-  Phone,
-  User,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Loader2, Mail, Phone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { Input } from "@components/ui-elements/Input";
 import {
   signUpSchema,
   type SignUpFormValues,
   TEST_LEVELS,
 } from "@lib/validations/auth";
 import { useSignUp } from "@lib/react-query/user/use-auth";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -31,7 +27,6 @@ function getErrorMessage(error: unknown): string {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [isTestLevelOpen, setIsTestLevelOpen] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signUpMutation = useSignUp();
@@ -99,9 +94,13 @@ export default function RegisterPage() {
                 className="h-[40px] w-auto"
               />
             </div>
-            <p className="ml-1 mt-2 text-[14px] font-medium italic text-slate-400">
+            <Typography
+              variant="body3"
+              italic
+              className="ml-1 mt-2 text-slate-400"
+            >
               Elevating recruitment experiences
-            </p>
+            </Typography>
           </div>
 
           {/* Server Error */}
@@ -128,20 +127,20 @@ export default function RegisterPage() {
             <form.Field name="name">
               {(field) => (
                 <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                  >
                     Full Name
-                  </label>
+                  </Typography>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
+                    <Input
                       name="name"
                       type="text"
                       placeholder="John Doe"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
+                      startIcon={<User className="h-[18px] w-[18px]" />}
+                      error={field.state.meta.errors.length > 0}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -149,9 +148,12 @@ export default function RegisterPage() {
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                      <Typography
+                        variant="body5"
+                        className="mt-1 font-medium text-red-500"
+                      >
                         {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
+                      </Typography>
                     )}
                 </div>
               )}
@@ -161,20 +163,20 @@ export default function RegisterPage() {
             <form.Field name="mobile">
               {(field) => (
                 <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                  >
                     Mobile Number
-                  </label>
+                  </Typography>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
+                    <Input
                       name="mobile"
                       type="tel"
                       placeholder="+91 98765 43210"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
+                      startIcon={<Phone className="h-[18px] w-[18px]" />}
+                      error={field.state.meta.errors.length > 0}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -182,9 +184,12 @@ export default function RegisterPage() {
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                      <Typography
+                        variant="body5"
+                        className="mt-1 font-medium text-red-500"
+                      >
                         {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
+                      </Typography>
                     )}
                 </div>
               )}
@@ -194,23 +199,27 @@ export default function RegisterPage() {
             <form.Field name="email">
               {(field) => (
                 <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                  >
                     Email Address{" "}
-                    <span className="text-[10px] font-normal normal-case opacity-50">
+                    <Typography
+                      variant="body5"
+                      as="span"
+                      className="font-normal normal-case opacity-50"
+                    >
                       (optional)
-                    </span>
-                  </label>
+                    </Typography>
+                  </Typography>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
+                    <Input
                       name="email"
                       type="email"
                       placeholder="name@company.com"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
+                      startIcon={<Mail className="h-[18px] w-[18px]" />}
+                      error={field.state.meta.errors.length > 0}
                       value={field.state.value ?? ""}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -218,9 +227,12 @@ export default function RegisterPage() {
                   </div>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
+                      <Typography
+                        variant="body5"
+                        className="mt-1 font-medium text-red-500"
+                      >
                         {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
+                      </Typography>
                     )}
                 </div>
               )}
@@ -230,87 +242,49 @@ export default function RegisterPage() {
             <form.Field name="testLevel">
               {(field) => (
                 <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <Typography
+                    as="label"
+                    variant="h6"
+                    className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                  >
                     Select Your Test Level
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsTestLevelOpen(!isTestLevelOpen)}
-                      className={`flex w-full items-center justify-between rounded-xl border bg-white py-3.5 px-4 text-left text-[15px] outline-none transition-all ${
-                        isTestLevelOpen
-                          ? "border-brand-primary/40 ring-2 ring-brand-primary/10"
-                          : "border-slate-200"
-                      }`}
-                    >
-                      <span className="font-medium text-slate-800">
-                        {levels.find((l) => l.id === field.state.value)?.label}
-                      </span>
-                      <ChevronDown
-                        className={`h-5 w-5 text-slate-400 transition-transform ${
-                          isTestLevelOpen ? "rotate-180 text-brand-primary" : ""
-                        }`}
-                      />
-                    </button>
-
-                    <AnimatePresence>
-                      {isTestLevelOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-xl"
-                        >
-                          {levels.map((level) => (
-                            <button
-                              key={level.id}
-                              type="button"
-                              onClick={() => {
-                                field.handleChange(level.id);
-                                setIsTestLevelOpen(false);
-                              }}
-                              className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[14px] font-semibold transition-all ${
-                                field.state.value === level.id
-                                  ? "bg-brand-primary/5 text-brand-primary"
-                                  : "text-slate-600 hover:bg-slate-50"
-                              }`}
-                            >
-                              {level.label}
-                              {field.state.value === level.id && (
-                                <Check className="h-4 w-4" />
-                              )}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  </Typography>
+                  <SelectDropdown
+                    options={levels}
+                    value={field.state.value}
+                    onChange={(val) =>
+                      field.handleChange(val as (typeof TEST_LEVELS)[number])
+                    }
+                    placement="top"
+                  />
                 </div>
               )}
             </form.Field>
 
-            {/* Submit */}
             <form.Subscribe
               selector={(state) => [state.isSubmitting, state.canSubmit]}
             >
               {([isSubmitting, canSubmit]) => (
-                <button
+                <Button
                   type="submit"
+                  variant="primary"
+                  color="primary"
+                  shadow
                   disabled={isSubmitting || !canSubmit}
-                  className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 text-[15px] font-bold mt-2"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Creating Account…</span>
+                      <Typography variant="span">Creating Account…</Typography>
                     </>
                   ) : (
                     <>
-                      <span>Create Account</span>
+                      <Typography variant="span">Create Account</Typography>
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </>
                   )}
-                </button>
+                </Button>
               )}
             </form.Subscribe>
           </form>
@@ -320,7 +294,14 @@ export default function RegisterPage() {
             className="mt-6 flex items-center justify-center gap-1 text-[13px] text-slate-400 transition-colors hover:text-brand-primary"
           >
             Already have an account?{" "}
-            <span className="font-bold text-brand-primary">Sign In</span>
+            <Typography
+              variant="body3"
+              weight="bold"
+              as="span"
+              className="text-brand-primary"
+            >
+              Sign In
+            </Typography>
           </Link>
         </motion.div>
       </div>

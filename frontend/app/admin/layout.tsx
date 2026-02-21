@@ -1,7 +1,6 @@
 import React from "react";
 import { Sidebar } from "@components/ui-layout/Sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
-import { Container } from "@components/ui-layout/Container";
 import { SidebarProvider } from "@components/ui-layout/sidebar/SidebarProvider";
 import { getCurrentUser } from "@lib/auth/get-current-user";
 
@@ -16,7 +15,7 @@ export default async function AdminLayout({
   return (
     <SidebarProvider>
       {/* Full-height column: Navbar on top, then sidebar+content row below */}
-      <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+      <div className="fixed inset-0 flex flex-col bg-[#F8FAFC] overflow-hidden">
         {/* Navbar — full width */}
         <Navbar user={user} />
 
@@ -25,10 +24,10 @@ export default async function AdminLayout({
           <Sidebar />
 
           <main
-            className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto min-w-0"
+            className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0"
             style={{ backgroundColor: "var(--layout-bg)" }}
           >
-            <Container>{children}</Container>
+            <div className="mx-auto w-full max-w-7xl h-full">{children}</div>
           </main>
         </div>
       </div>

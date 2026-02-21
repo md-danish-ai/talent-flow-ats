@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -28,28 +30,41 @@ export default function UserDashboard() {
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-slate-900">
+                <Typography
+                  variant="h2"
+                  weight="black"
+                  className="text-slate-900"
+                >
                   User Dashboard
-                </h1>
-                <p className="text-slate-500">Welcome back to your workspace</p>
+                </Typography>
+                <Typography variant="body2" className="text-slate-500">
+                  Welcome back to your workspace
+                </Typography>
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              color="default"
+              size="sm"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200"
+              className="flex items-center gap-2 font-bold"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
-            </button>
+            </Button>
           </div>
 
           <div className="rounded-2xl bg-orange-50 p-6 border border-orange-100">
-            <p className="text-lg font-bold text-orange-900">
+            <Typography
+              variant="body1"
+              weight="bold"
+              className="text-orange-900"
+            >
               User login in successfully
-            </p>
-            <p className="text-orange-600 mt-1">
+            </Typography>
+            <Typography variant="body2" className="text-orange-600 mt-1">
               You can now browse and apply for new opportunities.
-            </p>
+            </Typography>
           </div>
         </motion.div>
       </div>
