@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
+import { ChevronRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -150,7 +150,7 @@ export default function LoginPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <Typography
                       as="label"
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
+                      className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "user"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                           : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
@@ -175,7 +175,7 @@ export default function LoginPage() {
                     </Typography>
                     <Typography
                       as="label"
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-small font-bold transition-all ${
+                      className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
                         field.state.value === "admin"
                           ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                           : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
@@ -285,17 +285,30 @@ export default function LoginPage() {
                   color="primary"
                   shadow
                   disabled={isSubmitting || !canSubmit}
+                  animate="scale"
                   className="w-full py-3.5 text-medium font-bold"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <Typography variant="span">Signing In…</Typography>
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                      <Typography
+                        variant="span"
+                        weight="bold"
+                        className="text-white"
+                      >
+                        Signing In…
+                      </Typography>
                     </>
                   ) : (
                     <>
-                      <Typography variant="span">Sign In</Typography>
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      <Typography
+                        variant="span"
+                        weight="bold"
+                        className="text-white"
+                      >
+                        Sign In
+                      </Typography>
+                      <ChevronRight className="h-5 w-5 text-white transition-transform group-hover:translate-x-1" />
                     </>
                   )}
                 </Button>

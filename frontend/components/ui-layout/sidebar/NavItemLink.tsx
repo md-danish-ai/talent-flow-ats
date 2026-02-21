@@ -23,7 +23,7 @@ export const NavItemLink: React.FC<NavItemLinkProps> = ({
     <Link
       href={section.href!}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all group ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group ${
         isActive ? NAV_ACTIVE : NAV_IDLE
       }`}
     >

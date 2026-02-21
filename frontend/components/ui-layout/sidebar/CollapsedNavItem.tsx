@@ -25,7 +25,7 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
     ? pathname === section.href
     : section.items.some((item) => pathname === item.href);
 
-  const iconCls = `w-12 h-12 flex items-center justify-center rounded-md transition-all ${
+  const iconCls = `w-12 h-12 flex items-center justify-center rounded-md transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
     isSectionActive
       ? "bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary shadow-sm"
       : "text-slate-500 dark:text-slate-400 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/15 hover:text-brand-primary"

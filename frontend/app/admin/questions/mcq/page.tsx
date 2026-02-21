@@ -61,12 +61,13 @@ export default function MCQPage() {
               <Filter size={18} />
             </Button>
             <Button
-              size="sm"
+              size="medium"
               color="primary"
               shadow
               animate="scale"
               startIcon={<Plus size={14} />}
               onClick={() => setIsAddModalOpen(true)}
+              className="rounded-md"
             >
               Add Question
             </Button>
@@ -251,14 +252,14 @@ export default function MCQPage() {
               <Button
                 variant="outline"
                 color="primary"
-                size="sm"
+                size="medium"
                 startIcon={<RotateCcw size={14} />}
                 onClick={() => {
                   setSubjectFilter(undefined);
                   setSearchQuery("");
                 }}
                 animate="scale"
-                // className="w-1/2"
+                className="rounded-md"
               >
                 Reset
               </Button>

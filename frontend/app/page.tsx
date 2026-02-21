@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, Mail, Phone, User } from "lucide-react";
+import { ChevronRight, Loader2, Mail, Phone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -271,17 +271,30 @@ export default function RegisterPage() {
                   color="primary"
                   shadow
                   disabled={isSubmitting || !canSubmit}
+                  animate="scale"
                   className="w-full py-3.5 text-medium font-bold mt-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <Typography variant="span">Creating Account…</Typography>
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                      <Typography
+                        variant="span"
+                        weight="bold"
+                        className="text-white"
+                      >
+                        Creating Account…
+                      </Typography>
                     </>
                   ) : (
                     <>
-                      <Typography variant="span">Create Account</Typography>
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      <Typography
+                        variant="span"
+                        weight="bold"
+                        className="text-white"
+                      >
+                        Create Account
+                      </Typography>
+                      <ChevronRight className="h-5 w-5 text-white transition-transform group-hover:translate-x-1" />
                     </>
                   )}
                 </Button>

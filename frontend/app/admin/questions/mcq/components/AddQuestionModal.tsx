@@ -56,7 +56,14 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button variant="primary" color="primary" shadow animate="scale">
+          <Button
+            variant="primary"
+            color="primary"
+            size="medium"
+            shadow
+            animate="scale"
+            className="rounded-md"
+          >
             Submit
           </Button>
         </div>
