@@ -40,7 +40,7 @@ export const InlineDrawer: React.FC<InlineDrawerProps> = ({
             <Typography
               variant="body1"
               weight="semibold"
-              className="text-foreground"
+              color="text-foreground"
             >
               {title}
             </Typography>

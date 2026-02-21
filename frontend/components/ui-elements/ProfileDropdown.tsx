@@ -45,8 +45,14 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="group p-1 rounded-full outline-none"
         onClick={onToggle}
       >
-        <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center text-brand-primary font-extrabold overflow-hidden group-hover:ring-2 group-hover:ring-brand-primary/10 transition-all shadow-sm select-none">
-          {initials}
+        <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden group-hover:ring-2 group-hover:ring-brand-primary/10 transition-all shadow-sm select-none">
+          <Typography
+            variant="body4"
+            weight="extrabold"
+            color="text-brand-primary"
+          >
+            {initials}
+          </Typography>
         </div>
       </Button>
 
@@ -65,8 +71,14 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
           >
             {/* User Profile Info in Dropdown */}
             <div className="px-4 py-4 border-b border-border bg-muted/20 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-brand-primary font-black shadow-sm shrink-0 select-none">
-                {initials}
+              <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center shadow-sm shrink-0 select-none overflow-hidden">
+                <Typography
+                  variant="body3"
+                  weight="black"
+                  color="text-brand-primary"
+                >
+                  {initials}
+                </Typography>
               </div>
               <div className="min-w-0">
                 <Typography

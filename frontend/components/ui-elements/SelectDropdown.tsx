@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 
 export interface SelectOption {
   id: string | number;
@@ -73,14 +74,17 @@ export function SelectDropdown({
           className,
         )}
       >
-        <span
+        <Typography
+          variant="body4"
+          weight="medium"
+          as="span"
           className={cn(
-            "font-medium truncate mr-2 transition-colors",
+            "truncate mr-2 transition-colors",
             selectedOption ? "text-foreground" : "text-muted-foreground/40",
           )}
         >
           {selectedOption ? selectedOption.label : placeholder}
-        </span>
+        </Typography>
         <ChevronDown
           className={cn(
             "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
@@ -119,7 +123,9 @@ export function SelectDropdown({
                       : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
                   )}
                 >
-                  {option.label}
+                  <Typography variant="body4" weight="semibold" as="span">
+                    {option.label}
+                  </Typography>
                   {value === option.id && <Check className="h-4 w-4" />}
                 </Button>
               ))}

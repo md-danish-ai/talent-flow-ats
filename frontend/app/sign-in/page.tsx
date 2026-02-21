@@ -12,6 +12,7 @@ import { useSignIn } from "@lib/react-query/user/use-auth";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
+import { Alert } from "@components/ui-elements/Alert";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -118,13 +119,12 @@ export default function LoginPage() {
 
           {/* Server Error */}
           {serverError && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-small font-medium text-red-600"
-            >
-              {serverError}
-            </motion.div>
+            <Alert
+              variant="error"
+              description={serverError}
+              className="mb-4"
+              onClose={() => setServerError(null)}
+            />
           )}
 
           {/* Form */}

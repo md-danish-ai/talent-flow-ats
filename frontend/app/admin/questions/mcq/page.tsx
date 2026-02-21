@@ -104,15 +104,15 @@ export default function MCQPage() {
                       {/* Inner Table */}
                       <div className="overflow-x-auto pb-1">
                         <Table>
-                          <TableHeader className="bg-transparent [&_tr]:border-b-0 border-b border-border">
+                          <TableHeader className="bg-transparent text-foreground [&_tr]:border-b-0 border-b border-border">
                             <TableRow className="hover:bg-transparent border-0">
-                              <TableHead className="font-semibold text-white px-5 py-3 h-auto w-[120px]">
+                              <TableHead className="font-semibold px-5 py-3 h-auto w-[120px]">
                                 Option
                               </TableHead>
-                              <TableHead className="font-semibold text-white px-5 py-3 h-auto">
+                              <TableHead className="font-semibold px-5 py-3 h-auto">
                                 Value
                               </TableHead>
-                              <TableHead className="font-semibold text-white px-5 py-3 text-right h-auto w-[150px]">
+                              <TableHead className="font-semibold px-5 py-3 text-right h-auto w-[150px]">
                                 Is Correct
                               </TableHead>
                             </TableRow>

@@ -67,11 +67,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             className="absolute right-0 mt-3 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right transition-colors"
           >
             <div className="px-5 py-4 border-b border-border bg-muted/20 flex items-center justify-between">
-              <Typography
-                variant="body3"
-                weight="bold"
-                className="text-foreground"
-              >
+              <Typography variant="body3" weight="bold" color="text-foreground">
                 Notifications
               </Typography>
               <Typography
@@ -109,7 +105,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   <Typography
                     variant="body3"
                     weight="bold"
-                    className="text-foreground mb-1"
+                    color="text-foreground"
+                    className="mb-1"
                   >
                     No new notifications
                   </Typography>

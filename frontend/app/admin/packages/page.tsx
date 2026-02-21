@@ -12,7 +12,9 @@ import { SelectDocs } from "./components/sections/SelectDocs";
 import { TableDocs } from "./components/sections/TableDocs";
 import { StatDocs } from "./components/sections/StatDocs";
 import { ModalDocs } from "./components/sections/ModalDocs";
+import { AlertDocs } from "./components/sections/AlertDocs";
 import { TypographyDocs } from "./components/sections/TypographyDocs";
+import { BadgeDocs } from "./components/sections/BadgeDocs";
 
 export default function PackagesPage() {
   const [activeItem, setActiveItem] = useState("button");
@@ -70,6 +72,10 @@ export default function PackagesPage() {
             onClose={() => setIsModalOpen(false)}
           />
         );
+      case "alert":
+        return <AlertDocs />;
+      case "badge":
+        return <BadgeDocs />;
       case "typography":
         return <TypographyDocs />;
       default:

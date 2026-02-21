@@ -59,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
                 <Typography
                   variant="body1"
                   weight="semibold"
-                  className="text-foreground"
+                  color="text-foreground"
                 >
                   {title}
                 </Typography>

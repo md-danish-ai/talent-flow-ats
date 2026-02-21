@@ -19,11 +19,17 @@ export const CATEGORIES = [
   {
     id: "feedback",
     name: "Feedback",
-    items: [{ id: "modal", name: "Modal" }],
+    items: [
+      { id: "modal", name: "Modal" },
+      { id: "alert", name: "Alert" },
+    ],
   },
   {
     id: "system",
     name: "System",
-    items: [{ id: "typography", name: "Typography" }],
+    items: [
+      { id: "typography", name: "Typography" },
+      { id: "badge", name: "Badge" },
+    ],
   },
 ];

@@ -17,6 +17,7 @@ import { useSignUp } from "@lib/react-query/user/use-auth";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
+import { Alert } from "@components/ui-elements/Alert";
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -105,13 +106,12 @@ export default function RegisterPage() {
 
           {/* Server Error */}
           {serverError && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-small font-medium text-red-600"
-            >
-              {serverError}
-            </motion.div>
+            <Alert
+              variant="error"
+              description={serverError}
+              className="mb-4"
+              onClose={() => setServerError(null)}
+            />
           )}
 
           {/* Form */}
