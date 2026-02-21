@@ -29,7 +29,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             "w-full rounded-xl border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
-            error ? "border-brand-error/50" : "border-border",
+            error
+              ? "border-brand-error ring-1 ring-brand-error/20"
+              : "border-border",
             className,
           )}
           {...props}

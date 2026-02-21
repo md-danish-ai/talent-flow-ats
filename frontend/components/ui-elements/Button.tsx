@@ -23,7 +23,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | "large"
     | "auto";
   shadow?: boolean;
-  animate?: "none" | "scale" | "slide";
+  animate?: "none" | "scale" | "slide" | "rotate" | "spin";
   isActive?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -117,7 +117,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ? "hover:-translate-y-1 hover:scale-105 active:scale-95"
         : animate === "slide"
           ? "hover:translate-x-1"
-          : "";
+          : animate === "rotate"
+            ? "hover:rotate-[360deg] duration-500 transition-transform"
+            : animate === "spin"
+              ? "animate-spin"
+              : "";
 
     return (
       <button
