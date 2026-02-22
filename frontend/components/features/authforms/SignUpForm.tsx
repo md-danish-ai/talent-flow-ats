@@ -16,13 +16,7 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
-
-function getErrorMessage(error: unknown): string {
-  if (typeof error === "string") return error;
-  if (error && typeof error === "object" && "message" in error)
-    return String((error as { message: string }).message);
-  return "Invalid value";
-}
+import { getErrorMessage } from "@lib/utils";
 
 export function SignUpForm() {
   const router = useRouter();
