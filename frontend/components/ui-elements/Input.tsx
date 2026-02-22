@@ -28,13 +28,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={inputType}
           className={cn(
-            "w-full rounded-xl border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+            "w-full rounded-md border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
-            error
-              ? "border-brand-error ring-1 ring-brand-error/20"
-              : "border-border",
+            "border-border",
             className,
+            error &&
+              "!border-red-500 ring-1 !ring-red-500/20 focus:!border-red-500 focus:!ring-red-500/20 hover:!border-red-500",
           )}
           {...props}
         />

@@ -15,7 +15,6 @@ export const mcqSchema = z.object({
     .min(2, "At least two options are required")
     .refine((options) => options.some((opt) => opt.isCorrect), {
       message: "One option must be marked as correct",
-      path: ["options"],
     }),
   explanation: z.string().min(5, "Explanation must be at least 5 characters"),
 });

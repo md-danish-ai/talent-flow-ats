@@ -67,13 +67,12 @@ export function SelectDropdown({
         size="auto"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
-          isOpen
-            ? "border-brand-primary ring-1 ring-brand-primary"
-            : error
-              ? "border-destructive/50"
-              : "border-border",
+          "flex w-full items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
+          "border-border",
           className,
+          isOpen && "border-brand-primary ring-1 ring-brand-primary",
+          error &&
+            "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
         )}
       >
         <div className="flex w-full items-center justify-between gap-2">
@@ -105,7 +104,7 @@ export function SelectDropdown({
             exit={{ opacity: 0, y: placement === "top" ? 4 : -4 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute left-0 right-0 z-50 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-xl transition-colors",
+              "absolute left-0 right-0 z-50 overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-xl transition-colors",
               placementStyles,
             )}
           >
@@ -121,7 +120,7 @@ export function SelectDropdown({
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0",
+                    "flex w-full items-center justify-between rounded-md px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0",
                     value === option.id
                       ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
                       : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",

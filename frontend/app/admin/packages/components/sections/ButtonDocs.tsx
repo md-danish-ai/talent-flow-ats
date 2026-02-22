@@ -53,7 +53,7 @@ export default function ButtonShowcase() {
         <h4>Icons & Sizes</h4>
         <div className="flex gap-3 items-center">
           <Button startIcon={<Layers size={16} />}>Button</Button>
-          <Button size="large">Large</Button>
+          <Button size="lg">Large</Button>
           <Button size="icon" variant="ghost">
             <Settings size={20} />
           </Button>
@@ -80,87 +80,63 @@ export default function ButtonShowcase() {
   >
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-8">
       <DocSubSection title="Base">
-        <Button color="primary" className="rounded-lg">
-          Primary
-        </Button>
-        <Button color="secondary" className="rounded-lg">
-          Secondary
-        </Button>
-        <Button disabled className="rounded-lg">
-          Disabled
-        </Button>
+        <Button color="primary">Primary</Button>
+        <Button color="secondary">Secondary</Button>
+        <Button disabled>Disabled</Button>
       </DocSubSection>
       <DocSubSection title="Colors">
-        <Button color="primary" className="rounded-lg">
-          Primary
-        </Button>
-        <Button color="secondary" className="rounded-lg">
-          Secondary
-        </Button>
-        <Button color="success" className="rounded-lg">
-          Success
-        </Button>
-        <Button color="error" className="rounded-lg">
-          Error
-        </Button>
-        <Button color="warning" className="rounded-lg">
-          Warning
-        </Button>
+        <Button color="primary">Primary</Button>
+        <Button color="secondary">Secondary</Button>
+        <Button color="success">Success</Button>
+        <Button color="error">Error</Button>
+        <Button color="warning">Warning</Button>
       </DocSubSection>
       <DocSubSection title="Outlined">
-        <Button variant="outline" color="primary" className="rounded-lg">
+        <Button variant="outline" color="primary">
           Primary
         </Button>
-        <Button variant="outline" color="secondary" className="rounded-lg">
+        <Button variant="outline" color="secondary">
           Secondary
         </Button>
-        <Button variant="outline" disabled className="rounded-lg">
+        <Button variant="outline" disabled>
           Disabled
         </Button>
       </DocSubSection>
       <DocSubSection title="With Icons">
-        <Button
-          startIcon={<Layers size={16} />}
-          color="primary"
-          className="rounded-lg"
-        >
+        <Button startIcon={<Layers size={16} />} color="primary">
           Button
         </Button>
-        <Button
-          endIcon={<Layers size={16} />}
-          color="primary"
-          className="rounded-lg"
-        >
+        <Button endIcon={<Layers size={16} />} color="primary">
           Button
         </Button>
-        <Button size="icon" color="primary" className="rounded-lg">
+        <Button size="icon" color="primary">
           <Layers size={20} />
         </Button>
       </DocSubSection>
       <DocSubSection title="Size">
-        <Button size="sm" color="primary" className="rounded-lg">
+        <Button size="sm" color="primary">
           Button
         </Button>
-        <Button size="medium" color="primary" className="rounded-lg">
+        <Button size="md" color="primary">
           Button
         </Button>
-        <Button size="large" color="primary" className="rounded-lg">
+        <Button size="lg" color="primary">
           Button
         </Button>
       </DocSubSection>
       <DocSubSection title="Animation">
-        <Button color="primary" shadow className="rounded-lg">
+        <Button color="primary" shadow>
           Default
         </Button>
         <Button
           color="secondary"
           animate="scale"
           shadow
-          className="bg-purple-600 rounded-lg"
+          className="bg-purple-600"
         >
           Scale
         </Button>
-        <Button color="error" animate="slide" shadow className="rounded-lg">
+        <Button color="error" animate="slide" shadow>
           Slide
         </Button>
         <Button variant="ghost" color="primary" animate="rotate" size="icon">

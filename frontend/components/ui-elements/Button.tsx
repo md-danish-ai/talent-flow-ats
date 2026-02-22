@@ -14,17 +14,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | "link"
     | "action";
   color?: "primary" | "secondary" | "success" | "error" | "warning" | "default";
-  size?:
-    | "default"
-    | "sm"
-    | "lg"
-    | "icon"
-    | "icon-sm"
-    | "rounded-icon"
-    | "small"
-    | "medium"
-    | "large"
-    | "auto";
+  size?: "sm" | "md" | "lg" | "icon" | "icon-sm" | "rounded-icon" | "auto";
   shadow?: boolean;
   animate?: "none" | "scale" | "slide" | "rotate" | "spin";
   iconAnimation?: "none" | "rotate-90" | "rotate-180" | "rotate-360" | "spin";
@@ -39,7 +29,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant = "primary",
       color = "default",
-      size = "default",
+      size = "md",
       isActive = false,
       shadow = false,
       animate = "none",
@@ -110,12 +100,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const sizes = {
-      default: "h-10 px-4 py-2",
-      sm: "h-8 rounded-lg px-3 text-xs leading-none",
-      small: "h-8 rounded-lg px-3 text-xs leading-none",
-      medium: "h-10 px-4 py-2",
-      lg: "h-12 rounded-lg px-6 text-base",
-      large: "h-12 rounded-lg px-6 text-base",
+      sm: "h-8 rounded-md px-3 text-xs leading-none",
+      md: "h-10 px-4 py-2",
+      lg: "h-12 rounded-md px-6 text-base",
       icon: "h-10 w-10 rounded-full justify-center p-0",
       "icon-sm": "h-8 w-8 rounded-full justify-center p-0",
       "rounded-icon": "w-10 h-10 rounded-xl justify-center",
@@ -152,7 +139,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         onClick={handleButtonClick}
         className={cn(
-          "relative overflow-hidden inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
+          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
           variantStyles,
           sizes[size],
           shadowClass,

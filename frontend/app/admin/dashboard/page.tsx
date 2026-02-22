@@ -57,7 +57,7 @@ export default function DashboardPage() {
               variant="primary"
               color="primary"
               shadow
-              className="w-full font-bold rounded-xl"
+              className="w-full font-bold"
             >
               Open Documentation
             </Button>

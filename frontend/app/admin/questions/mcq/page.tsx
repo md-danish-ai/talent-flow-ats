@@ -13,7 +13,7 @@ async function getMCQQuestions() {
       id: i + 1,
       question: `Sample Multiple Choice Question ${i + 1} for testing the UI layout and scroll behavior.`,
       subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
-      createdBy: "Manish Joshi - Mohan Lal",
+      createdBy: "Danish - Mohammed Danish",
       createdDate: "17/11/2018",
     };
   });

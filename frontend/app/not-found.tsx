@@ -87,21 +87,27 @@ export default function NotFound() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="mt-12 flex flex-col gap-4 sm:flex-row"
         >
-          <Link
-            href="/"
-            className="group flex items-center justify-center gap-2 rounded-2xl bg-brand-primary px-8 py-4 text-lg font-extrabold text-white shadow-lg shadow-brand-primary/30 transition-all hover:scale-105 hover:bg-brand-primary/90 active:scale-95"
-          >
-            <Home className="h-5 w-5" />
-            Go to Home
+          <Link href="/">
+            <Button
+              variant="primary"
+              color="primary"
+              size="lg"
+              className="w-full sm:w-auto font-bold px-8"
+              startIcon={<Home className="h-5 w-5" />}
+            >
+              Go to Home
+            </Button>
           </Link>
           <Button
             variant="outline"
             color="default"
             size="lg"
-            className="rounded-2xl border-2 px-8 py-4 text-lg font-extrabold"
+            className="w-full sm:w-auto font-bold px-8 bg-transparent"
             onClick={() => window.history.back()}
+            startIcon={
+              <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+            }
           >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
             Go Back
           </Button>
         </motion.div>

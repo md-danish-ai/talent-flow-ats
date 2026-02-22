@@ -124,13 +124,13 @@ export function MCQClient({
             <Button
               variant="primary"
               color="primary"
-              size="default"
+              size="md"
               shadow
               animate="scale"
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="rounded-lg font-bold"
+              className="font-bold"
             >
               Add Question
             </Button>
@@ -341,7 +341,7 @@ export function MCQClient({
                 />
                 <Input
                   placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all rounded-xl bg-muted/20"
+                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -366,7 +366,7 @@ export function MCQClient({
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => setSubjectFilter(val)}
-                className="h-12 border-border/60 hover:border-border rounded-xl bg-muted/20"
+                className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
               />
             </div>
@@ -376,7 +376,7 @@ export function MCQClient({
               <Button
                 variant="outline"
                 color="primary"
-                size="default"
+                size="md"
                 shadow
                 animate="scale"
                 iconAnimation="rotate-360"
@@ -385,7 +385,7 @@ export function MCQClient({
                   setSearchQuery("");
                   setSubjectFilter(undefined);
                 }}
-                className="rounded-lg font-bold w-full h-12"
+                className="font-bold w-full"
                 title="Reset Filters"
               >
                 Reset Filters

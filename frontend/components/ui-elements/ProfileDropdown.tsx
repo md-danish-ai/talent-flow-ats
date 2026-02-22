@@ -80,7 +80,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         variant="ghost"
         color="default"
         size="icon"
-        className="group p-1 rounded-full outline-none"
+        className="group p-1 outline-none"
         onClick={onToggle}
       >
         <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden group-hover:ring-2 group-hover:ring-brand-primary/10 transition-all shadow-sm select-none">
@@ -170,7 +170,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 <Button
                   variant="ghost"
                   color="error"
-                  className="w-full flex items-center justify-start gap-3 px-3 py-2 rounded-xl text-sm font-bold"
+                  className="w-full flex items-center justify-start gap-3 px-3 py-2 text-sm font-bold"
                   onClick={() => {
                     logout();
                     onToggle();

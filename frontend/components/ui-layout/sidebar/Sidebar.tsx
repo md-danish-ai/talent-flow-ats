@@ -57,7 +57,7 @@ export const Sidebar = () => {
           color="default"
           size="icon-sm"
           onClick={toggleSidebar}
-          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full shadow-sm z-50"
+          className="hidden min-[900px]:flex absolute -right-3 top-20 w-6 h-6 bg-card border border-border shadow-sm z-50"
         >
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "" : "rotate-180"}`}
