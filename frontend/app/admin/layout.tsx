@@ -1,7 +1,6 @@
 import React from "react";
-import { Sidebar } from "@components/ui-layout/Sidebar";
+import { Sidebar, SidebarProvider } from "@components/ui-layout/sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
-import { SidebarProvider } from "@components/ui-layout/sidebar/SidebarProvider";
 import { getCurrentUser } from "@lib/auth/get-current-user";
 
 export default async function AdminLayout({

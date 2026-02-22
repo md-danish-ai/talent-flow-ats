@@ -25,12 +25,12 @@ export const MainCard: React.FC<MainCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors",
+        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
         className,
       )}
     >
       {/* Header */}
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3">
+      <div className="px-6 py-5 border-b border-border flex items-center justify-between gap-3">
         <Typography
           variant="h4"
           as="h3"

@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { ADMIN_NAV_LINKS } from "@data/navigation";
 import { Button } from "@components/ui-elements/Button";
 
-import { useSidebar, NavItem, CollapsedNavItem } from "./sidebar/index";
+import { useSidebar } from "./SidebarProvider";
+import { NavItem } from "./NavItem";
+import { CollapsedNavItem } from "./CollapsedNavItem";
 
 export const Sidebar = () => {
   const pathname = usePathname();

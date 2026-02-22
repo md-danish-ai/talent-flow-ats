@@ -7,7 +7,7 @@ import { NotificationDropdown } from "@components/ui-elements/NotificationDropdo
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
-import { useSidebar } from "./sidebar/index";
+import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";

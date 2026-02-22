@@ -148,7 +148,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        <span className="relative z-10 flex items-center justify-center gap-2">
+        <span
+          className={cn(
+            "relative z-10 flex items-center gap-2",
+            className?.includes("w-full") ? "w-full" : "",
+            className?.includes("justify-between")
+              ? "justify-between"
+              : className?.includes("justify-start")
+                ? "justify-start"
+                : className?.includes("justify-end")
+                  ? "justify-end"
+                  : "justify-center",
+          )}
+        >
           {startIcon && (
             <span className="inline-flex self-center">{startIcon}</span>
           )}

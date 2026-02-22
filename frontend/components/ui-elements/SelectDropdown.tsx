@@ -76,23 +76,25 @@ export function SelectDropdown({
           className,
         )}
       >
-        <Typography
-          variant="body4"
-          weight="medium"
-          as="span"
-          className={cn(
-            "truncate mr-2 transition-colors",
-            selectedOption ? "text-foreground" : "text-muted-foreground/40",
-          )}
-        >
-          {selectedOption ? selectedOption.label : placeholder}
-        </Typography>
-        <ChevronDown
-          className={cn(
-            "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
-            isOpen && "rotate-180 text-brand-primary",
-          )}
-        />
+        <div className="flex w-full items-center justify-between gap-2">
+          <Typography
+            variant="body4"
+            weight="medium"
+            as="span"
+            className={cn(
+              "truncate transition-colors",
+              selectedOption ? "text-foreground" : "text-muted-foreground/40",
+            )}
+          >
+            {selectedOption ? selectedOption.label : placeholder}
+          </Typography>
+          <ChevronDown
+            className={cn(
+              "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
+              isOpen && "rotate-180 text-brand-primary",
+            )}
+          />
+        </div>
       </Button>
 
       <AnimatePresence>

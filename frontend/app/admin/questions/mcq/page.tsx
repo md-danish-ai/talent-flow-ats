@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
   TableCollapsibleRow,
+  TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Filter, Search, RotateCcw, Plus, ListChecks } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -26,6 +27,28 @@ export default function MCQPage() {
     string | number | undefined
   >(undefined);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Column Visibility State
+  const allColumns = [
+    { id: "srNo", label: "Sr. No." },
+    { id: "question", label: "Question" },
+    { id: "subject", label: "Subject" },
+    { id: "createdBy", label: "Created By" },
+    { id: "createdDate", label: "Created Date" },
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState([
+    "srNo",
+    "question",
+    "subject",
+    "createdBy",
+  ]);
+
+  const toggleColumn = (id: string) => {
+    setVisibleColumns((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
+  };
 
   // Mock data for the table based on reference image
   const mockData = Array.from({ length: 10 }).map((_, i) => ({
@@ -50,11 +73,18 @@ export default function MCQPage() {
         className="mb-6"
         bodyClassName="p-0 flex flex-row items-stretch"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <TableColumnToggle
+              columns={allColumns}
+              visibleColumns={visibleColumns}
+              onToggle={toggleColumn}
+            />
+            <div className="h-6 w-px bg-border mx-1" />
             <Button
               variant="action"
               size="rounded-icon"
               isActive={isFilterOpen}
+              animate="scale"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               title="Filter"
             >
@@ -80,18 +110,30 @@ export default function MCQPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
-                <TableHead>Question</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Created By</TableHead>
-                <TableHead>Created Date</TableHead>
+                {visibleColumns.includes("srNo") && (
+                  <TableHead className="w-[80px] text-center">
+                    Sr. No.
+                  </TableHead>
+                )}
+                {visibleColumns.includes("question") && (
+                  <TableHead>Question</TableHead>
+                )}
+                {visibleColumns.includes("subject") && (
+                  <TableHead>Subject</TableHead>
+                )}
+                {visibleColumns.includes("createdBy") && (
+                  <TableHead>Created By</TableHead>
+                )}
+                {visibleColumns.includes("createdDate") && (
+                  <TableHead>Created Date</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {mockData.map((row) => (
                 <TableCollapsibleRow
                   key={row.id}
-                  colSpan={6}
+                  colSpan={visibleColumns.length + 1}
                   expandedContent={
                     <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                       {/* Header */}
@@ -186,13 +228,23 @@ export default function MCQPage() {
                     </div>
                   }
                 >
-                  <TableCell className="font-medium text-center">
-                    {row.id}
-                  </TableCell>
-                  <TableCell>{row.question}</TableCell>
-                  <TableCell>{row.subject}</TableCell>
-                  <TableCell>{row.createdBy}</TableCell>
-                  <TableCell>{row.createdDate}</TableCell>
+                  {visibleColumns.includes("srNo") && (
+                    <TableCell className="font-medium text-center">
+                      {row.id}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("question") && (
+                    <TableCell>{row.question}</TableCell>
+                  )}
+                  {visibleColumns.includes("subject") && (
+                    <TableCell>{row.subject}</TableCell>
+                  )}
+                  {visibleColumns.includes("createdBy") && (
+                    <TableCell>{row.createdBy}</TableCell>
+                  )}
+                  {visibleColumns.includes("createdDate") && (
+                    <TableCell>{row.createdDate}</TableCell>
+                  )}
                 </TableCollapsibleRow>
               ))}
             </TableBody>
