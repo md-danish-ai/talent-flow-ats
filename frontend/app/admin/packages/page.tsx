@@ -89,8 +89,8 @@ export default function PackagesPage() {
       <DocSidebar activeItem={activeItem} onSelect={setActiveItem} />
 
       {/* Documentation Content (Right Panel) */}
-      <section className="flex-1 overflow-y-auto pr-2 scroll-smooth custom-scrollbar rounded-3xl group/main">
-        <div className="bg-card/30 backdrop-blur-xl border border-border rounded-3xl p-10 lg:p-16 shadow-2xl shadow-slate-950/20 min-h-full relative overflow-hidden transition-all duration-500 hover:border-brand-primary/10">
+      <section className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar rounded-3xl group/main">
+        <div className="bg-card/30 backdrop-blur-xl border border-border rounded-3xl py-5 px-10 shadow-2xl shadow-slate-950/20 min-h-full relative overflow-hidden transition-all duration-500 hover:border-brand-primary/10">
           {/* Subtle Background Decoration */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-primary/5 rounded-full blur-[120px] pointer-events-none group-hover/main:bg-brand-primary/10 transition-colors duration-1000" />
 

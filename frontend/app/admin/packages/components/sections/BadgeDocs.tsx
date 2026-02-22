@@ -10,16 +10,44 @@ export const BadgeDocs = () => (
   <ComponentPageView
     title="Badge"
     description="Small status indicators used to highlight items or provide quick counts. Badges support multiple colors, fill/outline variants, and rounded/square shapes."
-    code={`<Badge variant="fill" color="primary">New</Badge>`}
+    code={`<Badge variant="fill" color="success">Active</Badge>`}
     fullSource={`import { Badge } from "@components/ui-elements/Badge";
-import { Star } from "lucide-react";
+import { Star, Shield, Clock, User } from "lucide-react";
 
 export default function BadgeShowcase() {
   return (
-    <div className="flex gap-4">
-      <Badge color="success">Active</Badge>
-      <Badge variant="outline" color="error">Critical</Badge>
-      <Badge shape="square" color="primary" icon={<Star size={10} />}>VIP</Badge>
+    <div className="space-y-8 p-6">
+      {/* 1. Variants (Fill & Outline) */}
+      <div className="flex flex-wrap gap-4">
+        <Badge variant="fill" color="primary">Primary Fill</Badge>
+        <Badge variant="outline" color="primary">Primary Outline</Badge>
+        <Badge variant="fill" color="success">Success Fill</Badge>
+        <Badge variant="outline" color="error">Error Outline</Badge>
+      </div>
+
+      {/* 2. Shapes (Curve vs Square) */}
+      <div className="flex flex-wrap gap-4">
+        <Badge shape="curve" color="primary">Rounded Badge</Badge>
+        <Badge shape="square" color="secondary">Square Badge</Badge>
+      </div>
+
+      {/* 3. With Icons */}
+      <div className="flex flex-wrap gap-4">
+        <Badge icon={<Shield size={12} />} color="success">Verified</Badge>
+        <Badge icon={<Star size={12} />} color="warning">Premium</Badge>
+        <Badge icon={<User size={12} />} color="secondary">Admin</Badge>
+        <Badge icon={<Clock size={12} />} variant="outline" color="default">Pending</Badge>
+      </div>
+
+      {/* 4. All Colors */}
+      <div className="flex flex-wrap gap-3">
+        <Badge color="primary">Primary</Badge>
+        <Badge color="secondary">Secondary</Badge>
+        <Badge color="success">Success</Badge>
+        <Badge color="warning">Warning</Badge>
+        <Badge color="error">Error</Badge>
+        <Badge color="default">Default</Badge>
+      </div>
     </div>
   );
 }`}
@@ -51,7 +79,7 @@ export default function BadgeShowcase() {
       <DocSubSection title="Shapes (Curve & Square)">
         <div className="flex flex-wrap gap-6 items-center">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase opacity-50">
               Curve (Default)
             </span>
             <div className="flex gap-2">
@@ -64,7 +92,7 @@ export default function BadgeShowcase() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase opacity-50">
               Square
             </span>
             <div className="flex gap-2">
@@ -82,7 +110,7 @@ export default function BadgeShowcase() {
       <DocSubSection title="Icon Variations">
         <div className="flex flex-wrap gap-8 items-center">
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase opacity-50">
               Without Icon
             </span>
             <div className="flex gap-2">
@@ -91,14 +119,14 @@ export default function BadgeShowcase() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase opacity-50">
               With Icon
             </span>
             <div className="flex gap-2">
-              <Badge icon={<Star size={10} />} color="primary">
+              <Badge icon={<Star size={12} />} color="primary">
                 Featured
               </Badge>
-              <Badge icon={<Shield size={10} />} color="success">
+              <Badge icon={<Shield size={12} />} color="success">
                 Verified
               </Badge>
             </div>
@@ -108,16 +136,16 @@ export default function BadgeShowcase() {
 
       <DocSubSection title="With Icons">
         <div className="flex flex-wrap gap-4">
-          <Badge icon={<Shield size={10} />} color="primary">
+          <Badge icon={<Shield size={12} />} color="primary">
             Verified
           </Badge>
-          <Badge icon={<Star size={10} />} color="warning">
+          <Badge icon={<Star size={12} />} color="warning">
             Premium
           </Badge>
-          <Badge icon={<User size={10} />} color="secondary">
+          <Badge icon={<User size={12} />} color="secondary">
             Admin
           </Badge>
-          <Badge icon={<Clock size={10} />} variant="outline" color="default">
+          <Badge icon={<Clock size={12} />} variant="outline" color="default">
             Pending
           </Badge>
         </div>

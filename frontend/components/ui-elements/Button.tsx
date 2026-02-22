@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@lib/utils";
+import { useRipple, RippleContainer } from "./Ripple";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
@@ -42,10 +43,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       startIcon,
       endIcon,
       children,
+      onClick,
       ...props
     },
     ref,
   ) => {
+    const { ripples, createRipple, removeRipple } = useRipple();
+
+    const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      createRipple(event);
+      if (onClick) onClick(event);
+    };
+
     const colorStyles = {
       primary: "bg-brand-primary text-white hover:bg-brand-hover",
       secondary: "bg-brand-secondary text-white hover:opacity-90",
@@ -126,8 +135,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        onClick={handleButtonClick}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
+          "relative overflow-hidden inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
           variantStyles,
           sizes[size],
           shadowClass,
@@ -136,13 +146,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {startIcon && (
-          <span className="mr-2 inline-flex self-center">{startIcon}</span>
-        )}
-        {children}
-        {endIcon && (
-          <span className="ml-2 inline-flex self-center">{endIcon}</span>
-        )}
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {startIcon && (
+            <span className="inline-flex self-center">{startIcon}</span>
+          )}
+          {children}
+          {endIcon && (
+            <span className="inline-flex self-center">{endIcon}</span>
+          )}
+        </span>
+
+        {/* Ripple Container */}
+        <RippleContainer ripples={ripples} onRemove={removeRipple} />
       </button>
     );
   },

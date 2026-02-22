@@ -72,7 +72,7 @@ export const Badge = ({
       {icon && <span className="shrink-0">{icon}</span>}
       <Typography
         variant="body5"
-        weight="black"
+        weight="medium"
         color="text-inherit"
         className="uppercase tracking-wider"
         as="span"

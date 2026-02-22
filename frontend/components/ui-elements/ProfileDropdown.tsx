@@ -8,12 +8,50 @@ import type { CurrentUser } from "@lib/auth/user-utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
 interface ProfileDropdownProps {
   user: CurrentUser | null;
   isOpen: boolean;
   onToggle: () => void;
 }
+
+const ProfileMenuLink = ({
+  href,
+  onClick,
+  children,
+  icon,
+}: {
+  href: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  icon: React.ReactNode;
+}) => {
+  const { ripples, createRipple, removeRipple } = useRipple();
+
+  return (
+    <Link
+      href={href}
+      className="relative overflow-hidden flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-all group"
+      onClick={(e) => {
+        createRipple(e);
+        onClick();
+      }}
+    >
+      <div className="relative z-10 w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-background transition-colors shrink-0">
+        {icon}
+      </div>
+      <Typography variant="body4" weight="semibold" className="relative z-10">
+        {children}
+      </Typography>
+      <RippleContainer
+        ripples={ripples}
+        onRemove={removeRipple}
+        color="bg-brand-primary/10"
+      />
+    </Link>
+  );
+};
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   user,
@@ -106,12 +144,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               >
                 Settings
               </Typography>
-              <Link
+              <ProfileMenuLink
                 href="/admin/profile"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-all"
                 onClick={onToggle}
-              >
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-background transition-colors">
+                icon={
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -125,9 +161,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
                   </svg>
-                </div>
+                }
+              >
                 My Profile
-              </Link>
+              </ProfileMenuLink>
 
               <div className="border-t border-border my-1 pt-1">
                 <Button

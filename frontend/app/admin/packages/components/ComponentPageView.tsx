@@ -66,7 +66,7 @@ export const ComponentPageView = ({
       <div className="space-y-16">
         <section>
           <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm mb-6">
-            <div className="p-12 flex items-center justify-center bg-muted/20 dark:bg-slate-900/40 relative group min-h-[300px]">
+            <div className="p-6 flex items-center justify-center bg-muted/20 dark:bg-slate-900/40 relative group min-h-[300px]">
               {children}
             </div>
             <div className="px-6 py-3 border-t border-border bg-muted/10 flex items-center justify-end gap-3">

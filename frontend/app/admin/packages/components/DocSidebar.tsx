@@ -5,11 +5,46 @@ import { Code2 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 import { CATEGORIES } from "../data/documentation";
+import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
 interface DocSidebarProps {
   activeItem: string;
   onSelect: (id: string) => void;
 }
+
+const DocNavItem = ({
+  item,
+  activeItem,
+  onSelect,
+}: {
+  item: { id: string; name: string };
+  activeItem: string;
+  onSelect: (id: string) => void;
+}) => {
+  const { ripples, createRipple, removeRipple } = useRipple();
+
+  return (
+    <button
+      onClick={(e) => {
+        createRipple(e);
+        onSelect(item.id);
+      }}
+      className={cn(
+        "relative overflow-hidden w-full text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group flex items-center justify-between",
+        activeItem === item.id
+          ? "text-brand-primary bg-brand-primary/10 dark:bg-brand-primary/20 shadow-sm ring-1 ring-brand-primary/20"
+          : "text-slate-600 dark:text-slate-400 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary",
+      )}
+    >
+      <span className="relative z-10 flex items-center gap-2">{item.name}</span>
+      <RippleContainer
+        ripples={ripples}
+        onRemove={removeRipple}
+        color="bg-brand-primary/10"
+      />
+    </button>
+  );
+};
 
 export const DocSidebar = ({ activeItem, onSelect }: DocSidebarProps) => (
   <aside className="w-80 flex flex-col bg-card/60 backdrop-blur-xl border border-border rounded-3xl overflow-hidden shadow-sm h-full hidden md:flex transition-all duration-500">
@@ -49,17 +84,11 @@ export const DocSidebar = ({ activeItem, onSelect }: DocSidebarProps) => (
           <ul className="space-y-1">
             {cat.items.map((item) => (
               <li key={item.id}>
-                <button
-                  onClick={() => onSelect(item.id)}
-                  className={cn(
-                    "w-full text-left px-3 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 group flex items-center justify-between",
-                    activeItem === item.id
-                      ? "text-brand-primary bg-brand-primary/10 dark:bg-brand-primary/20 shadow-sm ring-1 ring-brand-primary/20"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary",
-                  )}
-                >
-                  <span className="flex items-center gap-2">{item.name}</span>
-                </button>
+                <DocNavItem
+                  item={item}
+                  activeItem={activeItem}
+                  onSelect={onSelect}
+                />
               </li>
             ))}
           </ul>

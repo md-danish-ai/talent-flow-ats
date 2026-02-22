@@ -10,12 +10,14 @@ import { Typography } from "@components/ui-elements/Typography";
 import { useSidebar } from "./sidebar/index";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
+import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
 interface NavbarProps {
   user: CurrentUser | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ user }) => {
+  const { ripples, createRipple, removeRipple } = useRipple();
   const { toggleSidebar } = useSidebar();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -51,9 +53,10 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="flex items-center gap-2 text-[var(--color-brand-primary)]"
+              className="relative overflow-hidden flex items-center gap-2 text-[var(--color-brand-primary)] px-3 py-1.5 rounded-xl transition-all hover:bg-brand-primary/5"
+              onClick={createRipple}
             >
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="relative z-10 w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
                 <Image
                   src="/bg.png"
                   alt="ArcInterview"
@@ -66,10 +69,15 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                 variant="body1"
                 weight="bold"
                 as="span"
-                className="text-foreground tracking-tight hidden sm:block"
+                className="relative z-10 text-foreground tracking-tight hidden sm:block"
               >
                 ArcInterview
               </Typography>
+              <RippleContainer
+                ripples={ripples}
+                onRemove={removeRipple}
+                color="bg-brand-primary/10"
+              />
             </Link>
 
             <Button
