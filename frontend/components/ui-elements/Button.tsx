@@ -27,6 +27,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | "auto";
   shadow?: boolean;
   animate?: "none" | "scale" | "slide" | "rotate" | "spin";
+  iconAnimation?: "none" | "rotate-90" | "rotate-180" | "rotate-360" | "spin";
   isActive?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -42,6 +43,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       isActive = false,
       shadow = false,
       animate = "none",
+      iconAnimation = "none",
       startIcon,
       endIcon,
       children,
@@ -134,6 +136,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               ? "animate-spin"
               : "";
 
+    const iconAnimationClasses =
+      iconAnimation === "rotate-90"
+        ? "transition-transform duration-300 group-hover:rotate-90"
+        : iconAnimation === "rotate-180"
+          ? "transition-transform duration-500 group-hover:rotate-180"
+          : iconAnimation === "rotate-360"
+            ? "transition-transform duration-700 group-hover:rotate-[360deg]"
+            : iconAnimation === "spin"
+              ? "animate-spin"
+              : "";
+
     return (
       <button
         ref={ref}
@@ -144,6 +157,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           sizes[size],
           shadowClass,
           animationClass,
+          iconAnimation !== "none" ? "group" : "",
           className,
         )}
         {...props}
@@ -162,11 +176,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           )}
         >
           {startIcon && (
-            <span className="inline-flex self-center">{startIcon}</span>
+            <span
+              className={cn("inline-flex self-center", iconAnimationClasses)}
+            >
+              {startIcon}
+            </span>
           )}
           {children}
           {endIcon && (
-            <span className="inline-flex self-center">{endIcon}</span>
+            <span
+              className={cn("inline-flex self-center", iconAnimationClasses)}
+            >
+              {endIcon}
+            </span>
           )}
         </span>
 

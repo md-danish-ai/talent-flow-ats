@@ -23,7 +23,9 @@ export default async function AdminLayout({
           <Sidebar />
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0 bg-layout-bg transition-colors">
-            <div className="mx-auto w-full max-w-7xl h-full">{children}</div>
+            <div className="mx-auto w-full max-w-7xl min-h-full">
+              {children}
+            </div>
           </main>
         </div>
       </div>

@@ -28,11 +28,13 @@ export const InlineDrawer: React.FC<InlineDrawerProps> = ({
           animate={{ width: 320, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{
-            duration: 0.4,
-            ease: [0.23, 1, 0.32, 1], // Consistently matching the smooth easing
+            type: "spring",
+            damping: 25,
+            stiffness: 200,
+            mass: 1,
           }}
           className={cn(
-            "bg-card border-l border-border flex flex-col hidden sm:flex shrink-0 overflow-hidden h-full transition-colors",
+            "bg-card flex flex-col sm:flex shrink-0 overflow-hidden h-full",
             className,
           )}
         >

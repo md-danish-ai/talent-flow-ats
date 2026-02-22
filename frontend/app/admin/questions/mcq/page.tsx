@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Input } from "@components/ui-elements/Input";
 import { AddQuestionModal } from "./components/AddQuestionModal";
+import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
   TableBody,
@@ -19,6 +21,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Filter, Search, RotateCcw, Plus, ListChecks } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
+import { Pagination } from "@components/ui-elements/Pagination";
 
 export default function MCQPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -44,23 +47,32 @@ export default function MCQPage() {
     "createdBy",
   ]);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const totalItems = 100; // Mock total items
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
 
-  // Mock data for the table based on reference image
-  const mockData = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    question: `Sample Multiple Choice Question ${i + 1} for testing the UI layout and scroll behavior.`,
-    subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
-    createdBy: "Manish Joshi - Mohan Lal",
-    createdDate: "17/11/2018",
-  }));
+  // Mock data simulation for pagination
+  const mockData = Array.from({ length: pageSize }).map((_, i) => {
+    const actualId = (currentPage - 1) * pageSize + i + 1;
+    return {
+      id: actualId,
+      question: `Sample Multiple Choice Question ${actualId} for testing the UI layout and scroll behavior.`,
+      subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
+      createdBy: "Manish Joshi - Mohan Lal",
+      createdDate: "17/11/2018",
+    };
+  });
 
   return (
-    <>
+    <PageContainer animate>
       <MainCard
         title={
           <>
@@ -70,8 +82,8 @@ export default function MCQPage() {
             Multiple Choice Questions
           </>
         }
-        className="mb-6"
-        bodyClassName="p-0 flex flex-row items-stretch"
+        className="mb-6 flex-1 flex flex-col min-h-[600px]"
+        bodyClassName="p-0 flex flex-row items-stretch flex-1"
         action={
           <div className="flex items-center gap-3">
             <TableColumnToggle
@@ -91,229 +103,273 @@ export default function MCQPage() {
               <Filter size={18} />
             </Button>
             <Button
-              size="medium"
+              variant="primary"
               color="primary"
+              size="default"
               shadow
               animate="scale"
-              startIcon={<Plus size={14} />}
+              iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
-              className="rounded-md"
+              startIcon={<Plus size={18} />}
+              className="rounded-lg font-bold"
             >
               Add Question
             </Button>
           </div>
         }
       >
-        {/* Table Area */}
-        <div className="flex-1 overflow-x-auto w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]"></TableHead>
-                {visibleColumns.includes("srNo") && (
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                )}
-                {visibleColumns.includes("question") && (
-                  <TableHead>Question</TableHead>
-                )}
-                {visibleColumns.includes("subject") && (
-                  <TableHead>Subject</TableHead>
-                )}
-                {visibleColumns.includes("createdBy") && (
-                  <TableHead>Created By</TableHead>
-                )}
-                {visibleColumns.includes("createdDate") && (
-                  <TableHead>Created Date</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockData.map((row) => (
-                <TableCollapsibleRow
-                  key={row.id}
-                  colSpan={visibleColumns.length + 1}
-                  expandedContent={
-                    <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                      {/* Header */}
-                      <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-                        <Typography variant="body3" weight="semibold">
-                          Options & Answer
-                        </Typography>
-                      </div>
-
-                      {/* Inner Table */}
-                      <div className="overflow-x-auto pb-1">
-                        <Table>
-                          <TableHeader className="bg-transparent text-foreground [&_tr]:border-b-0 border-b border-border">
-                            <TableRow className="hover:bg-transparent border-0">
-                              <TableHead className="font-semibold px-5 py-3 h-auto w-[120px]">
-                                Option
-                              </TableHead>
-                              <TableHead className="font-semibold px-5 py-3 h-auto">
-                                Value
-                              </TableHead>
-                              <TableHead className="font-semibold px-5 py-3 text-right h-auto w-[150px]">
-                                Is Correct
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody className="[&_tr:last-child]:border-0 bg-transparent">
-                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-foreground">
-                                A
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-muted-foreground">
-                                Sample Option A
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                Incorrect
-                              </TableCell>
-                            </TableRow>
-                            <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-foreground">
-                                B
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-muted-foreground">
-                                Sample Option B
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
-                                Correct
-                              </TableCell>
-                            </TableRow>
-                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-foreground">
-                                C
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-muted-foreground">
-                                Sample Option C
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                Incorrect
-                              </TableCell>
-                            </TableRow>
-                            <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                              <TableCell className="px-5 py-3 font-medium text-foreground">
-                                D
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-muted-foreground">
-                                Sample Option D
-                              </TableCell>
-                              <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                Incorrect
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      {/* Footer Notes */}
-                      <div className="px-5 py-3 bg-muted/20 border-t border-border">
-                        <Typography
-                          variant="body3"
-                          weight="semibold"
-                          className="inline-block mr-1"
-                        >
-                          Explanation:
-                        </Typography>
-                        <Typography
-                          variant="body3"
-                          className="text-muted-foreground inline-block"
-                        >
-                          This is a sample explanation for the multiple choice
-                          question. It expands seamlessly below the row.
-                        </Typography>
-                      </div>
-                    </div>
-                  }
-                >
+        {/* Main Content Area (Table + Pagination) */}
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden",
+            isFilterOpen && "border-r border-border",
+          )}
+        >
+          {/* Table Area */}
+          <div className="flex-1 overflow-x-auto w-full min-h-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
-                    <TableCell className="font-medium text-center">
-                      {row.id}
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
-                    <TableCell>{row.question}</TableCell>
+                    <TableHead>Question</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
-                    <TableCell>{row.subject}</TableCell>
+                    <TableHead>Subject</TableHead>
                   )}
                   {visibleColumns.includes("createdBy") && (
-                    <TableCell>{row.createdBy}</TableCell>
+                    <TableHead>Created By</TableHead>
                   )}
                   {visibleColumns.includes("createdDate") && (
-                    <TableCell>{row.createdDate}</TableCell>
+                    <TableHead>Created Date</TableHead>
                   )}
-                </TableCollapsibleRow>
-              ))}
-            </TableBody>
-          </Table>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockData.map((row) => (
+                  <TableCollapsibleRow
+                    key={row.id}
+                    colSpan={visibleColumns.length + 1}
+                    expandedContent={
+                      <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                        {/* Header Area */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
+                              <ListChecks size={18} />
+                            </div>
+                            <div>
+                              <Typography variant="body3" weight="bold">
+                                Question Details & Options
+                              </Typography>
+                              <Typography
+                                variant="body5"
+                                className="text-muted-foreground"
+                              >
+                                Review all options and correct answer
+                                explanation.
+                              </Typography>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Options Grid */}
+                        <div className="p-5">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-muted/30 border-b border-border">
+                                <TableHead className="w-[80px] h-10">
+                                  Option
+                                </TableHead>
+                                <TableHead className="h-10">Content</TableHead>
+                                <TableHead className="w-[120px] text-right h-10">
+                                  Status
+                                </TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                                <TableCell className="px-5 py-3 font-medium text-foreground">
+                                  A
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-muted-foreground">
+                                  Sample Option A
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
+                                  Incorrect
+                                </TableCell>
+                              </TableRow>
+                              <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
+                                <TableCell className="px-5 py-3 font-medium text-foreground">
+                                  B
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-muted-foreground font-bold text-green-600 dark:text-green-500">
+                                  Sample Option B (Correct)
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
+                                  Correct
+                                </TableCell>
+                              </TableRow>
+                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                                <TableCell className="px-5 py-3 font-medium text-foreground">
+                                  C
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-muted-foreground">
+                                  Sample Option C
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
+                                  Incorrect
+                                </TableCell>
+                              </TableRow>
+                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
+                                <TableCell className="px-5 py-3 font-medium text-foreground">
+                                  D
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-muted-foreground">
+                                  Sample Option D
+                                </TableCell>
+                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
+                                  Incorrect
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Footer Notes */}
+                        <div className="px-5 py-3 bg-muted/20 border-t border-border">
+                          <Typography
+                            variant="body3"
+                            weight="semibold"
+                            className="inline-block mr-1"
+                          >
+                            Explanation:
+                          </Typography>
+                          <Typography
+                            variant="body3"
+                            className="text-muted-foreground inline-block"
+                          >
+                            This is a sample explanation for the multiple choice
+                            question. It expands seamlessly below the row.
+                          </Typography>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {visibleColumns.includes("srNo") && (
+                      <TableCell className="font-medium text-center">
+                        {row.id}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes("question") && (
+                      <TableCell>{row.question}</TableCell>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableCell>{row.subject}</TableCell>
+                    )}
+                    {visibleColumns.includes("createdBy") && (
+                      <TableCell>{row.createdBy}</TableCell>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableCell>{row.createdDate}</TableCell>
+                    )}
+                  </TableCollapsibleRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination Area */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            className="mt-auto shrink-0"
+          />
         </div>
 
         <InlineDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filter"
+          title="Filters"
         >
-          <div className="p-5 flex-1 space-y-6">
-            <div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
+            {/* Search */}
+            <div className="space-y-3">
               <Typography
-                as="label"
-                variant="body3"
-                weight="medium"
-                className="block mb-1.5 text-foreground"
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                Subject
+                Search Questions
               </Typography>
-              <SelectDropdown
-                placeholder="Please Select Subject"
-                value={subjectFilter}
-                onChange={setSubjectFilter}
-                options={[
-                  { id: "Industry Awareness", label: "Industry Awareness" },
-                  { id: "Comprehension", label: "Comprehension" },
-                ]}
-                placement="bottom"
-                className="text-sm"
-              />
-            </div>
-
-            <div>
-              <Typography
-                as="label"
-                variant="body3"
-                weight="medium"
-                className="block mb-1.5 text-foreground"
-              >
-                Search Question
-              </Typography>
-              <div className="relative">
+              <div className="relative group">
+                <Search
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
+                  size={18}
+                />
                 <Input
-                  type="text"
-                  placeholder="Search Question---"
-                  className="text-sm"
-                  startIcon={<Search className="w-4 h-4" />}
+                  placeholder="Search by keyword..."
+                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all rounded-xl bg-muted/20"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="pt-6 border-t border-border flex justify-center mt-auto">
+            {/* Subject Dropdown */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                By Subject
+              </Typography>
+              <SelectDropdown
+                placeholder="All Subjects"
+                options={[
+                  { id: "all", label: "All Subjects" },
+                  { id: "ia", label: "Industry Awareness" },
+                  { id: "comp", label: "Comprehension" },
+                ]}
+                value={subjectFilter || "all"}
+                onChange={(val) => setSubjectFilter(val)}
+                className="h-12 border-border/60 hover:border-border rounded-xl bg-muted/20"
+                placement="bottom"
+              />
+            </div>
+
+            {/* Reset Action directly after dropdown */}
+            <div className="pt-2">
               <Button
                 variant="outline"
                 color="primary"
-                size="medium"
-                startIcon={<RotateCcw size={14} />}
-                onClick={() => {
-                  setSubjectFilter(undefined);
-                  setSearchQuery("");
-                }}
+                size="default"
+                shadow
                 animate="scale"
-                className="rounded-md"
+                iconAnimation="rotate-360"
+                startIcon={<RotateCcw size={18} />}
+                onClick={() => {
+                  setSearchQuery("");
+                  setSubjectFilter(undefined);
+                }}
+                className="rounded-lg font-bold w-full h-12"
+                title="Reset Filters"
               >
-                Reset
+                Reset Filters
               </Button>
             </div>
           </div>
@@ -324,6 +380,6 @@ export default function MCQPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
-    </>
+    </PageContainer>
   );
 }

@@ -34,11 +34,7 @@ export const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody
-    ref={ref}
-    className={cn("[&_tr:last-child]:border-0 bg-card", className)}
-    {...props}
-  />
+  <tbody ref={ref} className={cn("bg-card", className)} {...props} />
 ));
 TableBody.displayName = "TableBody";
 
