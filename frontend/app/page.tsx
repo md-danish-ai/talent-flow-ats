@@ -4,24 +4,44 @@ import { SignUpForm } from "@components/features/authforms/SignUpForm";
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen overflow-hidden font-sans">
-      {/* ===== LEFT SIDE — Light background with form card ===== */}
-      <div className="relative flex w-full items-center justify-center bg-[#f0eeeb] lg:w-[50%]">
-        {/* subtle geometric facet texture */}
-        <div
-          className="absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
-            backgroundSize: "200px 200px",
-          }}
-        />
+    <div className="flex min-h-screen overflow-hidden font-sans bg-brand-primary lg:bg-[#f0eeeb]">
+      {/* ===== DESKTOP ONLY — Faceted background for the left side ===== */}
+      <div
+        className="hidden lg:block absolute inset-0 z-0 opacity-[0.35]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
+          backgroundSize: "200px 200px",
+          width: "50%",
+        }}
+      />
 
-        {/* Content Container */}
-        <div className="relative z-10 w-full flex flex-col items-center">
-          {/* THE CARD — Kept in Page for SSR Performance */}
-          <div className="relative z-10 mx-6 w-full max-w-[440px] rounded-3xl bg-white p-8 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.08)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
+      {/* ===== ORANGE PANEL — Always visible, full width on mobile, half on desktop ===== */}
+      <div className="absolute right-0 top-0 h-full w-full lg:w-1/2 bg-brand-primary overflow-hidden">
+        <Image
+          src="/ag.svg"
+          alt="Arcgate Logo"
+          width={433}
+          height={454}
+          className="absolute opacity-20 lg:opacity-100"
+          style={{
+            right: "-230px",
+            top: "50%",
+            transform: "translateY(-40%)",
+            height: "95%",
+            width: "auto",
+          }}
+          priority
+        />
+      </div>
+
+      {/* ===== CONTENT LAYER — Card centered on mobile, positioned on desktop ===== */}
+      <div className="relative z-10 flex w-full flex-col lg:flex-row items-center justify-center lg:justify-start min-h-screen">
+        {/* Left padding/space on desktop to align the card to the faceted side */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-10 lg:py-0">
+          {/* THE CARD */}
+          <div className="relative z-10 mx-auto w-[92%] sm:w-full max-w-[440px] rounded-[2.5rem] bg-white p-7 sm:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
             {/* Logo row */}
-            <div className="mb-4">
+            <div className="mb-6">
               <div className="flex items-center gap-3">
                 <Image
                   src="/logo.svg"
@@ -41,11 +61,11 @@ export default function RegisterPage() {
             </div>
 
             {/* Welcome heading */}
-            <div className="mb-4">
+            <div className="mb-6">
               <Typography
                 variant="h2"
                 weight="bold"
-                className="text-xl text-slate-800"
+                className="text-2xl text-slate-800"
               >
                 Create Account
               </Typography>
@@ -57,25 +77,9 @@ export default function RegisterPage() {
             <SignUpForm />
           </div>
         </div>
-      </div>
 
-      {/* ===== RIGHT SIDE — Orange brand panel with parallax bg ===== */}
-      <div className="hidden lg:flex w-1/2 relative bg-brand-primary flex-col items-center justify-center p-12 overflow-hidden">
-        <Image
-          src="/ag.svg"
-          alt="Arcgate Logo"
-          width={433}
-          height={454}
-          className="absolute"
-          style={{
-            right: "-230px",
-            top: "50%",
-            transform: "translateY(-40%)",
-            height: "95%",
-            width: "auto",
-          }}
-          priority
-        />
+        {/* Empty right side on desktop - card is already overlapping from the left side */}
+        <div className="hidden lg:block lg:w-1/2 h-full" />
       </div>
     </div>
   );
