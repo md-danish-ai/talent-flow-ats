@@ -1,32 +1,45 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import { DocSidebar } from "./components/DocSidebar";
 import { DocFooter } from "./components/DocFooter";
 
-// Documentation Sections
-import { ButtonDocs } from "./components/sections/ButtonDocs";
-import { InputDocs } from "./components/sections/InputDocs";
-import { SelectDocs } from "./components/sections/SelectDocs";
-import { TableDocs } from "./components/sections/TableDocs";
-import { StatDocs } from "./components/sections/StatDocs";
-import { ModalDocs } from "./components/sections/ModalDocs";
-import { AlertDocs } from "./components/sections/AlertDocs";
-import { TypographyDocs } from "./components/sections/TypographyDocs";
-import { BadgeDocs } from "./components/sections/BadgeDocs";
+import dynamic from "next/dynamic";
 
-export default function PackagesPage() {
-  const [activeItem, setActiveItem] = useState("button");
-  const [selectedValue, setSelectedValue] = useState<
-    string | number | undefined
-  >(undefined);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const ButtonDocs = dynamic(() =>
+  import("./components/sections/ButtonDocs").then((m) => m.ButtonDocs),
+);
+const InputDocs = dynamic(() =>
+  import("./components/sections/InputDocs").then((m) => m.InputDocs),
+);
+const SelectDocs = dynamic(() =>
+  import("./components/sections/SelectDocs").then((m) => m.SelectDocs),
+);
+const TableDocs = dynamic(() =>
+  import("./components/sections/TableDocs").then((m) => m.TableDocs),
+);
+const StatDocs = dynamic(() =>
+  import("./components/sections/StatDocs").then((m) => m.StatDocs),
+);
+const ModalDocs = dynamic(() =>
+  import("./components/sections/ModalDocs").then((m) => m.ModalDocs),
+);
+const AlertDocs = dynamic(() =>
+  import("./components/sections/AlertDocs").then((m) => m.AlertDocs),
+);
+const TypographyDocs = dynamic(() =>
+  import("./components/sections/TypographyDocs").then((m) => m.TypographyDocs),
+);
+const BadgeDocs = dynamic(() =>
+  import("./components/sections/BadgeDocs").then((m) => m.BadgeDocs),
+);
 
-  // Auto-scroll to top when changing component
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [activeItem]);
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function PackagesPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
+  const activeItem = (resolvedSearchParams.item as string) || "button";
 
   // Environment Guard
   if (
@@ -59,19 +72,13 @@ export default function PackagesPage() {
       case "input":
         return <InputDocs />;
       case "select":
-        return <SelectDocs value={selectedValue} onChange={setSelectedValue} />;
+        return <SelectDocs />;
       case "table":
         return <TableDocs />;
       case "stat-card":
         return <StatDocs />;
       case "modal":
-        return (
-          <ModalDocs
-            isOpen={isModalOpen}
-            onOpen={() => setIsModalOpen(true)}
-            onClose={() => setIsModalOpen(false)}
-          />
-        );
+        return <ModalDocs />;
       case "alert":
         return <AlertDocs />;
       case "badge":
@@ -86,7 +93,7 @@ export default function PackagesPage() {
   return (
     <div className="flex gap-8 h-full min-h-[calc(100vh-180px)] selection:bg-brand-primary/20">
       {/* Documentation Navigation (Left Panel) */}
-      <DocSidebar activeItem={activeItem} onSelect={setActiveItem} />
+      <DocSidebar activeItem={activeItem} />
 
       {/* Documentation Content (Right Panel) */}
       <section className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar rounded-3xl group/main">

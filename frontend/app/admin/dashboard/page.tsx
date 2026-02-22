@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { StatCard } from "@components/ui-cards/StatCard";

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { cn } from "@lib/utils";
 import { Typography } from "@components/ui-elements/Typography";

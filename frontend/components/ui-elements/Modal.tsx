@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
