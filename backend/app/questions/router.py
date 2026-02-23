@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, Query,File,Form,UploadFile
+from fastapi import APIRouter, Depends,File,UploadFile
 from . import schemas
 from app.questions.service import QuestionService
 from app.auth.dependencies import get_current_user
-from typing import Optional 
 from .schemas import QuestionCreate, QuestionUpdate
 
 
