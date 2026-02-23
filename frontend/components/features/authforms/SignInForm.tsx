@@ -83,7 +83,7 @@ export function SignInForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-2 block uppercase tracking-wider text-slate-500"
+                className="mb-2 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Select Your Role
               </Typography>
@@ -93,7 +93,7 @@ export function SignInForm() {
                   className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
                     field.state.value === "user"
                       ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
+                      : "border-slate-100 dark:border-border text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
                   }`}
                 >
                   <input
@@ -116,7 +116,7 @@ export function SignInForm() {
                   className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
                     field.state.value === "admin"
                       ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
+                      : "border-slate-100 dark:border-border text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
                   }`}
                 >
                   <input
@@ -146,14 +146,14 @@ export function SignInForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Mobile Number
               </Typography>
               <div className="relative">
                 <Input
                   type="tel"
-                  placeholder="+91 98765 43210"
+                  placeholder="9999999999"
                   startIcon={<Phone className="h-[18px] w-[18px]" />}
                   error={field.state.meta.errors.length > 0}
                   value={field.state.value}
@@ -182,7 +182,7 @@ export function SignInForm() {
                 <Typography
                   as="label"
                   variant="h6"
-                  className="uppercase tracking-wider text-slate-500"
+                  className="uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
                   Password
                 </Typography>
@@ -253,7 +253,10 @@ export function SignInForm() {
       </form>
 
       {role === "user" && (
-        <Typography variant="body4" className="mt-6 text-center text-slate-400">
+        <Typography
+          variant="body4"
+          className="mt-6 text-center text-slate-400 dark:text-slate-500"
+        >
           New to TalentFlow?{" "}
           <Link
             href="/"

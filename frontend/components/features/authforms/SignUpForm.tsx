@@ -84,7 +84,7 @@ export function SignUpForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Full Name
               </Typography>
@@ -120,7 +120,7 @@ export function SignUpForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Mobile Number
               </Typography>
@@ -128,7 +128,7 @@ export function SignUpForm() {
                 <Input
                   name="mobile"
                   type="tel"
-                  placeholder="+91 98765 43210"
+                  placeholder="9999999999"
                   startIcon={<Phone className="h-[18px] w-[18px]" />}
                   error={field.state.meta.errors.length > 0}
                   value={field.state.value}
@@ -156,7 +156,7 @@ export function SignUpForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Email Address{" "}
                 <Typography
@@ -199,7 +199,7 @@ export function SignUpForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Select Your Test Level
               </Typography>
@@ -258,7 +258,7 @@ export function SignUpForm() {
 
       <Link
         href="/sign-in"
-        className="mt-6 flex items-center justify-center gap-1 text-small text-slate-400 transition-colors hover:text-brand-primary"
+        className="mt-6 flex items-center justify-center gap-1 text-small text-slate-400 dark:text-slate-500 transition-colors hover:text-brand-primary"
       >
         Already have an account?{" "}
         <Typography

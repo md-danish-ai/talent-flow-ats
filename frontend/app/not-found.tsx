@@ -8,10 +8,10 @@ import { Button } from "@components/ui-elements/Button";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0eeeb] px-6 font-sans overflow-hidden relative">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0eeeb] dark:bg-background px-6 font-sans overflow-hidden relative">
       {/* Subtle background geometric patterns */}
       <div
-        className="absolute inset-0 opacity-[0.4]"
+        className="absolute inset-0 opacity-[0.4] dark:opacity-10"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
           backgroundSize: "250px 250px",
@@ -38,7 +38,7 @@ export default function NotFound() {
           <Typography
             as="h1"
             variant="h1"
-            className="text-[12rem] font-black leading-none text-white drop-shadow-2xl lg:text-[18rem]"
+            className="text-[12rem] font-black leading-none text-white dark:text-white/10 drop-shadow-2xl lg:text-[18rem]"
           >
             404
           </Typography>
@@ -67,13 +67,13 @@ export default function NotFound() {
         >
           <Typography
             variant="h2"
-            className="text-3xl font-bold text-slate-800 lg:text-5xl"
+            className="text-3xl font-bold text-slate-800 dark:text-foreground lg:text-5xl"
           >
             Lost in candidates?
           </Typography>
           <Typography
             variant="body1"
-            className="mt-4 max-w-md font-medium text-slate-500 lg:text-xl"
+            className="mt-4 max-w-md font-medium text-slate-500 dark:text-muted-foreground lg:text-xl"
           >
             The page you are looking for has been moved, deleted, or never
             existed in our database.
@@ -100,7 +100,7 @@ export default function NotFound() {
           </Link>
           <Button
             variant="outline"
-            color="default"
+            color="primary"
             size="lg"
             className="w-full sm:w-auto font-bold px-8 bg-transparent"
             onClick={() => window.history.back()}
@@ -121,7 +121,7 @@ export default function NotFound() {
         >
           <Typography
             variant="body3"
-            className="font-bold uppercase tracking-[0.2em] text-slate-400"
+            className="font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500"
           >
             TalentFlow ATS
           </Typography>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV_LINKS } from "@data/navigation";
+import { ADMIN_ROUTES, NavSection } from "@lib/config/adminRoutes";
 import { Button } from "@components/ui-elements/Button";
 
 import { useSidebar } from "./SidebarProvider";
@@ -21,9 +21,10 @@ export const Sidebar = () => {
 
   // Seed with the active collapsible on mount → refresh pe auto-open
   const [expandedSection, setExpandedSection] = useState<string | null>(() => {
-    const active = ADMIN_NAV_LINKS.find(
-      (s) =>
-        s.type !== "item" && s.items.some((item) => pathname === item.href),
+    const active = ADMIN_ROUTES.find(
+      (s: NavSection) =>
+        s.type !== "item" &&
+        s.items.some((item: { href: string }) => pathname === item.href),
     );
     return active ? active.title : null;
   });
@@ -103,7 +104,7 @@ export const Sidebar = () => {
           {/* Desktop nav — collapsed (icons only) */}
           {isCollapsed && (
             <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">
-              {ADMIN_NAV_LINKS.map((section) => (
+              {ADMIN_ROUTES.map((section: NavSection) => (
                 <CollapsedNavItem
                   key={section.title}
                   section={section}
@@ -120,7 +121,7 @@ export const Sidebar = () => {
           {/* Desktop nav — expanded */}
           {!isCollapsed && (
             <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-6 px-4 space-y-2">
-              {ADMIN_NAV_LINKS.map((section) => (
+              {ADMIN_ROUTES.map((section: NavSection) => (
                 <NavItem
                   key={section.title}
                   section={section}
@@ -135,7 +136,7 @@ export const Sidebar = () => {
 
           {/* Mobile nav — collapsible (reuses same NavItem) */}
           <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
-            {ADMIN_NAV_LINKS.map((section) => (
+            {ADMIN_ROUTES.map((section: NavSection) => (
               <NavItem
                 key={section.title}
                 section={section}

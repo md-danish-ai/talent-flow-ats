@@ -7,7 +7,7 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 
-import { DASHBOARD_STATS, RECENT_ACTIVITIES } from "@data/dashboard";
+import { DASHBOARD_STATS, RECENT_ACTIVITIES } from "@lib/config/dashboard";
 
 export default function DashboardPage() {
   return (
