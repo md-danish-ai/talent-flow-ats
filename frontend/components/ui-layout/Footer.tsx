@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
       <Container>
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#F96331] rounded flex items-center justify-center text-white font-bold text-xs">
+            <div className="w-6 h-6 bg-[var(--color-brand-primary)] rounded flex items-center justify-center text-white font-bold text-xs">
               A
             </div>
             <Typography variant="body4" weight="bold" color="text-slate-900">
@@ -19,10 +19,18 @@ export const Footer: React.FC = () => {
             © {new Date().getFullYear()} Arcgate. All rights reserved.
           </Typography>
           <div className="flex gap-6">
-            <Typography variant="body5" as="a" className="hover:text-[#F96331]">
+            <Typography
+              variant="body5"
+              as="a"
+              className="hover:text-[var(--color-brand-primary)]"
+            >
               Privacy Policy
             </Typography>
-            <Typography variant="body5" as="a" className="hover:text-[#F96331]">
+            <Typography
+              variant="body5"
+              as="a"
+              className="hover:text-[var(--color-brand-primary)]"
+            >
               Terms of Service
             </Typography>
           </div>

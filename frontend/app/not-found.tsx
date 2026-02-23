@@ -3,13 +3,14 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0eeeb] px-6 font-sans overflow-hidden relative">
-      {/* Subtle background geometric patterns */}
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0eeeb] dark:bg-background px-6 font-sans overflow-hidden relative">
       <div
-        className="absolute inset-0 opacity-[0.4]"
+        className="absolute inset-0 opacity-[0.4] dark:opacity-10"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
           backgroundSize: "250px 250px",
@@ -17,7 +18,6 @@ export default function NotFound() {
       />
 
       <div className="relative z-10 flex flex-col items-center text-center">
-        {/* Animated 404 text */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -33,9 +33,13 @@ export default function NotFound() {
           }}
           className="relative"
         >
-          <h1 className="text-[12rem] font-black leading-none text-white drop-shadow-2xl lg:text-[18rem]">
+          <Typography
+            as="h1"
+            variant="h1"
+            className="text-[12rem] font-black leading-none text-white dark:text-white/10 drop-shadow-2xl lg:text-[18rem]"
+          >
             404
-          </h1>
+          </Typography>
           <motion.div
             animate={{
               y: [0, -20, 0],
@@ -52,55 +56,70 @@ export default function NotFound() {
           </motion.div>
         </motion.div>
 
-        {/* Text content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
           className="-mt-8 lg:-mt-12"
         >
-          <h2 className="text-3xl font-bold text-slate-800 lg:text-5xl">
+          <Typography
+            variant="h2"
+            className="text-3xl font-bold text-slate-800 dark:text-foreground lg:text-5xl"
+          >
             Lost in candidates?
-          </h2>
-          <p className="mt-4 max-w-md text-lg font-medium text-slate-500 lg:text-xl">
+          </Typography>
+          <Typography
+            variant="body1"
+            className="mt-4 max-w-md font-medium text-slate-500 dark:text-muted-foreground lg:text-xl"
+          >
             The page you are looking for has been moved, deleted, or never
             existed in our database.
-          </p>
+          </Typography>
         </motion.div>
 
-        {/* Action buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
           className="mt-12 flex flex-col gap-4 sm:flex-row"
         >
-          <Link
-            href="/"
-            className="group flex items-center justify-center gap-2 rounded-2xl bg-brand-primary px-8 py-4 text-lg font-extrabold text-white shadow-lg shadow-brand-primary/30 transition-all hover:scale-105 hover:bg-brand-primary/90 active:scale-95"
-          >
-            <Home className="h-5 w-5" />
-            Go to Home
+          <Link href="/">
+            <Button
+              variant="primary"
+              color="primary"
+              size="lg"
+              className="w-full sm:w-auto font-bold px-8"
+              startIcon={<Home className="h-5 w-5" />}
+            >
+              Go to Home
+            </Button>
           </Link>
-          <button
+          <Button
+            variant="outline"
+            color="primary"
+            size="lg"
+            className="w-full sm:w-auto font-bold px-8 bg-transparent"
             onClick={() => window.history.back()}
-            className="group flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-8 py-4 text-lg font-extrabold text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-95"
+            startIcon={
+              <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+            }
           >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
             Go Back
-          </button>
+          </Button>
         </motion.div>
 
-        {/* Branding */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 1 }}
           className="mt-20"
         >
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+          <Typography
+            variant="body3"
+            className="font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500"
+          >
             TalentFlow ATS
-          </p>
+          </Typography>
         </motion.div>
       </div>
     </div>

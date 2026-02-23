@@ -2,6 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
+import { NAV_ACTIVE, NAV_IDLE } from "./styles";
+import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
 interface NavSubItemProps {
   label: string;
@@ -18,24 +20,35 @@ export const NavSubItem: React.FC<NavSubItemProps> = ({
   onClick,
 }) => {
   const isActive = pathname === href;
+  const { ripples, createRipple, removeRipple } = useRipple();
+
+  const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    createRipple(event);
+    if (onClick) onClick();
+  };
+
   return (
     <Link
       href={href}
-      onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group/item ${
-        isActive
-          ? "text-[#F96331] font-bold bg-orange-50/50"
-          : "text-slate-500 hover:text-[#F96331] hover:bg-orange-50/50"
+      onClick={handleLinkClick}
+      className={`relative overflow-hidden flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group/item ${
+        isActive ? NAV_ACTIVE : NAV_IDLE
       }`}
     >
       <div
-        className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+        className={`relative z-10 w-1.5 h-1.5 rounded-full transition-all duration-200 ${
           isActive
-            ? "bg-[#F96331] scale-110"
-            : "bg-slate-300 group-hover/item:bg-[#F96331]"
+            ? "bg-brand-primary scale-125"
+            : "bg-slate-300 dark:bg-slate-700 group-hover/item:bg-brand-primary"
         }`}
       />
-      {label}
+      <span className="relative z-10 truncate">{label}</span>
+
+      <RippleContainer
+        ripples={ripples}
+        onRemove={removeRipple}
+        color="bg-brand-primary/15"
+      />
     </Link>
   );
 };

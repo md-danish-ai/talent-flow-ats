@@ -11,3 +11,4 @@ export { AnimatedCollapsible } from "./AnimatedCollapsible";
 export { NavSubItem } from "./NavSubItem";
 export { NavItem } from "./NavItem";
 export { CollapsedNavItem } from "./CollapsedNavItem";
+export { Sidebar } from "./Sidebar";

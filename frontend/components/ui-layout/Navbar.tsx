@@ -5,14 +5,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { NotificationDropdown } from "@components/ui-elements/NotificationDropdown";
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
-import { useSidebar } from "./sidebar/index";
+import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
+import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
+import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
+import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
 interface NavbarProps {
   user: CurrentUser | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ user }) => {
+  const { ripples, createRipple, removeRipple } = useRipple();
   const { toggleSidebar } = useSidebar();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -21,7 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -42,15 +46,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-transparent h-[73px] flex items-center">
+    <header className="sticky top-0 z-30 w-full bg-background border-b border-transparent h-[73px] flex items-center transition-colors">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="flex items-center gap-2 text-[#F96331]"
+              className="relative overflow-hidden flex items-center gap-2 text-[var(--color-brand-primary)] px-3 py-1.5 rounded-xl transition-all hover:bg-brand-primary/5"
+              onClick={createRipple}
             >
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="relative z-10 w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
                 <Image
                   src="/bg.png"
                   alt="ArcInterview"
@@ -59,13 +64,26 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   className="object-cover w-full h-full"
                 />
               </div>
-              <span className="font-bold text-slate-900 text-lg tracking-tight hidden sm:block">
+              <Typography
+                variant="body1"
+                weight="bold"
+                as="span"
+                className="relative z-10 text-foreground tracking-tight hidden sm:block"
+              >
                 ArcInterview
-              </span>
+              </Typography>
+              <RippleContainer
+                ripples={ripples}
+                onRemove={removeRipple}
+                color="bg-brand-primary/10"
+              />
             </Link>
 
-            <button
-              className="min-[900px]:hidden text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+            <Button
+              variant="ghost"
+              color="default"
+              size="icon-sm"
+              className="min-[900px]:hidden"
               onClick={toggleSidebar}
             >
               <svg
@@ -81,14 +99,11 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
 
-          {/* <div className="flex items-center gap-4 flex-1 justify-center max-w-2xl px-4">
-            <SearchInput />
-          </div> */}
-
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div ref={notificationsRef}>
               <NotificationDropdown
                 isOpen={isNotificationsOpen}

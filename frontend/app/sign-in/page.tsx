@@ -1,322 +1,26 @@
-"use client";
-
-import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Phone,
-  UserPlus,
-} from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "@tanstack/react-form";
-import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
-import { useSignIn } from "@lib/react-query/user/use-auth";
-
-function getErrorMessage(error: unknown): string {
-  if (typeof error === "string") return error;
-  if (error && typeof error === "object" && "message" in error)
-    return String((error as { message: string }).message);
-  return "Invalid value";
-}
+import { Typography } from "@components/ui-elements/Typography";
+import { SignInForm } from "@components/features/authforms/SignInForm";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [role, setRole] = useState("user");
-  const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-
-  const signInMutation = useSignIn();
-
-  const form = useForm({
-    defaultValues: {
-      mobile: "",
-      password: "",
-      role: role as "user" | "admin",
-    } as SignInFormValues,
-    validators: {
-      onChange: signInSchema,
-    },
-    onSubmit: async ({ value }) => {
-      setServerError(null);
-      try {
-        const response = await signInMutation.mutateAsync(value);
-
-        // Store auth token and role in cookies
-        document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
-        document.cookie = `auth_token=${response.access_token}; path=/`;
-        // Store user info for profile display
-        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(response.user))}; path=/`;
-
-        const userRole = response.user?.role ?? value.role;
-        if (userRole === "admin") {
-          router.push("/admin/dashboard");
-        } else {
-          router.push("/user/dashboard");
-        }
-      } catch (err: unknown) {
-        const error = err as { message?: string };
-        setServerError(
-          error.message ?? "Sign in failed. Please check your credentials.",
-        );
-      }
-    },
-  });
-
   return (
-    <div className="flex min-h-screen overflow-hidden font-sans">
-      {/* ===== LEFT SIDE — Light background with form card ===== */}
-      <div className="relative flex w-full items-center justify-center bg-[#f0eeeb] lg:w-[50%]">
-        {/* subtle geometric facet texture */}
-        <div
-          className="absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
-            backgroundSize: "200px 200px",
-          }}
-        />
-
-        {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 mx-6 w-full max-w-[440px] rounded-3xl bg-white p-8 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.08)] lg:ml-12 lg:mr-[-60px]"
-        >
-          {/* Logo row */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="Arcgate Logo"
-                width={292}
-                height={54}
-                className="h-[40px] w-auto"
-              />
-            </div>
-            <p className="ml-1 mt-2 text-[14px] font-medium italic text-slate-400">
-              Elevating recruitment experiences
-            </p>
-          </div>
-
-          {/* Welcome heading */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-800">Welcome Back</h2>
-            <p className="mt-1 text-[13px] text-slate-400">
-              Please enter your details to sign in
-            </p>
-          </div>
-
-          {/* Server Error */}
-          {serverError && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600"
-            >
-              {serverError}
-            </motion.div>
-          )}
-
-          {/* Form */}
-          <form
-            className="space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            {/* Role Selection */}
-            <form.Field name="role">
-              {(field) => (
-                <div>
-                  <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Select Your Role
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <label
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
-                        field.state.value === "user"
-                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="role"
-                        value="user"
-                        className="hidden"
-                        checked={field.state.value === "user"}
-                        onChange={(e) => {
-                          field.handleChange(
-                            e.target.value as "admin" | "user",
-                          );
-                          setRole(e.target.value);
-                        }}
-                      />
-                      User
-                    </label>
-                    <label
-                      className={`flex cursor-pointer items-center justify-center rounded-xl border-2 py-2.5 text-[13px] font-bold transition-all ${
-                        field.state.value === "admin"
-                          ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                          : "border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="role"
-                        value="admin"
-                        className="hidden"
-                        checked={field.state.value === "admin"}
-                        onChange={(e) => {
-                          field.handleChange(
-                            e.target.value as "admin" | "user",
-                          );
-                          setRole(e.target.value);
-                        }}
-                      />
-                      Admin
-                    </label>
-                  </div>
-                </div>
-              )}
-            </form.Field>
-
-            {/* Mobile Number */}
-            <form.Field name="mobile">
-              {(field) => (
-                <div className="group">
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Mobile Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-4 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  </div>
-                  {field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
-                        {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
-                    )}
-                </div>
-              )}
-            </form.Field>
-
-            {/* Password */}
-            <form.Field name="password">
-              {(field) => (
-                <div className="group">
-                  <div className="mb-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Password
-                    </label>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300 transition-colors group-focus-within:text-brand-primary" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className={`w-full rounded-xl border bg-white py-3.5 pl-11 pr-12 text-[15px] text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-brand-primary/40 focus:ring-2 focus:ring-brand-primary/10 ${
-                        field.state.meta.errors.length > 0
-                          ? "border-red-300"
-                          : "border-slate-200"
-                      }`}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 focus:outline-none transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-[18px] w-[18px]" />
-                      ) : (
-                        <Eye className="h-[18px] w-[18px]" />
-                      )}
-                    </button>
-                  </div>
-                  {field.state.meta.isTouched &&
-                    field.state.meta.errors.length > 0 && (
-                      <p className="mt-1 text-[12px] font-medium text-red-500">
-                        {getErrorMessage(field.state.meta.errors[0])}
-                      </p>
-                    )}
-                </div>
-              )}
-            </form.Field>
-
-            {/* Submit */}
-            <form.Subscribe
-              selector={(state) => [state.isSubmitting, state.canSubmit]}
-            >
-              {([isSubmitting, canSubmit]) => (
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !canSubmit}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Signing In…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Sign In</span>
-                      <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </button>
-              )}
-            </form.Subscribe>
-          </form>
-
-          {role === "user" && (
-            <p className="mt-6 text-center text-[13px] text-slate-400">
-              New to TalentFlow?{" "}
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
-              >
-                Create an account <UserPlus className="h-3.5 w-3.5" />
-              </Link>
-            </p>
-          )}
-        </motion.div>
-      </div>
-
-      {/* ===== RIGHT SIDE — Orange brand panel with parallax bg ===== */}
+    <div className="flex min-h-screen overflow-hidden font-sans bg-brand-primary lg:bg-[#f0eeeb] dark:lg:bg-background">
       <div
-        className="hidden lg:flex lg:w-[50%]  bg-primary relative items-center justify-center overflow-hidden"
-        style={{ backgroundColor: "#f96331db" }}
-      >
+        className="hidden lg:block absolute inset-0 z-0 opacity-[0.35] dark:opacity-10"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpolygon points='0,0 50,15 30,50' fill='%23e8e6e3'/%3E%3Cpolygon points='50,15 100,0 80,40' fill='%23eae8e5'/%3E%3Cpolygon points='30,50 80,40 60,80' fill='%23e5e3e0'/%3E%3Cpolygon points='0,100 30,50 60,80' fill='%23edebe8'/%3E%3Cpolygon points='60,80 100,100 100,60' fill='%23e8e6e3'/%3E%3C/svg%3E")`,
+          backgroundSize: "200px 200px",
+          width: "50%",
+        }}
+      />
+
+      <div className="absolute right-0 top-0 h-full w-full lg:w-1/2 bg-brand-primary overflow-hidden">
         <Image
           src="/ag.svg"
           alt="Arcgate Logo"
           width={433}
           height={454}
-          className="absolute"
+          className="absolute opacity-20 lg:opacity-100"
           style={{
             right: "-230px",
             top: "50%",
@@ -324,7 +28,53 @@ export default function LoginPage() {
             height: "95%",
             width: "auto",
           }}
+          priority
         />
+      </div>
+
+      <div className="relative z-10 flex w-full flex-col lg:flex-row items-center justify-center lg:justify-start min-h-screen">
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-10 lg:py-0">
+          <div className="relative z-10 mx-auto w-[92%] sm:w-full max-w-[440px] rounded-[2.5rem] bg-white dark:bg-card p-7 sm:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logo.svg"
+                  alt="Arcgate Logo"
+                  width={292}
+                  height={54}
+                  className="h-[40px] w-auto"
+                />
+              </div>
+              <Typography
+                variant="body3"
+                italic
+                className="ml-1 mt-2 text-slate-400 dark:text-slate-400/80"
+              >
+                Elevating recruitment experiences
+              </Typography>
+            </div>
+
+            <div className="mb-6">
+              <Typography
+                variant="h2"
+                weight="bold"
+                className="text-2xl text-slate-800 dark:text-foreground"
+              >
+                Welcome Back
+              </Typography>
+              <Typography
+                variant="body3"
+                className="mt-1 text-slate-400 dark:text-muted-foreground"
+              >
+                Please enter your details to sign in
+              </Typography>
+            </div>
+
+            <SignInForm />
+          </div>
+        </div>
+
+        <div className="hidden lg:block lg:w-1/2 h-full" />
       </div>
     </div>
   );

@@ -1,20 +1,31 @@
 import React from "react";
-import { PageHeader } from "@components/ui-elements/PageHeader";
-import { PageContainer } from "@components/ui-layout/PageContainer";
-import { Typography } from "@components/ui-elements/Typography";
+import { MCQClient } from "./MCQClient";
 
-export default function MCQPage() {
-  return (
-    <PageContainer className="py-2">
-      <PageHeader
-        title="Multiple Choice"
-        description="Configure and manage multiple choice questions."
-      />
-      <div className="flex items-center justify-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-        <Typography variant="body5">
-          MCQ configuration interface coming soon...
-        </Typography>
-      </div>
-    </PageContainer>
-  );
+// This simulates a server-side data fetch
+async function getMCQQuestions() {
+  // In a real application, you would fetch data from your API here
+  // const res = await fetch('https://api.example.com/questions', { cache: 'no-store' });
+  // return res.json();
+
+  // Mocking server-side data
+  const mockData = Array.from({ length: 10 }).map((_, i) => {
+    return {
+      id: i + 1,
+      question: `Sample Multiple Choice Question ${i + 1} for testing the UI layout and scroll behavior.`,
+      subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
+      createdBy: "Danish - Mohammed Danish",
+      createdDate: "17/11/2018",
+    };
+  });
+
+  return {
+    data: mockData,
+    total: 100,
+  };
+}
+
+export default async function MCQPage() {
+  const { data, total } = await getMCQQuestions();
+
+  return <MCQClient initialData={data} totalItems={total} />;
 }

@@ -3,6 +3,8 @@
 import React from "react";
 import Link from "next/link";
 
+import { Typography } from "@components/ui-elements/Typography";
+
 interface SidebarLogoProps {
   isCollapsed: boolean;
   isOpen: boolean;
@@ -22,13 +24,18 @@ export const SidebarLogo: React.FC<SidebarLogoProps> = ({
       className="flex items-center gap-2"
       onClick={onClose}
     >
-      <div className="w-8 h-8 bg-[#F96331] rounded-lg flex items-center justify-center text-white font-bold shrink-0">
+      <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-bold shrink-0">
         A
       </div>
       {showFullLogo && (
-        <span className="font-bold text-slate-900 text-lg tracking-tight whitespace-nowrap">
+        <Typography
+          variant="body1"
+          weight="bold"
+          as="span"
+          className="text-foreground tracking-tight whitespace-nowrap"
+        >
           ArcInterview
-        </span>
+        </Typography>
       )}
     </Link>
   );

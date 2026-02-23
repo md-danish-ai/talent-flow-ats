@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { NavSection } from "@data/navigation";
+import { NavSection } from "@lib/config/adminRoutes";
+import { NAV_ACTIVE, NAV_IDLE } from "./styles";
 
 interface CollapsedNavItemProps {
   section: NavSection;
@@ -24,10 +25,10 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
     ? pathname === section.href
     : section.items.some((item) => pathname === item.href);
 
-  const iconCls = `w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
+  const iconCls = `w-12 h-12 flex items-center justify-center rounded-md transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
     isSectionActive
-      ? "bg-orange-50 text-[#F96331]"
-      : "text-slate-500 hover:bg-orange-50 hover:text-[#F96331]"
+      ? "bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary shadow-sm"
+      : "text-slate-500 dark:text-slate-400 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/15 hover:text-brand-primary"
   }`;
 
   return (
@@ -42,10 +43,9 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
         </button>
       )}
 
-      {/* Hover flyout */}
-      <div className="absolute left-full ml-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-        <div className="p-3 border-b border-slate-100 bg-slate-50">
-          <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+      <div className="absolute left-full ml-2 w-48 bg-card border border-border rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+        <div className="p-3 border-b border-border bg-muted/20">
+          <span className="text-xs font-bold text-foreground uppercase tracking-wider">
             {section.title}
           </span>
         </div>
@@ -55,10 +55,8 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
               <Link
                 key={item.label}
                 href={item.href}
-                className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
-                  pathname === item.href
-                    ? "text-[#F96331] font-bold bg-orange-50"
-                    : "text-slate-600 hover:bg-orange-50 hover:text-[#F96331]"
+                className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                  pathname === item.href ? NAV_ACTIVE : NAV_IDLE
                 }`}
               >
                 {item.label}

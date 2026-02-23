@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
-import { NavSection } from "@data/navigation";
+import { NavSection } from "@lib/config/adminRoutes";
 import { NAV_ACTIVE, NAV_IDLE, ICON_ACTIVE, ICON_IDLE } from "./styles";
+import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 
 interface CollapsibleHeaderProps {
   section: NavSection;
@@ -18,15 +20,21 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
   isOpen,
   onToggle,
 }) => (
-  <button
+  <Button
+    variant="text"
+    color="default"
     onClick={onToggle}
-    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group ${
       isActive ? NAV_ACTIVE : NAV_IDLE
     }`}
   >
-    <div className="flex items-center gap-3">
-      <span className={isActive ? ICON_ACTIVE : ICON_IDLE}>{section.icon}</span>
-      <span className="font-semibold">{section.title}</span>
+    <div className="flex items-center gap-3 text-left">
+      <Typography variant="span" className={isActive ? ICON_ACTIVE : ICON_IDLE}>
+        {section.icon}
+      </Typography>
+      <Typography variant="body4" weight="semibold" as="span" color="inherit">
+        {section.title}
+      </Typography>
     </div>
     <svg
       className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
@@ -41,5 +49,5 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
         d="M19 9l-7 7-7-7"
       />
     </svg>
-  </button>
+  </Button>
 );
