@@ -1,43 +1,45 @@
-from fastapi import APIRouter, HTTPException, status
-from app.auth.schemas import SignUpSchema, SignInSchema,CreateAdminSchema
-from app.auth.service import signup_user, signin_user,create_admin
+from fastapi import APIRouter, HTTPException
+from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema
+from app.auth.service import signup_user, signin_user, create_admin
+from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 router = APIRouter()
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
+
+@router.post("/signup")
 async def signup(data: SignUpSchema):
     result = signup_user(data)
 
     if "error" in result:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=StatusCode.BAD_REQUEST,
             detail=result["error"]
         )
 
-    return result
+    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
-@router.post("/signin", status_code=status.HTTP_200_OK)
+@router.post("/signin")
 async def signin(data: SignInSchema):
     result = signin_user(data)
 
     if "error" in result:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=StatusCode.UNAUTHORIZED,
             detail=result["error"]
         )
 
-    return result
+    return api_response(StatusCode.OK, ResponseMessage.LOGIN_SUCCESS, data=result)
 
 
-@router.post("/create-admin", status_code=status.HTTP_201_CREATED)
+@router.post("/create-admin")
 async def create_admin_user(data: CreateAdminSchema):
     result = create_admin(data)
 
     if "error" in result:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=StatusCode.BAD_REQUEST,
             detail=result["error"]
         )
 
-    return result
+    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
