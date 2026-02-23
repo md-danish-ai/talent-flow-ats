@@ -1,28 +1,28 @@
 import React from "react";
-import { Sidebar } from "@/components/shared/Sidebar";
-import { Navbar } from "@/components/shared/Navbar";
-import { Footer } from "@/components/shared/Footer";
-import { Container } from "@/components/shared/Container";
-import { SidebarProvider } from "@/components/shared/components/SidebarProvider";
+import { Sidebar, SidebarProvider } from "@components/ui-layout/sidebar";
+import { Navbar } from "@components/ui-layout/Navbar";
+import { getCurrentUser } from "@lib/auth/get-current-user";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-[#F8FAFC]">
-        <Sidebar />
+      <div className="fixed inset-0 flex flex-col bg-background overflow-hidden transition-colors">
+        <Navbar user={user} />
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Navbar />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
 
-          <main className="flex-1 py-4 sm:py-6 lg:py-8 overflow-y-auto">
-            <Container>{children}</Container>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0 bg-layout-bg transition-colors rounded-tl-xl lg:rounded-tl-2xl">
+            <div className="mx-auto w-full max-w-7xl min-h-full">
+              {children}
+            </div>
           </main>
-
-          <Footer />
         </div>
       </div>
     </SidebarProvider>
