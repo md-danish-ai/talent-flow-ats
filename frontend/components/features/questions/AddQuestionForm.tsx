@@ -161,11 +161,14 @@ export const AddQuestionForm = () => {
           <Button
             type="button"
             variant="outline"
+            color="primary"
             size="sm"
+            animate="scale"
+            iconAnimation="rotate-90"
+            startIcon={<Plus size={18} />}
             onClick={addOption}
-            className="text-brand-primary hover:bg-brand-primary/5"
           >
-            + Add Option
+            Add Option
           </Button>
         </div>
 
