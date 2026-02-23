@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from app.core.config import settings
 
 
+
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
@@ -12,6 +13,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 def generate_jwt(user: dict):
     payload = {
+        "sub": str(user["id"]),
         "user_id": user["id"],
         "role": user["role"],
         "exp": datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRE_HOURS)
