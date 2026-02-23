@@ -8,6 +8,7 @@ from app.auth.router import router as auth_router
 from app.users.router import router as users_router
 from app.questions.router import router as questions_router
 from app.core.config import settings
+from app.answer.router import router as answer_router
 app = FastAPI(title="Talent Flow ATS")
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
@@ -54,4 +55,5 @@ if not os.path.exists(settings.UPLOAD_DIR):
 
 app.mount("/images", StaticFiles(directory=settings.UPLOAD_DIR), name="images")
 
+app.include_router(answer_router)
 

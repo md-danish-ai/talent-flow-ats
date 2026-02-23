@@ -1,6 +1,5 @@
 -- Drop existing tables to ensure a clean state
 DROP TABLE IF EXISTS question_answers;
-DROP TABLE IF EXISTS question_options;
 DROP TABLE IF EXISTS questions;
 
 -- Create Questions table with options as JSONB
