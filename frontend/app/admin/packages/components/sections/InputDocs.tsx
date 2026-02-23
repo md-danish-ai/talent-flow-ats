@@ -17,28 +17,24 @@ import { Search, Mail, Lock } from "lucide-react";
 export default function InputShowcase() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-      {/* Search & Icons */}
       <section className="space-y-4">
         <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Search & Icons</h4>
         <Input placeholder="Search records..." startIcon={<Search size={18} />} />
         <Input placeholder="Enter email" startIcon={<Mail size={16} />} />
       </section>
       
-      {/* Types */}
       <section className="space-y-4">
         <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Types</h4>
         <Input type="password" placeholder="Password" startIcon={<Lock size={16} />} />
         <Input type="number" placeholder="Enter age" />
       </section>
 
-      {/* Feedback States */}
       <section className="space-y-4">
         <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Feedback States</h4>
         <Input error placeholder="Error state" defaultValue="invalid_email" />
         <Input disabled placeholder="Disabled state" />
       </section>
 
-      {/* Simple Inputs */}
       <section className="space-y-4">
         <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Simple Inputs</h4>
         <Input placeholder="Placeholder text" />

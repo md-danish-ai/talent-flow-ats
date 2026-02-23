@@ -59,7 +59,6 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         </div>
       </Button>
 
-      {/* Notifications Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -88,9 +87,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
             <div className="max-h-[400px] overflow-y-auto">
               {notifications.length > 0 ? (
-                <div className="divide-y divide-border">
-                  {/* Notification items would go here */}
-                </div>
+                <div className="divide-y divide-border"></div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

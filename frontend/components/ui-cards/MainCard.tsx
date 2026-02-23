@@ -29,7 +29,6 @@ export const MainCard: React.FC<MainCardProps> = ({
         className,
       )}
     >
-      {/* Header */}
       <div className="px-6 py-5 border-b border-border flex items-center justify-between gap-3">
         <Typography
           variant="h4"
@@ -47,7 +46,6 @@ export const MainCard: React.FC<MainCardProps> = ({
         )}
       </div>
 
-      {/* Body */}
       <div className={cn("p-5 flex-1 flex flex-col", bodyClassName)}>
         {children}
       </div>

@@ -17,7 +17,6 @@ export default function DashboardPage() {
         description="Manage applicants, papers and monitor candidate performance."
       />
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {DASHBOARD_STATS.map((stat) => (
           <StatCard
@@ -30,7 +29,6 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Secondary Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <MainCard title="Recent Activity" className="lg:col-span-2">
           <div className="space-y-2">

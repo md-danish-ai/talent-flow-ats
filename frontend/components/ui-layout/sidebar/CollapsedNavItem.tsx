@@ -43,7 +43,6 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
         </button>
       )}
 
-      {/* Hover flyout */}
       <div className="absolute left-full ml-2 w-48 bg-card border border-border rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
         <div className="p-3 border-b border-border bg-muted/20">
           <span className="text-xs font-bold text-foreground uppercase tracking-wider">

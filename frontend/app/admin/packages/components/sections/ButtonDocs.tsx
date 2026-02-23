@@ -19,7 +19,6 @@ import { Settings, Layers } from "lucide-react";
 export default function ButtonShowcase() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Base Variants */}
       <section>
         <h4>Base</h4>
         <div className="flex gap-3">
@@ -29,7 +28,6 @@ export default function ButtonShowcase() {
         </div>
       </section>
 
-      {/* Colors */}
       <section>
         <h4>Colors</h4>
         <div className="flex gap-3">
@@ -39,7 +37,6 @@ export default function ButtonShowcase() {
         </div>
       </section>
 
-      {/* Outlined */}
       <section>
         <h4>Outlined</h4>
         <div className="flex gap-3">
@@ -48,7 +45,6 @@ export default function ButtonShowcase() {
         </div>
       </section>
 
-      {/* With Icons */}
       <section>
         <h4>Icons & Sizes</h4>
         <div className="flex gap-3 items-center">
@@ -60,7 +56,6 @@ export default function ButtonShowcase() {
         </div>
       </section>
 
-      {/* Animations */}
       <section>
         <h4>Animations</h4>
         <div className="flex gap-3">

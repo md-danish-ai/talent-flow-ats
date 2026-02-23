@@ -17,7 +17,6 @@ import { Star, Shield, Clock, User } from "lucide-react";
 export default function BadgeShowcase() {
   return (
     <div className="space-y-8 p-6">
-      {/* 1. Variants (Fill & Outline) */}
       <div className="flex flex-wrap gap-4">
         <Badge variant="fill" color="primary">Primary Fill</Badge>
         <Badge variant="outline" color="primary">Primary Outline</Badge>
@@ -25,13 +24,11 @@ export default function BadgeShowcase() {
         <Badge variant="outline" color="error">Error Outline</Badge>
       </div>
 
-      {/* 2. Shapes (Curve vs Square) */}
       <div className="flex flex-wrap gap-4">
         <Badge shape="curve" color="primary">Rounded Badge</Badge>
         <Badge shape="square" color="secondary">Square Badge</Badge>
       </div>
 
-      {/* 3. With Icons */}
       <div className="flex flex-wrap gap-4">
         <Badge icon={<Shield size={12} />} color="success">Verified</Badge>
         <Badge icon={<Star size={12} />} color="warning">Premium</Badge>
@@ -39,7 +36,6 @@ export default function BadgeShowcase() {
         <Badge icon={<Clock size={12} />} variant="outline" color="default">Pending</Badge>
       </div>
 
-      {/* 4. All Colors */}
       <div className="flex flex-wrap gap-3">
         <Badge color="primary">Primary</Badge>
         <Badge color="secondary">Secondary</Badge>

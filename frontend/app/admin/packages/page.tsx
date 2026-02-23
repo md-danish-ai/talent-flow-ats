@@ -92,13 +92,10 @@ export default async function PackagesPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex gap-8 h-full min-h-[calc(100vh-180px)] selection:bg-brand-primary/20">
-      {/* Documentation Navigation (Left Panel) */}
       <DocSidebar activeItem={activeItem} />
 
-      {/* Documentation Content (Right Panel) */}
       <section className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar rounded-3xl group/main">
         <div className="bg-card/30 backdrop-blur-xl border border-border rounded-3xl py-5 px-10 shadow-2xl shadow-slate-950/20 min-h-full relative overflow-hidden transition-all duration-500 hover:border-brand-primary/10">
-          {/* Subtle Background Decoration */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-primary/5 rounded-full blur-[120px] pointer-events-none group-hover/main:bg-brand-primary/10 transition-colors duration-1000" />
 
           <div className="max-w-4xl mx-auto relative z-10">

@@ -15,7 +15,6 @@ export const TypographyDocs = () => (
 export default function TypographyShowcase() {
   return (
     <div className="w-full space-y-12">
-      {/* Headings */}
       <section className="space-y-6">
         <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Headings (h1 - h6)</h4>
         <div className="space-y-4">
@@ -28,7 +27,6 @@ export default function TypographyShowcase() {
         </div>
       </section>
 
-      {/* Body Text */}
       <section className="space-y-6">
         <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Body Text (body1 - body5)</h4>
         <div className="space-y-4">

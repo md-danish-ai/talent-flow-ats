@@ -94,7 +94,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         </div>
       </Button>
 
-      {/* Profile Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -107,7 +106,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             }}
             className="absolute right-0 mt-3 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden py-1 origin-top-right transition-colors"
           >
-            {/* User Profile Info in Dropdown */}
             <div className="px-4 py-4 border-b border-border bg-muted/20 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center shadow-sm shrink-0 select-none overflow-hidden">
                 <Typography

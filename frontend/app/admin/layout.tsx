@@ -8,17 +8,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Runs on the server at request time — no client JS, no extra render
   const user = await getCurrentUser();
 
   return (
     <SidebarProvider>
-      {/* Full-height column: Navbar on top, then sidebar+content row below */}
       <div className="fixed inset-0 flex flex-col bg-background overflow-hidden transition-colors">
-        {/* Navbar — full width */}
         <Navbar user={user} />
 
-        {/* Body row: Sidebar + Main Content side by side */}
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
 

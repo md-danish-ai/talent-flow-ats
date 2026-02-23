@@ -57,7 +57,6 @@ export function SignInForm() {
 
   return (
     <div className="w-full">
-      {/* Server Error */}
       {serverError && (
         <Alert
           variant="error"
@@ -67,7 +66,6 @@ export function SignInForm() {
         />
       )}
 
-      {/* Form */}
       <form
         className="space-y-5"
         onSubmit={(e) => {
@@ -76,7 +74,6 @@ export function SignInForm() {
           form.handleSubmit();
         }}
       >
-        {/* Role Selection */}
         <form.Field name="role">
           {(field) => (
             <div>
@@ -139,7 +136,6 @@ export function SignInForm() {
           )}
         </form.Field>
 
-        {/* Mobile Number */}
         <form.Field name="mobile">
           {(field) => (
             <div className="group">
@@ -174,7 +170,6 @@ export function SignInForm() {
           )}
         </form.Field>
 
-        {/* Password */}
         <form.Field name="password">
           {(field) => (
             <div className="group">

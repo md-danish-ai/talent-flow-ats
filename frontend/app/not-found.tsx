@@ -9,7 +9,6 @@ import { Button } from "@components/ui-elements/Button";
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0eeeb] dark:bg-background px-6 font-sans overflow-hidden relative">
-      {/* Subtle background geometric patterns */}
       <div
         className="absolute inset-0 opacity-[0.4] dark:opacity-10"
         style={{
@@ -19,7 +18,6 @@ export default function NotFound() {
       />
 
       <div className="relative z-10 flex flex-col items-center text-center">
-        {/* Animated 404 text */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -58,7 +56,6 @@ export default function NotFound() {
           </motion.div>
         </motion.div>
 
-        {/* Text content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,7 +77,6 @@ export default function NotFound() {
           </Typography>
         </motion.div>
 
-        {/* Action buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,7 +108,6 @@ export default function NotFound() {
           </Button>
         </motion.div>
 
-        {/* Branding */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

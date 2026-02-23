@@ -19,7 +19,6 @@ export const Sidebar = () => {
     expandSidebar,
   } = useSidebar();
 
-  // Seed with the active collapsible on mount → refresh pe auto-open
   const [expandedSection, setExpandedSection] = useState<string | null>(() => {
     const active = ADMIN_ROUTES.find(
       (s: NavSection) =>
@@ -35,7 +34,6 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 min-[900px]:hidden"
@@ -43,7 +41,6 @@ export const Sidebar = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed top-0 left-0 bottom-0 z-50 bg-background border-r border-transparent transition-all duration-300 ease-in-out
@@ -52,7 +49,6 @@ export const Sidebar = () => {
           ${isMobileOpen ? "translate-x-0 w-80" : "-translate-x-full min-[900px]:translate-x-0"}
         `}
       >
-        {/* Collapse toggle button — desktop only */}
         <Button
           variant="ghost"
           color="default"
@@ -75,7 +71,6 @@ export const Sidebar = () => {
           </svg>
         </Button>
 
-        {/* Mobile toggle button */}
         <div className="flex items-center justify-between p-4 min-[900px]:hidden">
           <Button
             variant="ghost"
@@ -101,7 +96,6 @@ export const Sidebar = () => {
         </div>
 
         <div className="flex flex-col h-full overflow-hidden">
-          {/* Desktop nav — collapsed (icons only) */}
           {isCollapsed && (
             <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">
               {ADMIN_ROUTES.map((section: NavSection) => (
@@ -118,7 +112,6 @@ export const Sidebar = () => {
             </nav>
           )}
 
-          {/* Desktop nav — expanded */}
           {!isCollapsed && (
             <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-6 px-4 space-y-2">
               {ADMIN_ROUTES.map((section: NavSection) => (
@@ -134,7 +127,6 @@ export const Sidebar = () => {
             </nav>
           )}
 
-          {/* Mobile nav — collapsible (reuses same NavItem) */}
           <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
             {ADMIN_ROUTES.map((section: NavSection) => (
               <NavItem

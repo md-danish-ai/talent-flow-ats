@@ -26,7 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -102,10 +101,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
               </svg>
             </Button>
           </div>
-
-          {/* <div className="flex items-center gap-4 flex-1 justify-center max-w-2xl px-4">
-            <SearchInput />
-          </div> */}
 
           <div className="flex items-center gap-3">
             <ThemeToggle />

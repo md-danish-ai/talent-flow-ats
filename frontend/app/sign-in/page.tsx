@@ -5,7 +5,6 @@ import { SignInForm } from "@components/features/authforms/SignInForm";
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen overflow-hidden font-sans bg-brand-primary lg:bg-[#f0eeeb] dark:lg:bg-background">
-      {/* ===== DESKTOP ONLY — Faceted background for the left side ===== */}
       <div
         className="hidden lg:block absolute inset-0 z-0 opacity-[0.35] dark:opacity-10"
         style={{
@@ -15,7 +14,6 @@ export default function LoginPage() {
         }}
       />
 
-      {/* ===== ORANGE PANEL — Always visible, full width on mobile, half on desktop ===== */}
       <div className="absolute right-0 top-0 h-full w-full lg:w-1/2 bg-brand-primary overflow-hidden">
         <Image
           src="/ag.svg"
@@ -34,13 +32,9 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* ===== CONTENT LAYER — Card centered on mobile, positioned on desktop ===== */}
       <div className="relative z-10 flex w-full flex-col lg:flex-row items-center justify-center lg:justify-start min-h-screen">
-        {/* Left padding/space on desktop to align the card to the faceted side */}
         <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-10 lg:py-0">
-          {/* THE CARD */}
           <div className="relative z-10 mx-auto w-[92%] sm:w-full max-w-[440px] rounded-[2.5rem] bg-white dark:bg-card p-7 sm:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
-            {/* Logo row */}
             <div className="mb-6">
               <div className="flex items-center gap-3">
                 <Image
@@ -60,7 +54,6 @@ export default function LoginPage() {
               </Typography>
             </div>
 
-            {/* Welcome heading */}
             <div className="mb-6">
               <Typography
                 variant="h2"
@@ -81,7 +74,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Empty right side on desktop - card is already overlapping from the left side */}
         <div className="hidden lg:block lg:w-1/2 h-full" />
       </div>
     </div>

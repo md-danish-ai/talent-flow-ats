@@ -69,7 +69,6 @@ export function Pagination({
         className,
       )}
     >
-      {/* Items Info & Page Size */}
       <div className="flex items-center gap-6">
         {totalItems !== undefined && pageSize !== undefined && (
           <Typography
@@ -107,7 +106,6 @@ export function Pagination({
         )}
       </div>
 
-      {/* Navigation Controls */}
       <div className="flex items-center gap-1.5">
         <Button
           variant="outline"

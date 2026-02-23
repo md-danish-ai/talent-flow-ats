@@ -143,14 +143,12 @@ export function ImageMCQClient({
           </div>
         }
       >
-        {/* Main Content Area (Table + Pagination) */}
         <div
           className={cn(
             "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden",
             isFilterOpen && "border-r border-border",
           )}
         >
-          {/* Table Area */}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
@@ -182,7 +180,6 @@ export function ImageMCQClient({
                     colSpan={visibleColumns.length + 1}
                     expandedContent={
                       <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        {/* Header Area */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
                           <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
@@ -203,7 +200,6 @@ export function ImageMCQClient({
                           </div>
                         </div>
 
-                        {/* Options Grid */}
                         <div className="p-5">
                           <Table>
                             <TableHeader>
@@ -266,7 +262,6 @@ export function ImageMCQClient({
                           </Table>
                         </div>
 
-                        {/* Footer Notes */}
                         <div className="px-5 py-3 bg-muted/20 border-t border-border">
                           <Typography
                             variant="body3"
@@ -310,7 +305,6 @@ export function ImageMCQClient({
             </Table>
           </div>
 
-          {/* Pagination Area */}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -330,9 +324,7 @@ export function ImageMCQClient({
           onClose={() => setIsFilterOpen(false)}
           title="Filters"
         >
-          {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            {/* Search */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -355,7 +347,6 @@ export function ImageMCQClient({
               </div>
             </div>
 
-            {/* Subject Dropdown */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -378,7 +369,6 @@ export function ImageMCQClient({
               />
             </div>
 
-            {/* Reset Action directly after dropdown */}
             <div className="pt-2">
               <Button
                 variant="outline"

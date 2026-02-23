@@ -161,7 +161,6 @@ export function TableColumnToggle({
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="absolute right-0 top-full z-50 mt-3 w-72 overflow-hidden rounded-[2rem] border border-white/20 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
           >
-            {/* Header Area */}
             <div className="flex items-center justify-between mb-3 px-3 py-2">
               <Typography
                 variant="body5"
@@ -179,7 +178,6 @@ export function TableColumnToggle({
               </button>
             </div>
 
-            {/* List */}
             <div className="max-h-[350px] overflow-y-auto pr-1 space-y-1 custom-scrollbar">
               {columns.map((col) => {
                 const isActive = visibleColumns.includes(col.id);
@@ -237,7 +235,6 @@ export function TableColumnToggle({
                       <Eye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10 text-foreground" />
                     )}
 
-                    {/* Active Gradient Indicator */}
                     {isActive && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-primary rounded-full my-3" />
                     )}
@@ -246,7 +243,6 @@ export function TableColumnToggle({
               })}
             </div>
 
-            {/* Hint Footer */}
             <div className="mt-4 px-4 pt-3 border-t border-border/40 text-[9px] font-bold text-slate-400 italic">
               Toggle columns to optimize your workspace density.
             </div>

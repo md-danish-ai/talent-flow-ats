@@ -32,7 +32,6 @@ export const AddImageQuestionForm = () => {
     },
     onSubmit: async ({ value }) => {
       // Simulate API call
-      console.log("Form submitted:", value);
       await new Promise((resolve) => setTimeout(resolve, 1500));
       alert("Question added successfully!");
     },
@@ -71,7 +70,6 @@ export const AddImageQuestionForm = () => {
       }}
       className="space-y-8 p-1"
     >
-      {/* Section: Basic Info */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
@@ -153,7 +151,6 @@ export const AddImageQuestionForm = () => {
         </div>
       </div>
 
-      {/* Section: Options */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -242,7 +239,6 @@ export const AddImageQuestionForm = () => {
         </form.Field>
       </div>
 
-      {/* Section: Explanation */}
       <div className="space-y-4">
         <form.Field name="explanation">
           {(field) => (

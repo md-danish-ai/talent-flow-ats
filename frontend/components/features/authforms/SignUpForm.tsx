@@ -58,7 +58,6 @@ export function SignUpForm() {
 
   return (
     <div className="w-full">
-      {/* Server Error */}
       {serverError && (
         <Alert
           variant="error"
@@ -68,7 +67,6 @@ export function SignUpForm() {
         />
       )}
 
-      {/* Form */}
       <form
         className="space-y-5"
         onSubmit={(e) => {
@@ -77,7 +75,6 @@ export function SignUpForm() {
           form.handleSubmit();
         }}
       >
-        {/* Full Name */}
         <form.Field name="name">
           {(field) => (
             <div className="group">
@@ -113,7 +110,6 @@ export function SignUpForm() {
           )}
         </form.Field>
 
-        {/* Mobile Number */}
         <form.Field name="mobile">
           {(field) => (
             <div className="group">
@@ -149,7 +145,6 @@ export function SignUpForm() {
           )}
         </form.Field>
 
-        {/* Email */}
         <form.Field name="email">
           {(field) => (
             <div className="group">
@@ -192,7 +187,6 @@ export function SignUpForm() {
           )}
         </form.Field>
 
-        {/* Test Level Dropdown */}
         <form.Field name="testLevel">
           {(field) => (
             <div className="group">

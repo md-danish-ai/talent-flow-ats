@@ -179,7 +179,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           )}
         </span>
 
-        {/* Ripple Container */}
         <RippleContainer ripples={ripples} onRemove={removeRipple} />
       </button>
     );
