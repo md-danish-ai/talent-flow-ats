@@ -30,27 +30,27 @@ frontend/
 │   ├── user/             # User-specific routes
 │   └── page.tsx          # Registration / Home page
 ├── components/           # Component Library
-│   ├── ui/               # Pure UI Primitives (Card, Button, Input) - Context-Agnostic
-│   ├── shared/           # Cross-feature components (Navbar, Sidebar, Footer)
-│   └── features/         # Domain-specific modules (Dashboard, Auth, etc.)
-│       └── admin/        # Admin feature module
-│           └── dashboard/# Components, hooks, and services for Admin Dashboard
+│   ├── ui-elements/      # Pure UI Primitives (Button, Input, Typography)
+│   ├── ui-cards/         # Card components (MainCard, StatCard, ActivityItem)
+│   ├── ui-layout/        # Layout components (Navbar, Sidebar, PageContainer)
+│   └── features/         # Domain-specific modules (authforms, questions, etc.)
 ├── lib/                  # Core logic and configuration
 │   ├── api/              # Raw API calls and fetcher setup
+│   ├── auth/             # Authentication utilities and session management
+│   ├── config/           # Static configurations (e.g., adminRoutes, dashboard stats)
 │   ├── react-query/      # Centralized TanStack Query logic
-│   │   ├── query-client.ts# Shared config + SSR prefetch factory
-│   │   ├── admin/        # Admin-specific query hooks
-│   │   └── user/         # User-specific query hooks (Auth, Profile)
 │   └── validations/      # Zod validation schemas
 ├── public/               # Static assets
+├── utils/                # General utility functions
 └── middleware.ts         # Role-based protection middleware
 ```
 
 ### 🧩 `components/` Breakdown
 
-- **`ui/`**: Pure design system components. No business logic, no API calls.
-- **`shared/`**: Higher-level layouts and reusable pieces like the global Sidebar or Navbar.
-- **`features/`**: The "brains" of the application. Organized by domain (e.g., `admin`, `candidate`). Contains `DashboardContainer.tsx` and feature-specific components.
+- **`ui-elements/`**: Pure design system components. Buttons, Inputs, Typography, Toggle. No business logic.
+- **`ui-cards/`**: Reusable card structures like `MainCard` or `StatCard`.
+- **`ui-layout/`**: Higher-level layouts and reusable structural pieces like the global `Sidebar`, `Navbar`, and `PageContainer`.
+- **`features/`**: The "brains" of the application. Organized by domain (e.g., `authforms`, `questions`). Contains feature-specific components and forms.
 
 ### 📚 `lib/react-query/`
 
@@ -91,13 +91,14 @@ Used only where interactivity is mandatory:
 
 ### Where to add new code?
 
-1. **New UI Primitive?** Add to `components/ui/` (e.g., `Badge.tsx`).
-2. **New Global Layout Part?** Add to `components/shared/` (e.g., `GlobalSearch.tsx`).
-3. **New Business Logic/Screen?** Create a folder in `components/features/[role]/[feature-name]`.
+1. **New UI Primitive?** Add to `components/ui-elements/` (e.g., `Badge.tsx`).
+2. **New Global Layout Part?** Add to `components/ui-layout/` (e.g., `GlobalSearch.tsx`).
+3. **New Business Logic/Screen?** Create a folder in `components/features/[domain]/`.
 4. **New API Hook?** Add to `lib/react-query/[domain]/use-[feature].ts`.
+5. **New Static Data/Config?** Add to `lib/config/`.
 
 ### Best Practices
 
 - **Prefer Server Components**: Only add `"use client"` at the leaf nodes or specifically for interactive containers.
-- **Absolute Imports**: Always use `@/` aliases (e.g., `@components/ui-elements/Card`).
-- **Domain Isolation**: Code inside `features/admin` should generally not import from `features/user`.
+- **Path Aliases**: Always use defined aliases (e.g., `@components/ui-elements/Card`, `@lib/config/adminRoutes`).
+- **Domain Isolation**: Keep feature folders self-contained where possible.
