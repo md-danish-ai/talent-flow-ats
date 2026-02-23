@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, UploadFile
 from . import schemas
 from app.questions.service import QuestionService
 from app.auth.dependencies import get_current_user
