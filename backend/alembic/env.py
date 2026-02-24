@@ -1,7 +1,14 @@
 from logging.config import fileConfig
+import os
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-import os
+
+# Import SQLAlchemy Base and models
+# IMPORTANT: importing models registers tables with metadata
+from app.database.db import Base
+from app.questions import models as question_models  # noqa: F401
+from app.users import models as user_models  # noqa: F401
 
 # ---------------------------------------------------------
 # Alembic Config object (reads alembic.ini)
@@ -13,17 +20,6 @@ config = context.config
 # ---------------------------------------------------------
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# ---------------------------------------------------------
-# Import SQLAlchemy Base and models
-# IMPORTANT: importing models registers tables with metadata
-# ---------------------------------------------------------
-from app.database.db import Base
-
-from app.questions import models as question_models
-from app.users import models as user_models
-# later:
-# from app.answers import models as answer_models
 
 # ---------------------------------------------------------
 # Metadata for autogenerate support
