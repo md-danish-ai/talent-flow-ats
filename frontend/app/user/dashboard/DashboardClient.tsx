@@ -55,7 +55,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   // Mocked state - in real usage, this check would be dynamic
-  const isDetailsComplete = false;
+  const isDetailsComplete = true;
 
   const handleLogout = () => {
     document.cookie =
@@ -130,10 +130,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <Button
               onClick={handleLogout}
               variant="outline"
-              size="sm"
-              className="rounded-xl px-5 h-10 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800"
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-180"
+              startIcon={<LogOut size={18} />}
+              className="rounded-xl"
             >
-              <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </div>
