@@ -29,6 +29,7 @@ export const AddQuestionForm = () => {
     },
     onSubmit: async ({ value }) => {
       // Simulate API call
+      console.log(value);
       await new Promise((resolve) => setTimeout(resolve, 1500));
       alert("Question added successfully!");
     },

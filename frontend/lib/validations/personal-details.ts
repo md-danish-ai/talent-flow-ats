@@ -42,8 +42,8 @@ export interface PersonalDetailsFormValues {
   lastName: string;
   gender: string;
   dob: string;
-  mobile1: string;
-  mobile2: string;
+  primaryMobile: string;
+  alternateMobile: string;
   email: string;
   presentAddressLine1: string;
   presentAddressLine2: string;
@@ -248,8 +248,8 @@ const baseSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
   dob: z.string().min(1, "Date of birth is required"),
-  mobile1: z.string().min(10, "Mobile number must be at least 10 digits"),
-  mobile2: z.string().default(""),
+  primaryMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
+  alternateMobile: z.string().default(""),
   email: z
     .string()
     .email("Invalid email address")

@@ -142,16 +142,18 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
             )}
           </form.Field>
 
-          <form.Field name="mobile1">
+          <form.Field name="primaryMobile">
             {(field) => (
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                  Mobile 1 <span className="text-red-500">*</span>
+                  Primary Mobile <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  value={field.state.value}
+                  value={field.state.value as string}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) =>
+                    field.handleChange(e.target.value.replace(/\D/g, ""))
+                  }
                   placeholder="Enter primary mobile"
                   error={
                     field.state.meta.isTouched &&
@@ -168,16 +170,18 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
             )}
           </form.Field>
 
-          <form.Field name="mobile2">
+          <form.Field name="alternateMobile">
             {(field) => (
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                  Mobile 2
+                  Alternate Mobile
                 </label>
                 <Input
-                  value={field.state.value}
+                  value={field.state.value as string}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) =>
+                    field.handleChange(e.target.value.replace(/\D/g, ""))
+                  }
                   placeholder="Enter alternate mobile"
                 />
               </div>
@@ -349,7 +353,9 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     <Input
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value.replace(/\D/g, ""))
+                      }
                       placeholder="Enter pincode"
                       error={
                         field.state.meta.isTouched &&
@@ -376,19 +382,67 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
           <form.Subscribe selector={(state) => [state.values.sameAddress]}>
             {([sameAddress]) => (
               <>
-                {!sameAddress && (
-                  <div className="space-y-4">
-                    <form.Field name="permanentAddressLine1">
+                <div
+                  className={`space-y-4 ${
+                    sameAddress
+                      ? "opacity-40 pointer-events-none grayscale-[30%]"
+                      : ""
+                  }`}
+                >
+                  <form.Field name="permanentAddressLine1">
+                    {(field) => (
+                      <div>
+                        <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                          Address Line 1
+                        </label>
+                        <Input
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder="Enter address line 1"
+                          error={
+                            field.state.meta.isTouched &&
+                            field.state.meta.errors.length > 0
+                          }
+                        />
+                        {field.state.meta.isTouched &&
+                          field.state.meta.errors.length > 0 && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {getErrorMessage(field.state.meta.errors[0])}
+                            </p>
+                          )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="permanentAddressLine2">
+                    {(field) => (
+                      <div>
+                        <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                          Address Line 2
+                        </label>
+                        <Input
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder="Enter address line 2"
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <form.Field name="permanentState">
                       {(field) => (
                         <div>
                           <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                            Address Line 1
+                            State
                           </label>
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Enter address line 1"
+                            placeholder="Enter state"
                             error={
                               field.state.meta.isTouched &&
                               field.state.meta.errors.length > 0
@@ -403,140 +457,92 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                         </div>
                       )}
                     </form.Field>
-
-                    <form.Field name="permanentAddressLine2">
+                    <form.Field name="permanentDistrict">
                       {(field) => (
                         <div>
                           <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                            Address Line 2
+                            District
                           </label>
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Enter address line 2"
+                            placeholder="Enter district"
+                            error={
+                              field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0
+                            }
                           />
+                          {field.state.meta.isTouched &&
+                            field.state.meta.errors.length > 0 && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
                         </div>
                       )}
                     </form.Field>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <form.Field name="permanentState">
-                        {(field) => (
-                          <div>
-                            <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                              State
-                            </label>
-                            <Input
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              placeholder="Enter state"
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-xs text-red-500 mt-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                      <form.Field name="permanentDistrict">
-                        {(field) => (
-                          <div>
-                            <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                              District
-                            </label>
-                            <Input
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              placeholder="Enter district"
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-xs text-red-500 mt-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <form.Field name="permanentCity">
-                        {(field) => (
-                          <div>
-                            <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                              City
-                            </label>
-                            <Input
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              placeholder="Enter city"
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-xs text-red-500 mt-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                      <form.Field name="permanentPincode">
-                        {(field) => (
-                          <div>
-                            <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                              Pincode
-                            </label>
-                            <Input
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              placeholder="Enter pincode"
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-xs text-red-500 mt-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </div>
                   </div>
-                )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <form.Field name="permanentCity">
+                      {(field) => (
+                        <div>
+                          <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                            City
+                          </label>
+                          <Input
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="Enter city"
+                            error={
+                              field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0
+                            }
+                          />
+                          {field.state.meta.isTouched &&
+                            field.state.meta.errors.length > 0 && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                        </div>
+                      )}
+                    </form.Field>
+                    <form.Field name="permanentPincode">
+                      {(field) => (
+                        <div>
+                          <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                            Pincode
+                          </label>
+                          <Input
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) =>
+                              field.handleChange(
+                                e.target.value.replace(/\D/g, ""),
+                              )
+                            }
+                            placeholder="Enter pincode"
+                            error={
+                              field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0
+                            }
+                          />
+                          {field.state.meta.isTouched &&
+                            field.state.meta.errors.length > 0 && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                        </div>
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
                 {sameAddress && (
-                  <div className="absolute inset-x-0 bottom-0 top-12 flex items-center justify-center bg-card/80 rounded-b-2xl backdrop-blur-[2px] z-10">
+                  <div className="absolute inset-x-0 bottom-0 top-12 flex items-center justify-center bg-white/30 rounded-b-2xl backdrop-blur-[1px] z-10">
                     <Typography className="text-brand-primary font-semibold text-sm">
                       Same as Present Address
                     </Typography>

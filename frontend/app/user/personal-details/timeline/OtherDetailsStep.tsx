@@ -167,7 +167,9 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                   <>
                     <Input
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value.replace(/\D/g, ""))
+                      }
                       onBlur={field.handleBlur}
                       placeholder="Enter expected salary..."
                       error={

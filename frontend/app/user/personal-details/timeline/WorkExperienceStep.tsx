@@ -208,7 +208,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                             <Input
                               value={field.state.value}
                               onChange={(e) =>
-                                field.handleChange(e.target.value)
+                                field.handleChange(
+                                  e.target.value.replace(/\D/g, ""),
+                                )
                               }
                               onBlur={field.handleBlur}
                               className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
