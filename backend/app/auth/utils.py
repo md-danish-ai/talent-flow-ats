@@ -16,6 +16,6 @@ def generate_jwt(user: dict):
     payload = {
         "user_id": user["id"],
         "role": user["role"],
-        "exp": datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRE_HOURS)
+        "exp": datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRE_HOURS),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")

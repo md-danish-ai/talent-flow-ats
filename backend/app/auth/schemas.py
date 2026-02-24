@@ -6,10 +6,12 @@ import re
 
 # ─── Shared Enums (single source of truth for both backend & frontend) ────
 
+
 class TestLevelEnum(str, Enum):
     fresher = "fresher"
     qa = "QA"
     team_lead = "team-lead"
+
 
 class RoleEnum(str, Enum):
     user = "user"
@@ -17,6 +19,7 @@ class RoleEnum(str, Enum):
 
 
 # ─── Sign Up Schema ──────────────────────────────────────────────────────
+
 
 class SignUpSchema(BaseModel):
     name: str
@@ -41,6 +44,7 @@ class SignUpSchema(BaseModel):
 
 
 # ─── Sign In Schema ──────────────────────────────────────────────────────
+
 
 class SignInSchema(BaseModel):
     mobile: str
