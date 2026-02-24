@@ -12,6 +12,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   className?: string;
+  closeOnOutsideClick?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -20,6 +21,7 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   className,
+  closeOnOutsideClick = false,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -32,6 +34,12 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
+  const handleBackdropClick = () => {
+    if (closeOnOutsideClick) {
+      onClose();
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -41,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={handleBackdropClick}
           />
 
           <motion.div

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Menu } from "lucide-react";
 import { NotificationDropdown } from "@components/ui-elements/NotificationDropdown";
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
 import { Button } from "@components/ui-elements/Button";
@@ -68,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                 variant="body1"
                 weight="bold"
                 as="span"
-                className="relative z-10 text-foreground tracking-tight hidden sm:block"
+                className="relative z-10 text-foreground tracking-tight"
               >
                 ArcInterview
               </Typography>
@@ -79,27 +80,18 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
               />
             </Link>
 
-            <Button
-              variant="ghost"
-              color="default"
-              size="icon-sm"
-              className="min-[900px]:hidden"
-              onClick={toggleSidebar}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {user?.role === "admin" && (
+              <Button
+                variant="ghost"
+                color="default"
+                size="icon-sm"
+                animate="rotate"
+                className="min-[900px]:hidden"
+                onClick={toggleSidebar}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </Button>
+                <Menu className="w-5 h-5" />
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
