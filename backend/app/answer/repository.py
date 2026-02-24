@@ -1,5 +1,6 @@
 from app.database.db import get_db
 from fastapi import HTTPException
+from app.utils.status_codes import StatusCode
 
 
 def create_answer(data, user_id: int):
@@ -12,7 +13,7 @@ def create_answer(data, user_id: int):
                     (data.question_id,))
         if not cur.fetchone():
             raise HTTPException(
-                status_code=404,
+                status_code=StatusCode.NOT_FOUND,
                 detail=f"Question {data.question_id} does not exist"
             )
 
@@ -21,7 +22,7 @@ def create_answer(data, user_id: int):
             "SELECT id FROM question_answers WHERE question_id = %s", (data.question_id,))
         if cur.fetchone():
             raise HTTPException(
-                status_code=409,
+                status_code=StatusCode.ALREADY_EXISTS,
                 detail=f"Answer for question {data.question_id} already exists"
             )
 
