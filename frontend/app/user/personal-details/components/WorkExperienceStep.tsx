@@ -3,14 +3,17 @@ import { motion } from "framer-motion";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 
-interface StepProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formData: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateField: (field: string, value: any) => void;
+import {
+  type PersonalDetailsForm,
+  type WorkExperience,
+} from "@lib/validations/personal-details";
+import { getErrorMessage } from "@lib/utils";
+
+export interface WorkExperienceStepProps {
+  form: PersonalDetailsForm;
 }
 
-export function WorkExperienceStep({ formData, updateField }: StepProps) {
+export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -22,7 +25,7 @@ export function WorkExperienceStep({ formData, updateField }: StepProps) {
         weight="bold"
         className="text-center mb-1 pb-1 text-gray-800"
       >
-        Work Experience Details
+        5. Work Experience Details
       </Typography>
       <Typography
         variant="body2"
@@ -56,87 +59,179 @@ export function WorkExperienceStep({ formData, updateField }: StepProps) {
             </tr>
           </thead>
           <tbody className="bg-card divide-y divide-border">
-            {formData.workExp.map(
-              (exp: Record<string, string>, index: number) => (
-                <tr
-                  key={exp.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <td className="p-2 border-r border-border">
-                    <Input
-                      value={exp.company}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].company = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
-                      placeholder="Enter company name..."
-                    />
-                  </td>
-                  <td className="p-2 border-r border-border">
-                    <Input
-                      value={exp.designation}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].designation = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
-                      placeholder="Enter designation..."
-                    />
-                  </td>
-                  <td className="p-2 border-r border-border">
-                    <Input
-                      type="date"
-                      value={exp.joinDate}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].joinDate = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    />
-                  </td>
-                  <td className="p-2 border-r border-border">
-                    <Input
-                      type="date"
-                      value={exp.relieveDate}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].relieveDate = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    />
-                  </td>
-                  <td className="p-2 border-r border-border">
-                    <Input
-                      value={exp.reason}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].reason = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
-                      placeholder="Reason for leaving..."
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Input
-                      value={exp.salary}
-                      onChange={(e) => {
-                        const newExp = [...formData.workExp];
-                        newExp[index].salary = e.target.value;
-                        updateField("workExp", newExp);
-                      }}
-                      className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
-                      placeholder="Enter last salary..."
-                    />
-                  </td>
-                </tr>
-              ),
-            )}
+            <form.Subscribe selector={(state) => [state.values.workExp]}>
+              {([workExp]) =>
+                workExp.map((exp: WorkExperience, index: number) => (
+                  <tr
+                    key={exp.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`workExp[${index}].company`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
+                              placeholder="Enter company name..."
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`workExp[${index}].designation`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
+                              placeholder="Enter designation..."
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`workExp[${index}].joinDate`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              type="date"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`workExp[${index}].relieveDate`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              type="date"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`workExp[${index}].reason`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
+                              placeholder="Reason for leaving..."
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                    <td className="p-2">
+                      <form.Field name={`workExp[${index}].salary`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input"
+                              placeholder="Enter last salary..."
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </td>
+                  </tr>
+                ))
+              }
+            </form.Subscribe>
           </tbody>
         </table>
       </div>

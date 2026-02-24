@@ -5,7 +5,7 @@ import { Input, InputProps } from "./Input";
 import { cn } from "@lib/utils";
 
 export interface DatePickerProps extends Omit<InputProps, "type"> {
-  label?: string;
+  label?: React.ReactNode;
 }
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
