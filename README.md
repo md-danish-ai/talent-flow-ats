@@ -100,6 +100,66 @@ You can run the application (currently backend only) using Docker Compose for a 
     docker-compose down
     ```
 
+## Database Migrations
+
+If you have modified existing models or created new ones in the application, you need to generate a database migration to keep the schema in sync.
+
+### 1. Generating Migrations Locally
+
+First, ensure your virtual environment is activated in the `backend/` directory.
+
+1.  Grant executable permission to the generation script (one-time setup):
+    ```bash
+    chmod +x backend/scripts/gen_migrations.sh
+    ```
+
+2.  Generate the migration:
+    ```bash
+    cd backend && ./scripts/gen_migrations.sh "migration_name_here"
+    ```
+    *Replace `migration_name_here` with a descriptive name for your change.*
+
+### 2. Syncing with Docker
+
+After generating the migration, you must update the Docker environment:
+
+1.  Build the backend image again to include the new migration file:
+    ```bash
+    docker compose build
+    docker compose up -d
+    ```
+
+2.  Run the migration script on Docker to sync the database structure:
+    ```bash
+    docker compose --profile migrate run --rm migrations
+    ```
+
+### 3. When to use `docker compose down -v`
+
+#### ✅ Use it when
+-   First-time project setup
+-   Migration history is broken (schema ≠ `alembic_version`)
+-   Major schema refactor in local/dev
+-   Switching branches with incompatible migrations
+-   You intentionally want a clean database
+
+**Commands to run:**
+```bash
+docker compose down -v
+docker compose up -d --build
+docker compose --profile migrate run --rm migrations
+```
+
+#### ❌ Do NOT use it when
+-   Normal development
+-   Adding/updating migrations
+-   Applying new schema changes
+-   Working with important data
+-   Staging or production environments
+
+> [!IMPORTANT]
+> **Key takeaway**: `docker compose down -v` resets the database. Use it only when you want to start from scratch — not as part of a normal migration flow.
+
 
 ## Project Structure
 

@@ -21,6 +21,20 @@ services:
       SECRET_KEY: supersecretkey1234567890123456
     command: uvicorn app.main:app --host 0.0.0.0 --port 4000
 
+  migrations:
+    image: talent-flow-ats-backend
+    profiles: ["migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: talent_flow_ats
+      DB_USER: postgres
+      DB_PASSWORD: Pass2020NothingSpecial
+    command: sh /backend/scripts/run_migrations.sh
+
   db:
     container_name: talent-flow-postgres
     image: postgres:16
@@ -37,22 +51,6 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       retries: 5
-
-  migrations:
-    profiles: ["migrate"]
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: talent_flow_ats
-      DB_USER: postgres
-      DB_PASSWORD: Pass2020NothingSpecial
-    command: sh /backend/scripts/run_migrations.sh
 
 volumes:
   postgres_data:
