@@ -87,11 +87,15 @@ You can run the application (currently backend only) using Docker Compose for a 
     ```bash
     docker-compose ps
     ```
-3.  View logs:
+3.  Run database migrations:
+    ```bash
+    docker compose --profile migrate run --rm migrations
+    ```
+4.  View logs:
     ```bash
     docker-compose logs -f backend
     ```
-4.  Stop services:
+5.  Stop services:
     ```bash
     docker-compose down
     ```
