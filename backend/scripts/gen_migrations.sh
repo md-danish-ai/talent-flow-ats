@@ -41,6 +41,12 @@ fi
 source venv/bin/activate
 
 # =================================================
+# Set migration author from git config
+# =================================================
+GIT_USER=$(git config user.name || echo "unknown")
+export MIGRATION_AUTHOR="$GIT_USER"
+
+# =================================================
 # Run Alembic
 # =================================================
 alembic revision --autogenerate -m "$MIGRATION_NAME"

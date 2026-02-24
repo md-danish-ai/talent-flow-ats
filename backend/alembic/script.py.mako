@@ -3,6 +3,7 @@
 Revision ID: ${up_revision}
 Revises: ${down_revision | comma,n}
 Create Date: ${create_date}
+Created By: ${os.getenv("MIGRATION_AUTHOR", "unknown")}
 
 """
 from typing import Sequence, Union
