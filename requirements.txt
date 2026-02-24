@@ -19,4 +19,10 @@ python-dotenv
 bcrypt
 PyJWT
 ruff==0.9.6
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+python-multipart
+
+
 
