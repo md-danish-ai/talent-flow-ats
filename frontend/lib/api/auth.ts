@@ -6,11 +6,9 @@
  *  POST /auth/signin   → Authenticate an existing user
  */
 
-import { apiClient, type ApiRequestOptions } from "./client";
-import type {
-  SignInFormValues,
-  SignUpFormValues,
-} from "@/lib/validations/auth";
+import { api } from "./index";
+import type { ApiRequestOptions } from "./client";
+import type { SignInFormValues, SignUpFormValues } from "@lib/validations/auth";
 
 // ─── Response Types ──────────────────────────────────────────────────────
 
@@ -46,11 +44,7 @@ export async function signUp(
   data: SignUpFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<SignUpResponse> {
-  return apiClient<SignUpResponse>("/auth/signup", {
-    method: "POST",
-    body: data,
-    ...options,
-  });
+  return api.post<SignUpResponse>("/auth/signup", data, options);
 }
 
 /**
@@ -61,9 +55,5 @@ export async function signIn(
   data: SignInFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<AuthResponse> {
-  return apiClient<AuthResponse>("/auth/signin", {
-    method: "POST",
-    body: data,
-    ...options,
-  });
+  return api.post<AuthResponse>("/auth/signin", data, options);
 }
