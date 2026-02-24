@@ -43,8 +43,10 @@ source venv/bin/activate
 # =================================================
 # Set migration author from git config
 # =================================================
-GIT_USER=$(git config user.name || echo "unknown")
-export MIGRATION_AUTHOR="$GIT_USER"
+GIT_USER=$(git config user.name 2>/dev/null || true)
+SYSTEM_USER=${USER:-${USERNAME:-unknown}}
+MIGRATION_AUTHOR=${GIT_USER:-$SYSTEM_USER}
+export MIGRATION_AUTHOR
 
 # =================================================
 # Run Alembic
