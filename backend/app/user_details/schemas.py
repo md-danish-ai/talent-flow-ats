@@ -63,7 +63,7 @@ class OtherDetailsSchema(BaseModel):
     expectedSalary: str
 
 class UserDetailsSchema(BaseModel):
-    isSubmited: bool = False
+    is_submitted: bool = False
     personalDetails: PersonalDetailsSchema
     familyDetails: List[FamilyDetailSchema]
     sourceOfInformation: SourceOfInformationSchema

@@ -6,13 +6,13 @@ from app.core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/signin")
 
-SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        current_secret = settings.SECRET_KEY
+        payload = jwt.decode(token, current_secret, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
 
         if user_id is None:
@@ -23,7 +23,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
         return user_id
 
-    except PyJWTError:
+    except PyJWTError as e:
+        print(f"JWT Verification Failed: {str(e)}") # Helpful for logs
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",

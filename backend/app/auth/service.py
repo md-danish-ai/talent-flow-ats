@@ -56,7 +56,6 @@ def signup_user(data):
         "user": user
     }
 
-
 def signin_user(data):
     conn = get_db()
     cur = conn.cursor()
@@ -85,7 +84,6 @@ def signin_user(data):
             "role": user["role"]
         }
     }
-
 
 def create_admin(data):
     conn = get_db()
@@ -137,3 +135,49 @@ def create_admin(data):
         "access_token": token,
         "user": user
     }
+
+def get_user_by_id(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        # Fetch basic info and determine role
+        cur.execute("SELECT id, username, mobile, email, role FROM users WHERE id=%s", (user_id,))
+        user = cur.fetchone()
+        
+        if not user:
+            return None
+        
+        user = dict(user)
+
+        # If it's a regular user, fetch the submission status and recruitment details
+        if user["role"] == "user":
+            cur.execute("""
+                SELECT *
+                FROM user_details 
+                WHERE user_id = %s
+            """, (user_id,))
+            details = cur.fetchone()
+            
+            if details:
+                details = dict(details)
+                user["is_submitted"] = details["is_submitted"]
+                user["recruitment_details"] = {
+                    "personalDetails": details["personal_details"],
+                    "familyDetails": details["family_details"],
+                    "sourceOfInformation": details["source_of_information"],
+                    "educationDetails": details["education_details"],
+                    "workExperienceDetails": details["work_experience_details"],
+                    "otherDetails": details["other_details"]
+                }
+            else:
+                user["is_submitted"] = False
+                user["recruitment_details"] = None
+        else:
+            # Admins don't have recruitment details
+            user["is_submitted"] = False
+            user["recruitment_details"] = None
+            
+        return user
+    finally:
+        cur.close()
+        conn.close()

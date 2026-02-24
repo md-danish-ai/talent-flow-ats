@@ -17,6 +17,10 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         work_experience_details = [item.model_dump() for item in data.workExperienceDetails]
         other_details = data.otherDetails.model_dump()
 
+        # Sync name in users table
+        username = f"{data.personalDetails.firstName} {data.personalDetails.lastName}".strip()
+        cur.execute("UPDATE users SET username = %s WHERE id = %s", (username, int(user_id)))
+
         cur.execute("""
             INSERT INTO user_details (
                 user_id, 
@@ -41,14 +45,14 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id, is_submitted
         """, (
-            user_id,
+            int(user_id),
             json.dumps(personal_details),
             json.dumps(family_details),
             json.dumps(source_of_information),
             json.dumps(education_details),
             json.dumps(work_experience_details),
             json.dumps(other_details),
-            data.isSubmited
+            data.is_submitted
         ))
         
         result = cur.fetchone()
@@ -56,6 +60,7 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         return {
             "id": result["id"], 
             "is_submitted": result["is_submitted"],
+            "username": username,
             "message": "User details saved successfully"
         }
         
@@ -73,13 +78,27 @@ def get_user_details(user_id: int):
     cur = conn.cursor()
     
     try:
-        cur.execute("SELECT * FROM user_details WHERE user_id = %s", (user_id,))
+        cur.execute("""
+            SELECT ud.*, u.username as current_username 
+            FROM user_details ud
+            JOIN users u ON ud.user_id = u.id
+            WHERE ud.user_id = %s
+        """, (user_id,))
         details = cur.fetchone()
         
         if not details:
             return None
             
-        return details
+        return {
+            "is_submitted": details["is_submitted"],
+            "username": details["current_username"],
+            "personalDetails": details["personal_details"],
+            "familyDetails": details["family_details"],
+            "sourceOfInformation": details["source_of_information"],
+            "educationDetails": details["education_details"],
+            "workExperienceDetails": details["work_experience_details"],
+            "otherDetails": details["other_details"]
+        }
     finally:
         cur.close()
         conn.close()

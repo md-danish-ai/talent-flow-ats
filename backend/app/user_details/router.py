@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.auth.dependencies import get_current_user
 from app.user_details.schemas import UserDetailsSchema
 from app.user_details import service
-from app.utils.status_codes import StatusCode
+from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 router = APIRouter()
 
@@ -15,7 +15,8 @@ def add_user_details(
     Add user recruitment details. 
     If details already exist, they will be overwritten (updated).
     """
-    return service.save_user_details(user_id, data)
+    result = service.save_user_details(user_id, data)
+    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 @router.put("/update")
 def update_user_details(
@@ -25,17 +26,5 @@ def update_user_details(
     """
     Update existing user recruitment details.
     """
-    return service.save_user_details(user_id, data)
-
-@router.get("/me")
-def get_my_details(user_id: int = Depends(get_current_user)):
-    """
-    Retrieve current user's recruitment details.
-    """
-    details = service.get_user_details(user_id)
-    if not details:
-        raise HTTPException(
-            status_code=StatusCode.NOT_FOUND, 
-            detail="Recruitment details not found for this user."
-        )
-    return details
+    result = service.save_user_details(user_id, data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)

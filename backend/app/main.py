@@ -3,6 +3,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi import Request
+import time
 
 from app.auth.router import router as auth_router
 from app.users.router import router as users_router
@@ -12,16 +14,21 @@ from app.core.config import settings
 from app.answer.router import router as answer_router
 app = FastAPI(title="Talent Flow ATS")
 
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(users_router, prefix="/users", tags=["Users"])
-app.include_router(user_details_router, prefix="/user-details", tags=["User Details"])
-
-
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    origin = request.headers.get("origin")
+    print(f"Incoming request: {request.method} {request.url} | Origin: {origin}")
+    response = await call_next(request)
+    return response
 
 # Set up CORS
 origins = [
     "http://localhost:3000",
-    "http://localhost:3001", # Alternate port if 3000 is busy
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
 ]
 
 app.add_middleware(
@@ -30,7 +37,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(user_details_router, prefix="/user-details", tags=["User Details"])
 
 @app.get("/")
 def health_check():
