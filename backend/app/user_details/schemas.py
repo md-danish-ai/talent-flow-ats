@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict
 
+
 class PersonalDetailsSchema(BaseModel):
     firstName: str
     lastName: str
@@ -23,6 +24,7 @@ class PersonalDetailsSchema(BaseModel):
     permanentPincode: str
     sameAddress: bool
 
+
 class FamilyDetailSchema(BaseModel):
     id: int
     relationLabel: str
@@ -31,10 +33,12 @@ class FamilyDetailSchema(BaseModel):
     occupation: str
     dependent: str
 
+
 class SourceOfInformationSchema(BaseModel):
     interviewedBefore: str
     workedBefore: str
     source: Dict[str, bool]
+
 
 class EducationDetailSchema(BaseModel):
     id: int
@@ -46,6 +50,7 @@ class EducationDetailSchema(BaseModel):
     percentage: str
     medium: str
 
+
 class WorkExperienceDetailSchema(BaseModel):
     id: int
     company: str
@@ -55,12 +60,14 @@ class WorkExperienceDetailSchema(BaseModel):
     reason: str
     salary: str
 
+
 class OtherDetailsSchema(BaseModel):
     serviceCommitment: str
     securityDeposit: str
     shiftTime: str
     expectedJoiningDate: str
     expectedSalary: str
+
 
 class UserDetailsSchema(BaseModel):
     is_submitted: bool = False

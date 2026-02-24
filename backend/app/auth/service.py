@@ -12,28 +12,33 @@ def signup_user(data):
     if cur.fetchone():
         cur.close()
         conn.close()
-        raise HTTPException(status_code=StatusCode.CONFLICT, detail="Mobile already registered")
+        raise HTTPException(
+            status_code=StatusCode.CONFLICT, detail="Mobile already registered"
+        )
 
     hashed_password = hash_password(data.mobile)
 
     try:
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO users (
                 username, mobile, email, password,
                 testlevel, role, is_active, created_by
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, username, role
-        """, (
-            data.name,
-            data.mobile,
-            data.email,
-            hashed_password,
-            data.testLevel.value,
-            "user",
-            True,
-            None
-        ))
+        """,
+            (
+                data.name,
+                data.mobile,
+                data.email,
+                hashed_password,
+                data.testLevel.value,
+                "user",
+                True,
+                None,
+            ),
+        )
 
         user = cur.fetchone()
         conn.commit()
@@ -51,39 +56,43 @@ def signup_user(data):
 
     token = generate_jwt(user)
 
-    return {
-        "access_token": token,
-        "user": user
-    }
+    return {"access_token": token, "user": user}
+
 
 def signin_user(data):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id, username, password, role, is_active FROM users WHERE mobile=%s", (data.mobile,))
+    cur.execute(
+        "SELECT id, username, password, role, is_active FROM users WHERE mobile=%s",
+        (data.mobile,),
+    )
 
     user = cur.fetchone()
     cur.close()
     conn.close()
 
     if not user:
-        raise HTTPException(status_code=StatusCode.UNAUTHORIZED, detail="User does not exist")
+        raise HTTPException(
+            status_code=StatusCode.UNAUTHORIZED, detail="User does not exist"
+        )
 
     if not user["is_active"]:
-        raise HTTPException(status_code=StatusCode.FORBIDDEN, detail="Account is inactive")
+        raise HTTPException(
+            status_code=StatusCode.FORBIDDEN, detail="Account is inactive"
+        )
 
     if not verify_password(data.password, user["password"]):
-        raise HTTPException(status_code=StatusCode.UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=StatusCode.UNAUTHORIZED, detail="Invalid credentials"
+        )
 
     token = generate_jwt(user)
 
     return {
         "access_token": token,
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "role": user["role"]
-        }
+        "user": {"id": user["id"], "username": user["username"], "role": user["role"]},
     }
+
 
 def create_admin(data):
     conn = get_db()
@@ -93,27 +102,24 @@ def create_admin(data):
     if cur.fetchone():
         cur.close()
         conn.close()
-        raise HTTPException(status_code=StatusCode.CONFLICT, detail="Mobile already registered")
+        raise HTTPException(
+            status_code=StatusCode.CONFLICT, detail="Mobile already registered"
+        )
 
     hashed_password = hash_password(data.mobile)
 
     try:
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO users (
                 username, mobile, email, password,
                 role, is_active, created_by
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id, username, role
-        """, (
-            data.name,
-            data.mobile,
-            data.email,
-            hashed_password,
-            "admin",
-            True,
-            None
-        ))
+        """,
+            (data.name, data.mobile, data.email, hashed_password, "admin", True, None),
+        )
 
         user = cur.fetchone()
         conn.commit()
@@ -131,33 +137,37 @@ def create_admin(data):
 
     token = generate_jwt(user)
 
-    return {
-        "access_token": token,
-        "user": user
-    }
+    return {"access_token": token, "user": user}
+
 
 def get_user_by_id(user_id):
     conn = get_db()
     cur = conn.cursor()
     try:
         # Fetch basic info and determine role
-        cur.execute("SELECT id, username, mobile, email, role FROM users WHERE id=%s", (user_id,))
+        cur.execute(
+            "SELECT id, username, mobile, email, role FROM users WHERE id=%s",
+            (user_id,),
+        )
         user = cur.fetchone()
-        
+
         if not user:
             return None
-        
+
         user = dict(user)
 
         # If it's a regular user, fetch the submission status and recruitment details
         if user["role"] == "user":
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT *
                 FROM user_details 
                 WHERE user_id = %s
-            """, (user_id,))
+            """,
+                (user_id,),
+            )
             details = cur.fetchone()
-            
+
             if details:
                 details = dict(details)
                 user["is_submitted"] = details["is_submitted"]
@@ -167,7 +177,7 @@ def get_user_by_id(user_id):
                     "sourceOfInformation": details["source_of_information"],
                     "educationDetails": details["education_details"],
                     "workExperienceDetails": details["work_experience_details"],
-                    "otherDetails": details["other_details"]
+                    "otherDetails": details["other_details"],
                 }
             else:
                 user["is_submitted"] = False
@@ -176,7 +186,7 @@ def get_user_by_id(user_id):
             # Admins don't have recruitment details
             user["is_submitted"] = False
             user["recruitment_details"] = None
-            
+
         return user
     finally:
         cur.close()

@@ -24,7 +24,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         return user_id
 
     except PyJWTError as e:
-        print(f"JWT Verification Failed: {str(e)}") # Helpful for logs
+        print(f"JWT Verification Failed: {str(e)}")  # Helpful for logs
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",

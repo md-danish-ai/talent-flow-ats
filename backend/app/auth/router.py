@@ -20,10 +20,7 @@ async def signup(data: SignUpSchema):
     result = signup_user(data)
 
     if "error" in result:
-        raise HTTPException(
-            status_code=StatusCode.BAD_REQUEST,
-            detail=result["error"]
-        )
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=result["error"])
 
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
@@ -33,10 +30,7 @@ async def signin(data: SignInSchema):
     result = signin_user(data)
 
     if "error" in result:
-        raise HTTPException(
-            status_code=StatusCode.UNAUTHORIZED,
-            detail=result["error"]
-        )
+        raise HTTPException(status_code=StatusCode.UNAUTHORIZED, detail=result["error"])
 
     return api_response(StatusCode.OK, ResponseMessage.LOGIN_SUCCESS, data=result)
 
@@ -46,9 +40,6 @@ async def create_admin_user(data: CreateAdminSchema):
     result = create_admin(data)
 
     if "error" in result:
-        raise HTTPException(
-            status_code=StatusCode.BAD_REQUEST,
-            detail=result["error"]
-        )
+        raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=result["error"])
 
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)

@@ -40,9 +40,11 @@ class OptionUpdate(BaseModel):
     option_text: str
     is_correct: bool
 
+
 class AnswerUpdate(BaseModel):
     answer_text: Optional[str] = None
     explanation: Optional[str] = None
+
 
 class QuestionUpdate(BaseModel):
     question_type: Optional[str] = None
