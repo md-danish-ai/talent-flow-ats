@@ -1,14 +1,20 @@
 from fastapi import APIRouter
-from app.users.schemas import UserCreate, UserResponse
+from app.users.schemas import UserCreate
 from app.users.service import UserService
+
+from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 router = APIRouter(prefix="/users", tags=["Users"])
 user_service = UserService()
 
-@router.post("/", response_model=UserResponse)
-async def create_user(user: UserCreate):
-    return await user_service.create_user(user.dict())
 
-@router.get("/{email}", response_model=UserResponse)
+@router.post("/")
+async def create_user(user: UserCreate):
+    data = await user_service.create_user(user.dict())
+    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+
+
+@router.get("/{email}")
 async def get_user(email: str):
-    return await user_service.get_user_by_email(email)
+    data = await user_service.get_user_by_email(email)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)

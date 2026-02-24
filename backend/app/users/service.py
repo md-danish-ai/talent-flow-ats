@@ -1,4 +1,3 @@
-
 class UserService:
     async def get_user_by_email(self, email: str):
         return {"id": 1, "email": email, "is_active": True}
