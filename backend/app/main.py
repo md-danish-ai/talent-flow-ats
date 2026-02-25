@@ -6,7 +6,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import Request
 
 from app.auth.router import router as auth_router
-from app.users.router import router as users_router
 from app.user_details.router import router as user_details_router
 from app.questions.router import router as questions_router
 from app.core.config import settings
@@ -41,7 +40,6 @@ app.add_middleware(
 )
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(user_details_router, prefix="/user-details", tags=["User Details"])
 
 

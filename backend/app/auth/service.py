@@ -191,3 +191,30 @@ def get_user_by_id(user_id):
     finally:
         cur.close()
         conn.close()
+
+
+def get_users_by_role(role: str):
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            SELECT id, username, mobile, email, role, is_active 
+            FROM users 
+            WHERE role = %s
+            ORDER BY id DESC
+            """,
+            (role,)
+        )
+        users = cur.fetchall()
+        
+        result = []
+        for user in users:
+            result.append(dict(user))
+            
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()

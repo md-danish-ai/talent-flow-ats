@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema
-from app.auth.service import signup_user, signin_user, create_admin, get_user_by_id
+from app.auth.service import signup_user, signin_user, create_admin, get_user_by_id, get_users_by_role
 from app.auth.dependencies import get_current_user
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 router = APIRouter()
+
+
+@router.get("/get-all-users")
+async def get_users(role: str = Query(..., description="Role to filter users by (e.g., admin, user)")):
+    data = get_users_by_role(role)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
 @router.get("/me")

@@ -26,3 +26,12 @@ def update_user_details(
     """
     result = service.save_user_details(user_id, data)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+
+
+@router.get("/get/{id}")
+def get_user_details_by_id(id: int):
+    """
+    Get user details by ID.
+    """
+    result = service.get_user_details(id)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=result)
