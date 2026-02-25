@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
@@ -9,31 +10,35 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
+import { AddAdminModal } from "./AddAdminModal";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 
-interface UserListingProps {
+interface AdminListingProps {
   initialData?: UserListResponse[];
 }
 
-export function UserListing({ initialData = [] }: UserListingProps) {
+export function AdminListing({ initialData = [] }: AdminListingProps) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
   const [loading, setLoading] = useState(!initialData.length);
 
   const fetchUsers = React.useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getUsersByRole("user");
+      const data = await getUsersByRole("admin");
       setUsers(data);
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      console.error("Failed to fetch admins:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // If we have initial data (from SSR), just use it initially, no need to overwrite unless refreshed
+    // Actually we will fetch on mount to ensure freshness, or rely on SSR. Let's rely on fetch if no initial data.
     if (!initialData.length) {
       fetchUsers();
     } else {
@@ -49,11 +54,28 @@ export function UserListing({ initialData = [] }: UserListingProps) {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <Users size={20} />
             </div>
-            User Management
+            Admin Management
           </>
         }
         className="mb-6 flex-1 flex flex-col min-h-[600px]"
         bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        action={
+          <div className="flex items-center gap-3">
+            <Button
+              variant="primary"
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-90"
+              onClick={() => setIsAddModalOpen(true)}
+              startIcon={<Plus size={18} />}
+              className="font-bold"
+            >
+              Add Admin
+            </Button>
+          </div>
+        }
       >
         <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
           <div className="flex-1 overflow-x-auto w-full min-h-0">
@@ -79,7 +101,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                 ) : !Array.isArray(users) || users.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
-                      No users found.
+                      No admins found.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -110,6 +132,14 @@ export function UserListing({ initialData = [] }: UserListingProps) {
           </div>
         </div>
       </MainCard>
+
+      <AddAdminModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          fetchUsers(); // Refresh after adding
+        }}
+      />
     </>
   );
 }

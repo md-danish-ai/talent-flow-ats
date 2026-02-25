@@ -1,4 +1,6 @@
 import { api } from "./index";
+import type { ApiRequestOptions } from "./client";
+
 export interface PersonalDetails {
   firstName: string;
   lastName: string;
@@ -82,3 +84,8 @@ export const addUserDetails = (data: UserDetails) =>
 
 export const updateUserDetails = (data: UserDetails) =>
   api.put<UserDetails>("/user-details/update", data);
+
+export const getUserDetailsById = (
+  id: string | number,
+  options?: Pick<ApiRequestOptions, "cookies">,
+) => api.get<UserDetails>(`/user-details/get/${id}`, options);

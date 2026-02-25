@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { AddQuestionForm } from "@components/features/questions/AddQuestionForm";
+import { AddQuestionForm } from "@features/questions/AddQuestionForm";
 
 interface AddQuestionModalProps {
   isOpen: boolean;

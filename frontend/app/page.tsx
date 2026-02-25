@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
-import { SignUpForm } from "@components/features/authforms/SignUpForm";
+import { SignUpForm } from "@features/authforms/SignUpForm";
 
 export default function RegisterPage() {
   return (
