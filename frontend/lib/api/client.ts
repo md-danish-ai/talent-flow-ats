@@ -1,8 +1,4 @@
-/**
- * Base API client for making HTTP requests to the backend.
- * Works in both Server Components (SSR) and Client Components.
- */
-
+// Base API client for making HTTP requests to the backend
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
@@ -12,9 +8,9 @@ export interface ApiRequestOptions {
   method?: ApiMethod;
   body?: unknown;
   headers?: Record<string, string>;
-  /** Pass cookies string for SSR requests (from next/headers) */
+  // Pass cookies string for SSR requests (from next/headers)
   cookies?: string;
-  /** Custom cache / revalidate options for Next.js fetch */
+  // Custom cache / revalidate options for Next.js fetch
   next?: NextFetchRequestConfig;
 }
 
@@ -27,7 +23,7 @@ interface ValidationError {
 interface ApiErrorResponse {
   message?: string;
   error?: string;
-  /** FastAPI returns `detail` as a string (HTTPException) or array (Pydantic validation) */
+  // FastAPI returns `detail` as a string or array
   detail?: string | ValidationError[];
   statusCode?: number;
 }
@@ -37,7 +33,7 @@ function extractDetail(
 ): string | undefined {
   if (!detail) return undefined;
   if (typeof detail === "string") return detail;
-  // Pydantic validation errors — join all messages
+  // Pydantic validation errors - join all messages
   if (Array.isArray(detail) && detail.length > 0) {
     return detail.map((e) => e.msg).join(". ");
   }
@@ -61,13 +57,7 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Core fetch wrapper. Automatically:
- *  - Prepends the base URL
- *  - Sets JSON content-type for POST/PUT/PATCH
- *  - Parses JSON responses
- *  - Throws `ApiError` for non-2xx responses
- */
+// Core fetch wrapper for prepending base URL, setting JSON headers, and parsing responses
 export async function apiClient<T>(
   endpoint: string,
   options: ApiRequestOptions = {},
@@ -94,6 +84,30 @@ export async function apiClient<T>(
     headers["Cookie"] = cookies;
   }
 
+  // Automatically attach Authorization header if auth_token exists in cookies
+  let token: string | undefined;
+  const cookieSource =
+    cookies || (typeof document !== "undefined" ? document.cookie : "");
+
+  if (cookieSource) {
+    const authRow = cookieSource
+      .split(";")
+      .find((row) => row.trim().startsWith("auth_token="));
+    if (authRow) {
+      let val = authRow.trim().split("=").slice(1).join("=").trim();
+      // Remove wrapping quotes
+      val = val.replace(/^["%22]+|["%22]+$/g, "");
+
+      if (val && val !== "undefined" && val !== "null") {
+        token = val;
+      }
+    }
+  }
+
+  if (token && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const url = `${BASE_URL}${endpoint}`;
 
   const fetchOptions: RequestInit & { next?: NextFetchRequestConfig } = {
@@ -110,11 +124,21 @@ export async function apiClient<T>(
     return undefined as T;
   }
 
-  const data = await response.json().catch(() => ({}));
+  const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new ApiError(response.status, data as ApiErrorResponse);
+    throw new ApiError(response.status, result as ApiErrorResponse);
   }
 
-  return data as T;
+  // Handle standard backend wrapper: { status, message, data }
+  if (
+    result &&
+    typeof result === "object" &&
+    "data" in result &&
+    "status" in result
+  ) {
+    return result.data as T;
+  }
+
+  return result as T;
 }

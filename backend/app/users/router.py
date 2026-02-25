@@ -4,7 +4,7 @@ from app.users.service import UserService
 
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter()
 user_service = UserService()
 
 
