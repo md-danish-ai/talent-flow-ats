@@ -37,3 +37,18 @@ export const signInSchema = z.object({
 });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;
+
+// ─── Create Admin Schema ────────────────────────────────────────────────
+export const createAdminSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be under 100 characters"),
+  mobile: z
+    .string()
+    .length(10, "Mobile number must be exactly 10 digits")
+    .regex(/^\d+$/, "Mobile number must contain only digits"),
+  email: z.string().email("Invalid email address"),
+});
+
+export type CreateAdminFormValues = z.infer<typeof createAdminSchema>;

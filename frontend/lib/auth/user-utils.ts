@@ -7,6 +7,8 @@ export interface CurrentUser {
   id: number | string;
   username: string;
   role: string;
+  is_submitted: boolean;
+  recruitment_details?: Record<string, unknown> | null;
 }
 
 /** Returns 1–2 uppercase initials from a display name. */

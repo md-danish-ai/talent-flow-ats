@@ -20,6 +20,7 @@ import type { CurrentUser } from "@lib/auth/user-utils";
 
 interface DashboardClientProps {
   user: CurrentUser | null;
+  isDetailsComplete: boolean;
 }
 
 /**
@@ -50,12 +51,12 @@ function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
   );
 }
 
-export function DashboardClient({ user }: DashboardClientProps) {
+export function DashboardClient({
+  user,
+  isDetailsComplete,
+}: DashboardClientProps) {
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
-  // Mocked state - in real usage, this check would be dynamic
-  const isDetailsComplete = true;
 
   const handleLogout = () => {
     document.cookie =
@@ -92,7 +93,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm p-6 md:p-8 mb-12"
+          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-6 md:p-8 mb-12"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -110,7 +111,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
                     weight="bold"
                     className="text-2xl md:text-3xl"
                   >
-                    Welcome back, {user?.username || "Candidate"}
+                    Welcome, {user?.username || "Candidate"}
                   </Typography>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-brand-primary/10 text-brand-primary border border-brand-primary/20 w-fit mx-auto md:mx-0">
                     Active
@@ -153,19 +154,38 @@ export function DashboardClient({ user }: DashboardClientProps) {
           {/* Card 1: Personal Details */}
           <motion.div variants={itemVariants}>
             <Link
-              href="/user/personal-details"
-              className="group relative block h-full"
-              onMouseEnter={() => setHoveredCard("personal")}
+              href={isDetailsComplete ? "#" : "/user/personal-details"}
+              onClick={(e) => isDetailsComplete && e.preventDefault()}
+              className={`group relative block h-full ${
+                isDetailsComplete ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
+              onMouseEnter={() =>
+                !isDetailsComplete && setHoveredCard("personal")
+              }
               onMouseLeave={() => setHoveredCard(null)}
             >
-              <Card className="h-full relative overflow-hidden flex flex-col p-8 md:p-10 border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-all duration-300 hover:shadow-md hover:border-brand-primary/30">
-                <AnimatedBorder
-                  color="var(--color-brand-primary)"
-                  active={hoveredCard === "personal"}
-                />
+              <Card
+                className={`h-full relative overflow-hidden flex flex-col p-8 md:p-10 border transition-all duration-500 bg-white dark:bg-zinc-900 ${
+                  !isDetailsComplete
+                    ? "border-slate-200 dark:border-zinc-800 shadow-[0_30px_80px_-15px_rgba(111,86,229,0.12),0_15px_30px_-10px_rgba(111,86,229,0.08)] dark:shadow-[0_30px_80px_-15px_rgba(0,0,0,0.6)] hover:shadow-[0_45px_100px_-12px_rgba(111,86,229,0.2)] hover:border-brand-primary/40 hover:-translate-y-2"
+                    : "border-slate-100 dark:border-zinc-800/40 opacity-90 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]"
+                }`}
+              >
+                {!isDetailsComplete && (
+                  <AnimatedBorder
+                    color="var(--color-brand-primary)"
+                    active={hoveredCard === "personal"}
+                  />
+                )}
 
                 <div className="flex items-start justify-between mb-6">
-                  <div className="h-14 w-14 rounded-xl bg-brand-primary/5 flex items-center justify-center text-brand-primary">
+                  <div
+                    className={`h-14 w-14 rounded-xl flex items-center justify-center ${
+                      !isDetailsComplete
+                        ? "bg-brand-primary/5 text-brand-primary"
+                        : "bg-slate-50 dark:bg-zinc-800 text-slate-400"
+                    }`}
+                  >
                     <FileText className="h-7 w-7" />
                   </div>
                   {isDetailsComplete && (
@@ -176,21 +196,37 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 </div>
 
                 <div className="mb-8">
-                  <Typography variant="h3" weight="bold" className="mb-2">
+                  <Typography
+                    variant="h3"
+                    weight="bold"
+                    className={`mb-2 ${isDetailsComplete && "text-slate-400"}`}
+                  >
                     Personal Details
                   </Typography>
                   <Typography
                     variant="body2"
-                    className="text-slate-500 dark:text-zinc-500 leading-relaxed"
+                    className={`leading-relaxed ${
+                      !isDetailsComplete
+                        ? "text-slate-500 dark:text-zinc-500"
+                        : "text-slate-300 dark:text-zinc-600"
+                    }`}
                   >
-                    Update your academic history, work experience, and contact
-                    information.
+                    {isDetailsComplete
+                      ? "Your assessment profile is locked as it has been successfully submitted."
+                      : "Update your academic history, work experience, and contact information."}
                   </Typography>
                 </div>
 
-                <div className="mt-auto flex items-center gap-2 text-brand-primary font-semibold text-sm group-hover:gap-3 transition-all">
-                  {isDetailsComplete ? "Update Profile" : "Complete Profile"}
-                  <ArrowRight className="h-4 w-4" />
+                <div
+                  className={`mt-auto flex items-center gap-2 font-semibold text-sm transition-all ${
+                    !isDetailsComplete
+                      ? "text-brand-primary group-hover:gap-3"
+                      : "text-slate-300 dark:text-zinc-700 font-medium"
+                  }`}
+                >
+                  {isDetailsComplete ? "Submitted" : "Complete Profile"}
+                  {!isDetailsComplete && <ArrowRight className="h-4 w-4" />}
+                  {isDetailsComplete && <CheckCircle2 className="h-4 w-4" />}
                 </div>
               </Card>
             </Link>
@@ -209,10 +245,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
                 className={`block h-full ${isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"}`}
               >
                 <Card
-                  className={`h-full relative overflow-hidden flex flex-col p-8 md:p-10 border transition-all duration-300 bg-white dark:bg-zinc-900 ${
+                  className={`h-full relative overflow-hidden flex flex-col p-8 md:p-10 border transition-all duration-500 bg-white dark:bg-zinc-900 ${
                     isDetailsComplete
-                      ? "border-slate-200 dark:border-zinc-800 hover:shadow-md hover:border-[var(--color-brand-secondary)]/30"
-                      : "border-slate-100 dark:border-zinc-800/40 opacity-70 shadow-none"
+                      ? "border-slate-200 dark:border-zinc-800 shadow-[0_30px_80px_-15px_rgba(37,99,235,0.12),0_15px_30px_-10px_rgba(37,99,235,0.08)] dark:shadow-[0_30px_80px_-15px_rgba(0,0,0,0.6)] hover:shadow-[0_45px_100px_-12px_rgba(37,99,235,0.2)] hover:border-blue-400/40 hover:-translate-y-2"
+                      : "border-slate-100 dark:border-zinc-800/40 opacity-90 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)]"
                   }`}
                 >
                   {isDetailsComplete && (
