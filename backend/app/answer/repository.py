@@ -1,137 +1,124 @@
-from app.database.db import get_db
+# app/answer/repository.py
+
+from app.database.db import SessionLocal
 from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
+from app.answer.models import QuestionAnswer
+from app.questions.models import Question
 
 
 def create_answer(data, user_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-
+    db_session = SessionLocal()
     try:
         # 1. Check question exists
-        cur.execute("SELECT id FROM questions WHERE id = %s", (data.question_id,))
-        if not cur.fetchone():
+        question = db_session.query(Question).filter(Question.id == data.question_id).first()
+        if not question:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
                 detail=f"Question {data.question_id} does not exist",
             )
 
         # 2. Check answer already exists
-        cur.execute(
-            "SELECT id FROM question_answers WHERE question_id = %s",
-            (data.question_id,),
-        )
-        if cur.fetchone():
+        existing_answer = db_session.query(QuestionAnswer).filter(QuestionAnswer.question_id == data.question_id).first()
+        if existing_answer:
             raise HTTPException(
-                status_code=StatusCode.ALREADY_EXISTS,
+                status_code=StatusCode.CONFLICT,
                 detail=f"Answer for question {data.question_id} already exists",
             )
 
         # 3. Insert answer
-        cur.execute(
-            """
-            INSERT INTO question_answers (question_id, answer_text, explanation, created_by)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id, question_id, answer_text, explanation, created_by, created_at
-        """,
-            (data.question_id, data.answer_text, data.explanation, user_id),
+        new_answer = QuestionAnswer(
+            question_id=data.question_id,
+            answer_text=data.answer_text,
+            explanation=data.explanation,
+            created_by=user_id
         )
-
-        answer = dict(cur.fetchone())
-        conn.commit()
-        return answer
+        db_session.add(new_answer)
+        db_session.commit()
+        db_session.refresh(new_answer)
+        
+        return {
+            "id": new_answer.id,
+            "question_id": new_answer.question_id,
+            "answer_text": new_answer.answer_text,
+            "explanation": new_answer.explanation,
+            "created_by": new_answer.created_by,
+            "created_at": new_answer.created_at
+        }
 
     except HTTPException:
         raise
-
-    except Exception as e:
-        conn.rollback()
-        raise e
-
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
 
 
 def get_answer_by_question(question_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-
+    db_session = SessionLocal()
     try:
-        cur.execute(
-            """
-            SELECT
-                qa.id,
-                qa.question_id,
-                qa.answer_text,
-                qa.explanation,
-                qa.created_by,
-                qa.created_at,
-                q.question_text,
-                q.question_type
-            FROM question_answers qa
-            JOIN questions q ON q.id = qa.question_id
-            WHERE qa.question_id = %s
-        """,
-            (question_id,),
-        )
+        # Joining with Question to get question_text and question_type
+        # We can use the relationship if we define it, or just a query join
+        result = db_session.query(
+            QuestionAnswer.id,
+            QuestionAnswer.question_id,
+            QuestionAnswer.answer_text,
+            QuestionAnswer.explanation,
+            QuestionAnswer.created_by,
+            QuestionAnswer.created_at,
+            Question.question_text,
+            Question.question_type
+        ).join(Question, Question.id == QuestionAnswer.question_id)\
+         .filter(QuestionAnswer.question_id == question_id).first()
 
-        row = cur.fetchone()
-
-        if not row:
+        if not result:
             raise HTTPException(
                 status_code=404, detail=f"No answer found for question {question_id}"
             )
 
-        return dict(row)
+        return dict(result._mapping)
 
     except HTTPException:
         raise
-
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
 
 
 def update_answer(question_id: int, data, user_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-
+    db_session = SessionLocal()
     try:
         # 1. Check answer exists
-        cur.execute(
-            "SELECT id FROM question_answers WHERE question_id = %s", (question_id,)
-        )
-        if not cur.fetchone():
+        answer = db_session.query(QuestionAnswer).filter(QuestionAnswer.question_id == question_id).first()
+        if not answer:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
                 detail=f"No answer found for question {question_id}",
             )
 
         # 2. Update answer
-        cur.execute(
-            """
-            UPDATE question_answers
-            SET answer_text = COALESCE(%s, answer_text),
-                explanation = COALESCE(%s, explanation),
-                updated_at = CURRENT_TIMESTAMP
-            WHERE question_id = %s
-            RETURNING id, question_id, answer_text, explanation, created_by, created_at, updated_at
-        """,
-            (data.answer_text, data.explanation, question_id),
-        )
-
-        updated = dict(cur.fetchone())
-        conn.commit()
-        return updated
+        if data.answer_text is not None:
+            answer.answer_text = data.answer_text
+        if data.explanation is not None:
+            answer.explanation = data.explanation
+        
+        db_session.commit()
+        db_session.refresh(answer)
+        
+        return {
+            "id": answer.id,
+            "question_id": answer.question_id,
+            "answer_text": answer.answer_text,
+            "explanation": answer.explanation,
+            "created_by": answer.created_by,
+            "created_at": answer.created_at,
+            "updated_at": answer.updated_at
+        }
 
     except HTTPException:
         raise
-
-    except Exception as e:
-        conn.rollback()
-        raise e
-
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
