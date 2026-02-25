@@ -1,3 +1,6 @@
+<%!
+import os
+%>
 """${message}
 
 Revision ID: ${up_revision}
