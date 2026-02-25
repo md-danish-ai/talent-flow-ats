@@ -93,7 +93,7 @@ Used only where interactivity is mandatory:
 
 1. **New UI Primitive?** Add to `components/ui-elements/` (e.g., `Badge.tsx`).
 2. **New Global Layout Part?** Add to `components/ui-layout/` (e.g., `GlobalSearch.tsx`).
-3. **New Business Logic/Screen?** Create a folder in `components/features/[domain]/`.
+3. **New Business Logic/Screen?** Create a folder in `components/features/[domain]/` and import it using the `@features/[domain]` alias.
 4. **New API Hook?** Add to `lib/react-query/[domain]/use-[feature].ts`.
 5. **New Static Data/Config?** Add to `lib/config/`.
 

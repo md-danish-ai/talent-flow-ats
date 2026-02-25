@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
-import { SignInForm } from "@components/features/authforms/SignInForm";
+import { SignInForm } from "@features/authforms/SignInForm";
 
 export default function LoginPage() {
   return (
