@@ -163,7 +163,7 @@ docker compose --profile migrate run --rm migrations
 
 ## Database Backup & Restore
 
-This project provides standalone scripts to manually back up and restore your database data. This is particularly useful as a safety net before running migrations or for recovering data after a database reset (`docker compose down -v`).
+This project provides standalone scripts to manually back up and restore your database **data**. This is particularly useful as a safety net before running migrations or for recovering your data into a fresh schema after a database reset (`docker compose down -v`).
 
 ### Purpose
 The primary purpose is to ensure data persistence and provide a quick recovery path during development, especially when schema changes or environment resets are involved.
@@ -180,8 +180,9 @@ Execute the backup script from the project root:
 ```bash
 ./backend/scripts/backup_db.sh
 ```
-- **Output**: A timestamped SQL file in `backend/backups/` (e.g., `db_backup_20240225_190418.sql`).
-- **Handling Empty DB**: If the database has no tables, the script will skip the export and notify you.
+- **Output**: A timestamped SQL file in `backend/backups/`.
+- **Method**: Exports only the **data** using `INSERT` statements.
+- **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
 
 #### 2. Restoring the Database
 To restore the **most recent** backup from the `backend/backups/` directory:
@@ -195,14 +196,14 @@ To restore a **specific** backup file:
 ```
 
 > [!CAUTION]
-> The restore process will **drop existing tables** in the public schema and recreate them from the backup. Any data added since the backup was taken will be lost.
+> The restore process will **truncate (empty)** existing tables and re-insert the data in hierarchical order. It preserves the table structure created by your migrations.
 
 #### 3. Ideal Recovery Flow
 If you need to reset and recover your data (e.g., after `docker compose down -v`):
 1. **Clean up**: `docker compose down -v`
 2. **Restart**: `docker compose up -d`
-3. **Recover**: `./backend/scripts/restore_db.sh`
-4. **Continue**: (Optional) Run your migrations again once the original state is restored.
+3. **Migrate**: `docker compose --profile migrate run --rm migrations`
+4. **Recover Data**: `./backend/scripts/restore_db.sh`
 
 
 

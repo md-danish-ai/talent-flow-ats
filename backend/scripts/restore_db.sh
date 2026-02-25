@@ -47,9 +47,21 @@ echo "================================================="
 export PGPASSWORD="$DB_PASSWORD"
 
 # Restore using psql
-# Note: Since the backup was created with --clean and --if-exists, 
-# it will drop existing tables before recreating them.
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$BACKUP_FILE"
+echo "🗑️  Truncating all tables in the public schema..."
+# Generate and execute truncate statements for all tables
+# We skip the alembic_version table to preserve migration state if needed, 
+TRUNCATE_CMD=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT 'TRUNCATE TABLE ' || quote_ident(schemaname) || '.' || quote_ident(tablename) || ' CASCADE;' FROM pg_tables WHERE schemaname = 'public' AND tablename != 'alembic_version';")
+
+if [ ! -z "$TRUNCATE_CMD" ]; then
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$TRUNCATE_CMD" > /dev/null
+    echo "✅ Tables truncated."
+else
+    echo "ℹ️  No tables to truncate."
+fi
+
+echo "📥 Inserting data from backup..."
+# Restoring in hierarchical order as provided by pg_dump's dependency sorting.
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -q < "$BACKUP_FILE"
 
 echo "================================================="
 echo "✅ Database restore completed successfully"
