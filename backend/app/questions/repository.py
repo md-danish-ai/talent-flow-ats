@@ -1,6 +1,5 @@
 # app/questions/repository.py
 
-import json
 from sqlalchemy.orm import aliased
 from app.database.db import SessionLocal
 from app.questions.models import Question

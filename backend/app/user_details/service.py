@@ -1,4 +1,3 @@
-import json
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from app.database.db import SessionLocal
