@@ -24,6 +24,13 @@ import { OtherDetailsStep } from "./timeline/OtherDetailsStep";
 import { Timeline } from "./components/Timeline";
 import { SubmitModal } from "./components/SubmitModal";
 
+import {
+  useUserDetails,
+  useSaveUserDetails,
+  useUpdateUserDetails,
+} from "@lib/react-query/user-details/use-user-details";
+import type { UserDetails } from "@lib/api/user-details";
+
 export function PersonalDetailsClient() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -31,6 +38,15 @@ export function PersonalDetailsClient() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [incompleteSteps, setIncompleteSteps] = useState<number[]>([]);
   const totalSteps = 6;
+
+  const { data: existingDetails, isLoading: isLoadingDetails } =
+    useUserDetails();
+  const { mutateAsync: saveDetails, isPending: isAdding } =
+    useSaveUserDetails();
+  const { mutateAsync: updateDetails, isPending: isUpdating } =
+    useUpdateUserDetails();
+
+  const isSaving = isAdding || isUpdating;
 
   const form = useForm({
     // @ts-expect-error - validatorAdapter exists at runtime but type definition mismatch
@@ -41,65 +57,98 @@ export function PersonalDetailsClient() {
       onBlur: personalDetailsSchema,
     },
     onSubmit: async ({ value }) => {
-      const formattedData = {
-        personalDetails: {
-          firstName: value.firstName,
-          lastName: value.lastName,
-          gender: value.gender,
-          dob: value.dob,
-          primaryMobile: value.primaryMobile,
-          alternateMobile: value.alternateMobile,
-          email: value.email,
-          presentAddressLine1: value.presentAddressLine1,
-          presentAddressLine2: value.presentAddressLine2,
-          presentState: value.presentState,
-          presentDistrict: value.presentDistrict,
-          presentCity: value.presentCity,
-          presentPincode: value.presentPincode,
-          permanentAddressLine1: value.sameAddress
-            ? value.presentAddressLine1
-            : value.permanentAddressLine1,
-          permanentAddressLine2: value.sameAddress
-            ? value.presentAddressLine2
-            : value.permanentAddressLine2,
-          permanentState: value.sameAddress
-            ? value.presentState
-            : value.permanentState,
-          permanentDistrict: value.sameAddress
-            ? value.presentDistrict
-            : value.permanentDistrict,
-          permanentCity: value.sameAddress
-            ? value.presentCity
-            : value.permanentCity,
-          permanentPincode: value.sameAddress
-            ? value.presentPincode
-            : value.permanentPincode,
-          sameAddress: value.sameAddress,
-        },
-        familyDetails: value.family,
-        sourceOfInformation: {
-          interviewedBefore: value.interviewedBefore,
-          workedBefore: value.workedBefore,
-          source: value.source,
-        },
-        educationDetails: value.education,
-        workExperienceDetails: value.workExp,
-        otherDetails: {
-          serviceCommitment: value.serviceCommitment,
-          securityDeposit: value.securityDeposit,
-          shiftTime: value.shiftTime,
-          expectedJoiningDate: value.expectedJoiningDate,
-          expectedSalary: value.expectedSalary,
-        },
-      };
+      try {
+        const formattedData: UserDetails = {
+          is_submitted: true,
+          personalDetails: {
+            firstName: value.firstName,
+            lastName: value.lastName,
+            gender: value.gender,
+            dob: value.dob,
+            primaryMobile: value.primaryMobile,
+            alternateMobile: value.alternateMobile,
+            email: value.email,
+            presentAddressLine1: value.presentAddressLine1,
+            presentAddressLine2: value.presentAddressLine2,
+            presentState: value.presentState,
+            presentDistrict: value.presentDistrict,
+            presentCity: value.presentCity,
+            presentPincode: value.presentPincode,
+            permanentAddressLine1: value.sameAddress
+              ? value.presentAddressLine1
+              : value.permanentAddressLine1,
+            permanentAddressLine2: value.sameAddress
+              ? value.presentAddressLine2
+              : value.permanentAddressLine2,
+            permanentState: value.sameAddress
+              ? value.presentState
+              : value.permanentState,
+            permanentDistrict: value.sameAddress
+              ? value.presentDistrict
+              : value.permanentDistrict,
+            permanentCity: value.sameAddress
+              ? value.presentCity
+              : value.permanentCity,
+            permanentPincode: value.sameAddress
+              ? value.presentPincode
+              : value.permanentPincode,
+            sameAddress: value.sameAddress,
+          },
+          familyDetails: value.family,
+          sourceOfInformation: {
+            interviewedBefore: value.interviewedBefore,
+            workedBefore: value.workedBefore,
+            source: value.source,
+          },
+          educationDetails: value.education,
+          workExperienceDetails: value.workExp,
+          otherDetails: {
+            serviceCommitment: value.serviceCommitment,
+            securityDeposit: value.securityDeposit,
+            shiftTime: value.shiftTime,
+            expectedJoiningDate: value.expectedJoiningDate,
+            expectedSalary: value.expectedSalary,
+          },
+        };
 
-      console.log("Submitting formatted form data:");
-      console.log(JSON.stringify(formattedData, null, 2));
+        if (existingDetails) {
+          await updateDetails(formattedData);
+        } else {
+          await saveDetails(formattedData);
+        }
 
-      // Submit to API
-      router.push("/user/dashboard");
+        router.refresh();
+        router.push("/user/dashboard");
+      } catch (error) {
+        console.error("Submission error:", error);
+      }
     },
   });
+
+  // Pre-populate form when existing details are loaded
+  useEffect(() => {
+    if (existingDetails && existingDetails.personalDetails) {
+      const details = existingDetails as UserDetails;
+      form.reset({
+        ...defaultPersonalDetailsValues,
+        ...details.personalDetails,
+        family: details.familyDetails || [],
+        interviewedBefore:
+          details.sourceOfInformation?.interviewedBefore || "no",
+        workedBefore: details.sourceOfInformation?.workedBefore || "no",
+        source: (details.sourceOfInformation?.source || {
+          walkIn: false,
+          referral: false,
+          socialMedia: false,
+          jobPortal: false,
+          other: false,
+        }) as PersonalDetailsFormValues["source"],
+        education: details.educationDetails || [],
+        workExp: details.workExperienceDetails || [],
+        ...(details.otherDetails || {}),
+      });
+    }
+  }, [existingDetails, form]);
 
   const touchStepFields = (step: number) => {
     const fields = stepFields[step];
@@ -107,7 +156,7 @@ export function PersonalDetailsClient() {
       fields.forEach((field) => {
         form.setFieldMeta(field, (meta) => ({ ...meta, isTouched: true }));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const val: any = form.getFieldValue(field as any);
+        const val = form.getFieldValue(field as any);
         if (Array.isArray(val)) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (val as any[]).forEach((item: any, index: number) => {
@@ -207,6 +256,19 @@ export function PersonalDetailsClient() {
     }
   };
 
+  if (isLoadingDetails) {
+    return (
+      <div className="min-h-screen bg-layout-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground font-medium">
+            Loading your details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-layout-bg flex items-start justify-center py-10 px-4 md:px-12 transition-colors">
       <div className="w-full mx-auto max-w-[1400px]">
@@ -256,6 +318,7 @@ export function PersonalDetailsClient() {
                   size="md"
                   animate="scale"
                   shadow
+                  disabled={isSaving}
                   onClick={handlePrev}
                   className="px-8 text-sm font-semibold group flex items-center gap-2"
                 >
@@ -270,10 +333,13 @@ export function PersonalDetailsClient() {
                 size="md"
                 animate="scale"
                 shadow
+                disabled={isSaving}
                 onClick={handleNext}
                 className="px-8 text-sm font-semibold group flex items-center gap-2"
               >
-                {currentStep === totalSteps ? (
+                {isSaving ? (
+                  "SAVING..."
+                ) : currentStep === totalSteps ? (
                   "SUBMIT DETAILS"
                 ) : (
                   <>
