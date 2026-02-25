@@ -1,173 +1,232 @@
-import json
-from app.database.db import get_db
+# app/questions/repository.py
+
+from sqlalchemy.orm import aliased
+from app.database.db import SessionLocal
+from app.questions.models import Question
+from app.answer.models import QuestionAnswer
+from app.classifications.models import Classification
 
 
-def create_question(data, user_id):
-    conn = get_db()
-    cur = conn.cursor()
-
+def create_question(data, question_type: str, subject_type: str, exam_level: str, user_id: int):
+    db_session = SessionLocal()
     try:
-        # Convert Pydantic options list to JSON string for storage
-        options_json = None
-        if data.options:
-            options_json = json.dumps([opt.dict() for opt in data.options])
-
-        # Insert question
-        cur.execute(
-            """
-            INSERT INTO questions (
-                question_type, question_text, subject,
-                image_url, passage, marks,
-                difficulty_level, is_active, options, created_by
-            )
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            RETURNING id
-        """,
-            (
-                data.question_type,
-                data.question_text,
-                data.subject,
-                data.image_url,
-                data.passage,
-                data.marks,
-                data.difficulty_level,
-                data.is_active,
-                options_json,
-                user_id,
-            ),
+        new_question = Question(
+            question_type=question_type,
+            subject_type=subject_type,
+            exam_level=exam_level,
+            question_text=data.question_text,
+            image_url=data.image_url,
+            passage=data.passage,
+            marks=data.marks,
+            is_active=data.is_active,
+            options=data.options,  # Pydantic list will be handled by JSONB
+            created_by=user_id
         )
+        db_session.add(new_question)
+        db_session.flush()  # To get the ID
+        
+        question_id = new_question.id
 
-        question_id = cur.fetchone()["id"]
-
-        # Insert answer if subjective
         if data.answer:
-            cur.execute(
-                """
-                INSERT INTO question_answers
-                (question_id, answer_text, explanation, created_by)
-                VALUES (%s,%s,%s,%s)
-            """,
-                (
-                    question_id,
-                    data.answer.answer_text,
-                    data.answer.explanation,
-                    user_id,
-                ),
+            new_answer = QuestionAnswer(
+                question_id=question_id,
+                answer_text=data.answer.answer_text,
+                explanation=data.answer.explanation,
+                created_by=user_id
             )
+            db_session.add(new_answer)
 
-        conn.commit()
-        return {"message": "Question created successfully"}
+        db_session.commit()
+        return {"message": "Question created successfully", "id": question_id}
 
-    except Exception as e:
-        conn.rollback()
-        raise e
-
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
 
 
 def get_questions(
     question_type: str = None,
-    subject: str = None,
-    difficulty_level: str = None,
-    is_active: bool = None,
+    subject_type:  str = None,
+    exam_level:    str = None,
+    is_active:     bool = None
 ):
-    conn = get_db()
-    cur = conn.cursor()
-
+    db_session = SessionLocal()
     try:
-        query = "SELECT * FROM questions WHERE 1=1"
-        values = []
+        # Aliases for multiple classification joins
+        question_type_alias = aliased(Classification)
+        subject_type_alias = aliased(Classification)
+        exam_level_alias = aliased(Classification)
 
-        if question_type:
-            query += " AND question_type = %s"
-            values.append(question_type)
+        query = db_session.query(
+            Question,
+            question_type_alias.id.label("qt_id"), question_type_alias.code.label("qt_code"), question_type_alias.type.label("qt_type"), question_type_alias.name.label("qt_name"), 
+            question_type_alias.extra_metadata.label("qt_metadata"), question_type_alias.is_active.label("qt_is_active"), question_type_alias.sort_order.label("qt_sort_order"),
+            
+            subject_type_alias.id.label("st_id"), subject_type_alias.code.label("st_code"), subject_type_alias.type.label("st_type"), subject_type_alias.name.label("st_name"),
+            subject_type_alias.extra_metadata.label("st_metadata"), subject_type_alias.is_active.label("st_is_active"), subject_type_alias.sort_order.label("st_sort_order"),
+            
+            exam_level_alias.id.label("el_id"), exam_level_alias.code.label("el_code"), exam_level_alias.type.label("el_type"), exam_level_alias.name.label("el_name"),
+            exam_level_alias.extra_metadata.label("el_metadata"), exam_level_alias.is_active.label("el_is_active"), exam_level_alias.sort_order.label("el_sort_order")
+        )
 
-        if subject:
-            query += " AND subject = %s"
-            values.append(subject)
+        query = query.outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (question_type_alias.type == 'question_type'))
+        query = query.outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (subject_type_alias.type == 'subject_type'))
+        query = query.outerjoin(exam_level_alias, (exam_level_alias.code == Question.exam_level) & (exam_level_alias.type == 'exam_level'))
 
-        if difficulty_level:
-            query += " AND difficulty_level = %s"
-            values.append(difficulty_level)
-
+        if question_type is not None:
+            query = query.filter(Question.question_type == question_type)
+        if subject_type is not None:
+            query = query.filter(Question.subject_type == subject_type)
+        if exam_level is not None:
+            query = query.filter(Question.exam_level == exam_level)
         if is_active is not None:
-            query += " AND is_active = %s"
-            values.append(is_active)
+            query = query.filter(Question.is_active == is_active)
 
-        cur.execute(query, tuple(values))
-        results = cur.fetchall()
-
-        return results
-
+        results = query.order_by(Question.created_at.desc()).all()
+        return [_format_question_orm(row) for row in results]
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
 
 
-def update_question_in_db(question_id: int, payload):
-    conn = get_db()
-    cur = conn.cursor()
-
+def get_question_by_id(question_id: int):
+    db_session = SessionLocal()
     try:
-        update_fields = []
-        values = []
+        question_type_alias = aliased(Classification)
+        subject_type_alias = aliased(Classification)
+        exam_level_alias = aliased(Classification)
 
-        data = payload.dict(exclude_unset=True)
+        row = db_session.query(
+            Question,
+            question_type_alias.id.label("qt_id"), question_type_alias.code.label("qt_code"), question_type_alias.type.label("qt_type"), question_type_alias.name.label("qt_name"), 
+            question_type_alias.extra_metadata.label("qt_metadata"), question_type_alias.is_active.label("qt_is_active"), question_type_alias.sort_order.label("qt_sort_order"),
+            
+            subject_type_alias.id.label("st_id"), subject_type_alias.code.label("st_code"), subject_type_alias.type.label("st_type"), subject_type_alias.name.label("st_name"),
+            subject_type_alias.extra_metadata.label("st_metadata"), subject_type_alias.is_active.label("st_is_active"), subject_type_alias.sort_order.label("st_sort_order"),
+            
+            exam_level_alias.id.label("el_id"), exam_level_alias.code.label("el_code"), exam_level_alias.type.label("el_type"), exam_level_alias.name.label("el_name"),
+            exam_level_alias.extra_metadata.label("el_metadata"), exam_level_alias.is_active.label("el_is_active"), exam_level_alias.sort_order.label("el_sort_order")
+        ).outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (question_type_alias.type == 'question_type'))\
+         .outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (subject_type_alias.type == 'subject_type'))\
+         .outerjoin(exam_level_alias, (exam_level_alias.code == Question.exam_level) & (exam_level_alias.type == 'exam_level'))\
+         .filter(Question.id == question_id).first()
+
+        return _format_question_orm(row) if row else None
+    finally:
+        db_session.close()
+
+
+def update_question(question_id: int, payload, question_type_param: str = None, subject_type_param: str = None, exam_level_param: str = None):
+    db_session = SessionLocal()
+    try:
+        question = db_session.query(Question).filter(Question.id == question_id).first()
+        if not question:
+            return {"message": f"Question {question_id} not found"}
+
+        data = payload.model_dump(exclude_unset=True)
+        answer_data = data.pop("answer", None)
+        options_data = data.pop("options", None)
+
+        if question_type_param:
+            question.question_type = question_type_param
+        if subject_type_param:
+            question.subject_type = subject_type_param
+        if exam_level_param:
+            question.exam_level = exam_level_param
+
+        if options_data is not None:
+            question.options = options_data
 
         for key, value in data.items():
-            if key == "options" and value is not None:
-                import json
+            setattr(question, key, value)
 
-                value = json.dumps(value)
+        if answer_data:
+            answer = db_session.query(QuestionAnswer).filter(QuestionAnswer.question_id == question_id).first()
+            if answer:
+                if "answer_text" in answer_data:
+                    answer.answer_text = answer_data["answer_text"]
+                if "explanation" in answer_data:
+                    answer.explanation = answer_data["explanation"]
+            else:
+                # If no answer exists, create one (optional, based on logic)
+                new_answer_obj = QuestionAnswer(
+                    question_id=question_id,
+                    answer_text=answer_data.get("answer_text", ""),
+                    explanation=answer_data.get("explanation", "")
+                )
+                db_session.add(new_answer_obj)
 
-            update_fields.append(f"{key} = %s")
-            values.append(value)
-
-        if not update_fields:
-            return {"message": "No fields provided for update"}
-
-        update_query = f"""
-            UPDATE questions
-            SET {", ".join(update_fields)},
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
-        """
-
-        values.append(question_id)
-
-        cur.execute(update_query, tuple(values))
-        conn.commit()
-
+        db_session.commit()
         return {"message": f"Question {question_id} updated successfully"}
 
-    except Exception as e:
-        conn.rollback()
-        raise e
-
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
 
 
 def delete_question(question_id: int):
-    conn = get_db()
-    cur = conn.cursor()
+    db_session = SessionLocal()
     try:
-        cur.execute(
-            """
-            UPDATE questions
-            SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
-        """,
-            (question_id,),
-        )
-        conn.commit()
+        question = db_session.query(Question).filter(Question.id == question_id).first()
+        if question:
+            question.is_active = False
+            db_session.commit()
         return {"message": f"Question {question_id} deactivated successfully"}
-    except Exception as e:
-        conn.rollback()
-        raise e
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        cur.close()
-        conn.close()
+        db_session.close()
+
+
+# ─── Helper ───────────────────────────────────────────────────────────────────
+
+def _format_question_orm(row) -> dict:
+    if not row:
+        return None
+    
+    question = row.Question
+    return {
+        "id":            question.id,
+        "question_text": question.question_text,
+        "image_url":     question.image_url,
+        "passage":       question.passage,
+        "marks":         question.marks,
+        "is_active":     question.is_active,
+        "options":       question.options,
+        "created_at":    str(question.created_at),
+        "updated_at":    str(question.updated_at),
+
+        "question_type": {
+            "id":         row.qt_id,
+            "code":       row.qt_code,
+            "type":       row.qt_type,
+            "name":       row.qt_name,
+            "metadata":   row.qt_metadata,
+            "is_active":  row.qt_is_active,
+            "sort_order": row.qt_sort_order,
+        } if row.qt_id else None,
+
+        "subject_type": {
+            "id":         row.st_id,
+            "code":       row.st_code,
+            "type":       row.st_type,
+            "name":       row.st_name,
+            "metadata":   row.st_metadata,
+            "is_active":  row.st_is_active,
+            "sort_order": row.st_sort_order,
+        } if row.st_id else None,
+
+        "exam_level": {
+            "id":         row.el_id,
+            "code":       row.el_code,
+            "type":       row.el_type,
+            "name":       row.el_name,
+            "metadata":   row.el_metadata,
+            "is_active":  row.el_is_active,
+            "sort_order": row.el_sort_order,
+        } if row.el_id else None,
+    }

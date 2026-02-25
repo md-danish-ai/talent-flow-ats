@@ -9,6 +9,9 @@ from sqlalchemy import engine_from_config, pool
 from app.database.db import Base
 from app.questions import models as question_models  # noqa: F401
 from app.users import models as user_models  # noqa: F401
+from app.answer import models as answer_models  # noqa: F401
+from app.classifications import models as classification_models  # noqa: F401
+from app.user_details import models as user_detail_models  # noqa: F401
 
 # ---------------------------------------------------------
 # Alembic Config object (reads alembic.ini)
