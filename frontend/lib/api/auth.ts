@@ -1,6 +1,10 @@
 import { api } from "./index";
 import type { ApiRequestOptions } from "./client";
-import type { SignInFormValues, SignUpFormValues } from "@lib/validations/auth";
+import type {
+  SignInFormValues,
+  SignUpFormValues,
+  CreateAdminFormValues,
+} from "@lib/validations/auth";
 import type { UserDetails } from "./user-details";
 import type { CurrentUser } from "@lib/auth/user-utils";
 
@@ -23,6 +27,16 @@ export interface SignUpResponse {
     username: string;
     email?: string;
     mobile?: string;
+  };
+}
+
+export interface CreateAdminResponse {
+  message: string;
+  access_token: string;
+  user: {
+    id: number | string;
+    username: string;
+    role: string;
   };
 }
 
@@ -49,4 +63,32 @@ export async function getMyDetails(): Promise<UserDetails> {
     return { is_submitted: false } as UserDetails;
   }
   return user.recruitment_details as unknown as UserDetails;
+}
+
+// POST /auth/create-admin - Create a new admin user
+export async function createAdmin(
+  data: CreateAdminFormValues,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<CreateAdminResponse> {
+  return api.post<CreateAdminResponse>("/auth/create-admin", data, options);
+}
+
+export interface UserListResponse {
+  id: number;
+  username: string;
+  mobile: string;
+  email: string | null;
+  role: string;
+  is_active: boolean;
+}
+
+// GET /auth/get-all-users?role={role} - Fetch users by role (e.g., admin, user)
+export async function getUsersByRole(
+  role: string,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<UserListResponse[]> {
+  return api.get<UserListResponse[]>(
+    `/auth/get-all-users?role=${role}`,
+    options,
+  );
 }
