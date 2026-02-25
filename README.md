@@ -161,6 +161,51 @@ docker compose --profile migrate run --rm migrations
 > **Key takeaway**: `docker compose down -v` resets the database. Use it only when you want to start from scratch — not as part of a normal migration flow.
 
 
+## Database Backup & Restore
+
+This project provides standalone scripts to manually back up and restore your database data. This is particularly useful as a safety net before running migrations or for recovering data after a database reset (`docker compose down -v`).
+
+### Purpose
+The primary purpose is to ensure data persistence and provide a quick recovery path during development, especially when schema changes or environment resets are involved.
+
+### Scenarios
+- **Safety Net**: Run a backup before applying new migrations.
+- **Recovery**: Restore data after `docker compose down -v` or a corrupted migration.
+- **State Snapshot**: Save a specific state of your data to return to it later.
+
+### Usage Instructions
+
+#### 1. Backing Up the Database
+Execute the backup script from the project root:
+```bash
+./backend/scripts/backup_db.sh
+```
+- **Output**: A timestamped SQL file in `backend/backups/` (e.g., `db_backup_20240225_190418.sql`).
+- **Handling Empty DB**: If the database has no tables, the script will skip the export and notify you.
+
+#### 2. Restoring the Database
+To restore the **most recent** backup from the `backend/backups/` directory:
+```bash
+./backend/scripts/restore_db.sh
+```
+
+To restore a **specific** backup file:
+```bash
+./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
+```
+
+> [!CAUTION]
+> The restore process will **drop existing tables** in the public schema and recreate them from the backup. Any data added since the backup was taken will be lost.
+
+#### 3. Ideal Recovery Flow
+If you need to reset and recover your data (e.g., after `docker compose down -v`):
+1. **Clean up**: `docker compose down -v`
+2. **Restart**: `docker compose up -d`
+3. **Recover**: `./backend/scripts/restore_db.sh`
+4. **Continue**: (Optional) Run your migrations again once the original state is restored.
+
+
+
 ## Project Structure
 
 - `backend/`: Contains the FastAPI application logic.
