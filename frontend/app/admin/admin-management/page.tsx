@@ -1,6 +1,6 @@
 import React from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { AdminListing } from "@components/features/admin/AdminListing";
+import { AdminListing } from "./components/AdminListing";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 import { cookies } from "next/headers";
 

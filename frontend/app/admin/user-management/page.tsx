@@ -1,6 +1,6 @@
 import React from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { UserListing } from "@components/features/users/UserListing";
+import { UserListing } from "./components/UserListing";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 import { cookies } from "next/headers";
 

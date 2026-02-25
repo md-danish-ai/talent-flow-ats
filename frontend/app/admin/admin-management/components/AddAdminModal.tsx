@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { AddAdminForm } from "@components/features/admin/AddAdminForm";
+import { AddAdminForm } from "@features/admin/AddAdminForm";
 
 interface AddAdminModalProps {
   isOpen: boolean;

@@ -26,6 +26,7 @@
       "@components/ui-elements/*": ["components/ui-elements/*"],
       "@components/ui-cards/*": ["components/ui-cards/*"],
       "@components/ui-layout/*": ["components/ui-layout/*"],
+      "@features/*": ["components/features/*"],
       "@hooks/*": ["hooks/*"],
       "@utils/*": ["utils/*"]
     }
