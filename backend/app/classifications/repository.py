@@ -1,168 +1,185 @@
 # app/classifications/repository.py
 
-import json
-from sqlalchemy import text
 from app.database.db import SessionLocal
+from app.classifications.models import Classification
 
 
 def get_all(type_filter: str = None, is_active: bool = None):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        query = "SELECT * FROM classifications WHERE 1=1"
-        params = {}
+        query = db_session.query(Classification)
         if type_filter:
-            query += " AND type = :type"
-            params["type"] = type_filter
+            query = query.filter(Classification.type == type_filter)
         if is_active is not None:
-            query += " AND is_active = :is_active"
-            params["is_active"] = is_active
-        query += " ORDER BY type, sort_order, name"
-        result = db.execute(text(query), params)
-        return [dict(row) for row in result.mappings().all()]
+            query = query.filter(Classification.is_active == is_active)
+        
+        # Consistent ordering: type, sort_order, name
+        query = query.order_by(
+            Classification.type,
+            Classification.sort_order,
+            Classification.name
+        )
+        
+        results = query.all()
+        # Convert to dict for backward compatibility if needed, 
+        # though ideally the calling code should start using objects
+        return [
+            {
+                "id": classification.id,
+                "code": classification.code,
+                "type": classification.type,
+                "name": classification.name,
+                "metadata": classification.extra_metadata,
+                "sort_order": classification.sort_order,
+                "is_active": classification.is_active,
+                "created_at": classification.created_at,
+                "updated_at": classification.updated_at
+            }
+            for classification in results
+        ]
     finally:
-        db.close()
+        db_session.close()
 
 
 def get_by_id(classification_id: int):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        result = db.execute(
-            text("SELECT * FROM classifications WHERE id = :id"),
-            {"id": classification_id}
-        )
-        row = result.mappings().first()
-        return dict(row) if row else None
+        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        if not classification:
+            return None
+        return {
+            "id": classification.id,
+            "code": classification.code,
+            "type": classification.type,
+            "name": classification.name,
+            "metadata": classification.extra_metadata,
+            "sort_order": classification.sort_order,
+            "is_active": classification.is_active,
+            "created_at": classification.created_at,
+            "updated_at": classification.updated_at
+        }
     finally:
-        db.close()
+        db_session.close()
 
 
 def get_by_code_and_type(code: str, type_: str):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        result = db.execute(
-            text("SELECT * FROM classifications WHERE code = :code AND type = :type"),
-            {"code": code.upper(), "type": type_}
-        )
-        row = result.mappings().first()
-        return dict(row) if row else None
+        classification = db_session.query(Classification).filter(
+            Classification.code == code.upper(),
+            Classification.type == type_
+        ).first()
+        if not classification:
+            return None
+        return {
+            "id": classification.id,
+            "code": classification.code,
+            "type": classification.type,
+            "name": classification.name,
+            "metadata": classification.extra_metadata,
+            "sort_order": classification.sort_order,
+            "is_active": classification.is_active,
+            "created_at": classification.created_at,
+            "updated_at": classification.updated_at
+        }
     finally:
-        db.close()
+        db_session.close()
 
 
 def update(classification_id: int, data):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
+        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        if not classification:
+            return None
+
         fields = data.dict(exclude_unset=True)
-        if not fields:
-            return get_by_id(classification_id)
-
-        update_parts = []
-        params = {"id": classification_id}
-
         for key, value in fields.items():
-            if key == "metadata" and value is not None:
-                value = json.dumps(value)
             if key == "name":
-                # Also update code when name changes
-                update_parts.append("code = :auto_code")
-                params["auto_code"] = value.upper()
-            update_parts.append(f"{key} = :{key}")
-            params[key] = value
+                classification.code = value.upper()
+            setattr(classification, key, value)
 
-        update_parts.append("updated_at = CURRENT_TIMESTAMP")
-
-        result = db.execute(
-            text(f"""
-                UPDATE classifications
-                SET {', '.join(update_parts)}
-                WHERE id = :id
-                RETURNING *
-            """),
-            params
-        )
-        row = result.mappings().first()
-        db.commit()
-        return dict(row) if row else None
-    except Exception as e:
-        db.rollback()
-        raise e
+        db_session.commit()
+        db_session.refresh(classification)
+        return {
+            "id": classification.id,
+            "code": classification.code,
+            "type": classification.type,
+            "name": classification.name,
+            "metadata": classification.extra_metadata,
+            "sort_order": classification.sort_order,
+            "is_active": classification.is_active,
+            "created_at": classification.created_at,
+            "updated_at": classification.updated_at
+        }
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        db.close()
+        db_session.close()
 
 
 def delete(classification_id: int):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        db.execute(
-            text("""
-                UPDATE classifications
-                SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
-                WHERE id = :id
-            """),
-            {"id": classification_id}
-        )
-        db.commit()
+        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        if classification:
+            classification.is_active = False
+            db_session.commit()
         return {"message": f"Classification {classification_id} deactivated successfully"}
-    except Exception as e:
-        db.rollback()
-        raise e
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        db.close()
+        db_session.close()
 
 
 def count_by_name_and_type(name: str, type_: str):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        result = db.execute(
-            text(
-                "SELECT COUNT(*) as count FROM classifications WHERE name = :name AND type = :type"),
-            {"name": name, "type": type_}
-        )
-        row = result.mappings().first()
-        return int(row["count"]) if row else 0
+        return db_session.query(Classification).filter(
+            Classification.name == name,
+            Classification.type == type_
+        ).count()
     finally:
-        db.close()
+        db_session.close()
 
 
 def count_by_type(type_: str):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        result = db.execute(
-            text("SELECT COUNT(*) as count FROM classifications WHERE type = :type"),
-            {"type": type_}
-        )
-        row = result.mappings().first()
-        return int(row["count"]) if row else 0
+        return db_session.query(Classification).filter(Classification.type == type_).count()
     finally:
-        db.close()
+        db_session.close()
 
 
 def create(data, code: str):
-    db = SessionLocal()
+    db_session = SessionLocal()
     try:
-        result = db.execute(
-            text("""
-                INSERT INTO classifications (code, type, name, metadata, sort_order, is_active)
-                VALUES (:code, :type, :name, :metadata, :sort_order, :is_active)
-                RETURNING *
-            """),
-            {
-                "code": code.upper(),
-                "type": data.type,
-                "name": data.name,
-                "metadata": json.dumps(getattr(data, "metadata", None)) if getattr(data, "metadata", None) else None,
-                "sort_order": getattr(data, "sort_order", 0),
-                "is_active": getattr(data, "is_active", True),
-            }
+        new_classification = Classification(
+            code=code.upper(),
+            type=data.type,
+            name=data.name,
+            extra_metadata=getattr(data, "metadata", None),
+            sort_order=getattr(data, "sort_order", 0),
+            is_active=getattr(data, "is_active", True)
         )
-        row = result.mappings().first()
-        if not row:
-            raise Exception("Insert failed, no row returned")
-        db.commit()
-        return dict(row)
-    except Exception as e:
-        print("CREATE CLASSIFICATION ERROR:", str(e))
-        db.rollback()
-        raise
+        db_session.add(new_classification)
+        db_session.commit()
+        db_session.refresh(new_classification)
+        return {
+            "id": new_classification.id,
+            "code": new_classification.code,
+            "type": new_classification.type,
+            "name": new_classification.name,
+            "metadata": new_classification.extra_metadata,
+            "sort_order": new_classification.sort_order,
+            "is_active": new_classification.is_active,
+            "created_at": new_classification.created_at,
+            "updated_at": new_classification.updated_at
+        }
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
-        db.close()
+        db_session.close()
