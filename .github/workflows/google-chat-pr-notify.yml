@@ -1,0 +1,98 @@
+name: Google Chat – PR Review & Merge Notifications
+
+on:
+  pull_request:
+    types: [opened, reopened, review_requested, closed]
+    branches:
+      - develop
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Google Chat
+        env:
+          WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        run: |
+          ACTION="${{ github.event.action }}"
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          IS_MERGED="${{ github.event.pull_request.merged }}"
+
+          ############################################
+          # CASE 1: Reviewer added after PR creation
+          ############################################
+          if [[ "$ACTION" == "review_requested" ]]; then
+            REVIEWER_EMAIL="${{ github.event.requested_reviewer.email }}"
+
+            if [[ -n "$REVIEWER_EMAIL" && "$REVIEWER_EMAIL" != "null" ]]; then
+              MESSAGE="👋 <users/${REVIEWER_EMAIL}>\n\n\
+You have been added as a *reviewer* for this PR.\n\
+Kindly review this PR as per your convenience 🙏\n\n\
+Repository: *${REPO}*\n\
+From: *${HEAD_BRANCH}*\n\
+To: *${BASE_BRANCH}*\n\n\
+Review PR: ${PR_URL}"
+
+              curl -X POST \
+                -H "Content-Type: application/json" \
+                -d "{\"text\":\"$MESSAGE\"}" \
+                $WEBHOOK_URL
+            fi
+
+            exit 0
+          fi
+
+          ############################################
+          # CASE 2: PR created / reopened
+          ############################################
+          if [[ "$ACTION" == "opened" || "$ACTION" == "reopened" ]]; then
+            REVIEWERS=""
+            REVIEWER_EMAILS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].email')
+
+            for email in $REVIEWER_EMAILS; do
+              if [[ "$email" != "null" && -n "$email" ]]; then
+                REVIEWERS+="<users/${email}> "
+              fi
+            done
+
+            if [[ -z "$REVIEWERS" ]]; then
+              REVIEWERS="⚠️ No reviewers assigned yet"
+            fi
+
+            MESSAGE="👀 *Pull Request Review Requested*\n\n\
+Repository: *${REPO}*\n\
+From: *${HEAD_BRANCH}*\n\
+To: *${BASE_BRANCH}*\n\
+Author: *${ACTOR}*\n\n\
+${REVIEWERS}\n\
+Review PR: ${PR_URL}"
+
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"text\":\"$MESSAGE\"}" \
+              $WEBHOOK_URL
+
+            exit 0
+          fi
+
+          ############################################
+          # CASE 3: PR merged
+          ############################################
+          if [[ "$ACTION" == "closed" && "$IS_MERGED" == "true" ]]; then
+            MESSAGE="🚀 *Pull Request Merged*\n\n\
+Repository: *${REPO}*\n\
+Branch: *${BASE_BRANCH}*\n\
+Merged by: *${ACTOR}*\n\n\
+Please pull the latest changes and sync your local branch."
+
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"text\":\"$MESSAGE\"}" \
+              $WEBHOOK_URL
+          fi
