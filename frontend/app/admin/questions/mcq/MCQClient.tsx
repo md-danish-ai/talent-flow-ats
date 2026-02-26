@@ -425,16 +425,16 @@ export function MCQClient({
                         </TableCell>
                       )}
                       {visibleColumns.includes("question") && (
-                        <TableCell>{row.question_text ?? row.question}</TableCell>
+                        <TableCell>{row.question_text}</TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
-                        <TableCell>{row.subject_type?.name || row.subject || "N/A"}</TableCell>
+                        <TableCell>{typeof row.subject_type === "string" ? row.subject_type : row.subject_type?.name ?? "N/A"}</TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
-                        <TableCell>{row.createdBy || "System"}</TableCell>
+                        <TableCell>{"System"}</TableCell>
                       )}
                       {visibleColumns.includes("createdDate") && (
-                        <TableCell>{row.createdDate || new Date(row.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
