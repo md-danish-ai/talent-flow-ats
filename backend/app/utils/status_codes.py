@@ -9,6 +9,7 @@ import json
 #  HTTP Status Codes Enum
 # ─────────────────────────────────────────────
 
+
 class StatusCode(IntEnum):
     # 2xx Success
     OK = 200
@@ -40,6 +41,7 @@ class StatusCode(IntEnum):
 #  Standard API Response Messages
 # ─────────────────────────────────────────────
 
+
 class ResponseMessage:
     # Success
     SUCCESS = "Success"
@@ -69,8 +71,10 @@ class ResponseMessage:
 #  Custom JSON Encoder (handles datetime, date)
 # ─────────────────────────────────────────────
 
+
 class CustomJSONEncoder(json.JSONEncoder):
     """Handles datetime, date, and other non-serializable types."""
+
     def default(self, obj):
         if isinstance(obj, (datetime, date)):
             return obj.isoformat()
@@ -85,6 +89,7 @@ def serialize(data: Any) -> Any:
 # ─────────────────────────────────────────────
 #  Helper: Standard JSON Response Builder
 # ─────────────────────────────────────────────
+
 
 def api_response(
     status_code: int,

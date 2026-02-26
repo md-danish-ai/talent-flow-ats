@@ -6,6 +6,7 @@ import {
   BarChart3,
   Settings,
   Package,
+  Users,
 } from "lucide-react";
 
 export interface NavItem {
@@ -61,6 +62,20 @@ export const ADMIN_ROUTES: NavSection[] = [
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
     items: [{ label: "View All Results", href: "/admin/results" }],
+  },
+  {
+    title: "Admin Management",
+    icon: <Users className="w-5 h-5" />,
+    type: "item",
+    href: "/admin/admin-management",
+    items: [],
+  },
+  {
+    title: "User Management",
+    icon: <Users className="w-5 h-5" />,
+    type: "item",
+    href: "/admin/user-management",
+    items: [],
   },
   {
     title: "Settings",

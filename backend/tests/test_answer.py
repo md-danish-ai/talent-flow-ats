@@ -1,4 +1,3 @@
-
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
@@ -12,7 +11,7 @@ app = FastAPI()
 app.include_router(router)
 
 # Override auth dependency so tests don't need a real JWT
-app.dependency_overrides[get_current_user] = lambda: 1   # mock user_id = 1
+app.dependency_overrides[get_current_user] = lambda: 1  # mock user_id = 1
 
 client = TestClient(app)
 
@@ -44,7 +43,6 @@ MOCK_UPDATED_ANSWER = {
 # POST /answers/  — Create Answer
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestCreateAnswer:
-
     PAYLOAD = {
         "question_id": 10,
         "answer_text": "Stack",
@@ -65,6 +63,7 @@ class TestCreateAnswer:
     def test_create_answer_question_not_found(self, mock_repo):
         """404 — question_id does not exist."""
         from fastapi import HTTPException
+
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="Question 10 does not exist"
         )
@@ -76,6 +75,7 @@ class TestCreateAnswer:
     def test_create_answer_duplicate(self, mock_repo):
         """409 — answer already exists for this question."""
         from fastapi import HTTPException
+
         mock_repo.side_effect = HTTPException(
             status_code=409, detail="Answer for question 10 already exists"
         )
@@ -114,7 +114,6 @@ class TestCreateAnswer:
 # GET /answers/{question_id}  — Get Answer
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestGetAnswer:
-
     @patch(
         "app.answer.repository.get_answer_by_question",
         return_value=MOCK_ANSWER_WITH_QUESTION,
@@ -132,6 +131,7 @@ class TestGetAnswer:
     def test_get_answer_not_found(self, mock_repo):
         """404 — no answer exists for this question."""
         from fastapi import HTTPException
+
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="No answer found for question 99"
         )
@@ -159,8 +159,15 @@ class TestGetAnswer:
         """200 — response contains all expected keys."""
         response = client.get("/answers/10")
         data = response.json()["data"]
-        for key in ["id", "question_id", "answer_text", "explanation",
-                    "created_by", "question_text", "question_type"]:
+        for key in [
+            "id",
+            "question_id",
+            "answer_text",
+            "explanation",
+            "created_by",
+            "question_text",
+            "question_type",
+        ]:
             assert key in data, f"Missing key: {key}"
 
 
@@ -168,7 +175,6 @@ class TestGetAnswer:
 # PUT /answers/{question_id}  — Update Answer
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestUpdateAnswer:
-
     PAYLOAD = {
         "answer_text": "Updated answer text",
         "explanation": "Updated explanation.",
@@ -188,6 +194,7 @@ class TestUpdateAnswer:
     def test_update_answer_not_found(self, mock_repo):
         """404 — no answer exists for this question."""
         from fastapi import HTTPException
+
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="No answer found for question 99"
         )
@@ -200,7 +207,9 @@ class TestUpdateAnswer:
         """200 — only answer_text provided (explanation stays via COALESCE)."""
         partial = {"answer_text": "Only updating this"}
         mock_repo.return_value = {
-            **MOCK_UPDATED_ANSWER, "answer_text": "Only updating this"}
+            **MOCK_UPDATED_ANSWER,
+            "answer_text": "Only updating this",
+        }
         response = client.put("/answers/10", json=partial)
         assert response.status_code == 200
         assert response.json()["data"]["answer_text"] == "Only updating this"
@@ -209,12 +218,13 @@ class TestUpdateAnswer:
     def test_update_answer_partial_explanation_only(self, mock_repo):
         """200 — only explanation provided (answer_text stays via COALESCE)."""
         partial = {"explanation": "Only updating explanation"}
-        mock_repo.return_value = {**MOCK_UPDATED_ANSWER,
-                                  "explanation": "Only updating explanation"}
+        mock_repo.return_value = {
+            **MOCK_UPDATED_ANSWER,
+            "explanation": "Only updating explanation",
+        }
         response = client.put("/answers/10", json=partial)
         assert response.status_code == 200
-        assert response.json()[
-            "data"]["explanation"] == "Only updating explanation"
+        assert response.json()["data"]["explanation"] == "Only updating explanation"
 
     def test_update_answer_invalid_question_id(self):
         """422 — question_id must be an integer."""

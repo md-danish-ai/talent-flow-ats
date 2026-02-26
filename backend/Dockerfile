@@ -1,20 +1,25 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set the working directory in the container
-WORKDIR /app
+WORKDIR /backend
 
-# Copy the requirements file into the container at /app
-# Note: This assumes the build context is the project root
-COPY requirements.txt .
+# System deps (needed for postgres tooling / pg_isready)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Python deps
+COPY backend/requirements.txt /backend/requirements.txt
+RUN pip install --no-cache-dir -r /backend/requirements.txt
 
-# Copy the current directory contents into the container at /app
-COPY backend/app ./app
+# Copy backend code (includes scripts/run_migrations.sh)
+COPY backend /backend
 
-# Expose port 4000 to the outside world
+# Make Python imports work
+ENV PYTHONPATH=/backend
+
+#  This is the line that makes the run_migrations.sh script executable
+RUN chmod +x /backend/scripts/run_migrations.sh
+
 EXPOSE 4000
 
 # Run app.main when the container launches
