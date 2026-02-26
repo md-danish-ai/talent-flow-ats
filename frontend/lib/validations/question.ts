@@ -9,6 +9,8 @@ export const mcqOptionSchema = z.object({
 
 export const mcqSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
+  examLevel: z.string().min(1, "Exam Level is required"),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
   options: z
     .array(mcqOptionSchema)

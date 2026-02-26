@@ -4,7 +4,15 @@ from app.database.db import SessionLocal
 from app.classifications.models import Classification
 
 
-def get_all(type_filter: str = None, is_active: bool = None):
+def get_all(
+    type_filter: str = None,
+    is_active: bool = None,
+    search: str = None,
+    sort_by: str = "sort_order",
+    order: str = "asc",
+    limit: int = 10,
+    offset: int = 0
+):
     db_session = SessionLocal()
     try:
         query = db_session.query(Classification)
@@ -12,18 +20,25 @@ def get_all(type_filter: str = None, is_active: bool = None):
             query = query.filter(Classification.type == type_filter)
         if is_active is not None:
             query = query.filter(Classification.is_active == is_active)
-        
-        # Consistent ordering: type, sort_order, name
-        query = query.order_by(
-            Classification.type,
-            Classification.sort_order,
-            Classification.name
-        )
-        
-        results = query.all()
-        # Convert to dict for backward compatibility if needed, 
+        if search:
+            query = query.filter(
+                (Classification.name.ilike(f"%{search}%")) |
+                (Classification.code.ilike(f"%{search}%"))
+            )
+
+        total_records = query.count()
+
+        sort_column = getattr(Classification, sort_by,
+                              Classification.sort_order)
+        if order == "desc":
+            query = query.order_by(Classification.type, sort_column.desc())
+        else:
+            query = query.order_by(Classification.type, sort_column.asc())
+
+        results = query.offset(offset).limit(limit).all()
+        # Convert to dict for backward compatibility if needed,
         # though ideally the calling code should start using objects
-        return [
+        data = [
             {
                 "id": classification.id,
                 "code": classification.code,
@@ -37,6 +52,7 @@ def get_all(type_filter: str = None, is_active: bool = None):
             }
             for classification in results
         ]
+        return data, total_records
     finally:
         db_session.close()
 
@@ -44,7 +60,8 @@ def get_all(type_filter: str = None, is_active: bool = None):
 def get_by_id(classification_id: int):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        classification = db_session.query(Classification).filter(
+            Classification.id == classification_id).first()
         if not classification:
             return None
         return {
@@ -89,7 +106,8 @@ def get_by_code_and_type(code: str, type_: str):
 def update(classification_id: int, data):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        classification = db_session.query(Classification).filter(
+            Classification.id == classification_id).first()
         if not classification:
             return None
 
@@ -122,7 +140,8 @@ def update(classification_id: int, data):
 def delete(classification_id: int):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(Classification.id == classification_id).first()
+        classification = db_session.query(Classification).filter(
+            Classification.id == classification_id).first()
         if classification:
             classification.is_active = False
             db_session.commit()

@@ -10,11 +10,44 @@ import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi, Classification } from "@lib/api/classifications";
 
-export const AddQuestionForm = () => {
+export const AddQuestionForm = ({ 
+  questionType = "MULTIPLE_CHOICE",
+  initialData,
+  questionId,
+  onSuccess 
+}: { 
+  questionType?: string;
+  initialData?: MCQFormValues;
+  questionId?: number;
+  onSuccess?: () => void 
+}) => {
+  const [subjects, setSubjects] = React.useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
+
+  React.useEffect(() => {
+    const fetchClassifications = async () => {
+      try {
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({ type: "subject_type", limit: 100 }),
+          classificationsApi.getClassifications({ type: "exam_level", limit: 100 })
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch classifications:", error);
+      }
+    };
+    fetchClassifications();
+  }, []);
+
   const form = useForm({
-    defaultValues: {
+    defaultValues: initialData || {
       subject: "",
+      examLevel: "",
+      marks: 1,
       questionText: "",
       explanation: "",
       options: [
@@ -28,10 +61,41 @@ export const AddQuestionForm = () => {
       onChange: mcqSchema,
     },
     onSubmit: async ({ value }) => {
-      // Simulate API call
-      console.log(value);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert("Question added successfully!");
+      try {
+        const payload: any = {
+          question_type: questionType,
+          subject_type: value.subject,
+          exam_level: value.examLevel,
+          question_text: value.questionText,
+          marks: value.marks,
+          options: value.options.map(opt => ({
+            option_label: opt.label,
+            option_text: opt.content,
+            is_correct: opt.isCorrect
+          })),
+          answer: {
+            explanation: value.explanation
+          }
+        };
+
+        if (!questionId) {
+          payload.is_active = true;
+        }
+
+        if (questionId) {
+          await questionsApi.updateQuestion(questionId, payload);
+          alert("Question updated successfully!");
+        } else {
+          await questionsApi.createQuestion(payload);
+          alert("Question added successfully!");
+        }
+        
+        form.reset();
+        if (onSuccess) onSuccess();
+      } catch (error) {
+        console.error("Failed to process question", error);
+        alert(error instanceof Error ? error.message : "Failed to process question. Please try again.");
+      }
     },
   });
 
@@ -94,11 +158,7 @@ export const AddQuestionForm = () => {
                     placeholder="Select Subject"
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val as string)}
-                    options={[
-                      { id: "Industry Awareness", label: "Industry Awareness" },
-                      { id: "Comprehension", label: "Comprehension" },
-                      { id: "Logical Reasoning", label: "Logical Reasoning" },
-                    ]}
+                    options={subjects.map((s) => ({ id: s.code, label: s.name }))}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -133,6 +193,74 @@ export const AddQuestionForm = () => {
                     onBlur={field.handleBlur}
                     error={field.state.meta.errors.length > 0}
                     className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div className="md:col-span-1">
+            <form.Field name="examLevel">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Exam Level
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Exam Level"
+                    value={field.state.value}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={examLevels.map((e) => ({ id: e.code, label: e.name }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="marks">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Marks
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Marks"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(Number(val))}
+                    options={Array.from({ length: 10 }, (_, i) => ({
+                      id: String(i + 1),
+                      label: String(i + 1),
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
                     <Typography
@@ -200,13 +328,11 @@ export const AddQuestionForm = () => {
                             field.state.meta.errors.length > 0
                           }
                           onMarkCorrect={() => {
-                            const isCurrentlyCorrect =
-                              field.state.value[index].isCorrect;
                             const newOptions = field.state.value.map(
                               (o, i) => ({
                                 ...o,
                                 isCorrect:
-                                  i === index ? !isCurrentlyCorrect : false,
+                                  i === index ? !o.isCorrect : o.isCorrect,
                               }),
                             );
                             field.handleChange(newOptions);

@@ -6,6 +6,7 @@ import {
   imageMCQSchema,
   type ImageMCQFormValues,
 } from "@lib/validations/question";
+import { questionsApi } from "@lib/api";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -14,7 +15,13 @@ import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
 
-export const AddImageQuestionForm = () => {
+export const AddImageQuestionForm = ({ 
+  questionType = "IMAGE_BASED_MCQ",
+  onSuccess 
+}: { 
+  questionType?: string;
+  onSuccess?: () => void 
+}) => {
   const form = useForm({
     defaultValues: {
       subject: "",
@@ -31,10 +38,36 @@ export const AddImageQuestionForm = () => {
       onChange: imageMCQSchema,
     },
     onSubmit: async ({ value }) => {
-      // Simulate API call
-      console.log(value);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert("Question added successfully!");
+      try {
+        const payload = {
+          question_type: questionType,
+          subject_type: value.subject,
+          exam_level: "Beginner",
+          question_text: value.questionText,
+          marks: 1,
+          is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
+          options: value.options.map(o => ({
+            option_label: o.label,
+            option_text: o.content,
+            is_correct: o.isCorrect
+          })),
+          answer: {
+            explanation: value.explanation,
+            answer_text: value.options
+              .filter(o => o.isCorrect)
+              .map(o => o.label)
+              .join(", ") || "A" 
+          }
+        };
+
+        await questionsApi.createQuestion(payload as any);
+        alert("Question added successfully!");
+        form.reset();
+        if (onSuccess) onSuccess();
+      } catch (error) {
+        console.error("Failed to create question:", error);
+        alert("Failed to create question: " + (error as Error).message);
+      }
     },
   });
 
@@ -200,13 +233,11 @@ export const AddImageQuestionForm = () => {
                             field.state.meta.errors.length > 0
                           }
                           onMarkCorrect={() => {
-                            const isCurrentlyCorrect =
-                              field.state.value[index].isCorrect;
                             const newOptions = field.state.value.map(
                               (o, i) => ({
                                 ...o,
                                 isCorrect:
-                                  i === index ? !isCurrentlyCorrect : false,
+                                  i === index ? !o.isCorrect : o.isCorrect,
                               }),
                             );
                             field.handleChange(newOptions);
