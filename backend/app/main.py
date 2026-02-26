@@ -1,9 +1,9 @@
 import os
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi import Request
 
 from app.auth.router import router as auth_router
 from app.user_details.router import router as user_details_router
@@ -11,8 +11,36 @@ from app.questions.router import router as questions_router
 from app.answer.router import router as answer_router
 from app.classifications.router import router as classifications_router
 from app.core.config import settings
+from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 app = FastAPI(title="Talent Flow ATS")
+
+
+# ─────────────────────────────────────────────
+#  Global Exception Handlers
+# ─────────────────────────────────────────────
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Catch all HTTPExceptions and return a standardized JSON response.
+    """
+    return api_response(
+        status_code=exc.status_code,
+        message=str(exc.detail),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Catch all validation errors and return a standardized JSON response.
+    """
+    return api_response(
+        status_code=StatusCode.UNPROCESSABLE_ENTITY,
+        message=ResponseMessage.VALIDATION_ERROR,
+        errors=exc.errors()
+    )
 
 
 # middleware-name: log_requests
