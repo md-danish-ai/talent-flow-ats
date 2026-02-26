@@ -1,5 +1,42 @@
 import { api } from "./index";
 
+export interface QuestionOption {
+  option_label: string;
+  option_text: string;
+  is_correct: boolean;
+}
+
+export interface QuestionAnswer {
+  answer_text?: string | null;
+  explanation?: string | null;
+}
+
+export interface ClassificationRef {
+  id: number;
+  code: string;
+  type: string;
+  name: string;
+  metadata?: Record<string, unknown>;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface Question {
+  id: number;
+  question_text: string;
+  image_url?: string | null;
+  passage?: string | null;
+  marks: number;
+  is_active: boolean;
+  options: QuestionOption[];
+  answer?: QuestionAnswer;
+  question_type?: ClassificationRef | null;
+  subject_type?: ClassificationRef | null;
+  exam_level?: ClassificationRef | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface OptionCreate {
   option_label: string;
   option_text: string;
@@ -46,7 +83,6 @@ export interface PaginatedResponse<T> {
 
 export const questionsApi = {
   getQuestions: async (params?: PaginationParams & { question_type?: string, subject_type?: string, exam_level?: string, is_active?: boolean }) => {
-    // Manually construct query string since apiClient might not support it out of the box nicely
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -57,10 +93,10 @@ export const questionsApi = {
     }
     const queryString = queryParams.toString();
     const endpoint = `/questions/get${queryString ? `?${queryString}` : ""}`;
-    return api.get<PaginatedResponse<any>>(endpoint);
+    return api.get<PaginatedResponse<Question>>(endpoint);
   },
   getQuestion: async (id: number) => {
-    return api.get<any>(`/questions/get/${id}`);
+    return api.get<Question>(`/questions/get/${id}`);
   },
   createQuestion: async (data: QuestionCreate) => {
     return api.post("/questions/create", data);
