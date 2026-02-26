@@ -31,13 +31,7 @@ jobs:
             REVIEWER_EMAIL="${{ github.event.requested_reviewer.email }}"
 
             if [[ -n "$REVIEWER_EMAIL" && "$REVIEWER_EMAIL" != "null" ]]; then
-              MESSAGE="👋 <users/${REVIEWER_EMAIL}>\n\n\
-You have been added as a *reviewer* for this PR.\n\
-Kindly review this PR as per your convenience 🙏\n\n\
-Repository: *${REPO}*\n\
-From: *${HEAD_BRANCH}*\n\
-To: *${BASE_BRANCH}*\n\n\
-Review PR: ${PR_URL}"
+              MESSAGE="👋 <users/${REVIEWER_EMAIL}>\n\nYou have been added as a *reviewer* for this PR.\nKindly review this PR as per your convenience 🙏\n\nRepository: *${REPO}*\nFrom: *${HEAD_BRANCH}*\nTo: *${BASE_BRANCH}*\n\nReview PR: ${PR_URL}"
 
               curl -X POST \
                 -H "Content-Type: application/json" \
@@ -65,13 +59,7 @@ Review PR: ${PR_URL}"
               REVIEWERS="⚠️ No reviewers assigned yet"
             fi
 
-            MESSAGE="👀 *Pull Request Review Requested*\n\n\
-Repository: *${REPO}*\n\
-From: *${HEAD_BRANCH}*\n\
-To: *${BASE_BRANCH}*\n\
-Author: *${ACTOR}*\n\n\
-${REVIEWERS}\n\
-Review PR: ${PR_URL}"
+            MESSAGE="👀 *Pull Request Review Requested*\n\nRepository: *${REPO}*\nFrom: *${HEAD_BRANCH}*\nTo: *${BASE_BRANCH}*\nAuthor: *${ACTOR}*\n\n${REVIEWERS}\nReview PR: ${PR_URL}"
 
             curl -X POST \
               -H "Content-Type: application/json" \
@@ -85,11 +73,7 @@ Review PR: ${PR_URL}"
           # CASE 3: PR merged
           ############################################
           if [[ "$ACTION" == "closed" && "$IS_MERGED" == "true" ]]; then
-            MESSAGE="🚀 *Pull Request Merged*\n\n\
-Repository: *${REPO}*\n\
-Branch: *${BASE_BRANCH}*\n\
-Merged by: *${ACTOR}*\n\n\
-Please pull the latest changes and sync your local branch."
+            MESSAGE="🚀 *Pull Request Merged*\n\nRepository: *${REPO}*\nBranch: *${BASE_BRANCH}*\nMerged by: *${ACTOR}*\n\nPlease pull the latest changes and sync your local branch."
 
             curl -X POST \
               -H "Content-Type: application/json" \
