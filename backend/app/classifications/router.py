@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from typing import Optional
 from app.classifications.schemas import ClassificationCreate, ClassificationUpdate
 from app.classifications.service import ClassificationService
