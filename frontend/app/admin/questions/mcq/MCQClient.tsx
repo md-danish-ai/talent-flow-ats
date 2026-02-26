@@ -28,8 +28,10 @@ import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { Question, QuestionOption } from "@lib/api/questions";
+
 interface MCQClientProps {
-  initialData?: any[];
+  initialData?: Question[];
   totalItems?: number;
 }
 
@@ -44,12 +46,12 @@ export function MCQClient({
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<any[]>(initialData);
+  const [data, setData] = useState<Question[]>(initialData);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [editingQuestion, setEditingQuestion] = useState<any | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
 
 
@@ -382,7 +384,7 @@ export function MCQClient({
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {row.options?.map((opt: any, index: number) => (
+                                 {row.options?.map((opt: QuestionOption, index: number) => (
                                   <TableRow key={index} className="border-b border-border transition-colors">
                                     <TableCell className="px-5 py-3 font-medium text-foreground">
                                       {opt.option_label || String.fromCharCode(65 + index)}
