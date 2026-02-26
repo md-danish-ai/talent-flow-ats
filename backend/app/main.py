@@ -15,6 +15,8 @@ from app.core.config import settings
 app = FastAPI(title="Talent Flow ATS")
 
 
+# middleware-name: log_requests
+# middleware-desc: this middleware is used for logging incoming requests and their origins.
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     origin = request.headers.get("origin")
@@ -32,6 +34,8 @@ origins = [
     "http://127.0.0.1:3001",
 ]
 
+# middleware-name: CORSMiddleware
+# middleware-desc: this middleware is used for handling Cross-Origin Resource Sharing (CORS) to allow requests from specified origins.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -48,9 +52,8 @@ def health_check():
 
 
 # Routers
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(user_details_router,
-                   prefix="/user-details", tags=["User Details"])
+app.include_router(auth_router)
+app.include_router(user_details_router)
 app.include_router(questions_router)
 app.include_router(answer_router)
 app.include_router(classifications_router)
