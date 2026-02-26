@@ -425,7 +425,7 @@ export function MCQClient({
                         </TableCell>
                       )}
                       {visibleColumns.includes("question") && (
-                        <TableCell>{row.question_text || row.question}</TableCell>
+                        <TableCell>{row.question_text ?? row.question}</TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>{row.subject_type?.name || row.subject || "N/A"}</TableCell>

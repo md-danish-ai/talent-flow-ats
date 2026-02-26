@@ -12,6 +12,7 @@ import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
+import { type QuestionCreate } from "@lib/api/questions";
 
 export const AddQuestionForm = ({ 
   questionType = "MULTIPLE_CHOICE",
@@ -62,7 +63,7 @@ export const AddQuestionForm = ({
     },
     onSubmit: async ({ value }) => {
       try {
-        const payload: any = {
+        const payload: Partial<QuestionCreate> = {
           question_type: questionType,
           subject_type: value.subject,
           exam_level: value.examLevel,
@@ -86,7 +87,7 @@ export const AddQuestionForm = ({
           await questionsApi.updateQuestion(questionId, payload);
           alert("Question updated successfully!");
         } else {
-          await questionsApi.createQuestion(payload);
+          await questionsApi.createQuestion(payload as QuestionCreate);
           alert("Question added successfully!");
         }
         

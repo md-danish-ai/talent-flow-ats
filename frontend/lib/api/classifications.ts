@@ -5,7 +5,7 @@ export interface Classification {
   code: string;
   type: string;
   name: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   sort_order?: number;
   is_active: boolean;
   created_at?: string;

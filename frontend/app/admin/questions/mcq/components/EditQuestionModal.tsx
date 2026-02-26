@@ -4,11 +4,12 @@ import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { AddQuestionForm } from "@features/questions/AddQuestionForm";
 import { type MCQFormValues } from "@lib/validations/question";
+import { Question, QuestionOption } from "@lib/api/questions";
 
 interface EditQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  questionData: any;
+  questionData: Question | null;
 }
 
 export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
@@ -20,12 +21,16 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 
   // Map backend data to form values
   const initialValues: MCQFormValues = {
-    subject: questionData.subject_type?.code || questionData.subject_type || "",
-    examLevel: questionData.exam_level?.code || questionData.exam_level || "",
+    subject: typeof questionData.subject_type === "string"
+      ? questionData.subject_type
+      : questionData.subject_type?.code ?? "",
+    examLevel: typeof questionData.exam_level === "string"
+      ? questionData.exam_level
+      : questionData.exam_level?.code ?? "",
     marks: questionData.marks || 1,
     questionText: questionData.question_text || "",
     explanation: questionData.answer?.explanation || "",
-    options: (questionData.options || []).map((opt: any, index: number) => ({
+    options: (questionData.options || []).map((opt: QuestionOption, index: number) => ({
       id: opt.option_label || String.fromCharCode(65 + index),
       label: opt.option_label || String.fromCharCode(65 + index),
       content: opt.option_text || "",

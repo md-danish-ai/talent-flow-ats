@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { questionsApi } from "@lib/api/questions";
+import { questionsApi, Question, QuestionOption } from "@lib/api/questions";
 import { Typography } from "@components/ui-elements/Typography";
 import { Loader2, HelpCircle, CheckCircle2 } from "lucide-react";
 
@@ -16,7 +16,7 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
   onClose,
   questionId,
 }) => {
-  const [question, setQuestion] = useState<any>(null);
+  const [question, setQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,8 +27,8 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
         setError(null);
         try {
           const response = await questionsApi.getQuestion(questionId);
-          // Assuming the API response follows { status, message, data }
-          setQuestion(response.data || response);
+          // API client returns the typed resource directly
+          setQuestion(response);
         } catch (err) {
           console.error("Failed to fetch question:", err);
           setError("Failed to load question details.");
@@ -67,11 +67,11 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-6 border-b border-border/50">
               <div className="space-y-1">
                 <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Subject</Typography>
-                <Typography variant="body3" weight="bold">{question.subject_type?.name || question.subject_type || "N/A"}</Typography>
+                <Typography variant="body3" weight="bold">{typeof question.subject_type === "string" ? question.subject_type : question.subject_type?.name || "N/A"}</Typography>
               </div>
               <div className="space-y-1">
                 <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Exam Level</Typography>
-                <Typography variant="body3" weight="bold">{question.exam_level?.name || question.exam_level || "N/A"}</Typography>
+                <Typography variant="body3" weight="bold">{typeof question.exam_level === "string" ? question.exam_level : question.exam_level?.name || "N/A"}</Typography>
               </div>
               <div className="space-y-1">
                 <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Marks</Typography>
@@ -94,7 +94,7 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
             <div className="space-y-4">
                <Typography variant="body4" weight="bold" className="text-muted-foreground uppercase tracking-wider px-1">Options</Typography>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {(question.options || []).map((opt: any) => (
+                 {(question.options || []).map((opt: QuestionOption) => (
                    <div 
                     key={opt.option_label} 
                     className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${

@@ -6,7 +6,7 @@ import {
   imageMCQSchema,
   type ImageMCQFormValues,
 } from "@lib/validations/question";
-import { questionsApi } from "@lib/api";
+import { questionsApi, type QuestionCreate } from "@lib/api/questions";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -60,7 +60,7 @@ export const AddImageQuestionForm = ({
           }
         };
 
-        await questionsApi.createQuestion(payload as any);
+  await questionsApi.createQuestion(payload as QuestionCreate);
         alert("Question added successfully!");
         form.reset();
         if (onSuccess) onSuccess();
