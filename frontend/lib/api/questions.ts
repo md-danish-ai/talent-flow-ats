@@ -108,7 +108,8 @@ export const questionsApi = {
     return api.patch<{ message: string; is_active: boolean }>(`/questions/toggle/${id}`);
   },
   deleteQuestion: async (id: number) => {
-    return api.delete(`/questions/delete/${id}`);
+    // Backend exposes DELETE /questions/{question_id}
+    return api.delete(`/questions/${id}`);
   },
   uploadImage: async (file: File) => {
     const formData = new FormData();
