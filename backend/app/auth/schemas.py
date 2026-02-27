@@ -28,10 +28,10 @@ class SignUpSchema(BaseModel):
     email: Optional[EmailStr] = None
 
     @validator("email", pre=True)
-    def empty_to_none(cls, v):
-        if v == "":
+    def empty_to_none(cls, field_value):
+        if field_value == "":
             return None
-        return v
+        return field_value
 
     @validator("name")
     def validate_full_name(cls, value):
@@ -59,10 +59,10 @@ class SignInSchema(BaseModel):
     role: RoleEnum
 
     @validator("mobile", "email", pre=True)
-    def empty_to_none(cls, v):
-        if v == "":
+    def empty_to_none(cls, field_value):
+        if field_value == "":
             return None
-        return v
+        return field_value
 
     @validator("mobile")
     def validate_mobile(cls, value):
@@ -78,14 +78,14 @@ class SignInSchema(BaseModel):
         return value
 
     @validator("role")
-    def validate_fields_by_role(cls, v, values):
+    def validate_fields_by_role(cls, field_value, values):
         mobile = values.get("mobile")
         email = values.get("email")
 
-        if v == RoleEnum.user:
+        if field_value == RoleEnum.user:
             if not mobile:
                 raise ValueError("Mobile number is required for user login")
-        elif v == RoleEnum.admin:
+        elif field_value == RoleEnum.admin:
             if not mobile and not email:
                 raise ValueError("Either mobile or email is required for admin login")
 
