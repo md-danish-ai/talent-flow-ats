@@ -42,7 +42,7 @@ def signup_user(data):
 
     except HTTPException:
         raise
-    except Exception as exception:
+    except Exception:
         db_session.rollback()
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
@@ -140,7 +140,7 @@ def create_admin(data):
 
     except HTTPException:
         raise
-    except Exception as exception:
+    except Exception:
         db_session.rollback()
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
@@ -206,7 +206,7 @@ def get_users_by_role(role: str):
             }
             for user in results
         ]
-    except Exception as exception:
+    except Exception:
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
         )
