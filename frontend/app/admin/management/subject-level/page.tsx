@@ -1,21 +1,42 @@
 import React from "react";
+import { cookies } from "next/headers";
+export const dynamic = "force-dynamic";
+
 import { TypesManagementClient } from "./TypesManagementClient";
+import { classificationsApi, Classification } from "@/lib/api/classifications";
 
 // This simulates server-side data fetching for both types
 async function getTypesData() {
-    const subjectTypes = [
-        { id: 1, name: "Technical", description: "Core technical knowledge and skills." },
-        { id: 2, name: "Aptitude", description: "Logical reasoning and quantitative skills." },
-        { id: 3, name: "Soft Skills", description: "Communication and interpersonal skills." },
-    ];
+    try {
+        const cookieStore = await cookies();
+        const cookieStr = cookieStore
+            .getAll()
+            .map((c) => `${c.name}=${c.value}`)
+            .join("; ");
 
-    const levelTypes = [
-        { id: 1, name: "Fresher", description: "Entry-level candidates with 0-1 year of experience." },
-        { id: 2, name: "QA", description: "Quality Assurance professionals." },
-        { id: 3, name: "Team Lead", description: "Experienced professionals leading technical teams." },
-    ];
+        const [subjectsResponse, levelsResponse] = await Promise.all([
+            classificationsApi.getClassifications({ type: "subject", limit: 100 }, { cookies: cookieStr }),
+            classificationsApi.getClassifications({ type: "exam_level", limit: 100 }, { cookies: cookieStr })
+        ]);
 
-    return { subjectTypes, levelTypes };
+        return {
+            subjectTypes: subjectsResponse.data.map((item: Classification) => ({
+                id: item.id,
+                name: item.name,
+                description: (item.metadata?.description as string) || "",
+                is_active: item.is_active
+            })),
+            levelTypes: levelsResponse.data.map((item: Classification) => ({
+                id: item.id,
+                name: item.name,
+                description: (item.metadata?.description as string) || "",
+                is_active: item.is_active
+            }))
+        };
+    } catch (error) {
+        console.error("Error fetching types data:", error);
+        return { subjectTypes: [], levelTypes: [] };
+    }
 }
 
 export default async function TypesManagementPage() {

@@ -33,11 +33,13 @@ export const AddQuestionForm = ({
       try {
         const [subjectsRes, examLevelsRes] = await Promise.all([
           classificationsApi.getClassifications({
-            type: "subject_type",
+            type: "subject",
+            is_active: true,
             limit: 100,
           }),
           classificationsApi.getClassifications({
             type: "exam_level",
+            is_active: true,
             limit: 100,
           }),
         ]);
@@ -71,7 +73,7 @@ export const AddQuestionForm = ({
       try {
         const payload: Partial<QuestionCreate> = {
           question_type: questionType,
-          subject_type: value.subject,
+          subject: value.subject,
           exam_level: value.examLevel,
           question_text: value.questionText,
           marks: value.marks,

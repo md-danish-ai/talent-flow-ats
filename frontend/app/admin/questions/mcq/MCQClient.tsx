@@ -60,7 +60,7 @@ export function MCQClient({
   const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Question[]>(initialData);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
@@ -71,11 +71,11 @@ const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
 
   // body overflow lock is handled by overlay/portal components when necessary
-useEffect(() => {
-  if (!toastMessage) return;
-  const timeout = setTimeout(() => setToastMessage(null), 4000);
-  return () => clearTimeout(timeout);
-}, [toastMessage]);
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timeout = setTimeout(() => setToastMessage(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [toastMessage]);
   const handleAuthError = useCallback((error: unknown): boolean => {
     if (error instanceof ApiError && error.status === 401) {
       if (typeof document !== "undefined") {
@@ -134,7 +134,7 @@ useEffect(() => {
         page: currentPage,
         limit: pageSize,
         search: debouncedSearch,
-        subject_type: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
         question_type: "MULTIPLE_CHOICE", // Optional filter
       });
       setData(response.data || []);
@@ -159,7 +159,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await classificationsApi.getClassifications({ type: "subject_type", limit: 100 });
+        const response = await classificationsApi.getClassifications({ type: "subject", is_active: true, limit: 100 });
         setSubjects(response.data || []);
       } catch (error) {
         if (handleAuthError(error)) {
@@ -194,8 +194,8 @@ useEffect(() => {
         key: "view",
         label: "View Details",
         icon: <Eye size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
+        onClick: (event) => {
+          event.stopPropagation();
           setViewingQuestionId(id);
         },
       },
@@ -203,18 +203,18 @@ useEffect(() => {
         key: "edit",
         label: "Edit Question",
         icon: <Edit size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          const qData = data.find((q) => q.id === id);
-          if (qData) setEditingQuestion(qData);
+        onClick: (event) => {
+          event.stopPropagation();
+          const questionData = data.find((question) => question.id === id);
+          if (questionData) setEditingQuestion(questionData);
         },
       },
       {
         key: "toggle",
         label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
         icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
+        onClick: (event) => {
+          event.stopPropagation();
           handleToggleStatus(id);
         },
         disabled: togglingId === id,
@@ -290,9 +290,9 @@ useEffect(() => {
           )}
         >
           {isLoading && (
-             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-                 <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-             </div>
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+            </div>
           )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
@@ -341,7 +341,7 @@ useEffect(() => {
                         <TableCell>{row.question_text}</TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
-                        <TableCell>{typeof row.subject_type === "string" ? row.subject_type : row.subject_type?.name ?? "N/A"}</TableCell>
+                        <TableCell>{typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}</TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
                         <TableCell>{"System"}</TableCell>
@@ -351,7 +351,7 @@ useEffect(() => {
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
-                           <RowActions id={row.id} />
+                          <RowActions id={row.id} />
                         </TableCell>
                       )}
                     </TableRow>
@@ -360,18 +360,18 @@ useEffect(() => {
               </TableBody>
             </Table>
           </div>
-{toastMessage && (
-  <div className="fixed bottom-6 right-6 z-50">
-    <div className="rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm border-emerald-300/80 dark:border-emerald-500/60">
-      <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
-        Success
-      </p>
-      <p className="text-sm text-foreground">
-        {toastMessage}
-      </p>
-    </div>
-  </div>
-)}
+          {toastMessage && (
+            <div className="fixed bottom-6 right-6 z-50">
+              <div className="rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm border-emerald-300/80 dark:border-emerald-500/60">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+                  Success
+                </p>
+                <p className="text-sm text-foreground">
+                  {toastMessage}
+                </p>
+              </div>
+            </div>
+          )}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -409,7 +409,7 @@ useEffect(() => {
                   placeholder="Search by keyword..."
                   className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </div>
             </div>
@@ -426,12 +426,12 @@ useEffect(() => {
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
+                  ...(subjects.map(subject => ({ id: subject.code, label: subject.name })) || [])
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => {
-                   setSubjectFilter(val);
-                   setCurrentPage(1);
+                  setSubjectFilter(val);
+                  setCurrentPage(1);
                 }}
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
@@ -461,36 +461,36 @@ useEffect(() => {
           </div>
         </InlineDrawer>
       </MainCard>
-<AddQuestionModal
-  isOpen={isAddModalOpen}
-  onClose={() => setIsAddModalOpen(false)}
-  onSuccess={() => {
-    setIsAddModalOpen(false);
-    setToastMessage("Question added successfully.");
-    fetchData();
-  }}
-/>
+      <AddQuestionModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          setIsAddModalOpen(false);
+          setToastMessage("Question added successfully.");
+          fetchData();
+        }}
+      />
 
-{editingQuestion && (
-  <EditQuestionModal
-    isOpen={true}
-    questionData={editingQuestion}
-    onClose={() => setEditingQuestion(null)}
-    onSuccess={() => {
-      setEditingQuestion(null); // ✅ CLOSE MODAL
-      setToastMessage("Question updated successfully.");
-      fetchData();
-    }}
-  />
-)}
+      {editingQuestion && (
+        <EditQuestionModal
+          isOpen={true}
+          questionData={editingQuestion}
+          onClose={() => setEditingQuestion(null)}
+          onSuccess={() => {
+            setEditingQuestion(null); // ✅ CLOSE MODAL
+            setToastMessage("Question updated successfully.");
+            fetchData();
+          }}
+        />
+      )}
 
-     {viewingQuestionId && (
-  <ViewQuestionModal
-    isOpen={true}
-    onClose={() => setViewingQuestionId(null)}
-    questionId={viewingQuestionId}
-  />
-)}
+      {viewingQuestionId && (
+        <ViewQuestionModal
+          isOpen={true}
+          onClose={() => setViewingQuestionId(null)}
+          questionId={viewingQuestionId}
+        />
+      )}
 
     </PageContainer>
   );

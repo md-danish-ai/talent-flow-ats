@@ -20,6 +20,7 @@ interface ManageTypeModalProps {
     formData: { name: string; description: string };
     setFormData: (data: { name: string; description: string }) => void;
     onSubmit: (e: React.FormEvent) => void;
+    isLoading?: boolean;
 }
 
 export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
@@ -30,6 +31,7 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
     formData,
     setFormData,
     onSubmit,
+    isLoading = false,
 }) => {
     const typeLabel = type === "subject" ? "Subject" : "Level";
     const nameLabel = type === "subject" ? "Name" : "Level Name";
@@ -51,6 +53,7 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
                         placeholder={placeholder}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        disabled={isLoading}
                     />
                 </div>
                 <div className="space-y-2">
@@ -63,14 +66,15 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
                         onChange={(e) =>
                             setFormData({ ...formData, description: e.target.value })
                         }
+                        disabled={isLoading}
                     />
                 </div>
                 <div className="flex justify-end gap-3 pt-4">
-                    <Button variant="ghost" type="button" onClick={onClose}>
+                    <Button variant="ghost" type="button" onClick={onClose} disabled={isLoading}>
                         Cancel
                     </Button>
-                    <Button variant="primary" type="submit" color="primary" shadow animate="scale">
-                        {editingType ? "Update" : "Save"}
+                    <Button variant="primary" type="submit" color="primary" shadow animate="scale" disabled={isLoading}>
+                        {isLoading ? "Saving..." : (editingType ? "Update" : "Save")}
                     </Button>
                 </div>
             </form>

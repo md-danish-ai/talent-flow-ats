@@ -19,7 +19,7 @@ question_service = QuestionService()
 @router.get("/get")
 async def get_questions(
     question_type: Optional[str] = None,
-    subject_type:  Optional[str] = None,
+    subject:       Optional[str] = None,
     exam_level:    Optional[str] = None,
     is_active:     Optional[bool] = None,
     pagination:    PaginationParams = Depends(get_pagination_params),
@@ -27,7 +27,7 @@ async def get_questions(
     offset = (pagination.page - 1) * pagination.limit
     data, total_records = await question_service.get_questions(
         question_type=question_type,
-        subject_type=subject_type,
+        subject=subject,
         exam_level=exam_level,
         is_active=is_active,
         search=pagination.search,

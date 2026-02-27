@@ -31,7 +31,7 @@ export interface Question {
   options: QuestionOption[];
   answer?: QuestionAnswer;
   question_type?: ClassificationRef | null;
-  subject_type?: ClassificationRef | null;
+  subject?: ClassificationRef | null;
   exam_level?: ClassificationRef | null;
   created_at?: string;
   updated_at?: string;
@@ -50,7 +50,7 @@ export interface AnswerCreate {
 
 export interface QuestionCreate {
   question_type: string;
-  subject_type: string;
+  subject: string;
   exam_level: string;
   question_text: string;
   image_url?: string | null;
@@ -82,7 +82,7 @@ export interface PaginatedResponse<T> {
 }
 
 export const questionsApi = {
-  getQuestions: async (params?: PaginationParams & { question_type?: string, subject_type?: string, exam_level?: string, is_active?: boolean }) => {
+  getQuestions: async (params?: PaginationParams & { question_type?: string, subject?: string, exam_level?: string, is_active?: boolean }) => {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -116,7 +116,7 @@ export const questionsApi = {
     formData.append("image", file);
 
     const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
-    
+
     const getCookie = (name: string) => {
       if (typeof document === "undefined") return undefined;
       const value = `; ${document.cookie}`;
@@ -124,12 +124,12 @@ export const questionsApi = {
       if (parts.length === 2) return parts.pop()?.split(";").shift();
       return undefined;
     };
-    
+
     let token = getCookie("auth_token");
     if (token) {
       token = token.replace(/^["%22]+|["%22]+$/g, "");
     }
-    
+
     const headers: Record<string, string> = {};
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;

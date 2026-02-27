@@ -15,12 +15,12 @@ import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
 
-export const AddImageQuestionForm = ({ 
+export const AddImageQuestionForm = ({
   questionType = "IMAGE_BASED_MCQ",
-  onSuccess 
-}: { 
+  onSuccess
+}: {
   questionType?: string;
-  onSuccess?: () => void 
+  onSuccess?: () => void
 }) => {
   const [toast, setToast] = React.useState<{
     type: "success" | "error";
@@ -52,7 +52,7 @@ export const AddImageQuestionForm = ({
       try {
         const payload = {
           question_type: questionType,
-          subject_type: value.subject,
+          subject: value.subject,
           exam_level: "Beginner",
           question_text: value.questionText,
           marks: 1,
@@ -67,7 +67,7 @@ export const AddImageQuestionForm = ({
             answer_text: value.options
               .filter(o => o.isCorrect)
               .map(o => o.label)
-              .join(", ") || "A" 
+              .join(", ") || "A"
           }
         };
 
