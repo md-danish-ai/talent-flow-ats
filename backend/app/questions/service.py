@@ -51,10 +51,25 @@ class QuestionService:
         question_type: str = None,
         subject_type:  str = None,
         exam_level:    str = None,
-        is_active:     bool = None
+        is_active:     bool = None,
+        search:        str = None,
+        sort_by:       str = "created_at",
+        order:         str = "desc",
+        limit:         int = 10,
+        offset:        int = 0
     ):
         try:
-            return repository.get_questions(question_type, subject_type, exam_level, is_active)
+            return repository.get_questions(
+                question_type=question_type,
+                subject_type=subject_type,
+                exam_level=exam_level,
+                is_active=is_active,
+                search=search,
+                sort_by=sort_by,
+                order=order,
+                limit=limit,
+                offset=offset
+            )
         except Exception as e:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
@@ -103,6 +118,14 @@ class QuestionService:
     async def delete_question(self, question_id: int, user_id: int):
         try:
             return repository.delete_question(question_id)
+        except Exception as e:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+            )
+
+    async def toggle_question_status(self, question_id: int):
+        try:
+            return repository.toggle_question_status(question_id)
         except Exception as e:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)

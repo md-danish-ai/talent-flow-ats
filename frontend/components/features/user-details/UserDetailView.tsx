@@ -22,9 +22,14 @@ import type { UserDetails } from "@lib/api/user-details";
 interface UserDetailViewProps {
   details: UserDetails;
   userId: string | number;
+  hideHeader?: boolean;
 }
 
-export function UserDetailView({ details, userId }: UserDetailViewProps) {
+export function UserDetailView({
+  details,
+  userId,
+  hideHeader = false,
+}: UserDetailViewProps) {
   const {
     personalDetails,
     familyDetails = [],
@@ -39,35 +44,37 @@ export function UserDetailView({ details, userId }: UserDetailViewProps) {
   return (
     <div className="flex flex-col gap-8 max-w-6xl mx-auto pb-20">
       {/* Header Info */}
-      <div className="bg-card border ring-1 ring-border rounded-[2rem] p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-            <User size={40} />
-          </div>
-          <div>
-            <Typography variant="h3" weight="bold" className="capitalize">
-              {personalDetails?.firstName} {personalDetails?.lastName}
-            </Typography>
-            <div className="flex flex-wrap gap-4 mt-2 text-muted-foreground">
-              <span className="flex items-center gap-1.5 text-sm">
-                <Mail size={14} /> {personalDetails?.email}
-              </span>
-              <span className="flex items-center gap-1.5 text-sm">
-                <Phone size={14} /> {personalDetails?.primaryMobile}
-              </span>
+      {!hideHeader && (
+        <div className="bg-card border ring-1 ring-border rounded-[2rem] p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <User size={40} />
+            </div>
+            <div>
+              <Typography variant="h3" weight="bold" className="capitalize">
+                {personalDetails?.firstName} {personalDetails?.lastName}
+              </Typography>
+              <div className="flex flex-wrap gap-4 mt-2 text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-sm">
+                  <Mail size={14} /> {personalDetails?.email}
+                </span>
+                <span className="flex items-center gap-1.5 text-sm">
+                  <Phone size={14} /> {personalDetails?.primaryMobile}
+                </span>
+              </div>
             </div>
           </div>
+          <Link href={`/admin/user-management/update-details/${userId}`}>
+            <Button
+              variant="primary"
+              animate="scale"
+              startIcon={<Pencil size={18} />}
+            >
+              Edit Profile
+            </Button>
+          </Link>
         </div>
-        <Link href={`/admin/management/users/update-details/${userId}`}>
-          <Button
-            variant="primary"
-            animate="scale"
-            startIcon={<Pencil size={18} />}
-          >
-            Edit Profile
-          </Button>
-        </Link>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Personal & Other */}

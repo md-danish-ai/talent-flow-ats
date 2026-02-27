@@ -68,9 +68,11 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const initials = user?.username ? getInitials(user.username) : "?";
 
   const logout = () => {
-    document.cookie = "role=; Max-Age=0; path=/";
-    document.cookie = "auth_token=; Max-Age=0; path=/";
-    document.cookie = "user_info=; Max-Age=0; path=/";
+    document.cookie =
+      "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie =
+      "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     router.push("/sign-in");
   };
 
@@ -143,7 +145,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 Settings
               </Typography>
               <ProfileMenuLink
-                href="/admin/profile"
+                href={`/${user?.role === "admin" ? "admin" : "user"}/profile`}
                 onClick={onToggle}
                 icon={
                   <svg

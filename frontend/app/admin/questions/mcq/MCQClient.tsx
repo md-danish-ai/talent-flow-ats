@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -8,6 +9,8 @@ import { Typography } from "@components/ui-elements/Typography";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Input } from "@components/ui-elements/Input";
 import { AddQuestionModal } from "./components/AddQuestionModal";
+import { EditQuestionModal } from "./components/EditQuestionModal";
+import { ViewQuestionModal } from "./components/ViewQuestionModal";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -16,36 +19,76 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableCollapsibleRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { Filter, Search, RotateCcw, Plus, ListChecks } from "lucide-react";
+import {
+  Filter,
+  Search,
+  RotateCcw,
+  Plus,
+  ListChecks,
+  Loader2,
+  MoreVertical,
+  Eye,
+  Edit,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi, Classification } from "@lib/api/classifications";
+// framer-motion is not used directly in this file anymore
+import ActionMenu, { type ActionItem } from "@components/ui-elements/ActionMenu";
+import { ApiError } from "@lib/api/client";
 
-interface MCQQuestion {
-  id: number;
-  question: string;
-  subject: string;
-  createdBy: string;
-  createdDate: string;
-}
+import { Question } from "@lib/api/questions";
 
 interface MCQClientProps {
-  initialData: MCQQuestion[];
-  totalItems: number;
+  initialData?: Question[];
+  totalItems?: number;
 }
 
+
 export function MCQClient({
-  initialData,
-  totalItems: initialTotalItems,
+  initialData = [],
+  totalItems: initialTotalItems = 0,
 }: MCQClientProps) {
+  const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >(undefined);
+  const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Question[]>(initialData);
+  const [totalItems, setTotalItems] = useState(initialTotalItems);
+  const [subjects, setSubjects] = useState<Classification[]>([]);
+  // ActionMenu manages its open state internally; no global openMenuId needed
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
+
+  // body overflow lock is handled by overlay/portal components when necessary
+useEffect(() => {
+  if (!toastMessage) return;
+  const timeout = setTimeout(() => setToastMessage(null), 4000);
+  return () => clearTimeout(timeout);
+}, [toastMessage]);
+  const handleAuthError = useCallback((error: unknown): boolean => {
+    if (error instanceof ApiError && error.status === 401) {
+      if (typeof document !== "undefined") {
+        document.cookie = "role=; Max-Age=0; path=/";
+        document.cookie = "auth_token=; Max-Age=0; path=/";
+        document.cookie = "user_info=; Max-Age=0; path=/";
+      }
+      router.push("/sign-in");
+      return true;
+    }
+    return false;
+  }, [router]);
+
 
   // Column Visibility State
   const allColumns = [
@@ -54,6 +97,7 @@ export function MCQClient({
     { id: "subject", label: "Subject" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
+    { id: "actions", label: "Action" },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState([
@@ -61,13 +105,13 @@ export function MCQClient({
     "question",
     "subject",
     "createdBy",
+    "actions",
   ]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const totalItems = initialTotalItems;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -75,20 +119,119 @@ export function MCQClient({
     );
   };
 
-  // For now we still use mock since we don't have a real API to call for filters/pagination in this demo
-  const mockData =
-    initialData.length > 0
-      ? initialData
-      : Array.from({ length: pageSize }).map((_, i) => {
-          const actualId = (currentPage - 1) * pageSize + i + 1;
-          return {
-            id: actualId,
-            question: `Sample Multiple Choice Question ${actualId} for testing the UI layout and scroll behavior.`,
-            subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
-            createdBy: "Manish Joshi - Mohan Lal",
-            createdDate: "17/11/2018",
-          };
-        });
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset page on search
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await questionsApi.getQuestions({
+        page: currentPage,
+        limit: pageSize,
+        search: debouncedSearch,
+        subject_type: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        question_type: "MULTIPLE_CHOICE", // Optional filter
+      });
+      setData(response.data || []);
+      if (response.pagination) {
+        setTotalItems(response.pagination.total_records);
+      }
+    } catch (error) {
+      if (handleAuthError(error)) {
+        return;
+      }
+      console.error("Error fetching questions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await classificationsApi.getClassifications({ type: "subject_type", limit: 100 });
+        setSubjects(response.data || []);
+      } catch (error) {
+        if (handleAuthError(error)) {
+          return;
+        }
+        console.error("Failed to fetch subjects:", error);
+      }
+    };
+    fetchSubjects();
+  }, [handleAuthError]);
+
+  const handleToggleStatus = async (id: number) => {
+    setTogglingId(id);
+    try {
+      await questionsApi.toggleQuestionStatus(id);
+      await fetchData();
+    } catch (error) {
+      if (handleAuthError(error)) {
+        return;
+      }
+      console.error("Failed to toggle question status:", error);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const RowActions = ({ id }: { id: number }) => {
+    const isActive = data.find((q) => q.id === id)?.is_active !== false;
+
+    const items: ActionItem[] = [
+      {
+        key: "view",
+        label: "View Details",
+        icon: <Eye size={16} />,
+        onClick: (e) => {
+          e.stopPropagation();
+          setViewingQuestionId(id);
+        },
+      },
+      {
+        key: "edit",
+        label: "Edit Question",
+        icon: <Edit size={16} />,
+        onClick: (e) => {
+          e.stopPropagation();
+          const qData = data.find((q) => q.id === id);
+          if (qData) setEditingQuestion(qData);
+        },
+      },
+      {
+        key: "toggle",
+        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
+        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
+        onClick: (e) => {
+          e.stopPropagation();
+          handleToggleStatus(id);
+        },
+        disabled: togglingId === id,
+      },
+    ];
+
+    return (
+      <div className="relative flex justify-center items-center h-full px-2">
+        <ActionMenu
+          button={<MoreVertical size={20} />}
+          items={items}
+          buttonClassName={"h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"}
+          menuClassName={"bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"}
+        />
+      </div>
+    );
+  };
 
   return (
     <PageContainer animate>
@@ -128,7 +271,10 @@ export function MCQClient({
               shadow
               animate="scale"
               iconAnimation="rotate-90"
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setIsAddModalOpen(true);
+                // In a real app, refresh data after adding.
+              }}
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
@@ -139,15 +285,19 @@ export function MCQClient({
       >
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden",
+            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden relative",
             isFilterOpen && "border-r border-border",
           )}
         >
+          {isLoading && (
+             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                 <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+             </div>
+          )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
@@ -165,139 +315,63 @@ export function MCQClient({
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("actions") && (
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockData.map((row) => (
-                  <TableCollapsibleRow
-                    key={row.id}
-                    colSpan={visibleColumns.length + 1}
-                    expandedContent={
-                      <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
-                              <ListChecks size={18} />
-                            </div>
-                            <div>
-                              <Typography variant="body3" weight="bold">
-                                Question Details & Options
-                              </Typography>
-                              <Typography
-                                variant="body5"
-                                className="text-muted-foreground"
-                              >
-                                Review all options and correct answer
-                                explanation.
-                              </Typography>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-5">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30 border-b border-border">
-                                <TableHead className="w-[80px] h-10">
-                                  Option
-                                </TableHead>
-                                <TableHead className="h-10">Content</TableHead>
-                                <TableHead className="w-[120px] text-right h-10">
-                                  Status
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Option A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  B
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground font-bold text-green-600 dark:text-green-500">
-                                  Sample Option B (Correct)
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
-                                  Correct
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Option C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Option D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </div>
-
-                        <div className="px-5 py-3 bg-muted/20 border-t border-border">
-                          <Typography
-                            variant="body3"
-                            weight="semibold"
-                            className="inline-block mr-1"
-                          >
-                            Explanation:
-                          </Typography>
-                          <Typography
-                            variant="body3"
-                            className="text-muted-foreground inline-block"
-                          >
-                            This is a sample explanation for the multiple choice
-                            question. It expands seamlessly below the row.
-                          </Typography>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {visibleColumns.includes("srNo") && (
-                      <TableCell className="font-medium text-center">
-                        {row.id}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes("question") && (
-                      <TableCell>{row.question}</TableCell>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableCell>{row.subject}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableCell>{row.createdBy}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdDate") && (
-                      <TableCell>{row.createdDate}</TableCell>
-                    )}
-                  </TableCollapsibleRow>
-                ))}
+                {data.length === 0 && !isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                      No questions found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data.map((row, index) => (
+                    <TableRow key={row.id}>
+                      {visibleColumns.includes("srNo") && (
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + index + 1}
+                        </TableCell>
+                      )}
+                      {visibleColumns.includes("question") && (
+                        <TableCell>{row.question_text}</TableCell>
+                      )}
+                      {visibleColumns.includes("subject") && (
+                        <TableCell>{typeof row.subject_type === "string" ? row.subject_type : row.subject_type?.name ?? "N/A"}</TableCell>
+                      )}
+                      {visibleColumns.includes("createdBy") && (
+                        <TableCell>{"System"}</TableCell>
+                      )}
+                      {visibleColumns.includes("createdDate") && (
+                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
+                      )}
+                      {visibleColumns.includes("actions") && (
+                        <TableCell className="text-center">
+                           <RowActions id={row.id} />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
-
+{toastMessage && (
+  <div className="fixed bottom-6 right-6 z-50">
+    <div className="rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm border-emerald-300/80 dark:border-emerald-500/60">
+      <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+        Success
+      </p>
+      <p className="text-sm text-foreground">
+        {toastMessage}
+      </p>
+    </div>
+  </div>
+)}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -352,11 +426,13 @@ export function MCQClient({
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  { id: "ia", label: "Industry Awareness" },
-                  { id: "comp", label: "Comprehension" },
+                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
                 ]}
                 value={subjectFilter || "all"}
-                onChange={(val) => setSubjectFilter(val)}
+                onChange={(val) => {
+                   setSubjectFilter(val);
+                   setCurrentPage(1);
+                }}
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
               />
@@ -373,7 +449,8 @@ export function MCQClient({
                 startIcon={<RotateCcw size={18} />}
                 onClick={() => {
                   setSearchQuery("");
-                  setSubjectFilter(undefined);
+                  setSubjectFilter("all");
+                  setCurrentPage(1);
                 }}
                 className="font-bold w-full"
                 title="Reset Filters"
@@ -384,11 +461,37 @@ export function MCQClient({
           </div>
         </InlineDrawer>
       </MainCard>
+<AddQuestionModal
+  isOpen={isAddModalOpen}
+  onClose={() => setIsAddModalOpen(false)}
+  onSuccess={() => {
+    setIsAddModalOpen(false);
+    setToastMessage("Question added successfully.");
+    fetchData();
+  }}
+/>
 
-      <AddQuestionModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-      />
+{editingQuestion && (
+  <EditQuestionModal
+    isOpen={true}
+    questionData={editingQuestion}
+    onClose={() => setEditingQuestion(null)}
+    onSuccess={() => {
+      setEditingQuestion(null); // ✅ CLOSE MODAL
+      setToastMessage("Question updated successfully.");
+      fetchData();
+    }}
+  />
+)}
+
+     {viewingQuestionId && (
+  <ViewQuestionModal
+    isOpen={true}
+    onClose={() => setViewingQuestionId(null)}
+    questionId={viewingQuestionId}
+  />
+)}
+
     </PageContainer>
   );
 }
