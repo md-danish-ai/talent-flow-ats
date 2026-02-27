@@ -6,6 +6,7 @@ import {
   imageMCQSchema,
   type ImageMCQFormValues,
 } from "@lib/validations/question";
+import { questionsApi, type QuestionCreate } from "@lib/api/questions";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -14,7 +15,24 @@ import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
 
-export const AddImageQuestionForm = () => {
+export const AddImageQuestionForm = ({ 
+  questionType = "IMAGE_BASED_MCQ",
+  onSuccess 
+}: { 
+  questionType?: string;
+  onSuccess?: () => void 
+}) => {
+  const [toast, setToast] = React.useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (!toast) return;
+    const timeout = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [toast]);
+
   const form = useForm({
     defaultValues: {
       subject: "",
@@ -31,10 +49,43 @@ export const AddImageQuestionForm = () => {
       onChange: imageMCQSchema,
     },
     onSubmit: async ({ value }) => {
-      // Simulate API call
-      console.log(value);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert("Question added successfully!");
+      try {
+        const payload = {
+          question_type: questionType,
+          subject_type: value.subject,
+          exam_level: "Beginner",
+          question_text: value.questionText,
+          marks: 1,
+          is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
+          options: value.options.map(o => ({
+            option_label: o.label,
+            option_text: o.content,
+            is_correct: o.isCorrect
+          })),
+          answer: {
+            explanation: value.explanation,
+            answer_text: value.options
+              .filter(o => o.isCorrect)
+              .map(o => o.label)
+              .join(", ") || "A" 
+          }
+        };
+
+        await questionsApi.createQuestion(payload as QuestionCreate);
+        setToast({
+          type: "success",
+          message: "Question added successfully.",
+        });
+        form.reset();
+        if (onSuccess) onSuccess();
+      } catch (error) {
+        console.error("Failed to create question:", error);
+        setToast({
+          type: "error",
+          message:
+            "Failed to create question: " + (error as Error).message,
+        });
+      }
     },
   });
 
@@ -200,13 +251,11 @@ export const AddImageQuestionForm = () => {
                             field.state.meta.errors.length > 0
                           }
                           onMarkCorrect={() => {
-                            const isCurrentlyCorrect =
-                              field.state.value[index].isCorrect;
                             const newOptions = field.state.value.map(
                               (o, i) => ({
                                 ...o,
                                 isCorrect:
-                                  i === index ? !isCurrentlyCorrect : false,
+                                  i === index ? !o.isCorrect : o.isCorrect,
                               }),
                             );
                             field.handleChange(newOptions);
@@ -303,6 +352,34 @@ export const AddImageQuestionForm = () => {
           )}
         </form.Subscribe>
       </div>
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div
+            className={cn(
+              "rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm",
+              toast.type === "success"
+                ? "border-emerald-300/80 dark:border-emerald-500/60"
+                : "border-red-300/80 dark:border-red-500/60",
+            )}
+          >
+            <Typography
+              variant="body5"
+              weight="bold"
+              className={cn(
+                "mb-1 uppercase tracking-widest text-[11px]",
+                toast.type === "success"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}
+            >
+              {toast.type === "success" ? "Success" : "Error"}
+            </Typography>
+            <Typography variant="body4" className="text-foreground">
+              {toast.message}
+            </Typography>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

@@ -18,7 +18,7 @@ export const AddImageQuestionModal: React.FC<AddImageQuestionModalProps> = ({
       title="Add Image-Based MCQ"
       className="max-w-4xl"
     >
-      <AddImageQuestionForm />
+      <AddImageQuestionForm questionType="IMAGE_BASED_MCQ" onSuccess={onClose} />
     </Modal>
   );
 };

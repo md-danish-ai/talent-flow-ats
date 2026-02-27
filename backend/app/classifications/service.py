@@ -25,9 +25,26 @@ class ClassificationService:
 
         return repository.create(data, code)
 
-    def get_all(self, type_filter: str = None, is_active: bool = None):
+    def get_all(
+        self,
+        type_filter: str = None,
+        is_active: bool = None,
+        search: str = None,
+        sort_by: str = "sort_order",
+        order: str = "asc",
+        limit: int = 10,
+        offset: int = 0
+    ):
         try:
-            return repository.get_all(type_filter, is_active)
+            return repository.get_all(
+                type_filter=type_filter,
+                is_active=is_active,
+                search=search,
+                sort_by=sort_by,
+                order=order,
+                limit=limit,
+                offset=offset
+            )
         except Exception as e:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
