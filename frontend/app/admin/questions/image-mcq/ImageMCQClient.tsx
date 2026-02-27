@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -8,6 +8,9 @@ import { Typography } from "@components/ui-elements/Typography";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Input } from "@components/ui-elements/Input";
 import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
+import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
+import { ViewImageQuestionModal } from "./components/ViewImageQuestionModal";
+import ImageLightbox from "./components/ImageLightbox";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -16,7 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableCollapsibleRow,
+  // TableCollapsibleRow removed - using plain rows
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import {
@@ -25,55 +28,91 @@ import {
   RotateCcw,
   Plus,
   Image as ImageIcon,
+  Edit as EditIcon,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-
-interface ImageMCQQuestion {
-  id: number;
-  question: string;
-  subject: string;
-  createdBy: string;
-  createdDate: string;
-}
+import { questionsApi, Question } from "@lib/api/questions";
+import { classificationsApi, Classification } from "@lib/api/classifications";
+import ActionMenu, { type ActionItem } from "@components/ui-elements/ActionMenu";
+import { ApiError } from "@lib/api/client";
+import { Loader2, MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ImageMCQClientProps {
-  initialData: ImageMCQQuestion[];
-  totalItems: number;
+  initialData?: Question[];
+  totalItems?: number;
 }
 
 export function ImageMCQClient({
-  initialData,
-  totalItems: initialTotalItems,
+  initialData = [],
+  totalItems: initialTotalItems = 0,
 }: ImageMCQClientProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const router = useRouter();
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
   >(undefined);
+  const [questionTypes, setQuestionTypes] = useState<Classification[]>([]);
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<string | undefined>(undefined);
+  const [qTypesLoaded, setQTypesLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Question[]>(initialData || []);
+  const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
+  const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  // deletingId and handleDelete removed because delete action was removed
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
+  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const t = setTimeout(() => setToastMessage(null), 4000);
+    return () => clearTimeout(t);
+  }, [toastMessage]);
+
+  const handleAuthError = (error: unknown): boolean => {
+    if (error instanceof ApiError && error.status === 401) {
+      if (typeof document !== "undefined") {
+        document.cookie = "role=; Max-Age=0; path=/";
+        document.cookie = "auth_token=; Max-Age=0; path=/";
+        document.cookie = "user_info=; Max-Age=0; path=/";
+      }
+      router.push("/sign-in");
+      return true;
+    }
+    return false;
+  };
 
   // Column Visibility State
   const allColumns = [
     { id: "srNo", label: "Sr. No." },
+    { id: "image", label: "Image" },
     { id: "question", label: "Question" },
     { id: "subject", label: "Subject" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
+    { id: "actions", label: "Action" },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState([
     "srNo",
+    "image",
     "question",
     "subject",
     "createdBy",
+    "actions",
   ]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const totalItems = initialTotalItems;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -81,20 +120,167 @@ export function ImageMCQClient({
     );
   };
 
-  // For now we still use mock since we don't have a real API to call for filters/pagination in this demo
-  const mockData =
-    initialData.length > 0
-      ? initialData
-      : Array.from({ length: pageSize }).map((_, i) => {
-          const actualId = (currentPage - 1) * pageSize + i + 1;
-          return {
-            id: actualId,
-            question: `Sample Image-Based Multiple Choice Question ${actualId} for testing the UI layout and scroll behavior.`,
-            subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
-            createdBy: "Manish Joshi - Mohan Lal",
-            createdDate: "17/11/2018",
-          };
-        });
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const resp = await classificationsApi.getClassifications({ type: "subject_type", limit: 100 });
+        setSubjects(resp.data || []);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          console.error("Failed to fetch subjects (API):", err.status, err.data);
+        } else {
+          console.error("Failed to fetch subjects:", err);
+        }
+      }
+    };
+    fetchSubjects();
+    // fetch question types for the filter
+    const fetchQTypes = async () => {
+      try {
+        // limit must respect backend validation (max 100)
+        const resp = await classificationsApi.getClassifications({ type: "question_type", limit: 100 });
+        setQuestionTypes(resp.data || []);
+        // Prefer canonical IMAGE_MULTIPLE_CHOICE code if available
+        const byExactCode = (resp.data || []).find((c) => (c.code || "").toUpperCase() === "IMAGE_MULTIPLE_CHOICE");
+        if (byExactCode) {
+          setQuestionTypeFilter(byExactCode.code);
+          setQTypesLoaded(true);
+          return;
+        }
+
+        // Prefer a code/name that explicitly mentions both image and multiple
+        const byImageMultiple = (resp.data || []).find((c) => /image.*multiple|multiple.*image/i.test((c.code || "") + " " + (c.name || "")));
+        if (byImageMultiple) {
+          setQuestionTypeFilter(byImageMultiple.code);
+          return;
+        }
+
+        // Fallback: any image-related classification
+        const imageType = (resp.data || []).find((c) => /image/i.test(c.code || c.name || ""));
+        if (imageType) setQuestionTypeFilter(imageType.code);
+        setQTypesLoaded(true);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          // Log full error object to aid debugging (detail may be empty on validation errors)
+          console.error("Failed to fetch question types (API):", err.status, err.data, err);
+        } else {
+          console.error("Failed to fetch question types:", err);
+        }
+        // allow UI to continue even if question types failed to load
+        setQTypesLoaded(true);
+      }
+    };
+    fetchQTypes();
+  }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await questionsApi.getQuestions({
+        page: currentPage,
+        limit: pageSize,
+        search: debouncedSearch,
+        subject_type: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        // Always request IMAGE_MULTIPLE_CHOICE by default (or use selected filter)
+        question_type: questionTypeFilter ?? "IMAGE_MULTIPLE_CHOICE",
+      });
+
+      setData(response.data || []);
+      if (response.pagination) {
+        setTotalItems(response.pagination.total_records);
+      }
+    } catch (error) {
+      if (error instanceof ApiError) {
+        console.error("API Error fetching questions:", error.status, error.data);
+      } else {
+        console.error("Error fetching questions:", error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch after question types have been loaded so default IMAGE_MULTIPLE_CHOICE can be applied
+    if (!qTypesLoaded) return;
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter, questionTypeFilter, qTypesLoaded]);
+
+  // Called after a new question is created from the Add modal
+  const handleAddSuccess = async () => {
+    setIsAddModalOpen(false);
+    setToastMessage("Question added successfully.");
+    // Reset to first page so user sees newest questions
+    setCurrentPage(1);
+    await fetchData();
+  };
+
+  const handleToggleStatus = async (id: number) => {
+    setTogglingId(id);
+    try {
+      await questionsApi.toggleQuestionStatus(id);
+      setToastMessage("Status updated");
+      await fetchData();
+    } catch (error) {
+      if (handleAuthError(error)) return;
+      if (error instanceof ApiError) {
+        console.error("API Error toggling status:", error.status, error.data);
+      } else {
+        console.error("Failed to toggle status:", error);
+      }
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  // delete functionality removed per request (no delete in actions)
+
+  const RowActions = ({ id }: { id: number }) => {
+    const q = data.find((d) => d.id === id);
+    const isActive = q?.is_active !== false;
+    const items: ActionItem[] = [
+      {
+        key: "view",
+        label: "View",
+        icon: <ImageIcon size={16} />,
+        onClick: (e) => { e.stopPropagation(); setViewingQuestionId(id); },
+      },
+      {
+        key: "edit",
+        label: "Edit",
+        icon: <EditIcon size={16} />,
+        onClick: (e) => { e.stopPropagation(); const qd = data.find(d => d.id === id) || null; setEditingQuestion(qd); },
+      },
+      {
+        key: "toggle",
+        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
+        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
+        onClick: (e) => { e.stopPropagation(); handleToggleStatus(id); },
+        disabled: togglingId === id,
+      },
+      // Delete action removed per request
+    ];
+
+    return (
+      <div className="relative flex justify-center items-center h-full px-2">
+        <ActionMenu
+          button={<MoreVertical size={20} />}
+          items={items}
+          buttonClassName={"h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"}
+          menuClassName={"bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"}
+        />
+      </div>
+    );
+  };
 
   return (
     <PageContainer animate>
@@ -149,15 +335,34 @@ export function ImageMCQClient({
             isFilterOpen && "border-r border-border",
           )}
         >
+              <div className="px-5 py-3 flex items-center justify-between border-b border-border bg-muted/5">
+                <div className="text-sm text-muted-foreground">
+                  Filtering by question_type: <span className="font-semibold text-foreground">{questionTypeFilter ?? "(none)"}</span>
+                </div>
+                {questionTypes.find((c) => (c.code || "").toUpperCase() === "IMAGE_MULTIPLE_CHOICE") && (
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuestionTypeFilter("IMAGE_MULTIPLE_CHOICE")}
+                      className="ml-2"
+                    >
+                      Force IMAGE_MULTIPLE_CHOICE
+                    </Button>
+                  </div>
+                )}
+              </div>
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
+                  )}
+                  {visibleColumns.includes("image") && (
+                    <TableHead className="w-[120px] text-center">Image</TableHead>
                   )}
                   {visibleColumns.includes("question") && (
                     <TableHead>Question</TableHead>
@@ -171,136 +376,79 @@ export function ImageMCQClient({
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("actions") && (
+                    <TableHead className="w-[140px] text-center">Action</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockData.map((row) => (
-                  <TableCollapsibleRow
-                    key={row.id}
-                    colSpan={visibleColumns.length + 1}
-                    expandedContent={
-                      <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center">
+                      <Typography variant="body5" className="text-muted-foreground">Loading questions...</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : data.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                      No questions found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data.map((row) => (
+                    <TableRow key={row.id}>
+                      {visibleColumns.includes("srNo") && (
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + (data.indexOf(row) + 1)}
+                        </TableCell>
+                      )}
+                      {visibleColumns.includes("image") && (
+                        <TableCell className="text-center">
+                          {row.image_url ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!row.image_url) return;
+                                // Ensure absolute URL so browser can load images served by the API server
+                                const base = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000").replace(/\/$/, "");
+                                const full = /^(https?:)?\//.test(row.image_url)
+                                  ? row.image_url.startsWith("http")
+                                    ? row.image_url
+                                    : `${base}${row.image_url}`
+                                  : row.image_url;
+                                setLightboxUrl(full);
+                              }}
+                              className="inline-flex items-center gap-2 px-2 py-1 rounded hover:bg-muted/10"
+                              title="Open image"
+                            >
                               <ImageIcon size={18} />
-                            </div>
-                            <div>
-                              <Typography variant="body3" weight="bold">
-                                Question Details & Options
-                              </Typography>
-                              <Typography
-                                variant="body5"
-                                className="text-muted-foreground"
-                              >
-                                Review all options and correct answer
-                                explanation.
-                              </Typography>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-5">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30 border-b border-border">
-                                <TableHead className="w-[80px] h-10">
-                                  Option
-                                </TableHead>
-                                <TableHead className="h-10">Content</TableHead>
-                                <TableHead className="w-[120px] text-right h-10">
-                                  Status
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  B
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground font-bold text-green-600 dark:text-green-500">
-                                  Sample Image Option B (Correct)
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
-                                  Correct
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </div>
-
-                        <div className="px-5 py-3 bg-muted/20 border-t border-border">
-                          <Typography
-                            variant="body3"
-                            weight="semibold"
-                            className="inline-block mr-1"
-                          >
-                            Explanation:
-                          </Typography>
-                          <Typography
-                            variant="body3"
-                            className="text-muted-foreground inline-block"
-                          >
-                            This is a sample explanation for the image-based
-                            multiple choice question. It expands seamlessly
-                            below the row.
-                          </Typography>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {visibleColumns.includes("srNo") && (
-                      <TableCell className="font-medium text-center">
-                        {row.id}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes("question") && (
-                      <TableCell>{row.question}</TableCell>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableCell>{row.subject}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableCell>{row.createdBy}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdDate") && (
-                      <TableCell>{row.createdDate}</TableCell>
-                    )}
-                  </TableCollapsibleRow>
-                ))}
+                              <span className="sr-only">Open image</span>
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.includes("question") && (
+                        <TableCell>{row.question_text}</TableCell>
+                      )}
+                      {visibleColumns.includes("subject") && (
+                        <TableCell>{typeof row.subject_type === "string" ? row.subject_type : row.subject_type?.name ?? "N/A"}</TableCell>
+                      )}
+                      {visibleColumns.includes("createdBy") && (
+                        <TableCell>{"System"}</TableCell>
+                      )}
+                      {visibleColumns.includes("createdDate") && (
+                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
+                      )}
+                      {visibleColumns.includes("actions") && (
+                        <TableCell className="text-center">
+                          <RowActions id={row.id} />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -353,14 +501,34 @@ export function ImageMCQClient({
                 weight="bold"
                 className="uppercase tracking-widest text-muted-foreground"
               >
+                By Question Type
+              </Typography>
+              <SelectDropdown
+                placeholder="All Question Types"
+                options={[
+                  { id: "all", label: "All Types" },
+                  ...questionTypes.map((q) => ({ id: q.code ?? q.id, label: q.name })),
+                ]}
+                value={questionTypeFilter || "all"}
+                onChange={(val) => setQuestionTypeFilter(val === "all" ? undefined : (val as string))}
+                className="h-12 border-border/60 hover:border-border bg-muted/20"
+                placement="bottom"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
                 By Subject
               </Typography>
               <SelectDropdown
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  { id: "ia", label: "Industry Awareness" },
-                  { id: "comp", label: "Comprehension" },
+                  ...subjects.map((s) => ({ id: s.code ?? s.id, label: s.name })),
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => setSubjectFilter(val)}
@@ -395,7 +563,46 @@ export function ImageMCQClient({
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        questionType={questionTypeFilter}
+        onSuccess={handleAddSuccess}
       />
+      {editingQuestion && (
+        <EditImageQuestionModal
+          isOpen={true}
+          questionData={editingQuestion}
+          onClose={() => setEditingQuestion(null)}
+          onSuccess={async () => {
+            // Try to refresh the updated question in-place to reflect changes immediately
+            try {
+              const updated = await questionsApi.getQuestion(editingQuestion.id);
+              setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+              setToastMessage("Question updated successfully.");
+            } catch (err) {
+              console.error("Failed to fetch updated question after save:", err);
+              // fallback to full refresh
+              await fetchData();
+            } finally {
+              setEditingQuestion(null);
+            }
+          }}
+        />
+      )}
+
+      {viewingQuestionId && (
+        <ViewImageQuestionModal
+          isOpen={true}
+          onClose={() => setViewingQuestionId(null)}
+          questionId={viewingQuestionId}
+        />
+      )}
+
+      {/* Image lightbox: open when a row's image icon is clicked */}
+      {lightboxUrl && (
+        <ImageLightbox
+          url={lightboxUrl}
+          onClose={() => setLightboxUrl(null)}
+        />
+      )}
     </PageContainer>
   );
 }

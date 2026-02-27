@@ -24,7 +24,10 @@ export const mcqSchema = z.object({
 // Image MCQ Specific Validations
 export const imageMCQSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
+  examLevel: z.string().min(1, "Exam Level is required"),
+  marks: z.coerce.number().min(1).max(50),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
+  questionImageUrl: z.string().optional(),
   // Note: Add image fields here later if required (e.g., questionImage: z.any())
   options: z
     .array(mcqOptionSchema)
