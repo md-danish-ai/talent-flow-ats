@@ -7,7 +7,6 @@ import {
   Settings,
   Package,
   Users,
-  Layers,
 } from "lucide-react";
 
 export interface NavItem {

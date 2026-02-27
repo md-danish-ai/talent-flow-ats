@@ -38,7 +38,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
     const isVertical = orientation === "vertical";
     const { ripples, createRipple, removeRipple } = useRipple();
 
-    const transitions: Record<string, any> = {
+    const transitions = {
         spring: { type: "spring", bounce: 0.15, duration: 0.5 } as const,
         bounce: { type: "spring", bounce: 0.5, duration: 0.6 } as const,
         smooth: { type: "tween", ease: "easeInOut", duration: 0.3 } as const,
