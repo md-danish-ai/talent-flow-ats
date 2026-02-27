@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -21,12 +22,25 @@ import {
   TableCollapsibleRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { Filter, Search, RotateCcw, Plus, ListChecks, Loader2, MoreVertical, Eye, Edit, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Filter,
+  Search,
+  RotateCcw,
+  Plus,
+  ListChecks,
+  Loader2,
+  MoreVertical,
+  Eye,
+  Edit,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { AnimatePresence, motion } from "framer-motion";
+import { ApiError } from "@lib/api/client";
 
 import { Question, QuestionOption } from "@lib/api/questions";
 
@@ -39,6 +53,7 @@ export function MCQClient({
   initialData = [],
   totalItems: initialTotalItems = 0,
 }: MCQClientProps) {
+  const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
@@ -53,6 +68,19 @@ export function MCQClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
+
+  const handleAuthError = (error: unknown): boolean => {
+    if (error instanceof ApiError && error.status === 401) {
+      if (typeof document !== "undefined") {
+        document.cookie = "role=; Max-Age=0; path=/";
+        document.cookie = "auth_token=; Max-Age=0; path=/";
+        document.cookie = "user_info=; Max-Age=0; path=/";
+      }
+      router.push("/sign-in");
+      return true;
+    }
+    return false;
+  };
 
 
   // Column Visibility State
@@ -107,6 +135,9 @@ export function MCQClient({
         setTotalItems(response.pagination.total_records);
       }
     } catch (error) {
+      if (handleAuthError(error)) {
+        return;
+      }
       console.error("Error fetching questions:", error);
     } finally {
       setIsLoading(false);
@@ -124,6 +155,9 @@ export function MCQClient({
         const response = await classificationsApi.getClassifications({ type: "subject_type", limit: 100 });
         setSubjects(response.data || []);
       } catch (error) {
+        if (handleAuthError(error)) {
+          return;
+        }
         console.error("Failed to fetch subjects:", error);
       }
     };
@@ -136,6 +170,9 @@ export function MCQClient({
       await questionsApi.toggleQuestionStatus(id);
       await fetchData();
     } catch (error) {
+      if (handleAuthError(error)) {
+        return;
+      }
       console.error("Failed to toggle question status:", error);
     } finally {
       setTogglingId(null);
