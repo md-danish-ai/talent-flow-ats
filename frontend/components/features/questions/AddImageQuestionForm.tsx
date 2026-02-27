@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+// Use plain <img> for preview/display to avoid next/image domain config issues
 import { useForm } from "@tanstack/react-form";
 import {
   imageMCQSchema,
@@ -134,6 +134,14 @@ export const AddImageQuestionForm = ({
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+
+  const getCanonicalImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+    if (!base) return url;
+    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+  };
 
   React.useEffect(() => {
     if (!selectedFile) {
@@ -355,11 +363,11 @@ export const AddImageQuestionForm = ({
                   <div className="text-center w-full">
                     {field.state.value ? (
                       <div className="flex items-center justify-center">
-                        <Image src={field.state.value} alt="question" width={480} height={280} className="max-h-48 rounded-md object-contain" />
+                        <img src={getCanonicalImageUrl(field.state.value) ?? undefined} alt="question" width={480} height={280} className="max-h-48 rounded-md object-contain" />
                       </div>
                     ) : previewUrl ? (
                       <div className="flex items-center justify-center">
-                        <Image src={previewUrl} alt="preview" width={480} height={280} className="max-h-48 rounded-md object-contain" />
+                        <img src={previewUrl} alt="preview" width={480} height={280} className="max-h-48 rounded-md object-contain" />
                       </div>
                     ) : (
                       <div className="text-muted-foreground">

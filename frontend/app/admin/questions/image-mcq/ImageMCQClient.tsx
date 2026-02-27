@@ -54,9 +54,8 @@ export function ImageMCQClient({
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
   >(undefined);
-  const [questionTypes, setQuestionTypes] = useState<Classification[]>([]);
-  const [questionTypeFilter, setQuestionTypeFilter] = useState<string | undefined>(undefined);
-  const [qTypesLoaded, setQTypesLoaded] = useState(false);
+  // We force IMAGE_MULTIPLE_CHOICE server-side; no UI filter required.
+  const FORCED_QUESTION_TYPE = "IMAGE_MULTIPLE_CHOICE";
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -142,43 +141,7 @@ export function ImageMCQClient({
       }
     };
     fetchSubjects();
-    // fetch question types for the filter
-    const fetchQTypes = async () => {
-      try {
-        // limit must respect backend validation (max 100)
-        const resp = await classificationsApi.getClassifications({ type: "question_type", limit: 100 });
-        setQuestionTypes(resp.data || []);
-        // Prefer canonical IMAGE_MULTIPLE_CHOICE code if available
-        const byExactCode = (resp.data || []).find((c) => (c.code || "").toUpperCase() === "IMAGE_MULTIPLE_CHOICE");
-        if (byExactCode) {
-          setQuestionTypeFilter(byExactCode.code);
-          setQTypesLoaded(true);
-          return;
-        }
-
-        // Prefer a code/name that explicitly mentions both image and multiple
-        const byImageMultiple = (resp.data || []).find((c) => /image.*multiple|multiple.*image/i.test((c.code || "") + " " + (c.name || "")));
-        if (byImageMultiple) {
-          setQuestionTypeFilter(byImageMultiple.code);
-          return;
-        }
-
-        // Fallback: any image-related classification
-        const imageType = (resp.data || []).find((c) => /image/i.test(c.code || c.name || ""));
-        if (imageType) setQuestionTypeFilter(imageType.code);
-        setQTypesLoaded(true);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          // Log full error object to aid debugging (detail may be empty on validation errors)
-          console.error("Failed to fetch question types (API):", err.status, err.data, err);
-        } else {
-          console.error("Failed to fetch question types:", err);
-        }
-        // allow UI to continue even if question types failed to load
-        setQTypesLoaded(true);
-      }
-    };
-    fetchQTypes();
+  // No question type fetch required since we force the IMAGE_MULTIPLE_CHOICE type.
   }, []);
 
   const fetchData = async () => {
@@ -189,8 +152,8 @@ export function ImageMCQClient({
         limit: pageSize,
         search: debouncedSearch,
         subject_type: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
-        // Always request IMAGE_MULTIPLE_CHOICE by default (or use selected filter)
-        question_type: questionTypeFilter ?? "IMAGE_MULTIPLE_CHOICE",
+        // Force IMAGE_MULTIPLE_CHOICE for this client
+        question_type: FORCED_QUESTION_TYPE,
       });
 
       setData(response.data || []);
@@ -209,11 +172,10 @@ export function ImageMCQClient({
   };
 
   useEffect(() => {
-    // Only fetch after question types have been loaded so default IMAGE_MULTIPLE_CHOICE can be applied
-    if (!qTypesLoaded) return;
+    // Fetch whenever pagination/search/subject changes
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter, questionTypeFilter, qTypesLoaded]);
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
 
   // Called after a new question is created from the Add modal
   const handleAddSuccess = async () => {
@@ -335,23 +297,7 @@ export function ImageMCQClient({
             isFilterOpen && "border-r border-border",
           )}
         >
-              <div className="px-5 py-3 flex items-center justify-between border-b border-border bg-muted/5">
-                <div className="text-sm text-muted-foreground">
-                  Filtering by question_type: <span className="font-semibold text-foreground">{questionTypeFilter ?? "(none)"}</span>
-                </div>
-                {questionTypes.find((c) => (c.code || "").toUpperCase() === "IMAGE_MULTIPLE_CHOICE") && (
-                  <div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQuestionTypeFilter("IMAGE_MULTIPLE_CHOICE")}
-                      className="ml-2"
-                    >
-                      Force IMAGE_MULTIPLE_CHOICE
-                    </Button>
-                  </div>
-                )}
-              </div>
+              {/* header removed: question type is forced and no UI is needed */}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
@@ -495,26 +441,7 @@ export function ImageMCQClient({
               </div>
             </div>
 
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Question Type
-              </Typography>
-              <SelectDropdown
-                placeholder="All Question Types"
-                options={[
-                  { id: "all", label: "All Types" },
-                  ...questionTypes.map((q) => ({ id: q.code ?? q.id, label: q.name })),
-                ]}
-                value={questionTypeFilter || "all"}
-                onChange={(val) => setQuestionTypeFilter(val === "all" ? undefined : (val as string))}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
+            {/* Question type is forced to IMAGE_MULTIPLE_CHOICE for this page; no UI filter. */}
 
             <div className="space-y-3">
               <Typography
@@ -563,7 +490,7 @@ export function ImageMCQClient({
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        questionType={questionTypeFilter}
+        questionType={FORCED_QUESTION_TYPE}
         onSuccess={handleAddSuccess}
       />
       {editingQuestion && (
