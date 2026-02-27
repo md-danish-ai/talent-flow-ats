@@ -89,7 +89,7 @@ class SignInSchema(BaseModel):
             if not mobile and not email:
                 raise ValueError("Either mobile or email is required for admin login")
 
-        return v
+        return field_value
 
 
 class CreateAdminSchema(BaseModel):
