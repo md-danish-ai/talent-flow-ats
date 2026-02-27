@@ -44,27 +44,27 @@ class StatusCode(IntEnum):
 
 class ResponseMessage:
     # Success
-    SUCCESS = "Success"
-    CREATED = "data created successfully"
-    UPDATED = "data updated successfully"
-    DELETED = "data deleted successfully"
-    FETCHED = "data fetched successfully"
+    SUCCESS = "Request processed successfully."
+    CREATED = "Record created successfully."
+    UPDATED = "Record updated successfully."
+    DELETED = "Record deleted successfully."
+    FETCHED = "Data retrieved successfully."
 
     # Auth
-    LOGIN_SUCCESS = "Login successful"
-    LOGOUT_SUCCESS = "Logout successful"
-    TOKEN_EXPIRED = "Token has expired"
-    TOKEN_INVALID = "Invalid token"
-    UNAUTHORIZED = "Unauthorized access"
-    FORBIDDEN = "You do not have permission to perform this action"
+    LOGIN_SUCCESS = "Logged in successfully."
+    LOGOUT_SUCCESS = "Logged out successfully."
+    TOKEN_EXPIRED = "Your session has expired. Please log in again."
+    TOKEN_INVALID = "Invalid authentication token."
+    UNAUTHORIZED = "Authentication is required to access this resource."
+    FORBIDDEN = "Access denied: You do not have permission for this request."
 
     # Errors
-    BAD_REQUEST = "Bad request"
-    NOT_FOUND = "data not found"
-    CONFLICT = "data already exists"
-    VALIDATION_ERROR = "Validation error"
-    INTERNAL_ERROR = "An internal server error occurred"
-    TOO_MANY_REQUESTS = "Too many requests, please try again later"
+    BAD_REQUEST = "The request could not be processed due to invalid input."
+    NOT_FOUND = "The requested resource could not be found."
+    CONFLICT = "The resource you are trying to create already exists."
+    VALIDATION_ERROR = "One or more validation errors occurred."
+    INTERNAL_ERROR = "An unexpected error occurred on the server."
+    TOO_MANY_REQUESTS = "Too many requests. Please try again later."
 
 
 # ─────────────────────────────────────────────

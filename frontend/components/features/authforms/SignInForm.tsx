@@ -51,8 +51,6 @@ export function SignInForm() {
         // Store auth token and role in cookies
         document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
-        // Store user info for profile display
-        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(response.user))}; path=/`;
 
         const userRole = response.user?.role ?? value.role;
         if (userRole === "admin") {
