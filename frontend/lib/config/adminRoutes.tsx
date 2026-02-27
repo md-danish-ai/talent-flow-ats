@@ -7,6 +7,7 @@ import {
   Settings,
   Package,
   Users,
+  Layers,
 } from "lucide-react";
 
 export interface NavItem {
@@ -64,18 +65,14 @@ export const ADMIN_ROUTES: NavSection[] = [
     items: [{ label: "View All Results", href: "/admin/results" }],
   },
   {
-    title: "Admin Management",
+    title: "Management",
     icon: <Users className="w-5 h-5" />,
-    type: "item",
-    href: "/admin/admin-management",
-    items: [],
-  },
-  {
-    title: "User Management",
-    icon: <Users className="w-5 h-5" />,
-    type: "item",
-    href: "/admin/user-management",
-    items: [],
+    type: "collapsible",
+    items: [
+      { label: "Admins", href: "/admin/management/admins" },
+      { label: "Users", href: "/admin/management/users" },
+      { label: "Add Subject & Level", href: "/admin/management/subject-level" },
+    ],
   },
   {
     title: "Settings",
@@ -88,13 +85,13 @@ export const ADMIN_ROUTES: NavSection[] = [
   },
   ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
     ? [
-        {
-          title: "Packages",
-          icon: <Package className="w-5 h-5" />,
-          type: "item" as NavSectionType,
-          href: "/admin/packages",
-          items: [],
-        },
-      ]
+      {
+        title: "Packages",
+        icon: <Package className="w-5 h-5" />,
+        type: "item" as NavSectionType,
+        href: "/admin/packages",
+        items: [],
+      },
+    ]
     : []),
 ];

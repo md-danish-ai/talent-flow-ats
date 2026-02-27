@@ -2,18 +2,18 @@ import React from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { getUserDetailsById } from "@lib/api/user-details";
 import { cookies } from "next/headers";
-import { UserForm } from "@features/user-details/UserForm";
+import { UserDetailView } from "@features/user-details/UserDetailView";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
 
-interface UpdateUserDetailsProps {
+interface ViewUserDetailsProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function UpdateUserDetailsPage({
+export default async function ViewUserDetailsPage({
   params,
-}: UpdateUserDetailsProps) {
+}: ViewUserDetailsProps) {
   const { id } = await params;
   const cookieStore = await cookies();
   const cookieString = cookieStore
@@ -31,21 +31,21 @@ export default async function UpdateUserDetailsPage({
   return (
     <PageContainer animate>
       <div className="mb-6 flex items-center justify-between">
-        <Link href="/admin/user-management">
+        <Link href="/admin/management/users">
           <Button variant="ghost" size="sm" startIcon={<ArrowLeft size={16} />}>
             Back to Users
           </Button>
         </Link>
       </div>
 
-      {!details ? (
+      {!details || !details.personalDetails ? (
         <div className="bg-card rounded-2xl p-12 text-center border ring-1 ring-border">
-          <p className="text-muted-foreground">
-            User details not found or not submitted yet.
+          <p className="text-muted-foreground italic text-lg">
+            This user has not submitted their personal details yet.
           </p>
         </div>
       ) : (
-        <UserForm initialData={details} userId={id} isAdmin={true} />
+        <UserDetailView details={details} userId={id} />
       )}
     </PageContainer>
   );

@@ -58,7 +58,7 @@ export function UserDetailView({ details, userId }: UserDetailViewProps) {
             </div>
           </div>
         </div>
-        <Link href={`/admin/user-management/update-details/${userId}`}>
+        <Link href={`/admin/management/users/update-details/${userId}`}>
           <Button
             variant="primary"
             animate="scale"
@@ -176,7 +176,7 @@ export function UserDetailView({ details, userId }: UserDetailViewProps) {
           >
             <div className="space-y-6">
               {!workExperienceDetails?.length ||
-              workExperienceDetails[0].company === "" ? (
+                workExperienceDetails[0].company === "" ? (
                 <p className="text-sm text-muted-foreground italic">
                   No work experience added.
                 </p>
