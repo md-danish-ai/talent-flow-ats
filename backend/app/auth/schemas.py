@@ -47,13 +47,22 @@ class SignUpSchema(BaseModel):
 
 
 class SignInSchema(BaseModel):
-    mobile: str
+    mobile: Optional[str] = None
+    email: Optional[EmailStr] = None
     password: str
+    role: RoleEnum
+
+    @validator("mobile", "email", pre=True)
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
     @validator("mobile")
     def validate_mobile(cls, value):
-        if not re.match(r"^[0-9]{10}$", value):
-            raise ValueError("Mobile must be 10 digits")
+        if value:
+            if not re.match(r"^[0-9]{10}$", value):
+                raise ValueError("Mobile must be 10 digits")
         return value
 
     @validator("password")
@@ -61,6 +70,20 @@ class SignInSchema(BaseModel):
         if not re.match(r"^[0-9]{10}$", value):
             raise ValueError("Password must be 10 digits")
         return value
+
+    @validator("role")
+    def validate_fields_by_role(cls, v, values):
+        mobile = values.get("mobile")
+        email = values.get("email")
+
+        if v == RoleEnum.user:
+            if not mobile:
+                raise ValueError("Mobile number is required for user login")
+        elif v == RoleEnum.admin:
+            if not mobile and not email:
+                raise ValueError("Either mobile or email is required for admin login")
+
+        return v
 
 
 class CreateAdminSchema(BaseModel):

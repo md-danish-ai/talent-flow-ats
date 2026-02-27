@@ -23,18 +23,48 @@ export const signUpSchema = z.object({
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 // ─── Sign In Schema ─────────────────────────────────────────────────────
-export const signInSchema = z.object({
-  mobile: z
-    .string()
-    .min(10, "Mobile number must be at least 10 digits")
-    .max(15, "Mobile number must be under 15 digits")
-    .regex(/^[+]?[\d\s-]+$/, "Invalid mobile number format"),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(128, "Password is too long"),
-  role: z.enum(ROLES),
-});
+export const signInSchema = z
+  .object({
+    mobile: z
+      .string()
+      .min(10, "Mobile number must be at least 10 digits")
+      .max(15, "Mobile number must be under 15 digits")
+      .regex(/^[+]?[\d\s-]+$/, "Invalid mobile number format")
+      .optional()
+      .or(z.literal("")),
+    email: z
+      .string()
+      .email("Invalid email address")
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(128, "Password is too long"),
+    role: z.enum(ROLES),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role === "user") {
+      if (!data.mobile || data.mobile.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mobile number is required for user login",
+          path: ["mobile"],
+        });
+      }
+    } else if (data.role === "admin") {
+      if (
+        (!data.mobile || data.mobile.trim() === "") &&
+        (!data.email || data.email.trim() === "")
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Either mobile or email is required for admin login",
+          path: ["mobile"],
+        });
+      }
+    }
+  });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;
 
