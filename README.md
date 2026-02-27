@@ -161,6 +161,52 @@ docker compose --profile migrate run --rm migrations
 > **Key takeaway**: `docker compose down -v` resets the database. Use it only when you want to start from scratch — not as part of a normal migration flow.
 
 
+## Database Backup & Restore
+
+This project provides standalone scripts to manually back up and restore your database **data**. This is particularly useful as a safety net before running migrations or for recovering your data into a fresh schema after a database reset (`docker compose down -v`).
+
+### Purpose
+The primary purpose is to ensure data persistence and provide a quick recovery path during development, especially when schema changes or environment resets are involved.
+
+### Scenarios
+- **Safety Net**: Run a backup before applying new migrations.
+- **Recovery**: Restore data after `docker compose down -v` or a corrupted migration.
+- **State Snapshot**: Save a specific state of your data to return to it later.
+
+### Usage Instructions
+
+#### 1. Backing Up the Database
+Execute the backup script from the project root:
+```bash
+./backend/scripts/backup_db.sh
+```
+- **Output**: A timestamped SQL file in `backend/backups/`.
+- **Method**: Exports only the **data** using `INSERT` statements.
+- **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
+
+#### 2. Restoring the Database
+To restore the **most recent** backup from the `backend/backups/` directory:
+```bash
+./backend/scripts/restore_db.sh
+```
+
+To restore a **specific** backup file:
+```bash
+./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
+```
+
+> [!CAUTION]
+> The restore process will **truncate (empty)** existing tables and re-insert the data in hierarchical order. It preserves the table structure created by your migrations.
+
+#### 3. Ideal Recovery Flow
+If you need to reset and recover your data (e.g., after `docker compose down -v`):
+1. **Clean up**: `docker compose down -v`
+2. **Restart**: `docker compose up -d`
+3. **Migrate**: `docker compose --profile migrate run --rm migrations`
+4. **Recover Data**: `./backend/scripts/restore_db.sh`
+
+
+
 ## Project Structure
 
 - `backend/`: Contains the FastAPI application logic.
