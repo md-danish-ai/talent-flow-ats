@@ -3,7 +3,17 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { questionsApi, Question, QuestionOption } from "@lib/api/questions";
 import { Typography } from "@components/ui-elements/Typography";
-import { Loader2, HelpCircle, CheckCircle2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@components/ui-elements/Table";
+import { ListChecks } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { cn } from "@lib/utils";
 
 interface ViewQuestionModalProps {
   isOpen: boolean;
@@ -47,7 +57,7 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Question Details"
-      className="max-w-3xl"
+      className="max-w-4xl"
     >
       <div className="p-1">
         {isLoading ? (
@@ -59,75 +69,157 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
           </div>
         ) : error ? (
           <div className="py-12 text-center text-red-500">
-            <Typography variant="body3" weight="bold">{error}</Typography>
+            <Typography variant="body3" weight="bold">
+              {error}
+            </Typography>
           </div>
         ) : question ? (
-          <div className="space-y-8">
-            {/* Header Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-6 border-b border-border/50">
-              <div className="space-y-1">
-                <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Subject</Typography>
-                <Typography variant="body3" weight="bold">{typeof question.subject_type === "string" ? question.subject_type : question.subject_type?.name || "N/A"}</Typography>
-              </div>
-              <div className="space-y-1">
-                <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Exam Level</Typography>
-                <Typography variant="body3" weight="bold">{typeof question.exam_level === "string" ? question.exam_level : question.exam_level?.name || "N/A"}</Typography>
-              </div>
-              <div className="space-y-1">
-                <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-widest">Marks</Typography>
-                <Typography variant="body3" weight="bold" className="text-brand-primary">{question.marks} Points</Typography>
+          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
+                  <ListChecks size={18} />
+                </div>
+                <div>
+                  <Typography variant="body3" weight="bold">
+                    Question Details & Options
+                  </Typography>
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground"
+                  >
+                    Review all options and correct answer explanation.
+                  </Typography>
+                </div>
               </div>
             </div>
 
-            {/* Question Text */}
-            <div className="bg-muted/10 rounded-2xl p-6 border border-border/50">
-              <div className="flex items-center gap-2 mb-4 text-brand-primary">
-                <HelpCircle size={20} />
-                <Typography variant="body3" weight="bold">Question</Typography>
-              </div>
-              <Typography variant="body2" className="leading-relaxed">
-                {question.question_text}
-              </Typography>
-            </div>
-
-            {/* Options */}
-            <div className="space-y-4">
-               <Typography variant="body4" weight="bold" className="text-muted-foreground uppercase tracking-wider px-1">Options</Typography>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {(question.options || []).map((opt: QuestionOption) => (
-                   <div 
-                    key={opt.option_label} 
-                    className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${
-                      opt.is_correct 
-                        ? "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 ring-1 ring-emerald-500/20" 
-                        : "bg-background border-border/50"
-                    }`}
-                   >
-                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${
-                       opt.is_correct ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
-                     }`}>
-                       {opt.option_label}
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <Typography variant="body4" className={opt.is_correct ? "text-foreground font-medium" : "text-muted-foreground"}>
-                         {opt.option_text}
-                       </Typography>
-                     </div>
-                     {opt.is_correct && <CheckCircle2 size={18} className="text-emerald-500 mt-1 shrink-0" />}
-                   </div>
-                 ))}
-               </div>
-            </div>
-
-            {/* Explanation */}
-            {question.answer?.explanation && (
-              <div className="bg-brand-primary/5 rounded-2xl p-6 border border-brand-primary/10">
-                <Typography variant="body5" weight="bold" className="text-brand-primary uppercase tracking-widest mb-2 block">Answer Explanation</Typography>
-                <Typography variant="body4" className="text-foreground leading-relaxed">
-                  {question.answer.explanation}
+            <div className="px-5 pt-5 pb-2 space-y-4">
+              <div className="space-y-1">
+                <Typography
+                  variant="body5"
+                  weight="bold"
+                  className="text-muted-foreground uppercase tracking-widest"
+                >
+                  Question
+                </Typography>
+                <Typography variant="body3" className="leading-relaxed">
+                  {question.question_text}
                 </Typography>
               </div>
-            )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Typography
+                    variant="body5"
+                    weight="bold"
+                    className="text-muted-foreground uppercase tracking-widest"
+                  >
+                    Subject
+                  </Typography>
+                  <Typography variant="body3" weight="bold">
+                    {typeof question.subject_type === "string"
+                      ? question.subject_type
+                      : question.subject_type?.name || "N/A"}
+                  </Typography>
+                </div>
+                <div className="space-y-1">
+                  <Typography
+                    variant="body5"
+                    weight="bold"
+                    className="text-muted-foreground uppercase tracking-widest"
+                  >
+                    Exam Level
+                  </Typography>
+                  <Typography variant="body3" weight="bold">
+                    {typeof question.exam_level === "string"
+                      ? question.exam_level
+                      : question.exam_level?.name || "N/A"}
+                  </Typography>
+                </div>
+                <div className="space-y-1">
+                  <Typography
+                    variant="body5"
+                    weight="bold"
+                    className="text-muted-foreground uppercase tracking-widest"
+                  >
+                    Marks
+                  </Typography>
+                  <Typography
+                    variant="body3"
+                    weight="bold"
+                    className="text-brand-primary"
+                  >
+                    {question.marks} Points
+                  </Typography>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 pt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 border-b border-border">
+                    <TableHead className="w-[80px] h-10">Option</TableHead>
+                    <TableHead className="h-10">Content</TableHead>
+                    <TableHead className="w-[120px] text-right h-10">
+                      Status
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(question.options || []).map(
+                    (opt: QuestionOption, index: number) => (
+                      <TableRow
+                        key={opt.option_label ?? index}
+                        className="border-b border-border transition-colors"
+                      >
+                        <TableCell className="px-5 py-3 font-medium text-foreground">
+                          {opt.option_label || String.fromCharCode(65 + index)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            "px-5 py-3 text-muted-foreground",
+                            opt.is_correct &&
+                              "font-bold text-green-600 dark:text-green-500",
+                          )}
+                        >
+                          {opt.option_text}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            "px-5 py-3 text-right font-medium",
+                            opt.is_correct
+                              ? "text-green-500"
+                              : "text-red-500",
+                          )}
+                        >
+                          {opt.is_correct ? "Correct" : "Incorrect"}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="px-5 py-3 bg-muted/20 border-t border-border">
+              <Typography
+                variant="body3"
+                weight="semibold"
+                className="inline-block mr-1"
+              >
+                Explanation:
+              </Typography>
+              <Typography
+                variant="body3"
+                className="text-muted-foreground inline-block"
+              >
+                {question.answer?.explanation
+                  ? question.answer.explanation
+                  : "This question does not have an explanation attached yet."}
+              </Typography>
+            </div>
           </div>
         ) : null}
       </div>

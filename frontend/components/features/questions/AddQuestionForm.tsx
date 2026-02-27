@@ -14,16 +14,16 @@ import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
 
-export const AddQuestionForm = ({ 
+export const AddQuestionForm = ({
   questionType = "MULTIPLE_CHOICE",
   initialData,
   questionId,
-  onSuccess 
-}: { 
+  onSuccess,
+}: {
   questionType?: string;
   initialData?: MCQFormValues;
   questionId?: number;
-  onSuccess?: () => void 
+  onSuccess?: (mode: "created" | "updated") => void;
 }) => {
   const [subjects, setSubjects] = React.useState<Classification[]>([]);
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
@@ -32,8 +32,14 @@ export const AddQuestionForm = ({
     const fetchClassifications = async () => {
       try {
         const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({ type: "subject_type", limit: 100 }),
-          classificationsApi.getClassifications({ type: "exam_level", limit: 100 })
+          classificationsApi.getClassifications({
+            type: "subject_type",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
         ]);
         setSubjects(subjectsRes.data || []);
         setExamLevels(examLevelsRes.data || []);
@@ -69,33 +75,33 @@ export const AddQuestionForm = ({
           exam_level: value.examLevel,
           question_text: value.questionText,
           marks: value.marks,
-          options: value.options.map(opt => ({
+          options: value.options.map((opt) => ({
             option_label: opt.label,
             option_text: opt.content,
-            is_correct: opt.isCorrect
+            is_correct: opt.isCorrect,
           })),
           answer: {
-            explanation: value.explanation
-          }
+            explanation: value.explanation,
+          },
         };
 
         if (!questionId) {
           payload.is_active = true;
         }
 
+        let mode: "created" | "updated";
         if (questionId) {
           await questionsApi.updateQuestion(questionId, payload);
-          alert("Question updated successfully!");
+          mode = "updated";
         } else {
           await questionsApi.createQuestion(payload as QuestionCreate);
-          alert("Question added successfully!");
+          mode = "created";
         }
-        
+
         form.reset();
-        if (onSuccess) onSuccess();
+        if (onSuccess) onSuccess(mode);
       } catch (error) {
         console.error("Failed to process question", error);
-        alert(error instanceof Error ? error.message : "Failed to process question. Please try again.");
       }
     },
   });
@@ -159,7 +165,10 @@ export const AddQuestionForm = ({
                     placeholder="Select Subject"
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val as string)}
-                    options={subjects.map((s) => ({ id: s.code, label: s.name }))}
+                    options={subjects.map((s) => ({
+                      id: s.code,
+                      label: s.name,
+                    }))}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -225,7 +234,10 @@ export const AddQuestionForm = ({
                     placeholder="Select Exam Level"
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val as string)}
-                    options={examLevels.map((e) => ({ id: e.code, label: e.name }))}
+                    options={examLevels.map((e) => ({
+                      id: e.code,
+                      label: e.name,
+                    }))}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -433,3 +445,4 @@ export const AddQuestionForm = ({
     </form>
   );
 };
+

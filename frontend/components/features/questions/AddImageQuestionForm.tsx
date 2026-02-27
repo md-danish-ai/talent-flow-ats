@@ -22,6 +22,17 @@ export const AddImageQuestionForm = ({
   questionType?: string;
   onSuccess?: () => void 
 }) => {
+  const [toast, setToast] = React.useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (!toast) return;
+    const timeout = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [toast]);
+
   const form = useForm({
     defaultValues: {
       subject: "",
@@ -60,13 +71,20 @@ export const AddImageQuestionForm = ({
           }
         };
 
-  await questionsApi.createQuestion(payload as QuestionCreate);
-        alert("Question added successfully!");
+        await questionsApi.createQuestion(payload as QuestionCreate);
+        setToast({
+          type: "success",
+          message: "Question added successfully.",
+        });
         form.reset();
         if (onSuccess) onSuccess();
       } catch (error) {
         console.error("Failed to create question:", error);
-        alert("Failed to create question: " + (error as Error).message);
+        setToast({
+          type: "error",
+          message:
+            "Failed to create question: " + (error as Error).message,
+        });
       }
     },
   });
@@ -334,6 +352,34 @@ export const AddImageQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div
+            className={cn(
+              "rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm",
+              toast.type === "success"
+                ? "border-emerald-300/80 dark:border-emerald-500/60"
+                : "border-red-300/80 dark:border-red-500/60",
+            )}
+          >
+            <Typography
+              variant="body5"
+              weight="bold"
+              className={cn(
+                "mb-1 uppercase tracking-widest text-[11px]",
+                toast.type === "success"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}
+            >
+              {toast.type === "success" ? "Success" : "Error"}
+            </Typography>
+            <Typography variant="body4" className="text-foreground">
+              {toast.message}
+            </Typography>
+          </div>
+        </div>
+      )}
     </form>
   );
 };
