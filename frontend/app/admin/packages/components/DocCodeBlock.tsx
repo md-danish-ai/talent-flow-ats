@@ -54,7 +54,7 @@ export const DocCodeBlock = ({
       </div>
       <pre className="p-5 text-[13px] font-mono leading-relaxed overflow-x-auto max-h-[500px]">
         <code className="text-slate-300">
-          {code.split("\n").map((line, i) => {
+          {code.split("\n").map((line, index) => {
             const escapedLine = line
               .replace(/&/g, "&amp;")
               .replace(/</g, "&lt;")
@@ -82,9 +82,9 @@ export const DocCodeBlock = ({
               );
 
             return (
-              <div key={i} className="flex gap-4">
+              <div key={index} className="flex gap-4">
                 <span className="inline-block w-4 text-slate-700 select-none text-right">
-                  {i + 1}
+                  {index + 1}
                 </span>
                 <span
                   dangerouslySetInnerHTML={{ __html: highlighted || " " }}

@@ -47,9 +47,9 @@ export class ApiError extends Error {
   constructor(status: number, data: ApiErrorResponse) {
     super(
       extractDetail(data.detail) ??
-        data.message ??
-        data.error ??
-        `API Error: ${status}`,
+      data.message ??
+      data.error ??
+      `API Error: ${status}`,
     );
     this.name = "ApiError";
     this.status = status;
@@ -114,6 +114,9 @@ export async function apiClient<T>(
     method,
     headers,
     ...(body ? { body: JSON.stringify(body) } : {}),
+    // When cookies are forwarded (SSR context), always bypass the Next.js
+    // fetch data cache so we never serve stale server-side data.
+    ...(cookies ? { cache: "no-store" as RequestCache } : {}),
     ...(nextOptions ? { next: nextOptions } : {}),
   };
 
