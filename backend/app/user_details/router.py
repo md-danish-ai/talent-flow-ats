@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends
-from app.auth.dependencies import get_current_user
 from app.user_details.schemas import UserDetailsSchema
 from app.user_details import service
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
+from app.utils.dependencies import authenticate_user
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/user-details",
+    tags=["User Details"],
+    dependencies=[Depends(authenticate_user)]
+)
 
 
 @router.post("/add")
-def add_user_details(data: UserDetailsSchema, user_id: int = Depends(get_current_user)):
+def add_user_details(data: UserDetailsSchema, user_id: int = Depends(authenticate_user)):
     """
     Add user recruitment details.
     If details already exist, they will be overwritten (updated).
@@ -19,7 +23,7 @@ def add_user_details(data: UserDetailsSchema, user_id: int = Depends(get_current
 
 @router.put("/update")
 def update_user_details(
-    data: UserDetailsSchema, user_id: int = Depends(get_current_user)
+    data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
 ):
     """
     Update existing user recruitment details.
