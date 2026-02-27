@@ -32,6 +32,9 @@ const TypographyDocs = dynamic(() =>
 const BadgeDocs = dynamic(() =>
   import("./components/sections/BadgeDocs").then((m) => m.BadgeDocs),
 );
+const TabsDocs = dynamic(() =>
+  import("./components/sections/TabsDocs").then((m) => m.TabsDocs),
+);
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -81,6 +84,8 @@ export default async function PackagesPage({ searchParams }: PageProps) {
         return <ModalDocs />;
       case "alert":
         return <AlertDocs />;
+      case "tabs":
+        return <TabsDocs />;
       case "badge":
         return <BadgeDocs />;
       case "typography":
