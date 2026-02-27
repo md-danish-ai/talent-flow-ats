@@ -7,6 +7,9 @@ export interface CurrentUser {
   id: number | string;
   username: string;
   role: string;
+  email?: string;
+  mobile?: string;
+  created_at?: string;
   is_submitted: boolean;
   recruitment_details?: Record<string, unknown> | null;
 }

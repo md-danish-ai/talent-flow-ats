@@ -13,7 +13,7 @@ def signup_user(data):
         existing_user = db_session.query(User).filter(User.mobile == data.mobile).first()
         if existing_user:
             raise HTTPException(
-                status_code=StatusCode.CONFLICT, detail="Mobile already registered"
+                status_code=StatusCode.CONFLICT, detail="This mobile number is already registered."
             )
 
         hashed_password = hash_password(data.mobile)
@@ -42,10 +42,11 @@ def signup_user(data):
 
     except HTTPException:
         raise
-    except Exception as exception:
+    except Exception:
         db_session.rollback()
         raise HTTPException(
-            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
+            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
+        )
     finally:
         db_session.close()
 
@@ -53,21 +54,42 @@ def signup_user(data):
 def signin_user(data):
     db_session = SessionLocal()
     try:
-        user = db_session.query(User).filter(User.mobile == data.mobile).first()
+        user = None
+        # 1. Primary Lookups
+        if data.mobile:
+            user = db_session.query(User).filter(User.mobile == data.mobile).first()
+            if not user:
+                raise HTTPException(
+                    status_code=StatusCode.UNAUTHORIZED, detail="The mobile number provided is not registered."
+                )
+        elif data.email:
+            user = db_session.query(User).filter(User.email == data.email).first()
+            if not user:
+                raise HTTPException(
+                    status_code=StatusCode.UNAUTHORIZED, detail="The email address provided is not registered."
+                )
 
-        if not user:
-            raise HTTPException(
-                status_code=StatusCode.UNAUTHORIZED, detail="User does not exist"
-            )
+        # 2. Cross-check for Admins (if both provided)
+        if data.mobile and data.email:
+            if user.email != data.email:
+                raise HTTPException(
+                    status_code=StatusCode.UNAUTHORIZED, detail="The provided email and mobile number do not match."
+                )
 
         if not user.is_active:
             raise HTTPException(
-                status_code=StatusCode.FORBIDDEN, detail="Account is inactive"
+                status_code=StatusCode.FORBIDDEN, detail="Your account is currently inactive. Please contact the administrator."
             )
 
+        # 3. Password Check
         if not verify_password(data.password, user.password):
             raise HTTPException(
-                status_code=StatusCode.UNAUTHORIZED, detail="Invalid credentials"
+                status_code=StatusCode.UNAUTHORIZED, detail="The password you entered is incorrect."
+            )
+
+        if user.role != data.role.value:
+            raise HTTPException(
+                status_code=StatusCode.UNAUTHORIZED, detail=f"Access denied: Your account is not authorized for the {data.role.value} role."
             )
 
         user_data = {
@@ -90,7 +112,7 @@ def create_admin(data):
         existing_user = db_session.query(User).filter(User.mobile == data.mobile).first()
         if existing_user:
             raise HTTPException(
-                status_code=StatusCode.CONFLICT, detail="Mobile already registered"
+                status_code=StatusCode.CONFLICT, detail="This mobile number is already registered."
             )
 
         hashed_password = hash_password(data.mobile)
@@ -118,10 +140,11 @@ def create_admin(data):
 
     except HTTPException:
         raise
-    except Exception as exception:
+    except Exception:
         db_session.rollback()
         raise HTTPException(
-            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
+            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
+        )
     finally:
         db_session.close()
 
@@ -139,7 +162,8 @@ def get_user_by_id(user_id):
             "username": user_obj.username,
             "mobile": user_obj.mobile,
             "email": user_obj.email,
-            "role": user_obj.role
+            "role": user_obj.role,
+            "created_at": user_obj.created_at
         }
 
         if user["role"] == "user":
@@ -182,8 +206,9 @@ def get_users_by_role(role: str):
             }
             for user in results
         ]
-    except Exception as exception:
+    except Exception:
         raise HTTPException(
-            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
+            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail="An internal server error occurred. Please try again later."
+        )
     finally:
         db_session.close()

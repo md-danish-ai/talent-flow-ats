@@ -27,19 +27,25 @@ class SignUpSchema(BaseModel):
     testLevel: TestLevelEnum
     email: Optional[EmailStr] = None
 
+    @validator("email", pre=True)
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
+
     @validator("name")
     def validate_full_name(cls, value):
         value = value.strip()
         if len(value.split()) < 2:
-            raise ValueError("Name must be full name (first and last)")
+            raise ValueError("Please provide your full name (first and last name).")
         if not re.match(r"^[A-Za-z ]+$", value):
-            raise ValueError("Name must contain only letters")
+            raise ValueError("Full name must only contain alphabetic characters.")
         return value
 
     @validator("mobile")
     def validate_mobile(cls, value):
         if not re.match(r"^[0-9]{10}$", value):
-            raise ValueError("Mobile must be 10 digits")
+            raise ValueError("The mobile number must be exactly 10 digits.")
         return value
 
 
@@ -47,13 +53,22 @@ class SignUpSchema(BaseModel):
 
 
 class SignInSchema(BaseModel):
-    mobile: str
+    mobile: Optional[str] = None
+    email: Optional[EmailStr] = None
     password: str
+    role: RoleEnum
+
+    @validator("mobile", "email", pre=True)
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
     @validator("mobile")
     def validate_mobile(cls, value):
-        if not re.match(r"^[0-9]{10}$", value):
-            raise ValueError("Mobile must be 10 digits")
+        if value:
+            if not re.match(r"^[0-9]{10}$", value):
+                raise ValueError("Mobile must be 10 digits")
         return value
 
     @validator("password")
@@ -61,6 +76,20 @@ class SignInSchema(BaseModel):
         if not re.match(r"^[0-9]{10}$", value):
             raise ValueError("Password must be 10 digits")
         return value
+
+    @validator("role")
+    def validate_fields_by_role(cls, v, values):
+        mobile = values.get("mobile")
+        email = values.get("email")
+
+        if v == RoleEnum.user:
+            if not mobile:
+                raise ValueError("Mobile number is required for user login")
+        elif v == RoleEnum.admin:
+            if not mobile and not email:
+                raise ValueError("Either mobile or email is required for admin login")
+
+        return v
 
 
 class CreateAdminSchema(BaseModel):

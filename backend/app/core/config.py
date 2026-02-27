@@ -6,7 +6,7 @@ load_dotenv()
 
 class Settings:
     SECRET_KEY = os.getenv("SECRET_KEY")
-    JWT_EXPIRE_HOURS = 24
+    JWT_EXPIRE_HOURS = 1
 
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")

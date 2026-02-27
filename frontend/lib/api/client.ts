@@ -127,6 +127,17 @@ export async function apiClient<T>(
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401 && typeof document !== "undefined") {
+      // Clear all auth cookies on 401 Unauthorized
+      document.cookie =
+        "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+      document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+      document.cookie =
+        "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+
+      // Redirect to sign-in page
+      window.location.href = "/sign-in";
+    }
     throw new ApiError(response.status, result as ApiErrorResponse);
   }
 
