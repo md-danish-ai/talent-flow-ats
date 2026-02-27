@@ -27,6 +27,7 @@ export interface SignUpResponse {
     username: string;
     email?: string;
     mobile?: string;
+    role: string;
   };
 }
 

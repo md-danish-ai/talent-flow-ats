@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronRight, Loader2, Lock, Phone, UserPlus } from "lucide-react";
+import {
+  ChevronRight,
+  Loader2,
+  Lock,
+  Mail,
+  Phone,
+  UserPlus,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,6 +30,7 @@ export function SignInForm() {
   const form = useForm({
     defaultValues: {
       mobile: "",
+      email: "",
       password: "",
       role: role as "user" | "admin",
     } as SignInFormValues,
@@ -32,13 +40,17 @@ export function SignInForm() {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        const response = await signInMutation.mutateAsync(value);
+        // Only send email for admin role
+        const payload = { ...value };
+        if (value.role === "user") {
+          delete payload.email;
+        }
+
+        const response = await signInMutation.mutateAsync(payload);
 
         // Store auth token and role in cookies
         document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
-        // Store user info for profile display
-        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(response.user))}; path=/`;
 
         const userRole = response.user?.role ?? value.role;
         if (userRole === "admin") {
@@ -135,6 +147,42 @@ export function SignInForm() {
             </div>
           )}
         </form.Field>
+
+        {role === "admin" && (
+          <form.Field name="email">
+            {(field) => (
+              <div className="group">
+                <Typography
+                  as="label"
+                  variant="h6"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Email Address
+                </Typography>
+                <div className="relative">
+                  <Input
+                    type="email"
+                    placeholder="admin@example.com"
+                    startIcon={<Mail className="h-[18px] w-[18px]" />}
+                    error={field.state.meta.errors.length > 0}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-medium text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+              </div>
+            )}
+          </form.Field>
+        )}
 
         <form.Field name="mobile">
           {(field) => (

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { motion, Variants, Transition } from "framer-motion";
 import {
-  LogOut,
   User,
   FileText,
   PlayCircle,
@@ -13,7 +12,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Typography } from "@components/ui-elements/Typography";
-import { Button } from "@components/ui-elements/Button";
 import Link from "next/link";
 import { Card } from "@components/ui-cards/Card";
 import type { CurrentUser } from "@lib/auth/user-utils";
@@ -127,20 +125,6 @@ export function DashboardClient({
                 </Typography>
               </div>
             </div>
-
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-180"
-              startIcon={<LogOut size={18} />}
-              className="rounded-xl"
-            >
-              Sign Out
-            </Button>
           </div>
         </motion.div>
 

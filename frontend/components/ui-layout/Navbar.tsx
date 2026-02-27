@@ -12,6 +12,7 @@ import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
+import { api } from "@lib/api";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -28,6 +29,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Client-side session check for testing visibility in Network tab
+    const checkSession = async () => {
+      try {
+        await api.get("/auth/me");
+      } catch (error) {
+        console.error("Session check failed:", error);
+      }
+    };
+    checkSession();
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
