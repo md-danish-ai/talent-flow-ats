@@ -145,7 +145,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 Settings
               </Typography>
               <ProfileMenuLink
-                href="/admin/profile"
+                href={`/${user?.role === "admin" ? "admin" : "user"}/profile`}
                 onClick={onToggle}
                 icon={
                   <svg

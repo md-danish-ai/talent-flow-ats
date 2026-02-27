@@ -162,7 +162,8 @@ def get_user_by_id(user_id):
             "username": user_obj.username,
             "mobile": user_obj.mobile,
             "email": user_obj.email,
-            "role": user_obj.role
+            "role": user_obj.role,
+            "created_at": user_obj.created_at
         }
 
         if user["role"] == "user":
