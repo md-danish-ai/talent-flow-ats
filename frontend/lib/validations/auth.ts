@@ -12,9 +12,8 @@ export const signUpSchema = z.object({
     .max(100, "Name must be under 100 characters"),
   mobile: z
     .string()
-    .min(10, "Mobile number must be at least 10 digits")
-    .max(15, "Mobile number must be under 15 digits")
-    .regex(/^[+]?[\d\s-]+$/, "Invalid mobile number format"),
+    .length(10, "The mobile number must be exactly 10 digits.")
+    .regex(/^\d+$/, "The mobile number must contain only digits."),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   testLevel: z.enum(TEST_LEVELS),
   role: z.enum(ROLES),
@@ -27,9 +26,8 @@ export const signInSchema = z
   .object({
     mobile: z
       .string()
-      .min(10, "Mobile number must be at least 10 digits")
-      .max(15, "Mobile number must be under 15 digits")
-      .regex(/^[+]?[\d\s-]+$/, "Invalid mobile number format")
+      .length(10, "The mobile number must be exactly 10 digits.")
+      .regex(/^\d+$/, "The mobile number must contain only digits.")
       .optional()
       .or(z.literal("")),
     email: z
@@ -48,7 +46,7 @@ export const signInSchema = z
       if (!data.mobile || data.mobile.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Mobile number is required for user login",
+          message: "The mobile number is required for user login.",
           path: ["mobile"],
         });
       }
@@ -59,7 +57,8 @@ export const signInSchema = z
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Either mobile or email is required for admin login",
+          message:
+            "Either a mobile or email address is required for admin login.",
           path: ["mobile"],
         });
       }
@@ -76,8 +75,8 @@ export const createAdminSchema = z.object({
     .max(100, "Name must be under 100 characters"),
   mobile: z
     .string()
-    .length(10, "Mobile number must be exactly 10 digits")
-    .regex(/^\d+$/, "Mobile number must contain only digits"),
+    .length(10, "The mobile number must be exactly 10 digits.")
+    .regex(/^\d+$/, "The mobile number must contain only digits."),
   email: z.string().email("Invalid email address"),
 });
 

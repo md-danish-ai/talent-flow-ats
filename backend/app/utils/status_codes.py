@@ -78,7 +78,10 @@ class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (datetime, date)):
             return obj.isoformat()
-        return super().default(obj)
+        try:
+            return super().default(obj)
+        except TypeError:
+            return str(obj)
 
 
 def serialize(data: Any) -> Any:

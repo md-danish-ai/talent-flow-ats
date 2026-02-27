@@ -38,8 +38,15 @@ export function SignUpForm() {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        await signUpMutation.mutateAsync(value);
-        router.push("/sign-in");
+        const response = await signUpMutation.mutateAsync(value);
+
+        // Store auth token and role in cookies
+        document.cookie = `role=${response.user?.role ?? "user"}; path=/`;
+        document.cookie = `auth_token=${response.access_token}; path=/`;
+        // Store user info for profile display
+        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(response.user))}; path=/`;
+
+        router.push("/user/dashboard");
       } catch (err: unknown) {
         const error = err as { message?: string };
         setServerError(
