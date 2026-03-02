@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@components/ui-elements/Button";
 import { X } from "lucide-react";
 
@@ -21,6 +22,22 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ url, onClose }) =>
 
   if (!url) return null;
 
+  const getCanonicalImageUrl = (u: string | null) => {
+    if (!u) return null;
+    try {
+      // if absolute URL, return as-is
+      const parsed = new URL(u);
+      return parsed.href;
+    } catch {
+      // relative path: prefix with NEXT_PUBLIC_API_BASE_URL if available
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+      if (!base) return u;
+      return u.startsWith("/") ? `${base}${u}` : `${base}/${u}`;
+    }
+  };
+
+  const src = getCanonicalImageUrl(url) || undefined;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
@@ -28,11 +45,20 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ url, onClose }) =>
     >
       <div className="relative max-w-[95%] max-h-[95%]" onClick={(e) => e.stopPropagation()}>
         <div className="rounded-md shadow-lg bg-white p-2">
-          <img
-            src={url ?? undefined}
-            alt="preview"
-            className="max-w-[90vw] max-h-[80vh] object-contain rounded-md"
-          />
+          {src ? (
+            <div className="relative w-[90vw] h-[80vh]">
+              <Image
+                src={src}
+                alt="preview"
+                className="object-contain rounded-md"
+                fill
+                sizes="(max-width: 1024px) 90vw, 1200px"
+                priority
+                // allow rendering even if the domain isn't configured yet
+                unoptimized={true}
+              />
+            </div>
+          ) : null}
         </div>
         <Button
           size="rounded-icon"
