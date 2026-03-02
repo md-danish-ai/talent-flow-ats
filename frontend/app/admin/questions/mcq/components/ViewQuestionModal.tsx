@@ -118,9 +118,9 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
                     Subject
                   </Typography>
                   <Typography variant="body3" weight="bold">
-                    {typeof question.subject_type === "string"
-                      ? question.subject_type
-                      : question.subject_type?.name || "N/A"}
+                    {typeof question.subject === "string"
+                      ? question.subject
+                      : question.subject?.name || "N/A"}
                   </Typography>
                 </div>
                 <div className="space-y-1">
@@ -181,7 +181,7 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
                           className={cn(
                             "px-5 py-3 text-muted-foreground",
                             opt.is_correct &&
-                              "font-bold text-green-600 dark:text-green-500",
+                            "font-bold text-green-600 dark:text-green-500",
                           )}
                         >
                           {opt.option_text}

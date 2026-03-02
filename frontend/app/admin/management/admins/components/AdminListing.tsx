@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
@@ -9,33 +10,35 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, Pencil } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { Button } from "@components/ui-elements/Button";
-import Link from "next/link";
+import { AddAdminModal } from "./AddAdminModal";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 
-interface UserListingProps {
+interface AdminListingProps {
   initialData?: UserListResponse[];
 }
 
-export function UserListing({ initialData = [] }: UserListingProps) {
+export function AdminListing({ initialData = [] }: AdminListingProps) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
   const [loading, setLoading] = useState(!initialData.length);
 
   const fetchUsers = React.useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getUsersByRole("user");
+      const data = await getUsersByRole("admin");
       setUsers(data);
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      console.error("Failed to fetch admins:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // If we have initial data (from SSR), just use it initially, no need to overwrite unless refreshed
+    // Actually we will fetch on mount to ensure freshness, or rely on SSR. Let's rely on fetch if no initial data.
     if (!initialData.length) {
       fetchUsers();
     } else {
@@ -51,11 +54,28 @@ export function UserListing({ initialData = [] }: UserListingProps) {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <Users size={20} />
             </div>
-            User Management
+            Admins
           </>
         }
         className="mb-6 flex-1 flex flex-col min-h-[600px]"
         bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        action={
+          <div className="flex items-center gap-3">
+            <Button
+              variant="primary"
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-90"
+              onClick={() => setIsAddModalOpen(true)}
+              startIcon={<Plus size={18} />}
+              className="font-bold"
+            >
+              Add Admin
+            </Button>
+          </div>
+        }
       >
         <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
           <div className="flex-1 overflow-x-auto w-full min-h-0">
@@ -69,22 +89,19 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                   <TableHead>Mobile</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : !Array.isArray(users) || users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      No users found.
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No admins found.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -98,45 +115,13 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                       <TableCell>{row.email || "-"}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            row.is_active
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${row.is_active
                               ? "bg-green-500/10 text-green-600 dark:text-green-400"
                               : "bg-red-500/10 text-red-600 dark:text-red-400"
-                          }`}
+                            }`}
                         >
                           {row.is_active ? "Active" : "Inactive"}
                         </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-2">
-                          <Link
-                            href={`/admin/user-management/view-details/${row.id}`}
-                            passHref
-                          >
-                            <Button
-                              variant="secondary"
-                              color="primary"
-                              size="icon-sm"
-                              animate="scale"
-                              title="View"
-                            >
-                              <Eye size={16} />
-                            </Button>
-                          </Link>
-                          <Link
-                            href={`/admin/user-management/update-details/${row.id}`}
-                            passHref
-                          >
-                            <Button
-                              variant="primary"
-                              size="icon-sm"
-                              animate="scale"
-                              title="Edit"
-                            >
-                              <Pencil size={16} />
-                            </Button>
-                          </Link>
-                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -146,6 +131,14 @@ export function UserListing({ initialData = [] }: UserListingProps) {
           </div>
         </div>
       </MainCard>
+
+      <AddAdminModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          fetchUsers(); // Refresh after adding
+        }}
+      />
     </>
   );
 }

@@ -29,7 +29,7 @@ class AnswerUpdate(BaseModel):
 
 class QuestionCreate(BaseModel):
     question_type: str
-    subject_type:  str
+    subject:       str
     exam_level:    str
     question_text: str
     image_url:     Optional[str] = None
@@ -43,7 +43,7 @@ class QuestionCreate(BaseModel):
 
 class QuestionUpdate(BaseModel):
     question_type: Optional[str] = None
-    subject_type:  Optional[str] = None
+    subject:       Optional[str] = None
     exam_level:    Optional[str] = None
     question_text: Optional[str] = None
     image_url:     Optional[str] = None

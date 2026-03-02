@@ -83,30 +83,34 @@ export const AddImageQuestionForm = ({
     },
     onSubmit: async ({ value }) => {
       try {
-        const payload = {
-          // pick a valid question_type code. Prefer any code that mentions image, else fallback to prop or first known code
-          question_type:
-            questionTypes.find((q) => /image/i.test(q.code) || /image/i.test(q.name))?.code || questionType || questionTypes[0]?.code,
-          subject_type: value.subject,
-          exam_level: value.examLevel,
-          question_text: value.questionText,
-          marks: value.marks,
-          image_url: value.questionImageUrl || undefined,
-          // Keep is_active undefined for update (backend will keep current), but for create we can set true
-          is_active: questionId ? undefined : true,
-          options: value.options.map(o => ({
-            option_label: o.label,
-            option_text: o.content,
-            is_correct: o.isCorrect
-          })),
-          answer: {
-            explanation: value.explanation,
-            answer_text: value.options
-              .filter(o => o.isCorrect)
-              .map(o => o.label)
-              .join(", ") || "A" 
-          }
-        } as QuestionCreate;
+       const payload: QuestionCreate = {
+  question_type:
+    questionTypes.find(
+      (q) => /image/i.test(q.code) || /image/i.test(q.name)
+    )?.code || questionType || questionTypes[0]?.code,
+
+  subject: value.subject, // ✅ FIXED HERE
+  exam_level: value.examLevel,
+  question_text: value.questionText,
+  marks: value.marks,
+  image_url: value.questionImageUrl || undefined,
+  is_active: questionId ? undefined : true,
+
+  options: value.options.map((o) => ({
+    option_label: o.label,
+    option_text: o.content,
+    is_correct: o.isCorrect,
+  })),
+
+  answer: {
+    explanation: value.explanation,
+    answer_text:
+      value.options
+        .filter((o) => o.isCorrect)
+        .map((o) => o.label)
+        .join(", ") || "A",
+  },
+};
 
         if (questionId) {
           // Update existing question

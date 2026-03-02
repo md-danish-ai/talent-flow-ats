@@ -193,7 +193,7 @@ export function UserForm({
           onSuccess();
         } else {
           router.refresh();
-          router.push(isAdmin ? "/admin/user-management" : "/user/dashboard");
+          router.push(isAdmin ? "/admin/management/users" : "/user/dashboard");
         }
       } catch (error) {
         console.error("Submission error:", error);

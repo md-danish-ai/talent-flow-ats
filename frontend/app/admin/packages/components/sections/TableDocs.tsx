@@ -36,7 +36,7 @@ export default function TableDemo() {
 
   const toggleColumn = (id) => {
     setVisibleColumns(prev => 
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(column => column !== id) : [...prev, id]
     );
   };
 
@@ -160,7 +160,7 @@ function DynamicTableDemo() {
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((column) => column !== id) : [...prev, id],
     );
   };
 
@@ -199,15 +199,15 @@ function DynamicTableDemo() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[1, 2, 3].map((i) => (
-              <TableRow key={i}>
+            {[1, 2, 3].map((index) => (
+              <TableRow key={index}>
                 {visibleColumns.includes("candidate") && (
                   <TableCell className="pl-6 font-bold text-brand-primary">
-                    Mohammed Danish {i}
+                    Mohammed Danish {index}
                   </TableCell>
                 )}
                 {visibleColumns.includes("experience") && (
-                  <TableCell>{i + 2}+ Years</TableCell>
+                  <TableCell>{index + 2}+ Years</TableCell>
                 )}
                 {visibleColumns.includes("status") && (
                   <TableCell>
@@ -217,7 +217,7 @@ function DynamicTableDemo() {
                   </TableCell>
                 )}
                 {visibleColumns.includes("appliedOn") && (
-                  <TableCell>Oct 2{i}, 2023</TableCell>
+                  <TableCell>Oct 2{index}, 2023</TableCell>
                 )}
                 {visibleColumns.includes("role") && (
                   <TableCell className="pr-6 font-medium">
