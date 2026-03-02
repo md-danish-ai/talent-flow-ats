@@ -7,12 +7,11 @@ import { cn } from "@lib/utils";
 interface AddQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void; // ✅ ADD THIS
 }
+
 export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
   isOpen,
   onClose,
-  onSuccess,
 }) => {
   const [toast, setToast] = React.useState<string | null>(null);
 
@@ -39,7 +38,6 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                 : "Question updated successfully.",
             );
             onClose();
-            if (onSuccess) onSuccess();
           }}
         />
       </Modal>

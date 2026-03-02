@@ -23,10 +23,12 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
 
   // Map backend data to form values
   const initialValues: ImageMCQFormValues = {
+    // Use the canonical subject classification (not subject_type) so updates
+    // send a valid subject code that the backend can resolve.
     subject:
-      typeof questionData.subject_type === "string"
-        ? questionData.subject_type
-        : questionData.subject_type?.code ?? "",
+      typeof questionData.subject === "string"
+        ? questionData.subject
+        : questionData.subject?.code ?? "",
     examLevel:
       typeof questionData.exam_level === "string"
         ? questionData.exam_level

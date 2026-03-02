@@ -181,7 +181,7 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
                           className={cn(
                             "px-5 py-3 text-muted-foreground",
                             opt.is_correct &&
-                            "font-bold text-green-600 dark:text-green-500",
+                              "font-bold text-green-600 dark:text-green-500",
                           )}
                         >
                           {opt.option_text}

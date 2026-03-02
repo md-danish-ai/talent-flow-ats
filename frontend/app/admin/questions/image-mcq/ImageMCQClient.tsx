@@ -130,7 +130,11 @@ export function ImageMCQClient({
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const resp = await classificationsApi.getClassifications({ type: "subject_type", limit: 100 });
+        // Align with questions API, which expects `subject` classification codes
+        const resp = await classificationsApi.getClassifications({
+          type: "subject",
+          limit: 100,
+        });
         setSubjects(resp.data || []);
       } catch (err) {
         if (err instanceof ApiError) {
@@ -151,7 +155,8 @@ export function ImageMCQClient({
         page: currentPage,
         limit: pageSize,
         search: debouncedSearch,
-        subject_type: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        // Filter by subject using subject classification codes
+        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
         // Force IMAGE_MULTIPLE_CHOICE for this client
         question_type: FORCED_QUESTION_TYPE,
       });
@@ -379,7 +384,11 @@ export function ImageMCQClient({
                         <TableCell>{row.question_text}</TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
-                        <TableCell>{typeof row.subject_type === "string" ? row.subject_type : row.subject_type?.name ?? "N/A"}</TableCell>
+                        <TableCell>
+                          {typeof row.subject === "string"
+                            ? row.subject
+                            : row.subject?.name ?? "N/A"}
+                        </TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
                         <TableCell>{"System"}</TableCell>
