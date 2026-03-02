@@ -34,7 +34,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const [placement, setPlacement] = useState<"bottom" | "top">("bottom");
-  const [side, setSide] = useState<"left" | "right">("right");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -93,49 +92,32 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         const areaRight = Math.min(window.innerWidth, boundaryRect.right);
         const areaBottom = Math.min(window.innerHeight, boundaryRect.bottom);
 
-        const spaceRight = areaRight - rect.right;
-        const spaceLeft = rect.left - areaLeft;
         const spaceBelow = areaBottom - rect.bottom;
         const spaceAbove = rect.top - areaTop;
 
         const margin = 8;
 
-        // decide horizontal side
-        let finalSide: "left" | "right" = "right";
-        if (spaceRight >= menuW + margin) finalSide = "right";
-        else if (spaceLeft >= menuW + margin) finalSide = "left";
-        else {
-          // pick whichever side has more space
-          finalSide = spaceRight >= spaceLeft ? "right" : "left";
-        }
-
-        // decide vertical placement
+        // Decide vertical placement (bottom default)
         let finalPlacement: "bottom" | "top" = "bottom";
-        if (spaceBelow >= menuH + margin) finalPlacement = "bottom";
-        else if (spaceAbove >= menuH + margin) finalPlacement = "top";
-        else {
-          // pick side with more space
+        if (spaceBelow >= menuH + margin) {
+          finalPlacement = "bottom";
+        } else if (spaceAbove >= menuH + margin) {
+          finalPlacement = "top";
+        } else {
+          // Pick side with more space
           finalPlacement = spaceBelow >= spaceAbove ? "bottom" : "top";
         }
 
-        // compute left coordinate depending on side and clamp to area
-        let finalLeft = rect.left + rect.width / 2 - (finalSide === "right" ? 0 : 0);
-        if (finalSide === "right") {
-          // left edge should be near rect.right
-          finalLeft = rect.right + 4;
-          finalLeft = Math.min(Math.max(finalLeft, areaLeft + margin), areaRight - menuW - margin);
-        } else {
-          // right edge should align near rect.left
-          let rightEdge = rect.left - 4;
-          rightEdge = Math.min(Math.max(rightEdge, areaLeft + menuW + margin), areaRight - margin);
-          finalLeft = rightEdge; // we'll translateX(-100%) to make this the right edge
-        }
-
-        // compute top coordinate depending on placement and clamp
+        // Compute top coordinate depending on placement and clamp
         let finalTop = finalPlacement === "bottom" ? rect.bottom + 4 : rect.top - menuH - 4;
         finalTop = Math.min(Math.max(finalTop, areaTop + margin), areaBottom - menuH - margin);
 
-        setSide(finalSide);
+        // Center horizontally aligned with the button
+        let finalLeft = rect.left + rect.width / 2 - menuW / 2;
+
+        // Ensure it doesn't clip on the left or right
+        finalLeft = Math.min(Math.max(finalLeft, areaLeft + margin), areaRight - menuW - margin);
+
         setPlacement(finalPlacement);
         setPos({ top: finalTop, left: finalLeft });
       });
@@ -170,7 +152,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             position: "fixed",
             top: pos.top,
             left: pos.left,
-            transform: side === "left" ? "translateX(-100%)" : undefined,
+            transformOrigin: placement === "bottom" ? "top center" : "bottom center",
             zIndex: 99999,
             pointerEvents: "auto",
             width: "auto",

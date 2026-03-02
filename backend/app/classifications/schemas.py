@@ -3,7 +3,7 @@
 from pydantic import BaseModel, validator
 from typing import Optional
 
-VALID_TYPES = ["question_type", "subject_type", "exam_level"]
+VALID_TYPES = ["question_type", "subject", "exam_level"]
 
 
 class ClassificationCreate(BaseModel):
@@ -15,20 +15,20 @@ class ClassificationCreate(BaseModel):
     is_active: bool = True
 
     @validator("type")
-    def validate_type(cls, v):
-        if v not in ["question_type", "subject_type", "exam_level"]:
+    def validate_type(cls, field_value):
+        if field_value not in ["question_type", "subject", "exam_level"]:
             raise ValueError(
-                "type must be one of: question_type, subject_type, exam_level")
-        return v
+                "type must be one of: question_type, subject, exam_level")
+        return field_value
 
     @validator("code", always=True)
-    def uppercase_code(cls, v, values):
+    def uppercase_code(cls, field_value, values):
         # if user didn't provide code, default to name.upper()
-        if v is None and "name" in values:
+        if field_value is None and "name" in values:
             return values["name"].upper()
-        if v:
-            return v.upper()
-        return v
+        if field_value:
+            return field_value.upper()
+        return field_value
 
 
 class ClassificationUpdate(BaseModel):
@@ -40,10 +40,19 @@ class ClassificationUpdate(BaseModel):
     code:       Optional[str] = None
 
     @validator("type")
-    def validate_type(cls, v):
-        if v not in VALID_TYPES:
+    def validate_type(cls, field_value):
+        if field_value and field_value not in VALID_TYPES:
             raise ValueError(f"type must be one of: {VALID_TYPES}")
-        return v
+        return field_value
+
+    @validator("code", always=True)
+    def uppercase_code(cls, field_value, values):
+        # if user didn't provide code, default to name.upper()
+        if field_value is None and "name" in values and values["name"]:
+            return values["name"].upper().replace(" ", "_")
+        if field_value:
+            return field_value.upper().replace(" ", "_")
+        return field_value
 
 
 class ClassificationResponse(BaseModel):

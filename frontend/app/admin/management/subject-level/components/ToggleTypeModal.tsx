@@ -6,30 +6,37 @@ import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { AlertCircle } from "lucide-react";
 
-interface DeleteTypeModalProps {
+interface ToggleTypeModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
+    isActive: boolean;
     title?: string;
     description?: string;
 }
 
-export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
+export const ToggleTypeModal: React.FC<ToggleTypeModalProps> = ({
     isOpen,
     onClose,
     onConfirm,
-    title = "Confirm Deletion",
-    description = "This action cannot be undone. This item will be permanently removed from the database.",
+    isActive,
+    title,
+    description,
 }) => {
+    const defaultTitle = isActive ? "Confirm Disable" : "Confirm Enable";
+    const defaultDescription = isActive
+        ? "This item will be hidden from users but kept in the system."
+        : "This item will become visible and available for use again.";
+
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={title}
+            title={title || defaultTitle}
             className="max-w-md"
         >
             <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
                     <AlertCircle size={28} />
                 </div>
                 <div className="space-y-2">
@@ -37,7 +44,7 @@ export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
                         Are you sure?
                     </Typography>
                     <Typography variant="body4" className="text-muted-foreground">
-                        {description}
+                        {description || defaultDescription}
                     </Typography>
                 </div>
                 <div className="flex w-full gap-3 pt-2">
@@ -46,13 +53,13 @@ export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
                     </Button>
                     <Button
                         variant="primary"
-                        color="error"
+                        color={isActive ? "warning" : "primary"}
                         className="flex-1"
                         shadow
                         animate="scale"
                         onClick={onConfirm}
                     >
-                        Delete
+                        {isActive ? "Disable" : "Enable"}
                     </Button>
                 </div>
             </div>

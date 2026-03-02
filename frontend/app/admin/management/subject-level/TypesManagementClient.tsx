@@ -18,11 +18,17 @@ import { Alert } from "@components/ui-elements/Alert";
 import { Tabs, TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
+import { ToggleTypeModal } from "./components/ToggleTypeModal";
+import { ActionMenu } from "@components/ui-elements/ActionMenu";
+import { MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
+import { classificationsApi } from "@/lib/api/classifications";
+import { Pagination } from "@components/ui-elements/Pagination";
 
 interface BaseType {
     id: number;
     name: string;
     description: string;
+    is_active: boolean;
 }
 
 interface TypesManagementClientProps {
@@ -37,14 +43,20 @@ export function TypesManagementClient({
     const [activeTab, setActiveTab] = useState("subjects");
     const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
     const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Modal states
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [editingType, setEditingType] = useState<BaseType | null>(null);
     const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
+    const [typeToToggle, setTypeToToggle] = useState<BaseType | null>(null);
+    const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: "", description: "" });
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const tabs: TabItem[] = [
         { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
@@ -52,8 +64,23 @@ export function TypesManagementClient({
     ];
 
     const currentData = activeTab === "subjects" ? subjects : levels;
+    const totalItems = currentData.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+    // Sliced data based on pagination
+    const paginatedData = currentData.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
     const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
     const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
+    const classificationType = activeTab === "subjects" ? "subject" : "exam_level";
+
+    const handleTabChange = (newTab: string) => {
+        setActiveTab(newTab);
+        setCurrentPage(1); // Reset page on tab change
+    };
 
     const handleOpenModal = (item?: BaseType) => {
         if (item) {
@@ -72,24 +99,45 @@ export function TypesManagementClient({
         setFormData({ name: "", description: "" });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (editingType) {
-            setTargetData(
-                currentData.map((t) =>
-                    t.id === editingType.id ? { ...t, ...formData } : t
-                )
-            );
-            showSuccess(`${currentEntityName} updated successfully!`);
-        } else {
-            const newItem = {
-                id: Math.max(0, ...currentData.map((t) => t.id)) + 1,
-                ...formData,
-            };
-            setTargetData([...currentData, newItem]);
-            showSuccess(`${currentEntityName} added successfully!`);
+        setIsLoading(true);
+        setErrorMessage(null);
+        try {
+            if (editingType) {
+                const response = await classificationsApi.updateClassification(editingType.id, {
+                    name: formData.name,
+                    metadata: { description: formData.description }
+                });
+                const updatedItem = {
+                    id: response.id,
+                    name: response.name,
+                    description: (response.metadata?.description as string) || "",
+                    is_active: response.is_active
+                };
+                setTargetData(currentData.map((t) => (t.id === editingType.id ? updatedItem : t)));
+                showSuccess(`${currentEntityName} updated successfully!`);
+            } else {
+                const response = await classificationsApi.createClassification({
+                    type: classificationType,
+                    name: formData.name,
+                    metadata: { description: formData.description }
+                });
+                const newItem = {
+                    id: response.id,
+                    name: response.name,
+                    description: (response.metadata?.description as string) || "",
+                    is_active: response.is_active
+                };
+                setTargetData([...currentData, newItem]);
+                showSuccess(`${currentEntityName} added successfully!`);
+            }
+            handleCloseModal();
+        } catch (error) {
+            setErrorMessage((error as Error).message || "Failed to save classification");
+        } finally {
+            setIsLoading(false);
         }
-        handleCloseModal();
     };
 
     const showSuccess = (msg: string) => {
@@ -102,12 +150,50 @@ export function TypesManagementClient({
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (typeToDelete !== null) {
-            setTargetData(currentData.filter((t) => t.id !== typeToDelete));
-            showSuccess(`${currentEntityName} deleted successfully!`);
-            setIsDeleteModalOpen(false);
-            setTypeToDelete(null);
+            setIsLoading(true);
+            setErrorMessage(null);
+            try {
+                await classificationsApi.deleteClassification(typeToDelete);
+                setTargetData(currentData.filter((t) => t.id !== typeToDelete));
+                showSuccess(`${currentEntityName} permanently deleted successfully!`);
+                setIsDeleteModalOpen(false);
+                setTypeToDelete(null);
+            } catch (error) {
+                setErrorMessage((error as Error).message || "Failed to delete classification");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
+    const handleToggleClick = (item: BaseType) => {
+        setTypeToToggle(item);
+        setIsToggleModalOpen(true);
+    };
+
+    const confirmToggle = async () => {
+        if (typeToToggle) {
+            setIsLoading(true);
+            setErrorMessage(null);
+            try {
+                const response = await classificationsApi.updateClassification(typeToToggle.id, {
+                    is_active: !typeToToggle.is_active
+                });
+                const updatedItem = {
+                    ...typeToToggle,
+                    is_active: response.is_active
+                };
+                setTargetData(currentData.map((t) => (t.id === typeToToggle.id ? updatedItem : t)));
+                showSuccess(`${currentEntityName} ${response.is_active ? 'enabled' : 'disabled'} successfully!`);
+                setIsToggleModalOpen(false);
+                setTypeToToggle(null);
+            } catch (error) {
+                setErrorMessage((error as Error).message || `Failed to ${typeToToggle.is_active ? 'disable' : 'enable'} classification`);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -119,7 +205,7 @@ export function TypesManagementClient({
             />
 
             <div className="mb-6">
-                <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+                <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
             </div>
 
             {successMessage && (
@@ -131,13 +217,22 @@ export function TypesManagementClient({
                 />
             )}
 
+            {errorMessage && (
+                <Alert
+                    variant="error"
+                    description={errorMessage}
+                    className="mb-6"
+                    onClose={() => setErrorMessage(null)}
+                />
+            )}
+
             <MainCard
                 title={
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
                             {activeTab === "subjects" ? <Layers size={20} /> : <Gauge size={20} />}
                         </div>
-                        {activeTab === "subjects" ? "Subject List" : "Level List"}
+                        {currentEntityName} List
                     </div>
                 }
                 className="mb-6 flex-1 flex flex-col min-h-[500px]"
@@ -151,6 +246,7 @@ export function TypesManagementClient({
                         animate="scale"
                         iconAnimation="rotate-90"
                         onClick={() => handleOpenModal()}
+                        disabled={isLoading}
                         startIcon={<Plus size={18} />}
                         className="font-bold"
                     >
@@ -165,46 +261,72 @@ export function TypesManagementClient({
                                 <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
                                 <TableHead>{activeTab === "subjects" ? "Name" : "Level Name"}</TableHead>
                                 <TableHead>Description</TableHead>
-                                <TableHead className="text-center w-[150px]">Action</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-center w-[100px]">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {currentData.length === 0 ? (
+                            {paginatedData.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                         No {activeTab} found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                currentData.map((item, idx) => (
+                                paginatedData.map((item, idx) => (
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium text-center">
-                                            {idx + 1}
+                                            {(currentPage - 1) * pageSize + idx + 1}
                                         </TableCell>
                                         <TableCell>{item.name}</TableCell>
                                         <TableCell>{item.description}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Button
-                                                    variant="secondary"
-                                                    color="primary"
-                                                    size="icon-sm"
-                                                    animate="scale"
-                                                    onClick={() => handleOpenModal(item)}
-                                                    title="Edit"
-                                                >
-                                                    <Pencil size={16} />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    color="error"
-                                                    size="icon-sm"
-                                                    animate="scale"
-                                                    onClick={() => handleDeleteClick(item.id)}
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </Button>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${item.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                <span className={item.is_active ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-red-600 dark:text-red-400 font-medium"}>
+                                                    {item.is_active ? 'Active' : 'Disabled'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center justify-center">
+                                                <ActionMenu
+                                                    button={
+                                                        <div className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors">
+                                                            <MoreVertical size={18} />
+                                                        </div>
+                                                    }
+                                                    items={[
+                                                        {
+                                                            key: "edit",
+                                                            label: "Edit",
+                                                            icon: <Pencil size={16} />,
+                                                            onClick: (event) => {
+                                                                event.stopPropagation();
+                                                                handleOpenModal(item);
+                                                            }
+                                                        },
+                                                        {
+                                                            key: "toggle",
+                                                            label: item.is_active ? "Disable" : "Enable",
+                                                            icon: item.is_active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
+                                                            onClick: (event) => {
+                                                                event.stopPropagation();
+                                                                handleToggleClick(item);
+                                                            }
+                                                        },
+                                                        {
+                                                            key: "delete",
+                                                            label: "Delete",
+                                                            icon: <Trash2 size={16} className="text-red-500" />,
+                                                            className: "hover:!bg-red-50 hover:!text-red-600 dark:hover:!bg-red-900/20",
+                                                            onClick: (event) => {
+                                                                event.stopPropagation();
+                                                                handleDeleteClick(item.id);
+                                                            }
+                                                        }
+                                                    ]}
+                                                />
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -213,6 +335,18 @@ export function TypesManagementClient({
                         </TableBody>
                     </Table>
                 </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    totalItems={totalItems}
+                    pageSize={pageSize}
+                    onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setCurrentPage(1);
+                    }}
+                    className="mt-auto shrink-0 border-t border-border"
+                />
             </MainCard>
 
             <ManageTypeModal
@@ -223,13 +357,21 @@ export function TypesManagementClient({
                 formData={formData}
                 setFormData={setFormData}
                 onSubmit={handleSubmit}
+                isLoading={isLoading}
+            />
+
+            <ToggleTypeModal
+                isOpen={isToggleModalOpen}
+                onClose={() => setIsToggleModalOpen(false)}
+                onConfirm={confirmToggle}
+                isActive={typeToToggle?.is_active ?? false}
             />
 
             <DeleteTypeModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                description={`This ${currentEntityName} will be permanently removed.`}
+                description={`This ${currentEntityName} will be permanently removed from the database.`}
             />
         </PageContainer>
     );
