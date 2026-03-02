@@ -9,9 +9,11 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Typography } from "@components/ui-elements/Typography";
+import { Button } from "@components/ui-elements/Button";
 import Link from "next/link";
 import { Card } from "@components/ui-cards/Card";
 import type { CurrentUser } from "@lib/auth/user-utils";
@@ -123,6 +125,22 @@ export function DashboardClient({
                     ? "Your profile is fully complete. You can proceed to the assessments."
                     : "Complete your personal details to unlock the interview assessment phase."}
                 </Typography>
+              </div>
+              {/* Sign out button */}
+              <div className="hidden md:block">
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  color="primary"
+                  size="md"
+                  shadow
+                  animate="scale"
+                  iconAnimation="rotate-180"
+                  startIcon={<LogOut size={18} />}
+                  className="rounded-xl"
+                >
+                  Sign Out
+                </Button>
               </div>
             </div>
           </div>

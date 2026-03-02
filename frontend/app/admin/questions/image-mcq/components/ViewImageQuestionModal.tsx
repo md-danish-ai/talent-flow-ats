@@ -14,6 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { ListChecks } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@lib/utils";
 
 interface ViewImageQuestionModalProps {
@@ -116,13 +117,16 @@ export const ViewImageQuestionModal: React.FC<ViewImageQuestionModalProps> = ({
                 </Typography>
                 {question.image_url ? (
                   <div className="mb-3">
-                    <img
-                      src={getCanonicalImageUrl(question.image_url) ?? undefined}
-                      alt="question"
-                      width={640}
-                      height={360}
-                      className="max-h-80 rounded-md object-contain w-full"
-                    />
+                    <div className="relative w-full h-[360px] max-h-80">
+                      <Image
+                        src={getCanonicalImageUrl(question.image_url) as string}
+                        alt="question"
+                        fill
+                        className="object-contain rounded-md"
+                        sizes="(max-width: 768px) 100vw, 640px"
+                        unoptimized
+                      />
+                    </div>
                   </div>
                 ) : null}
                 <Typography variant="body3" className="leading-relaxed">
