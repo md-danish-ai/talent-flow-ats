@@ -38,6 +38,17 @@ export const imageMCQSchema = z.object({
   explanation: z.string().min(5, "Explanation must be at least 5 characters"),
 });
 
+// Subjective Specific Validations
+export const subjectiveSchema = z.object({
+  subject: z.string().min(1, "Subject is required"),
+  examLevel: z.string().min(1, "Exam Level is required"),
+  marks: z.coerce.number().min(1).max(50),
+  questionText: z.string().min(10, "Question must be at least 10 characters"),
+  answerText: z.string().min(1, "Answer is required"),
+  explanation: z.string().optional(),
+});
+
 export type MCQFormValues = z.infer<typeof mcqSchema>;
 export type MCQOptionValues = z.infer<typeof mcqOptionSchema>;
 export type ImageMCQFormValues = z.infer<typeof imageMCQSchema>;
+export type SubjectiveFormValues = z.infer<typeof subjectiveSchema>;

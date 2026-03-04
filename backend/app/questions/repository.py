@@ -72,6 +72,8 @@ def get_questions(
 
         query = db_session.query(
             Question,
+            QuestionAnswer.answer_text.label("ans_text"),
+            QuestionAnswer.explanation.label("ans_explanation"),
             question_type_alias.id.label("qt_id"), question_type_alias.code.label(
                 "qt_code"), question_type_alias.type.label("qt_type"), question_type_alias.name.label("qt_name"),
             question_type_alias.extra_metadata.label("qt_metadata"), question_type_alias.is_active.label(
@@ -87,6 +89,8 @@ def get_questions(
             exam_level_alias.extra_metadata.label("el_metadata"), exam_level_alias.is_active.label(
                 "el_is_active"), exam_level_alias.sort_order.label("el_sort_order")
         )
+
+        query = query.outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
 
         query = query.outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (
             question_type_alias.type == 'question_type'))
@@ -131,6 +135,8 @@ def get_question_by_id(question_id: int):
 
         row = db_session.query(
             Question,
+            QuestionAnswer.answer_text.label("ans_text"),
+            QuestionAnswer.explanation.label("ans_explanation"),
             question_type_alias.id.label("qt_id"), question_type_alias.code.label(
                 "qt_code"), question_type_alias.type.label("qt_type"), question_type_alias.name.label("qt_name"),
             question_type_alias.extra_metadata.label("qt_metadata"), question_type_alias.is_active.label(
@@ -145,7 +151,8 @@ def get_question_by_id(question_id: int):
                 "el_code"), exam_level_alias.type.label("el_type"), exam_level_alias.name.label("el_name"),
             exam_level_alias.extra_metadata.label("el_metadata"), exam_level_alias.is_active.label(
                 "el_is_active"), exam_level_alias.sort_order.label("el_sort_order")
-        ).outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (question_type_alias.type == 'question_type'))\
+        ).outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)\
+         .outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (question_type_alias.type == 'question_type'))\
          .outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (subject_type_alias.type == 'subject'))\
          .outerjoin(exam_level_alias, (exam_level_alias.code == Question.exam_level) & (exam_level_alias.type == 'exam_level'))\
          .filter(Question.id == question_id).first()
@@ -295,4 +302,8 @@ def _format_question_orm(row) -> dict:
             "is_active":  row.el_is_active,
             "sort_order": row.el_sort_order,
         } if row.el_id else None,
+        "answer": {
+            "answer_text": row.ans_text,
+            "explanation": row.ans_explanation,
+        } if hasattr(row, 'ans_text') and row.ans_text is not None else None,
     }
