@@ -3,8 +3,8 @@
 import React from "react";
 import { useForm } from "@tanstack/react-form";
 import {
-  imageMCQSchema,
-  type ImageMCQFormValues,
+  imageSubjectiveSchema,
+  type ImageSubjectiveFormValues,
 } from "@lib/validations/question";
 import { questionsApi, type QuestionCreate } from "@lib/api/questions";
 import { classificationsApi, type Classification } from "@lib/api/classifications";
@@ -12,20 +12,19 @@ import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
-import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
-import { Plus, MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X } from "lucide-react";
+import { MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X, BookOpen } from "lucide-react";
 import Image from "next/image";
 
-export const AddImageQuestionForm = ({ 
-  questionType = "IMAGE_BASED_MCQ",
+export const AddImageSubjectiveQuestionForm = ({ 
+  questionType = "IMAGE_SUBJECTIVE",
   questionId,
   initialData,
   onSuccess 
 }: { 
   questionType?: string;
   questionId?: number;
-  initialData?: ImageMCQFormValues;
+  initialData?: ImageSubjectiveFormValues;
   onSuccess?: () => void 
 }) => {
   const [subjects, setSubjects] = React.useState<Classification[]>([]);
@@ -74,16 +73,11 @@ export const AddImageQuestionForm = ({
       marks: 1,
       questionImageUrl: "",
       questionText: "",
+      answerText: "",
       explanation: "",
-      options: [
-        { id: "A", label: "A", content: "", isCorrect: false },
-        { id: "B", label: "B", content: "", isCorrect: false },
-        { id: "C", label: "C", content: "", isCorrect: false },
-        { id: "D", label: "D", content: "", isCorrect: false },
-      ],
-    } as ImageMCQFormValues,
+    } as ImageSubjectiveFormValues,
     validators: {
-      onChange: imageMCQSchema,
+      onChange: imageSubjectiveSchema,
     },
     onSubmit: async ({ value }) => {
       try {
@@ -94,18 +88,11 @@ export const AddImageQuestionForm = ({
           image_url: value.questionImageUrl,
           question_text: value.questionText,
           marks: value.marks,
-          is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
-          options: value.options.map(o => ({
-            option_label: o.label,
-            option_text: o.content,
-            is_correct: o.isCorrect
-          })),
+          is_active: true,
+          options: [], // Subjective has no options
           answer: {
+            answer_text: value.answerText,
             explanation: value.explanation,
-            answer_text: value.options
-              .filter(o => o.isCorrect)
-              .map(o => o.label)
-              .join(", ") || "A" 
           }
         };
 
@@ -122,11 +109,10 @@ export const AddImageQuestionForm = ({
         });
         if (onSuccess) onSuccess();
       } catch (error) {
-        console.error("Failed to create question:", error);
+        console.error("Failed to process question:", error);
         setToast({
           type: "error",
-          message:
-            "Failed to create question: " + (error as Error).message,
+          message: "Failed to process question: " + (error as Error).message,
         });
       }
     },
@@ -147,30 +133,6 @@ export const AddImageQuestionForm = ({
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
-  const addOption = () => {
-    const currentOptions = form.getFieldValue("options");
-    if (currentOptions.length < 6) {
-      const nextLabel = String.fromCharCode(65 + currentOptions.length);
-      form.setFieldValue("options", [
-        ...currentOptions,
-        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
-      ]);
-    }
-  };
-
-  const removeOption = (index: number) => {
-    const currentOptions = form.getFieldValue("options");
-    if (currentOptions.length > 2) {
-      const filtered = currentOptions.filter((_, i) => i !== index);
-      const remapped = filtered.map((opt, i) => ({
-        ...opt,
-        id: String.fromCharCode(65 + i),
-        label: String.fromCharCode(65 + i),
-      }));
-      form.setFieldValue("options", remapped);
     }
   };
 
@@ -217,10 +179,7 @@ export const AddImageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="text-red-500 mt-1 ml-1 font-medium"
-                    >
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -258,14 +217,14 @@ export const AddImageQuestionForm = ({
                             unoptimized
                           />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                              type="button"
-                              onClick={() => field.handleChange("")}
-                              className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                              title="Remove Image"
-                            >
-                              <X size={16} />
-                            </button>
+                             <button
+                                type="button"
+                                onClick={() => field.handleChange("")}
+                                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                                title="Remove Image"
+                              >
+                                <X size={16} />
+                              </button>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -399,78 +358,29 @@ export const AddImageQuestionForm = ({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-              <Plus size={18} />
-            </div>
-            <Typography variant="body3" weight="bold">
-              Answer Options
-            </Typography>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addOption}
-            className="text-brand-primary hover:bg-brand-primary/5"
-          >
-            + Add Option
-          </Button>
-        </div>
-
-        <form.Field name="options">
+        <form.Field name="answerText">
           {(field) => (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                {field.state.value.map((opt, index) => (
-                  <form.Field key={opt.id} name={`options[${index}].content`}>
-                    {(subField) => (
-                      <div className="relative group flex flex-col gap-1">
-                        <OptionInput
-                          prefixLabel={opt.label}
-                          isCorrect={opt.isCorrect}
-                          placeholder={`Type option ${opt.label} content...`}
-                          value={opt.content}
-                          onChange={(e) => {
-                            const newOptions = [...field.state.value];
-                            newOptions[index] = {
-                              ...opt,
-                              content: e.target.value,
-                            };
-                            field.handleChange(newOptions);
-                          }}
-                          onBlur={subField.handleBlur}
-                          error={
-                            subField.state.meta.errors.length > 0 ||
-                            field.state.meta.errors.length > 0
-                          }
-                          onMarkCorrect={() => {
-                            const newOptions = field.state.value.map(
-                              (o, i) => ({
-                                ...o,
-                                isCorrect:
-                                  i === index ? !o.isCorrect : o.isCorrect,
-                              }),
-                            );
-                            field.handleChange(newOptions);
-                          }}
-                          onRemove={() => removeOption(index)}
-                          showRemove={field.state.value.length > 2}
-                        />
-                        {subField.state.meta.errors.length > 0 && (
-                          <Typography
-                            variant="body5"
-                            className="text-red-500 font-medium ml-1"
-                          >
-                            {getErrorMessage(subField.state.meta.errors[0])}
-                          </Typography>
-                        )}
-                      </div>
-                    )}
-                  </form.Field>
-                ))}
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
+                  <BookOpen size={18} />
+                </div>
+                <Typography variant="body3" weight="bold">
+                  Correct Answer
+                </Typography>
               </div>
+              <textarea
+                placeholder="Write the expected correct answer..."
+                className={cn(
+                  "w-full min-h-[150px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
+                  field.state.meta.errors.length > 0
+                    ? "border-red-500 ring-1 ring-red-500/20 hover:border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                    : "border-border/60 hover:border-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+                )}
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+              />
               {field.state.meta.errors.length > 0 && (
                 <Typography
                   variant="body5"
@@ -479,7 +389,7 @@ export const AddImageQuestionForm = ({
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
-            </div>
+            </>
           )}
         </form.Field>
       </div>
@@ -497,7 +407,7 @@ export const AddImageQuestionForm = ({
                 </Typography>
               </div>
               <textarea
-                placeholder="Explain why the correct option is the right answer..."
+                placeholder="Explain the logic or reasoning behind the correct answer..."
                 className={cn(
                   "w-full min-h-[120px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
                   field.state.meta.errors.length > 0

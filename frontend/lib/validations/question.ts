@@ -27,7 +27,7 @@ export const imageMCQSchema = z.object({
   examLevel: z.string().min(1, "Exam Level is required"),
   marks: z.coerce.number().min(1).max(50),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
-  questionImageUrl: z.string().optional(),
+  questionImageUrl: z.string().min(1, "Question image is required"),
   // Note: Add image fields here later if required (e.g., questionImage: z.any())
   options: z
     .array(mcqOptionSchema)
@@ -48,7 +48,19 @@ export const subjectiveSchema = z.object({
   explanation: z.string().optional(),
 });
 
+// Image Subjective Specific Validations
+export const imageSubjectiveSchema = z.object({
+  subject: z.string().min(1, "Subject is required"),
+  examLevel: z.string().min(1, "Exam Level is required"),
+  marks: z.coerce.number().min(1).max(50),
+  questionText: z.string().min(10, "Question must be at least 10 characters"),
+  questionImageUrl: z.string().min(1, "Question image is required"),
+  answerText: z.string().min(1, "Answer is required"),
+  explanation: z.string().optional(),
+});
+
 export type MCQFormValues = z.infer<typeof mcqSchema>;
 export type MCQOptionValues = z.infer<typeof mcqOptionSchema>;
 export type ImageMCQFormValues = z.infer<typeof imageMCQSchema>;
 export type SubjectiveFormValues = z.infer<typeof subjectiveSchema>;
+export type ImageSubjectiveFormValues = z.infer<typeof imageSubjectiveSchema>;
