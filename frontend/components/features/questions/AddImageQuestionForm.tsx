@@ -7,7 +7,7 @@ import {
   type ImageMCQFormValues,
 } from "@lib/validations/question";
 import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import { classificationsApi } from "@lib/api/classifications";
+import { classificationsApi, type Classification } from "@lib/api/classifications";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -27,8 +27,8 @@ export const AddImageQuestionForm = ({
   initialData?: ImageMCQFormValues;
   onSuccess?: () => void 
 }) => {
-  const [subjects, setSubjects] = React.useState<any[]>([]);
-  const [examLevels, setExamLevels] = React.useState<any[]>([]);
+  const [subjects, setSubjects] = React.useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [toast, setToast] = React.useState<{
@@ -78,7 +78,7 @@ export const AddImageQuestionForm = ({
     },
     onSubmit: async ({ value }) => {
       try {
-        const payload = {
+        const payload: Partial<QuestionCreate> = {
           question_type: questionType,
           subject: value.subject,
           exam_level: value.examLevel,
@@ -101,7 +101,7 @@ export const AddImageQuestionForm = ({
         };
 
         if (questionId) {
-          await questionsApi.updateQuestion(questionId, payload as any);
+          await questionsApi.updateQuestion(questionId, payload);
         } else {
           await questionsApi.createQuestion(payload as QuestionCreate);
           form.reset();
