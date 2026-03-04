@@ -76,6 +76,7 @@ async def toggle_question_status(
     data = await question_service.toggle_question_status(question_id)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
+
 @router.delete("/{question_id}")
 async def delete_question(
     question_id:  int,
@@ -89,5 +90,5 @@ async def delete_question(
 async def upload_image(
     image:        UploadFile = File(...),
 ):
-    image_url = question_service.save_image(image)
+    image_url = await question_service.save_image(image)
     return api_response(StatusCode.OK, "Image uploaded successfully", data={"image_url": image_url})

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { questionsApi, Question, QuestionOption } from "@lib/api/questions";
@@ -11,17 +12,17 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { ListChecks } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { ListChecks, Loader2, FileImage } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@lib/utils";
 
-interface ViewQuestionModalProps {
+interface ViewImageQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   questionId: number | null;
 }
 
-export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
+export const ViewImageQuestionModal: React.FC<ViewImageQuestionModalProps> = ({
   isOpen,
   onClose,
   questionId,
@@ -30,6 +31,17 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Build an absolute URL for images returned by the backend. The backend
+  // sometimes returns a relative path (e.g. "/uploads/xyz.png"). In that
+  // case we prefix it with NEXT_PUBLIC_API_BASE_URL so the browser can load it.
+  const getCanonicalImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+    if (!base) return url;
+    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+  };
+
   useEffect(() => {
     if (isOpen && questionId) {
       const fetchQuestion = async () => {
@@ -37,7 +49,6 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
         setError(null);
         try {
           const response = await questionsApi.getQuestion(questionId);
-          // API client returns the typed resource directly
           setQuestion(response);
         } catch (err) {
           console.error("Failed to fetch question:", err);
@@ -103,6 +114,28 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
                 >
                   Question
                 </Typography>
+                {question.image_url ? (
+                  <div className="mb-3">
+                    <div className="relative w-full h-[360px] max-h-80">
+                      <Image
+                        src={getCanonicalImageUrl(question.image_url) as string}
+                        alt="question"
+                        fill
+                        className="object-contain rounded-md"
+                        sizes="(max-width: 768px) 100vw, 640px"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="px-2 py-1 rounded-md bg-muted text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 border border-border/50 shadow-sm">
+                        <FileImage size={10} className="text-brand-primary/60" />
+                        <span className="truncate max-w-[200px]" title={question.image_url.split("/").pop() || ""}>
+                          {question.image_url.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <Typography variant="body3" className="leading-relaxed">
                   {question.question_text}
                 </Typography>
@@ -168,37 +201,35 @@ export const ViewQuestionModal: React.FC<ViewQuestionModalProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(question.options || []).map(
-                    (opt: QuestionOption, index: number) => (
-                      <TableRow
-                        key={opt.option_label ?? index}
-                        className="border-b border-border transition-colors"
+                  {(question.options || []).map((opt: QuestionOption, index: number) => (
+                    <TableRow
+                      key={opt.option_label ?? index}
+                      className="border-b border-border transition-colors"
+                    >
+                      <TableCell className="px-5 py-3 font-medium text-foreground">
+                        {opt.option_label || String.fromCharCode(65 + index)}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "px-5 py-3 text-muted-foreground",
+                          opt.is_correct &&
+                            "font-bold text-green-600 dark:text-green-500",
+                        )}
                       >
-                        <TableCell className="px-5 py-3 font-medium text-foreground">
-                          {opt.option_label || String.fromCharCode(65 + index)}
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "px-5 py-3 text-muted-foreground",
-                            opt.is_correct &&
-                              "font-bold text-green-600 dark:text-green-500",
-                          )}
-                        >
-                          {opt.option_text}
-                        </TableCell>
-                        <TableCell
-                          className={cn(
-                            "px-5 py-3 text-right font-medium",
-                            opt.is_correct
-                              ? "text-green-500"
-                              : "text-red-500",
-                          )}
-                        >
-                          {opt.is_correct ? "Correct" : "Incorrect"}
-                        </TableCell>
-                      </TableRow>
-                    ),
-                  )}
+                        {opt.option_text}
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "px-5 py-3 text-right font-medium",
+                          opt.is_correct
+                            ? "text-green-500"
+                            : "text-red-500",
+                        )}
+                      >
+                        {opt.is_correct ? "Correct" : "Incorrect"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

@@ -1,17 +1,19 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { AddQuestionForm } from "@components/features/questions/AddQuestionForm";
 import { Typography } from "@components/ui-elements/Typography";
+import { SubjectiveQuestionForm } from "@components/features/questions/SubjectiveQuestionForm";
 import { cn } from "@lib/utils";
 
 interface AddQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
   isOpen,
   onClose,
+  onSuccess,
 }) => {
   const [toast, setToast] = React.useState<string | null>(null);
 
@@ -26,21 +28,25 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Add Multiple Choice Question"
+        title="Add Subjective Question"
         className="max-w-4xl"
       >
-        <AddQuestionForm
-          questionType="MULTIPLE_CHOICE"
-          onSuccess={(mode: "created" | "updated") => {
-            setToast(
-              mode === "created"
-                ? "Question added successfully."
-                : "Question updated successfully.",
-            );
-            onClose();
-          }}
-        />
+        <div className="p-4">
+          <SubjectiveQuestionForm
+            onSuccess={(mode) => {
+              setToast(
+                mode === "created"
+                  ? "Subjective question added successfully."
+                  : "Subjective question updated successfully.",
+              );
+              onClose();
+              onSuccess?.();
+            }}
+          />
+        </div>
       </Modal>
+
+      {/* SUCCESS TOAST */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50">
           <div
@@ -56,6 +62,7 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
             >
               Success
             </Typography>
+
             <Typography variant="body4" className="text-foreground">
               {toast}
             </Typography>

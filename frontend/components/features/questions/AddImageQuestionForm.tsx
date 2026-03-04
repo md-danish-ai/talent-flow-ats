@@ -7,21 +7,30 @@ import {
   type ImageMCQFormValues,
 } from "@lib/validations/question";
 import { questionsApi, type QuestionCreate } from "@lib/api/questions";
+import { classificationsApi, type Classification } from "@lib/api/classifications";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
-import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
+import { Plus, MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X } from "lucide-react";
 
-export const AddImageQuestionForm = ({
+export const AddImageQuestionForm = ({ 
   questionType = "IMAGE_BASED_MCQ",
-  onSuccess
-}: {
+  questionId,
+  initialData,
+  onSuccess 
+}: { 
   questionType?: string;
-  onSuccess?: () => void
+  questionId?: number;
+  initialData?: ImageMCQFormValues;
+  onSuccess?: () => void 
 }) => {
+  const [subjects, setSubjects] = React.useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [toast, setToast] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -33,9 +42,28 @@ export const AddImageQuestionForm = ({
     return () => clearTimeout(timeout);
   }, [toast]);
 
+  React.useEffect(() => {
+    const fetchClassifications = async () => {
+      try {
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({ type: "subject", limit: 100 }),
+          classificationsApi.getClassifications({ type: "exam_level", limit: 100 }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch classifications:", error);
+      }
+    };
+    fetchClassifications();
+  }, []);
+
   const form = useForm({
-    defaultValues: {
+    defaultValues: initialData || {
       subject: "",
+      examLevel: "",
+      marks: 1,
+      questionImageUrl: "",
       questionText: "",
       explanation: "",
       options: [
@@ -50,12 +78,13 @@ export const AddImageQuestionForm = ({
     },
     onSubmit: async ({ value }) => {
       try {
-        const payload = {
+        const payload: Partial<QuestionCreate> = {
           question_type: questionType,
           subject: value.subject,
-          exam_level: "Beginner",
+          exam_level: value.examLevel,
+          image_url: value.questionImageUrl,
           question_text: value.questionText,
-          marks: 1,
+          marks: value.marks,
           is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
           options: value.options.map(o => ({
             option_label: o.label,
@@ -67,16 +96,21 @@ export const AddImageQuestionForm = ({
             answer_text: value.options
               .filter(o => o.isCorrect)
               .map(o => o.label)
-              .join(", ") || "A"
+              .join(", ") || "A" 
           }
         };
 
-        await questionsApi.createQuestion(payload as QuestionCreate);
+        if (questionId) {
+          await questionsApi.updateQuestion(questionId, payload);
+        } else {
+          await questionsApi.createQuestion(payload as QuestionCreate);
+          form.reset();
+        }
+
         setToast({
           type: "success",
-          message: "Question added successfully.",
+          message: `Question ${questionId ? "updated" : "added"} successfully.`,
         });
-        form.reset();
         if (onSuccess) onSuccess();
       } catch (error) {
         console.error("Failed to create question:", error);
@@ -88,6 +122,24 @@ export const AddImageQuestionForm = ({
       }
     },
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const result = await questionsApi.uploadImage(file);
+      form.setFieldValue("questionImageUrl", result.image_url);
+      setToast({ type: "success", message: "Image uploaded successfully" });
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setToast({ type: "error", message: "Image upload failed: " + (error as Error).message });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const addOption = () => {
     const currentOptions = form.getFieldValue("options");
@@ -132,7 +184,7 @@ export const AddImageQuestionForm = ({
           </Typography>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-1">
             <form.Field name="subject">
               {(field) => (
@@ -149,9 +201,8 @@ export const AddImageQuestionForm = ({
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val as string)}
                     options={[
-                      { id: "Industry Awareness", label: "Industry Awareness" },
-                      { id: "Comprehension", label: "Comprehension" },
-                      { id: "Logical Reasoning", label: "Logical Reasoning" },
+                      { id: "", label: "Select Subject" },
+                      ...subjects.map(s => ({ id: s.code, label: s.name }))
                     ]}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
@@ -161,6 +212,127 @@ export const AddImageQuestionForm = ({
                       variant="body5"
                       className="text-red-500 mt-1 ml-1 font-medium"
                     >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="questionImageUrl">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Question Image
+                  </Typography>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex flex-col gap-2">
+                    {field.state.value ? (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                        <FileImage size={18} />
+                        <span className="text-sm font-medium truncate max-w-[150px]">
+                          {field.state.value.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => field.handleChange("")}
+                          className="ml-auto p-1 hover:bg-emerald-500/20 rounded-full transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-12 w-full border-dashed border-2 hover:border-brand-primary hover:bg-brand-primary/5 transition-all"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <Loader2 size={18} className="animate-spin mr-2" />
+                        ) : (
+                          <Upload size={18} className="mr-2" />
+                        )}
+                        {isUploading ? "Uploading..." : "Upload Image"}
+                      </Button>
+                    )}
+                  </div>
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="examLevel">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Exam Level
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Level"
+                    value={field.state.value}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={examLevels.map((e) => ({
+                      id: e.code,
+                      label: e.name,
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="marks">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Marks
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Marks"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(Number(val))}
+                    options={Array.from({ length: 50 }, (_, i) => ({
+                      id: String(i + 1),
+                      label: String(i + 1),
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}

@@ -38,8 +38,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-// framer-motion is not used directly in this file anymore
-import ActionMenu, { type ActionItem } from "@components/ui-elements/ActionMenu";
+import { AnimatePresence, motion } from "framer-motion";
 import { ApiError } from "@lib/api/client";
 
 import { Question } from "@lib/api/questions";
@@ -48,7 +47,6 @@ interface MCQClientProps {
   initialData?: Question[];
   totalItems?: number;
 }
-
 
 export function MCQClient({
   initialData = [],
@@ -60,22 +58,32 @@ export function MCQClient({
   const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Question[]>(initialData);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [subjects, setSubjects] = useState<Classification[]>([]);
-  // ActionMenu manages its open state internally; no global openMenuId needed
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
 
-  // body overflow lock is handled by overlay/portal components when necessary
   useEffect(() => {
-    if (!toastMessage) return;
-    const timeout = setTimeout(() => setToastMessage(null), 4000);
-    return () => clearTimeout(timeout);
-  }, [toastMessage]);
+    if (typeof document === "undefined") return;
+
+    const originalOverflow = document.body.style.overflow;
+
+    if (openMenuId !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = originalOverflow || "";
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow || "";
+    };
+  }, [openMenuId]);
+
   const handleAuthError = useCallback((error: unknown): boolean => {
     if (error instanceof ApiError && error.status === 401) {
       if (typeof document !== "undefined") {
@@ -127,7 +135,7 @@ export function MCQClient({
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await questionsApi.getQuestions({
@@ -149,17 +157,16 @@ export function MCQClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter, handleAuthError]);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+  }, [fetchData]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await classificationsApi.getClassifications({ type: "subject", is_active: true, limit: 100 });
+        const response = await classificationsApi.getClassifications({ type: "subject", limit: 100 });
         setSubjects(response.data || []);
       } catch (error) {
         if (handleAuthError(error)) {
@@ -168,8 +175,10 @@ export function MCQClient({
         console.error("Failed to fetch subjects:", error);
       }
     };
-    fetchSubjects();
-  }, [handleAuthError]);
+    if (subjects.length === 0) {
+      fetchSubjects();
+    }
+  }, [subjects.length, handleAuthError]);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
@@ -187,48 +196,105 @@ export function MCQClient({
   };
 
   const RowActions = ({ id }: { id: number }) => {
-    const isActive = data.find((q) => q.id === id)?.is_active !== false;
-
-    const items: ActionItem[] = [
-      {
-        key: "view",
-        label: "View Details",
-        icon: <Eye size={16} />,
-        onClick: (event) => {
-          event.stopPropagation();
-          setViewingQuestionId(id);
-        },
-      },
-      {
-        key: "edit",
-        label: "Edit Question",
-        icon: <Edit size={16} />,
-        onClick: (event) => {
-          event.stopPropagation();
-          const questionData = data.find((question) => question.id === id);
-          if (questionData) setEditingQuestion(questionData);
-        },
-      },
-      {
-        key: "toggle",
-        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        onClick: (event) => {
-          event.stopPropagation();
-          handleToggleStatus(id);
-        },
-        disabled: togglingId === id,
-      },
-    ];
+    const isOpen = openMenuId === id;
 
     return (
       <div className="relative flex justify-center items-center h-full px-2">
-        <ActionMenu
-          button={<MoreVertical size={20} />}
-          items={items}
-          buttonClassName={"h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"}
-          menuClassName={"bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"}
-        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-9 w-9 rounded-full transition-all duration-300",
+            isOpen ? "bg-brand-primary/10 text-brand-primary ring-2 ring-brand-primary/20" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenMenuId(isOpen ? null : id);
+          }}
+        >
+          <MoreVertical size={20} />
+        </Button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Backdrop for outside click */}
+              <div 
+                className="fixed inset-0 z-[60]" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenuId(null);
+                }}
+              />
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                className="absolute right-full mr-3 top-[-10px] w-48 bg-card border border-border rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] z-[70] py-2 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl origin-right px-1.5"
+              >
+                <div className="space-y-0.5 px-1">
+                  <button
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:bg-brand-primary/10 hover:text-brand-primary transition-all text-left group/item"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewingQuestionId(id);
+                      setOpenMenuId(null);
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors text-muted-foreground group-hover/item:text-brand-primary shrink-0">
+                      <Eye size={16} />
+                    </div>
+                    <span>View Details</span>
+                  </button>
+
+                  <button
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:bg-brand-primary/10 hover:text-brand-primary transition-all text-left group/item"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const qData = data.find(q => q.id === id);
+                      if (qData) {
+                         setEditingQuestion(qData);
+                      }
+                      setOpenMenuId(null);
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors text-muted-foreground group-hover/item:text-brand-primary shrink-0">
+                      <Edit size={16} />
+                    </div>
+                    <span>Edit Question</span>
+                  </button>
+
+                  <button
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all text-left group/item",
+                      data.find(q => q.id === id)?.is_active !== false
+                        ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                        : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                    )}
+                    disabled={togglingId === id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      handleToggleStatus(id);
+                    }}
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                      data.find(q => q.id === id)?.is_active !== false
+                        ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600"
+                        : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600"
+                    )}>
+                      {togglingId === id ? <Loader2 size={16} className="animate-spin" /> : data.find(q => q.id === id)?.is_active !== false ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                    </div>
+                    <span>{togglingId === id ? "Updating..." : data.find(q => q.id === id)?.is_active !== false ? "Deactivate" : "Activate"}</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     );
   };
@@ -290,9 +356,9 @@ export function MCQClient({
           )}
         >
           {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
+             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                 <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+             </div>
           )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
@@ -325,16 +391,16 @@ export function MCQClient({
               <TableBody>
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={visibleColumns.length + 1} className="py-8 text-center text-muted-foreground">
                       No questions found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((row, index) => (
+                  data.map((row) => (
                     <TableRow key={row.id}>
                       {visibleColumns.includes("srNo") && (
                         <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + index + 1}
+                          {row.id}
                         </TableCell>
                       )}
                       {visibleColumns.includes("question") && (
@@ -351,7 +417,7 @@ export function MCQClient({
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
-                          <RowActions id={row.id} />
+                           <RowActions id={row.id} />
                         </TableCell>
                       )}
                     </TableRow>
@@ -360,18 +426,7 @@ export function MCQClient({
               </TableBody>
             </Table>
           </div>
-          {toastMessage && (
-            <div className="fixed bottom-6 right-6 z-50">
-              <div className="rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm border-emerald-300/80 dark:border-emerald-500/60">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
-                  Success
-                </p>
-                <p className="text-sm text-foreground">
-                  {toastMessage}
-                </p>
-              </div>
-            </div>
-          )}
+
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -409,7 +464,7 @@ export function MCQClient({
                   placeholder="Search by keyword..."
                   className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
@@ -426,12 +481,12 @@ export function MCQClient({
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  ...(subjects.map(subject => ({ id: subject.code, label: subject.name })) || [])
+                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => {
-                  setSubjectFilter(val);
-                  setCurrentPage(1);
+                   setSubjectFilter(val);
+                   setCurrentPage(1);
                 }}
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
@@ -461,36 +516,31 @@ export function MCQClient({
           </div>
         </InlineDrawer>
       </MainCard>
+
       <AddQuestionModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
+        onClose={() => {
           setIsAddModalOpen(false);
-          setToastMessage("Question added successfully.");
           fetchData();
         }}
       />
 
-      {editingQuestion && (
-        <EditQuestionModal
-          isOpen={true}
-          questionData={editingQuestion}
-          onClose={() => setEditingQuestion(null)}
-          onSuccess={() => {
-            setEditingQuestion(null); // ✅ CLOSE MODAL
-            setToastMessage("Question updated successfully.");
-            fetchData();
-          }}
-        />
-      )}
+{editingQuestion && (
+  <EditQuestionModal
+    isOpen={true}
+    questionData={editingQuestion}
+    onClose={() => {
+      setEditingQuestion(null);
+      fetchData();
+    }}
+  />
+)}
 
-      {viewingQuestionId && (
-        <ViewQuestionModal
-          isOpen={true}
-          onClose={() => setViewingQuestionId(null)}
-          questionId={viewingQuestionId}
-        />
-      )}
+      <ViewQuestionModal
+        isOpen={!!viewingQuestionId}
+        onClose={() => setViewingQuestionId(null)}
+        questionId={viewingQuestionId}
+      />
 
     </PageContainer>
   );

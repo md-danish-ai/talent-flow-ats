@@ -2,26 +2,23 @@
 
 import React from "react";
 import { useForm } from "@tanstack/react-form";
-import { mcqSchema, type MCQFormValues } from "@lib/validations/question";
+import { subjectiveSchema, type SubjectiveFormValues } from "@lib/validations/question";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
-import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
-import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
+import { MessageSquareText, HelpCircle, Loader2, BookOpen } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
 
-export const AddQuestionForm = ({
-  questionType = "MULTIPLE_CHOICE",
+export const SubjectiveQuestionForm = ({
   initialData,
   questionId,
   onSuccess,
 }: {
-  questionType?: string;
-  initialData?: MCQFormValues;
+  initialData?: SubjectiveFormValues;
   questionId?: number;
   onSuccess?: (mode: "created" | "updated") => void;
 }) => {
@@ -56,31 +53,23 @@ export const AddQuestionForm = ({
       examLevel: "",
       marks: 1,
       questionText: "",
+      answerText: "",
       explanation: "",
-      options: [
-        { id: "A", label: "A", content: "", isCorrect: false },
-        { id: "B", label: "B", content: "", isCorrect: false },
-        { id: "C", label: "C", content: "", isCorrect: false },
-        { id: "D", label: "D", content: "", isCorrect: false },
-      ],
-    } as MCQFormValues,
+    } as SubjectiveFormValues,
     validators: {
-      onChange: mcqSchema,
+      onChange: subjectiveSchema,
     },
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
-          question_type: questionType,
+          question_type: "SUBJECTIVE",
           subject: value.subject,
           exam_level: value.examLevel,
           question_text: value.questionText,
           marks: value.marks,
-          options: value.options.map((opt) => ({
-            option_label: opt.label,
-            option_text: opt.content,
-            is_correct: opt.isCorrect,
-          })),
+          options: [], // Subjective has no options
           answer: {
+            answer_text: value.answerText,
             explanation: value.explanation,
           },
         };
@@ -105,30 +94,6 @@ export const AddQuestionForm = ({
       }
     },
   });
-
-  const addOption = () => {
-    const currentOptions = form.getFieldValue("options");
-    if (currentOptions.length < 6) {
-      const nextLabel = String.fromCharCode(65 + currentOptions.length);
-      form.setFieldValue("options", [
-        ...currentOptions,
-        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
-      ]);
-    }
-  };
-
-  const removeOption = (index: number) => {
-    const currentOptions = form.getFieldValue("options");
-    if (currentOptions.length > 2) {
-      const filtered = currentOptions.filter((_, i) => i !== index);
-      const remapped = filtered.map((opt, i) => ({
-        ...opt,
-        id: String.fromCharCode(65 + i),
-        label: String.fromCharCode(65 + i),
-      }));
-      form.setFieldValue("options", remapped);
-    }
-  };
 
   return (
     <form
@@ -268,7 +233,7 @@ export const AddQuestionForm = ({
                     placeholder="Select Marks"
                     value={String(field.state.value)}
                     onChange={(val) => field.handleChange(Number(val))}
-                    options={Array.from({ length: 10 }, (_, i) => ({
+                    options={Array.from({ length: 50 }, (_, i) => ({
                       id: String(i + 1),
                       label: String(i + 1),
                     }))}
@@ -291,81 +256,29 @@ export const AddQuestionForm = ({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-              <Plus size={18} />
-            </div>
-            <Typography variant="body3" weight="bold">
-              Answer Options
-            </Typography>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            color="primary"
-            size="sm"
-            animate="scale"
-            iconAnimation="rotate-90"
-            startIcon={<Plus size={18} />}
-            onClick={addOption}
-          >
-            Add Option
-          </Button>
-        </div>
-
-        <form.Field name="options">
+        <form.Field name="answerText">
           {(field) => (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                {field.state.value.map((opt, index) => (
-                  <form.Field key={opt.id} name={`options[${index}].content`}>
-                    {(subField) => (
-                      <div className="relative group flex flex-col gap-1">
-                        <OptionInput
-                          prefixLabel={opt.label}
-                          isCorrect={opt.isCorrect}
-                          placeholder={`Type option ${opt.label} content...`}
-                          value={opt.content}
-                          onChange={(e) => {
-                            const newOptions = [...field.state.value];
-                            newOptions[index] = {
-                              ...opt,
-                              content: e.target.value,
-                            };
-                            field.handleChange(newOptions);
-                          }}
-                          onBlur={subField.handleBlur}
-                          error={
-                            subField.state.meta.errors.length > 0 ||
-                            field.state.meta.errors.length > 0
-                          }
-                          onMarkCorrect={() => {
-                            const newOptions = field.state.value.map(
-                              (o, i) => ({
-                                ...o,
-                                isCorrect:
-                                  i === index ? !o.isCorrect : o.isCorrect,
-                              }),
-                            );
-                            field.handleChange(newOptions);
-                          }}
-                          onRemove={() => removeOption(index)}
-                          showRemove={field.state.value.length > 2}
-                        />
-                        {subField.state.meta.errors.length > 0 && (
-                          <Typography
-                            variant="body5"
-                            className="text-red-500 font-medium ml-1"
-                          >
-                            {getErrorMessage(subField.state.meta.errors[0])}
-                          </Typography>
-                        )}
-                      </div>
-                    )}
-                  </form.Field>
-                ))}
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
+                  <BookOpen size={18} />
+                </div>
+                <Typography variant="body3" weight="bold">
+                  Correct Answer
+                </Typography>
               </div>
+              <textarea
+                placeholder="Write the expected correct answer..."
+                className={cn(
+                  "w-full min-h-[150px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
+                  field.state.meta.errors.length > 0
+                    ? "border-red-500 ring-1 ring-red-500/20 hover:border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                    : "border-border/60 hover:border-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+                )}
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+              />
               {field.state.meta.errors.length > 0 && (
                 <Typography
                   variant="body5"
@@ -374,7 +287,7 @@ export const AddQuestionForm = ({
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
-            </div>
+            </>
           )}
         </form.Field>
       </div>
@@ -392,7 +305,7 @@ export const AddQuestionForm = ({
                 </Typography>
               </div>
               <textarea
-                placeholder="Explain why the correct option is the right answer..."
+                placeholder="Explain the logic or reasoning behind the correct answer..."
                 className={cn(
                   "w-full min-h-[120px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
                   field.state.meta.errors.length > 0
@@ -445,4 +358,3 @@ export const AddQuestionForm = ({
     </form>
   );
 };
-
