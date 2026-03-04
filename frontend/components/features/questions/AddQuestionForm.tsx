@@ -184,41 +184,6 @@ export const AddQuestionForm = ({
               )}
             </form.Field>
           </div>
-          <div className="md:col-span-2">
-            <form.Field name="questionText">
-              {(field) => (
-                <>
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                  >
-                    Question Text
-                  </Typography>
-                  <Input
-                    type="text"
-                    placeholder="Enter the main question here..."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    error={field.state.meta.errors.length > 0}
-                    className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="text-red-500 mt-1 ml-1 font-medium"
-                    >
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
-                  )}
-                </>
-              )}
-            </form.Field>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div className="md:col-span-1">
             <form.Field name="examLevel">
               {(field) => (
@@ -287,6 +252,39 @@ export const AddQuestionForm = ({
               )}
             </form.Field>
           </div>
+        </div>
+
+        <div className="mt-4">
+          <form.Field name="questionText">
+            {(field) => (
+              <>
+                <Typography
+                  variant="body5"
+                  weight="semibold"
+                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                >
+                  Question Text
+                </Typography>
+                <Input
+                  type="text"
+                  placeholder="Enter the main question here..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="text-red-500 mt-1 ml-1 font-medium"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
+                )}
+              </>
+            )}
+          </form.Field>
         </div>
       </div>
 

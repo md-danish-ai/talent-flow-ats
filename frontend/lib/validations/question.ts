@@ -59,8 +59,20 @@ export const imageSubjectiveSchema = z.object({
   explanation: z.string().optional(),
 });
 
+// Passage Specific Validations
+export const passageSchema = z.object({
+  subject: z.string().min(1, "Subject is required"),
+  examLevel: z.string().min(1, "Exam Level is required"),
+  marks: z.coerce.number().min(1).max(50),
+  passage: z.string().min(20, "Passage must be at least 20 characters"),
+  questionText: z.string().min(10, "Question must be at least 10 characters"),
+  answerText: z.string().min(1, "Answer is required"),
+  explanation: z.string().optional(),
+});
+
 export type MCQFormValues = z.infer<typeof mcqSchema>;
 export type MCQOptionValues = z.infer<typeof mcqOptionSchema>;
 export type ImageMCQFormValues = z.infer<typeof imageMCQSchema>;
 export type SubjectiveFormValues = z.infer<typeof subjectiveSchema>;
 export type ImageSubjectiveFormValues = z.infer<typeof imageSubjectiveSchema>;
+export type PassageFormValues = z.infer<typeof passageSchema>;

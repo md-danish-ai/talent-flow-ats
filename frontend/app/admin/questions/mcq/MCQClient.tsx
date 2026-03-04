@@ -30,9 +30,9 @@ import {
   Loader2,
   MoreVertical,
   Eye,
-  Edit,
   ToggleLeft,
   ToggleRight,
+  Edit as EditIcon,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -40,6 +40,7 @@ import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { AnimatePresence, motion } from "framer-motion";
 import { ApiError } from "@lib/api/client";
+import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
 
 import { Question } from "@lib/api/questions";
 
@@ -196,105 +197,54 @@ export function MCQClient({
   };
 
   const RowActions = ({ id }: { id: number }) => {
-    const isOpen = openMenuId === id;
+    const q = data.find((row) => row.id === id);
+    const isActive = q?.is_active !== false;
+
+    const items: ActionItem[] = [
+      {
+        key: "view",
+        label: "View Details",
+        icon: <Eye size={16} />,
+        onClick: (e) => {
+          e.stopPropagation();
+          setViewingQuestionId(id);
+        },
+      },
+      {
+        key: "edit",
+        label: "Edit Question",
+        icon: <EditIcon size={16} />,
+        onClick: (e) => {
+          e.stopPropagation();
+          const qData = data.find(q => q.id === id);
+          if (qData) {
+            setEditingQuestion(qData);
+          }
+        },
+      },
+      {
+        key: "toggle",
+        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
+        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
+        className: isActive 
+          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
+          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
+        onClick: (e) => {
+          e.stopPropagation();
+          handleToggleStatus(id);
+        },
+        disabled: togglingId === id,
+      },
+    ];
 
     return (
       <div className="relative flex justify-center items-center h-full px-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-9 w-9 rounded-full transition-all duration-300",
-            isOpen ? "bg-brand-primary/10 text-brand-primary ring-2 ring-brand-primary/20" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpenMenuId(isOpen ? null : id);
-          }}
-        >
-          <MoreVertical size={20} />
-        </Button>
-
-        <AnimatePresence>
-          {isOpen && (
-            <>
-              {/* Backdrop for outside click */}
-              <div 
-                className="fixed inset-0 z-[60]" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenMenuId(null);
-                }}
-              />
-              
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                className="absolute right-full mr-3 top-[-10px] w-48 bg-card border border-border rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] z-[70] py-2 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl origin-right px-1.5"
-              >
-                <div className="space-y-0.5 px-1">
-                  <button
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:bg-brand-primary/10 hover:text-brand-primary transition-all text-left group/item"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setViewingQuestionId(id);
-                      setOpenMenuId(null);
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors text-muted-foreground group-hover/item:text-brand-primary shrink-0">
-                      <Eye size={16} />
-                    </div>
-                    <span>View Details</span>
-                  </button>
-
-                  <button
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold text-muted-foreground hover:bg-brand-primary/10 hover:text-brand-primary transition-all text-left group/item"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const qData = data.find(q => q.id === id);
-                      if (qData) {
-                         setEditingQuestion(qData);
-                      }
-                      setOpenMenuId(null);
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover/item:bg-background transition-colors text-muted-foreground group-hover/item:text-brand-primary shrink-0">
-                      <Edit size={16} />
-                    </div>
-                    <span>Edit Question</span>
-                  </button>
-
-                  <button
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all text-left group/item",
-                      data.find(q => q.id === id)?.is_active !== false
-                        ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                        : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                    )}
-                    disabled={togglingId === id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(null);
-                      handleToggleStatus(id);
-                    }}
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                      data.find(q => q.id === id)?.is_active !== false
-                        ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600"
-                        : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600"
-                    )}>
-                      {togglingId === id ? <Loader2 size={16} className="animate-spin" /> : data.find(q => q.id === id)?.is_active !== false ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                    </div>
-                    <span>{togglingId === id ? "Updating..." : data.find(q => q.id === id)?.is_active !== false ? "Deactivate" : "Activate"}</span>
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        <ActionMenu
+          button={<MoreVertical size={20} />}
+          items={items}
+          buttonClassName="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"
+          menuClassName="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"
+        />
       </div>
     );
   };
@@ -391,23 +341,30 @@ export function MCQClient({
               <TableBody>
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 1} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
                       No questions found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((row) => (
+                  data.map((row, index) => (
                     <TableRow key={row.id}>
                       {visibleColumns.includes("srNo") && (
-                        <TableCell className="font-medium text-center">
-                          {row.id}
+                        <TableCell className="font-medium text-center text-muted-foreground">
+                          {(currentPage - 1) * pageSize + index + 1}
                         </TableCell>
                       )}
                       {visibleColumns.includes("question") && (
                         <TableCell>{row.question_text}</TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
-                        <TableCell>{typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}</TableCell>
+                        <TableCell>
+                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
+                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
+                            <Typography variant="body5" weight="medium" className="text-brand-primary">
+                              {typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}
+                            </Typography>
+                          </div>
+                        </TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
                         <TableCell>{"System"}</TableCell>
@@ -417,7 +374,7 @@ export function MCQClient({
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
-                           <RowActions id={row.id} />
+                          <RowActions id={row.id} />
                         </TableCell>
                       )}
                     </TableRow>

@@ -155,7 +155,7 @@ export const AddImageSubjectiveQuestionForm = ({
           </Typography>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
             <form.Field name="subject">
               {(field) => (
@@ -187,6 +187,71 @@ export const AddImageSubjectiveQuestionForm = ({
               )}
             </form.Field>
           </div>
+          <div className="md:col-span-1">
+            <form.Field name="examLevel">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Exam Level
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Level"
+                    value={field.state.value}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={examLevels.map((e) => ({
+                      id: e.code,
+                      label: e.name,
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="marks">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Marks
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Marks"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(Number(val))}
+                    options={Array.from({ length: 50 }, (_, i) => ({
+                      id: String(i + 1),
+                      label: String(i + 1),
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div className="md:col-span-1">
             <form.Field name="questionImageUrl">
               {(field) => (
@@ -261,68 +326,6 @@ export const AddImageSubjectiveQuestionForm = ({
             </form.Field>
           </div>
           <div className="md:col-span-1">
-            <form.Field name="examLevel">
-              {(field) => (
-                <>
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                  >
-                    Exam Level
-                  </Typography>
-                  <SelectDropdown
-                    placeholder="Select Level"
-                    value={field.state.value}
-                    onChange={(val) => field.handleChange(val as string)}
-                    options={examLevels.map((e) => ({
-                      id: e.code,
-                      label: e.name,
-                    }))}
-                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
-                    error={field.state.meta.errors.length > 0}
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
-                  )}
-                </>
-              )}
-            </form.Field>
-          </div>
-          <div className="md:col-span-1">
-            <form.Field name="marks">
-              {(field) => (
-                <>
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                  >
-                    Marks
-                  </Typography>
-                  <SelectDropdown
-                    placeholder="Select Marks"
-                    value={String(field.state.value)}
-                    onChange={(val) => field.handleChange(Number(val))}
-                    options={Array.from({ length: 50 }, (_, i) => ({
-                      id: String(i + 1),
-                      label: String(i + 1),
-                    }))}
-                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
-                    error={field.state.meta.errors.length > 0}
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
-                  )}
-                </>
-              )}
-            </form.Field>
-          </div>
-          <div className="md:col-span-2">
             <form.Field name="questionText">
               {(field) => (
                 <>

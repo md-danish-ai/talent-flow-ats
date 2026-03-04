@@ -293,9 +293,12 @@ export function ImageSubjectiveClient() {
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-primary/10 text-brand-primary">
-                            {row.subject?.name || "No Subject"}
-                          </span>
+                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
+                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
+                            <Typography variant="body5" weight="medium" className="text-brand-primary">
+                              {row.subject?.name || "No Subject"}
+                            </Typography>
+                          </div>
                         </TableCell>
                       )}
                       {visibleColumns.includes("createdDate") && (
