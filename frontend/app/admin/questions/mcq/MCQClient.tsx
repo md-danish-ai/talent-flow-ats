@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
@@ -41,7 +41,7 @@ import { classificationsApi, Classification } from "@lib/api/classifications";
 import { AnimatePresence, motion } from "framer-motion";
 import { ApiError } from "@lib/api/client";
 
-import { Question, QuestionOption } from "@lib/api/questions";
+import { Question } from "@lib/api/questions";
 
 interface MCQClientProps {
   initialData?: Question[];
@@ -84,7 +84,7 @@ export function MCQClient({
     };
   }, [openMenuId]);
 
-  const handleAuthError = (error: unknown): boolean => {
+  const handleAuthError = useCallback((error: unknown): boolean => {
     if (error instanceof ApiError && error.status === 401) {
       if (typeof document !== "undefined") {
         document.cookie = "role=; Max-Age=0; path=/";
@@ -95,7 +95,7 @@ export function MCQClient({
       return true;
     }
     return false;
-  };
+  }, [router]);
 
 
   // Column Visibility State
@@ -135,10 +135,9 @@ export function MCQClient({
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      debugger
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
@@ -147,7 +146,6 @@ export function MCQClient({
         question_type: "MULTIPLE_CHOICE", // Optional filter
       });
       setData(response.data || []);
-      debugger
       if (response.pagination) {
         setTotalItems(response.pagination.total_records);
       }
@@ -159,12 +157,11 @@ export function MCQClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter, handleAuthError]);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+  }, [fetchData]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -178,11 +175,10 @@ export function MCQClient({
         console.error("Failed to fetch subjects:", error);
       }
     };
-    debugger
     if (subjects.length === 0) {
       fetchSubjects();
     }
-  }, [subjects.length]);
+  }, [subjects.length, handleAuthError]);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);

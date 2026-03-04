@@ -11,7 +11,6 @@ import {
   Lock,
   LogOut,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import Link from "next/link";
@@ -55,8 +54,16 @@ export function DashboardClient({
   user,
   isDetailsComplete,
 }: DashboardClientProps) {
-  const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    if (typeof document !== "undefined") {
+      document.cookie = "auth_token=; Max-Age=0; path=/";
+      document.cookie = "role=; Max-Age=0; path=/";
+      document.cookie = "user_info=; Max-Age=0; path=/";
+    }
+    window.location.href = "/sign-in";
+  };
 
 
 

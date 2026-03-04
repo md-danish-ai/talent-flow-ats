@@ -19,6 +19,14 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
   onClose,
   questionData,
 }) => {
+  const [toast, setToast] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!toast) return;
+    const timeout = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [toast]);
+
   if (!questionData) return null;
 
   // Map backend data to form values
@@ -39,14 +47,6 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       isCorrect: !!opt.is_correct,
     })),
   };
-
-  const [toast, setToast] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!toast) return;
-    const timeout = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(timeout);
-  }, [toast]);
 
   return (
     <>

@@ -12,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { ListChecks } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { ListChecks, Loader2, FileImage } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@lib/utils";
 
@@ -127,6 +126,14 @@ export const ViewImageQuestionModal: React.FC<ViewImageQuestionModalProps> = ({
                         unoptimized
                       />
                     </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="px-2 py-1 rounded-md bg-muted text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 border border-border/50 shadow-sm">
+                        <FileImage size={10} className="text-brand-primary/60" />
+                        <span className="truncate max-w-[200px]" title={question.image_url.split("/").pop() || ""}>
+                          {question.image_url.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ) : null}
                 <Typography variant="body3" className="leading-relaxed">
@@ -144,9 +151,9 @@ export const ViewImageQuestionModal: React.FC<ViewImageQuestionModalProps> = ({
                     Subject
                   </Typography>
                   <Typography variant="body3" weight="bold">
-                    {typeof question.subject_type === "string"
-                      ? question.subject_type
-                      : question.subject_type?.name || "N/A"}
+                    {typeof question.subject === "string"
+                      ? question.subject
+                      : question.subject?.name || "N/A"}
                   </Typography>
                 </div>
                 <div className="space-y-1">

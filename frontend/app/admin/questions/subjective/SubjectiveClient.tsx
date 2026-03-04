@@ -49,7 +49,6 @@ export function SubjectiveClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   // Filters
