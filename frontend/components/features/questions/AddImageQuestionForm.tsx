@@ -15,6 +15,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X } from "lucide-react";
+import Image from "next/image";
 
 export const AddImageQuestionForm = ({ 
   questionType = "IMAGE_BASED_MCQ",
@@ -35,6 +36,14 @@ export const AddImageQuestionForm = ({
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const getCanonicalImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+    if (!base) return url;
+    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+  };
 
   React.useEffect(() => {
     if (!toast) return;
@@ -184,7 +193,7 @@ export const AddImageQuestionForm = ({
           </Typography>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
             <form.Field name="subject">
               {(field) => (
@@ -212,65 +221,6 @@ export const AddImageQuestionForm = ({
                       variant="body5"
                       className="text-red-500 mt-1 ml-1 font-medium"
                     >
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
-                  )}
-                </>
-              )}
-            </form.Field>
-          </div>
-          <div className="md:col-span-1">
-            <form.Field name="questionImageUrl">
-              {(field) => (
-                <>
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                  >
-                    Question Image
-                  </Typography>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <div className="flex flex-col gap-2">
-                    {field.state.value ? (
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                        <FileImage size={18} />
-                        <span className="text-sm font-medium truncate max-w-[150px]">
-                          {field.state.value.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => field.handleChange("")}
-                          className="ml-auto p-1 hover:bg-emerald-500/20 rounded-full transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-12 w-full border-dashed border-2 hover:border-brand-primary hover:bg-brand-primary/5 transition-all"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? (
-                          <Loader2 size={18} className="animate-spin mr-2" />
-                        ) : (
-                          <Upload size={18} className="mr-2" />
-                        )}
-                        {isUploading ? "Uploading..." : "Upload Image"}
-                      </Button>
-                    )}
-                  </div>
-                  {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -340,7 +290,83 @@ export const AddImageQuestionForm = ({
               )}
             </form.Field>
           </div>
-          <div className="md:col-span-2">
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div className="md:col-span-1">
+            <form.Field name="questionImageUrl">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Question Image
+                  </Typography>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex flex-col gap-2">
+                    {field.state.value ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-muted/30 group">
+                          <Image
+                            src={getCanonicalImageUrl(field.state.value) as string}
+                            alt="Preview"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => field.handleChange("")}
+                              className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                              title="Remove Image"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                          <FileImage size={16} />
+                          <span className="text-xs font-medium truncate flex-1">
+                            {field.state.value.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-12 w-full border-dashed border-2 hover:border-brand-primary hover:bg-brand-primary/5 transition-all"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <Loader2 size={18} className="animate-spin mr-2" />
+                        ) : (
+                          <Upload size={18} className="mr-2" />
+                        )}
+                        {isUploading ? "Uploading..." : "Upload Image"}
+                      </Button>
+                    )}
+                  </div>
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
             <form.Field name="questionText">
               {(field) => (
                 <>

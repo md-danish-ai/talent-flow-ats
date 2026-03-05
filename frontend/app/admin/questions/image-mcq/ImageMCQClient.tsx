@@ -385,9 +385,12 @@ export function ImageMCQClient({
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>
-                          {typeof row.subject === "string"
-                            ? row.subject
-                            : row.subject?.name ?? "N/A"}
+                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
+                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
+                            <Typography variant="body5" weight="medium" className="text-brand-primary">
+                              {typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}
+                            </Typography>
+                          </div>
                         </TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
@@ -467,7 +470,10 @@ export function ImageMCQClient({
                   ...subjects.map((s) => ({ id: s.code ?? s.id, label: s.name })),
                 ]}
                 value={subjectFilter || "all"}
-                onChange={(val) => setSubjectFilter(val)}
+                onChange={(val) => {
+                  setSubjectFilter(val as string);
+                  setCurrentPage(1);
+                }}
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
               />
@@ -484,7 +490,8 @@ export function ImageMCQClient({
                 startIcon={<RotateCcw size={18} />}
                 onClick={() => {
                   setSearchQuery("");
-                  setSubjectFilter(undefined);
+                  setSubjectFilter("all");
+                  setCurrentPage(1);
                 }}
                 className="font-bold w-full"
                 title="Reset Filters"
