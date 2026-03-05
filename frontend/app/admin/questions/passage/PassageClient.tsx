@@ -22,12 +22,10 @@ import {
   MoreVertical, 
   Eye, 
   Edit3, 
-  RefreshCw, 
   Power, 
   FileText,
   Filter,
   ListChecks,
-  Loader2,
   RotateCcw
 } from "lucide-react";
 import { questionsApi, type Question } from "@lib/api/questions";

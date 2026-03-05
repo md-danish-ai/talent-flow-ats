@@ -38,7 +38,6 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-import { AnimatePresence, motion } from "framer-motion";
 import { ApiError } from "@lib/api/client";
 import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
 
