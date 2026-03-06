@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   DUMMY_SECTIONS,
+  INTERVIEW_PAPER_ID,
   OVERALL_EXAM_DURATION_MINUTES,
   OVERALL_EXAM_TOTAL_SECONDS,
 } from "./data";
@@ -13,8 +14,22 @@ import { InterviewCompleted } from "./components/InterviewCompleted";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
+import {
+  interviewAttemptsApi,
+  type AttemptSummaryResponse,
+} from "@lib/api/interview-attempts";
 
 export function InterviewTestClient() {
+  const totalSections = DUMMY_SECTIONS.length;
+  const emptyLockedSections = useMemo(
+    () => DUMMY_SECTIONS.map(() => false),
+    [],
+  );
+  const allLockedSections = useMemo(
+    () => DUMMY_SECTIONS.map(() => true),
+    [],
+  );
+
   const [hasStarted, setHasStarted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completionReason, setCompletionReason] = useState<
@@ -24,17 +39,21 @@ export function InterviewTestClient() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
   const [isSectionChangeConfirmOpen, setIsSectionChangeConfirmOpen] =
     useState(false);
-  const [lockedSections, setLockedSections] = useState<boolean[]>(
-    DUMMY_SECTIONS.map(() => false),
-  );
+  const [lockedSections, setLockedSections] = useState<boolean[]>(emptyLockedSections);
   const [examRemainingSeconds, setExamRemainingSeconds] = useState(
     OVERALL_EXAM_TOTAL_SECONDS,
   );
 
   const hasHandledOverallTimeoutRef = useRef(false);
   const latestAnswersRef = useRef<Record<number, string>>({});
+  const [attemptId, setAttemptId] = useState<number | null>(null);
+  const [paperQuestionIds, setPaperQuestionIds] = useState<number[]>([]);
+  const [finalSummary, setFinalSummary] = useState<AttemptSummaryResponse | null>(
+    null,
+  );
 
   const currentSection = DUMMY_SECTIONS[sectionIndex];
   const currentQuestion = currentSection.questions[questionIndex];
@@ -53,6 +72,19 @@ export function InterviewTestClient() {
     () => DUMMY_SECTIONS.flatMap((section) => section.questions),
     [],
   );
+  const localQuestionIds = useMemo(
+    () => allQuestions.map((question) => question.id),
+    [allQuestions],
+  );
+  const questionIdMap = useMemo(() => {
+    return localQuestionIds.reduce<Record<number, number>>((acc, localId, index) => {
+      const backendQuestionId = paperQuestionIds[index];
+      if (backendQuestionId) {
+        acc[localId] = backendQuestionId;
+      }
+      return acc;
+    }, {});
+  }, [localQuestionIds, paperQuestionIds]);
 
   const answeredCount = useMemo(
     () =>
@@ -66,8 +98,7 @@ export function InterviewTestClient() {
   const notAttemptedCount = totalQuestions - answeredCount;
 
   const completedBeforeCurrentSection = DUMMY_SECTIONS.slice(0, sectionIndex)
-    .map((section) => section.questions.length)
-    .reduce((sum, count) => sum + count, 0);
+    .reduce((sum, section) => sum + section.questions.length, 0);
 
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
   const progressPercent = Math.min(
@@ -92,6 +123,24 @@ export function InterviewTestClient() {
     questionIndex === currentSection.questions.length - 1;
   const isLastSection = sectionIndex === DUMMY_SECTIONS.length - 1;
 
+  const persistAnswerToBackend = useCallback(
+    async (
+      questionId: number,
+      answerText: string,
+      isAutoSaved: boolean = false,
+    ) => {
+      if (!attemptId) return;
+      const backendQuestionId = questionIdMap[questionId];
+      if (!backendQuestionId) return;
+
+      await interviewAttemptsApi.saveAnswer(attemptId, backendQuestionId, {
+        answer_text: answerText,
+        is_auto_saved: isAutoSaved,
+      });
+    },
+    [attemptId, questionIdMap],
+  );
+
   const lockAndMoveToNextSection = useCallback(
     (currentIndex: number, notice?: string) => {
       setLockedSections((prev) => {
@@ -100,7 +149,7 @@ export function InterviewTestClient() {
         return next;
       });
 
-      if (currentIndex === DUMMY_SECTIONS.length - 1) {
+      if (currentIndex === totalSections - 1) {
         setCompletionReason("manual");
         setIsCompleted(true);
         setMessage("Interview completed successfully.");
@@ -111,7 +160,7 @@ export function InterviewTestClient() {
       setQuestionIndex(0);
       setMessage(notice ?? "Section locked. You cannot return to this section.");
     },
-    [],
+    [totalSections],
   );
 
   useEffect(() => {
@@ -122,12 +171,35 @@ export function InterviewTestClient() {
     if (hasHandledOverallTimeoutRef.current) return;
     hasHandledOverallTimeoutRef.current = true;
 
-    setLockedSections(DUMMY_SECTIONS.map(() => true));
-    setIsSectionChangeConfirmOpen(false);
-    setCompletionReason("time_over");
-    setIsCompleted(true);
-    setMessage("Overall interview time is over. Answers were auto-submitted.");
-  }, []);
+    const submitOnTimeout = async () => {
+      try {
+        if (attemptId) {
+          const snapshot = latestAnswersRef.current;
+          const saveRequests = allQuestions.map((question) =>
+            persistAnswerToBackend(
+              question.id,
+              snapshot[question.id] ?? "",
+              true,
+            ),
+          );
+          await Promise.all(saveRequests);
+
+          const summary = await interviewAttemptsApi.autoSubmitAttempt(attemptId);
+          setFinalSummary(summary);
+        }
+      } catch {
+        setMessage("Time is over. Local submission completed, but server sync failed.");
+      } finally {
+        setLockedSections(allLockedSections);
+        setIsSectionChangeConfirmOpen(false);
+        setCompletionReason("time_over");
+        setIsCompleted(true);
+        setMessage((prev) => prev ?? "Overall interview time is over. Answers were auto-submitted.");
+      }
+    };
+
+    void submitOnTimeout();
+  }, [allLockedSections, allQuestions, attemptId, persistAnswerToBackend]);
 
   useEffect(() => {
     if (!hasStarted || isCompleted) return;
@@ -150,6 +222,17 @@ export function InterviewTestClient() {
 
   const setCurrentAnswer = (value: string) => {
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+
+    const isChoiceQuestion =
+      currentQuestion.type === "MCQ" ||
+      currentQuestion.type === "IMAGE_MCQ" ||
+      currentQuestion.type === "PASSAGE_MCQ";
+
+    if (isChoiceQuestion) {
+      void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
+        setMessage("Answer selected locally, but failed to sync with server.");
+      });
+    }
   };
 
   const handlePrevious = () => {
@@ -158,8 +241,14 @@ export function InterviewTestClient() {
     setMessage(null);
   };
 
-  const handleSaveAndNext = () => {
+  const handleSaveAndNext = async () => {
     setMessage(null);
+
+    try {
+      await persistAnswerToBackend(currentQuestion.id, currentAnswer);
+    } catch {
+      setMessage("Answer saved locally, but failed to sync with server.");
+    }
 
     if (!isLastQuestionInSection) {
       setQuestionIndex((prev) => prev + 1);
@@ -169,6 +258,15 @@ export function InterviewTestClient() {
     if (!isLastSection) {
       setIsSectionChangeConfirmOpen(true);
       return;
+    }
+
+    try {
+      if (attemptId) {
+        const summary = await interviewAttemptsApi.submitAttempt(attemptId);
+        setFinalSummary(summary);
+      }
+    } catch {
+      setMessage("Interview finished locally, but final server submission failed.");
     }
 
     lockAndMoveToNextSection(sectionIndex);
@@ -186,25 +284,53 @@ export function InterviewTestClient() {
     setHasStarted(false);
     setIsCompleted(false);
     setCompletionReason(null);
+    setAttemptId(null);
+    setPaperQuestionIds([]);
+    setFinalSummary(null);
     setSectionIndex(0);
     setQuestionIndex(0);
     setAnswers({});
     setMessage(null);
+    setStartError(null);
     setIsSectionChangeConfirmOpen(false);
-    setLockedSections(DUMMY_SECTIONS.map(() => false));
+    setLockedSections(emptyLockedSections);
     setExamRemainingSeconds(OVERALL_EXAM_TOTAL_SECONDS);
     hasHandledOverallTimeoutRef.current = false;
     latestAnswersRef.current = {};
+  };
+
+  const handleStartInterview = async () => {
+    try {
+      setStartError(null);
+      const startResponse = await interviewAttemptsApi.startAttempt(
+        INTERVIEW_PAPER_ID,
+      );
+      setAttemptId(startResponse.attempt_id);
+      const incomingPaperQuestionIds = startResponse.paper_question_ids || [];
+      setPaperQuestionIds(incomingPaperQuestionIds);
+      if (incomingPaperQuestionIds.length !== allQuestions.length) {
+        setMessage(
+          "Paper question mapping differs from UI question count. Some answers may stay local only.",
+        );
+      }
+      setHasStarted(true);
+    } catch {
+      setStartError(
+        "Could not start interview on server. Please check paper setup and try again.",
+      );
+    }
   };
 
   if (isCompleted) {
     return (
       <PageContainer className="py-3 sm:py-4 lg:py-6">
         <InterviewCompleted
-          totalSections={DUMMY_SECTIONS.length}
-          totalQuestions={totalQuestions}
-          answeredCount={answeredCount}
-          notAttemptedCount={notAttemptedCount}
+          totalSections={totalSections}
+          totalQuestions={finalSummary?.total_questions ?? totalQuestions}
+          answeredCount={finalSummary?.attempted_count ?? answeredCount}
+          notAttemptedCount={
+            finalSummary?.unattempted_count ?? notAttemptedCount
+          }
           completionReason={completionReason}
           overallExamDurationMinutes={OVERALL_EXAM_DURATION_MINUTES}
           onReset={handleReset}
@@ -219,7 +345,10 @@ export function InterviewTestClient() {
         <InterviewOverview
           sections={DUMMY_SECTIONS}
           overallExamDurationMinutes={OVERALL_EXAM_DURATION_MINUTES}
-          onStart={() => setHasStarted(true)}
+          startError={startError}
+          onStart={() => {
+            void handleStartInterview();
+          }}
         />
       </PageContainer>
     );
@@ -233,7 +362,7 @@ export function InterviewTestClient() {
             message={message}
             onCloseMessage={() => setMessage(null)}
             sectionIndex={sectionIndex}
-            totalSections={DUMMY_SECTIONS.length}
+            totalSections={totalSections}
             currentSection={currentSection}
             questionIndex={questionIndex}
             progressPercent={progressPercent}

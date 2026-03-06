@@ -5,17 +5,20 @@ import { ArrowLeft, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
 import { Button } from "@components/ui-elements/Button";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
+import { Alert } from "@components/ui-elements/Alert";
 import type { InterviewSection } from "../types";
 
 interface InterviewOverviewProps {
   sections: InterviewSection[];
   overallExamDurationMinutes: number;
+  startError?: string | null;
   onStart: () => void;
 }
 
 export function InterviewOverview({
   sections,
   overallExamDurationMinutes,
+  startError,
   onStart,
 }: InterviewOverviewProps) {
   const instructionItems: ReactNode[] = [
@@ -62,6 +65,14 @@ export function InterviewOverview({
             section completion.
           </Typography>
         </div>
+
+        {startError && (
+          <Alert
+            variant="error"
+            title="Unable to Start Interview"
+            description={startError}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {sections.map((section, index) => (
