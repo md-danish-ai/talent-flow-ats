@@ -1,6 +1,7 @@
 import type { InterviewSection } from "./types";
 
 const DEFAULT_OVERALL_EXAM_DURATION_MINUTES = 1;
+const DEFAULT_INTERVIEW_PAPER_ID = 1;
 
 const resolveOverallExamDurationMinutes = () => {
   const configured = Number(
@@ -16,6 +17,16 @@ const resolveOverallExamDurationMinutes = () => {
 
 export const OVERALL_EXAM_DURATION_MINUTES = resolveOverallExamDurationMinutes();
 export const OVERALL_EXAM_TOTAL_SECONDS = OVERALL_EXAM_DURATION_MINUTES * 60;
+
+const resolveInterviewPaperId = () => {
+  const configured = Number(process.env.NEXT_PUBLIC_INTERVIEW_PAPER_ID);
+  if (!Number.isFinite(configured) || configured <= 0) {
+    return DEFAULT_INTERVIEW_PAPER_ID;
+  }
+  return Math.floor(configured);
+};
+
+export const INTERVIEW_PAPER_ID = resolveInterviewPaperId();
 
 export const DUMMY_SECTIONS: InterviewSection[] = [
   {

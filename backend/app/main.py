@@ -10,6 +10,7 @@ from app.user_details.router import router as user_details_router
 from app.questions.router import router as questions_router
 from app.answer.router import router as answer_router
 from app.classifications.router import router as classifications_router
+from app.interview_attempts.router import router as interview_attempts_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -85,6 +86,7 @@ app.include_router(user_details_router)
 app.include_router(questions_router)
 app.include_router(answer_router)
 app.include_router(classifications_router)
+app.include_router(interview_attempts_router)
 
 
 # Images
