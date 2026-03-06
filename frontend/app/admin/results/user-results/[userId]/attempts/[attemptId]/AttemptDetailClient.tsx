@@ -333,7 +333,7 @@ export function AttemptDetailClient({
               <div className="mt-3 space-y-2">
                 <div className="rounded-lg border border-border bg-muted/10 p-3">
                   <Typography
-                    variant="body6"
+                    variant="body5"
                     className="font-semibold uppercase tracking-wide text-muted-foreground"
                   >
                     User Answer
@@ -344,7 +344,7 @@ export function AttemptDetailClient({
                 </div>
                 <div className="rounded-lg border border-border bg-emerald-500/5 p-3">
                   <Typography
-                    variant="body6"
+                    variant="body5"
                     className="font-semibold uppercase tracking-wide text-muted-foreground"
                   >
                     Expected Answer
@@ -357,7 +357,7 @@ export function AttemptDetailClient({
             )}
 
             <div className="mt-3 rounded-lg border border-border bg-muted/20 px-3 py-2">
-              <Typography variant="body6" className="text-muted-foreground">
+              <Typography variant="body5" className="text-muted-foreground">
                 Auto Marks
               </Typography>
               <Typography variant="body4" className="text-foreground">
@@ -386,7 +386,7 @@ export function AttemptDetailClient({
                 startIcon={<PencilLine size={14} />}
                 placeholder={`0 - ${answer.max_marks}`}
               />
-              <Typography variant="body6" className="text-muted-foreground">
+              <Typography variant="body5" className="text-muted-foreground">
                 Max allowed: {answer.max_marks}
               </Typography>
               <Button
@@ -401,7 +401,7 @@ export function AttemptDetailClient({
 
               {manualMarksApplied[`${answer.question_id}-${index}`] !== undefined && (
                 <div className="rounded-lg border border-brand-primary/25 bg-brand-primary/10 px-3 py-2">
-                  <Typography variant="body6" className="text-brand-primary">
+                  <Typography variant="body5" className="text-brand-primary">
                     Manual marks set: {manualMarksApplied[`${answer.question_id}-${index}`]}
                   </Typography>
                 </div>
