@@ -14,22 +14,18 @@ import { InterviewCompleted } from "./components/InterviewCompleted";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
+import { questionsApi, type Question } from "@lib/api/questions";
 import {
   interviewAttemptsApi,
   type AttemptSummaryResponse,
 } from "@lib/api/interview-attempts";
+import type { InterviewQuestion, InterviewSection } from "./types";
 
 export function InterviewTestClient() {
-  const totalSections = DUMMY_SECTIONS.length;
-  const emptyLockedSections = useMemo(
-    () => DUMMY_SECTIONS.map(() => false),
-    [],
-  );
-  const allLockedSections = useMemo(
-    () => DUMMY_SECTIONS.map(() => true),
-    [],
-  );
-
+  const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
+  const totalSections = sections.length;
+  const emptyLockedSections = useMemo(() => sections.map(() => false), [sections]);
+  const allLockedSections = useMemo(() => sections.map(() => true), [sections]);
   const [hasStarted, setHasStarted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completionReason, setCompletionReason] = useState<
@@ -50,41 +46,23 @@ export function InterviewTestClient() {
   const hasHandledOverallTimeoutRef = useRef(false);
   const latestAnswersRef = useRef<Record<number, string>>({});
   const [attemptId, setAttemptId] = useState<number | null>(null);
-  const [paperQuestionIds, setPaperQuestionIds] = useState<number[]>([]);
   const [finalSummary, setFinalSummary] = useState<AttemptSummaryResponse | null>(
     null,
   );
 
-  const currentSection = DUMMY_SECTIONS[sectionIndex];
+  const currentSection = sections[sectionIndex];
   const currentQuestion = currentSection.questions[questionIndex];
   const currentAnswer = answers[currentQuestion.id] || "";
 
   const totalQuestions = useMemo(
-    () =>
-      DUMMY_SECTIONS.reduce(
-        (total, section) => total + section.questions.length,
-        0,
-      ),
-    [],
+    () => sections.reduce((total, section) => total + section.questions.length, 0),
+    [sections],
   );
 
   const allQuestions = useMemo(
-    () => DUMMY_SECTIONS.flatMap((section) => section.questions),
-    [],
+    () => sections.flatMap((section) => section.questions),
+    [sections],
   );
-  const localQuestionIds = useMemo(
-    () => allQuestions.map((question) => question.id),
-    [allQuestions],
-  );
-  const questionIdMap = useMemo(() => {
-    return localQuestionIds.reduce<Record<number, number>>((acc, localId, index) => {
-      const backendQuestionId = paperQuestionIds[index];
-      if (backendQuestionId) {
-        acc[localId] = backendQuestionId;
-      }
-      return acc;
-    }, {});
-  }, [localQuestionIds, paperQuestionIds]);
 
   const answeredCount = useMemo(
     () =>
@@ -97,7 +75,7 @@ export function InterviewTestClient() {
 
   const notAttemptedCount = totalQuestions - answeredCount;
 
-  const completedBeforeCurrentSection = DUMMY_SECTIONS.slice(0, sectionIndex)
+  const completedBeforeCurrentSection = sections.slice(0, sectionIndex)
     .reduce((sum, section) => sum + section.questions.length, 0);
 
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
@@ -130,15 +108,13 @@ export function InterviewTestClient() {
       isAutoSaved: boolean = false,
     ) => {
       if (!attemptId) return;
-      const backendQuestionId = questionIdMap[questionId];
-      if (!backendQuestionId) return;
 
-      await interviewAttemptsApi.saveAnswer(attemptId, backendQuestionId, {
+      await interviewAttemptsApi.saveAnswer(attemptId, questionId, {
         answer_text: answerText,
         is_auto_saved: isAutoSaved,
       });
     },
-    [attemptId, questionIdMap],
+    [attemptId],
   );
 
   const lockAndMoveToNextSection = useCallback(
@@ -281,11 +257,11 @@ export function InterviewTestClient() {
   };
 
   const handleReset = () => {
+    setSections(DUMMY_SECTIONS);
     setHasStarted(false);
     setIsCompleted(false);
     setCompletionReason(null);
     setAttemptId(null);
-    setPaperQuestionIds([]);
     setFinalSummary(null);
     setSectionIndex(0);
     setQuestionIndex(0);
@@ -299,20 +275,102 @@ export function InterviewTestClient() {
     latestAnswersRef.current = {};
   };
 
+  const resolveQuestionType = (question: Question): InterviewQuestion["type"] => {
+    const typeCode = question.question_type?.code || "";
+    if (typeCode === "IMAGE_MULTIPLE_CHOICE") return "IMAGE_MCQ";
+    if (typeCode === "SUBJECTIVE") return "SUBJECTIVE";
+    if (typeCode === "PASSAGE_MULTIPLE_CHOICE" || typeCode === "PASSAGE_MCQ") {
+      return "PASSAGE_MCQ";
+    }
+    if (typeCode === "MULTIPLE_CHOICE") return "MCQ";
+
+    if (question.passage) return "PASSAGE_MCQ";
+    if (question.image_url) return "IMAGE_MCQ";
+    if (question.options?.length) return "MCQ";
+    return "SUBJECTIVE";
+  };
+
+  const resolveQuestionOptions = (question: Question): string[] => {
+    if (!Array.isArray(question.options)) return [];
+    return question.options
+      .map((option) => {
+        const optionText = option.option_text;
+        if (typeof optionText === "string" && optionText.trim()) return optionText;
+        const optionLabel = option.option_label;
+        if (typeof optionLabel === "string" && optionLabel.trim()) return optionLabel;
+        return null;
+      })
+      .filter((value): value is string => Boolean(value));
+  };
+
+  const buildSectionsFromBackend = (
+    orderedQuestions: Question[],
+  ): InterviewSection[] => {
+    const sectionMap = new Map<string, InterviewSection>();
+
+    orderedQuestions.forEach((question) => {
+      const subjectCode = question.subject?.code || "GENERAL";
+      const sectionTitle = question.subject?.name || "General";
+
+      if (!sectionMap.has(subjectCode)) {
+        sectionMap.set(subjectCode, {
+          id: subjectCode.toLowerCase(),
+          title: sectionTitle,
+          durationMinutes: 0,
+          questions: [],
+        });
+      }
+
+      const mappedQuestion: InterviewQuestion = {
+        id: question.id,
+        type: resolveQuestionType(question),
+        questionText: question.question_text,
+        description: undefined,
+        passage: question.passage || undefined,
+        imageUrl: question.image_url || undefined,
+        options: resolveQuestionOptions(question),
+      };
+
+      sectionMap.get(subjectCode)!.questions.push(mappedQuestion);
+    });
+
+    return Array.from(sectionMap.values()).filter(
+      (section) => section.questions.length > 0,
+    );
+  };
+
   const handleStartInterview = async () => {
     try {
       setStartError(null);
       const startResponse = await interviewAttemptsApi.startAttempt(
         INTERVIEW_PAPER_ID,
       );
-      setAttemptId(startResponse.attempt_id);
-      const incomingPaperQuestionIds = startResponse.paper_question_ids || [];
-      setPaperQuestionIds(incomingPaperQuestionIds);
-      if (incomingPaperQuestionIds.length !== allQuestions.length) {
-        setMessage(
-          "Paper question mapping differs from UI question count. Some answers may stay local only.",
+      const paperQuestionIds = startResponse.paper_question_ids || [];
+      const fetchedQuestions = await Promise.all(
+        paperQuestionIds.map((questionId) =>
+          questionsApi.getQuestion(questionId).catch(() => null),
+        ),
+      );
+      const orderedQuestions = fetchedQuestions.filter(
+        (question): question is Question => question !== null,
+      );
+
+      if (orderedQuestions.length === 0) {
+        setStartError(
+          "No questions available for this paper. Please contact admin.",
         );
+        return;
       }
+
+      const backendSections = buildSectionsFromBackend(orderedQuestions);
+
+      setAttemptId(startResponse.attempt_id);
+      setSections(backendSections);
+      setLockedSections(backendSections.map(() => false));
+      setSectionIndex(0);
+      setQuestionIndex(0);
+      setAnswers({});
+      setMessage(null);
       setHasStarted(true);
     } catch {
       setStartError(
