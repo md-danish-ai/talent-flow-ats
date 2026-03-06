@@ -129,9 +129,28 @@ After generating the migration, you must update the Docker environment:
     docker compose up -d
     ```
 
-2.  Run the migration script on Docker to sync the database structure:
+2.  Run the migration script on Docker:
     ```bash
+    # Run all pending migrations (upgrade to head)
     docker compose --profile migrate run --rm migrations
+
+    # Check current migration status
+    docker compose --profile migrate run --rm migrations current
+
+    # View migration history
+    docker compose --profile migrate run --rm migrations history
+
+    # Upgrade to a specific revision
+    docker compose --profile migrate run --rm migrations upgrade <revision_id>
+
+    # Downgrade by one version
+    docker compose --profile migrate run --rm migrations downgrade -1
+
+    # Downgrade to a specific revision
+    docker compose --profile migrate run --rm migrations downgrade <revision_id>
+
+    # Downgrade to the base (empty) schema
+    docker compose --profile migrate run --rm migrations downgrade base
     ```
 
 ### 3. When to use `docker compose down -v`
