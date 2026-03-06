@@ -1,6 +1,6 @@
 import type { InterviewSection } from "./types";
 
-const DEFAULT_OVERALL_EXAM_DURATION_MINUTES = 1;
+const DEFAULT_OVERALL_EXAM_DURATION_MINUTES = 5;
 const DEFAULT_INTERVIEW_PAPER_ID = 1;
 
 const resolveOverallExamDurationMinutes = () => {

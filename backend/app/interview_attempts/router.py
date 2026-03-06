@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
-from app.utils.dependencies import authenticate_user
+from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
 from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest
 from .service import InterviewAttemptService
@@ -64,4 +64,41 @@ async def get_attempt_summary(
     current_user: int = Depends(authenticate_user),
 ):
     data = await service.get_summary(attempt_id=attempt_id, user_id=current_user)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get(
+    "/admin/users",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def get_admin_user_results(
+    search: str | None = Query(default=None),
+):
+    data = await service.get_admin_user_results(search=search)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get(
+    "/admin/users/{user_id}/result",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def get_admin_user_result_detail(
+    user_id: int,
+    attempt_id: int | None = Query(default=None),
+):
+    data = await service.get_admin_user_result_detail(
+        user_id=user_id,
+        attempt_id=attempt_id,
+    )
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get(
+    "/admin/users/{user_id}/attempts",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def get_admin_user_attempts(
+    user_id: int,
+):
+    data = await service.get_admin_user_attempts(user_id=user_id)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)

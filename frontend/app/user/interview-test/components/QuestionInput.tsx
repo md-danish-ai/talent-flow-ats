@@ -66,8 +66,9 @@ export function QuestionInput({
         <div className="space-y-3">
           {(question.options || []).map((option, index) => {
             const optionKey = String.fromCharCode(65 + index);
-            const value = `${optionKey}. ${option}`;
-            const isChecked = currentAnswer === value;
+            const savedValue = optionKey;
+            const displayValue = `${optionKey}. ${option}`;
+            const isChecked = currentAnswer === savedValue;
 
             return (
               <label
@@ -80,18 +81,18 @@ export function QuestionInput({
               >
                 <Radio
                   checked={isChecked}
-                  onChange={() => onChangeAnswer(value)}
+                  onChange={() => onChangeAnswer(savedValue)}
                   name={`question-${question.id}`}
                 />
                 <Typography
                   variant="body3"
                   className={`transition-colors break-words ${
-                    isChecked
+                  isChecked
                       ? "text-brand-primary font-semibold"
                       : "text-foreground group-hover:text-brand-primary"
                   }`}
                 >
-                  {value}
+                  {displayValue}
                 </Typography>
               </label>
             );

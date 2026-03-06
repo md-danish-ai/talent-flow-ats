@@ -84,3 +84,41 @@ class InterviewAttemptService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR,
                 detail=str(exception),
             )
+
+    async def get_admin_user_results(self, search: str | None = None):
+        try:
+            return repository.get_admin_user_results(search=search)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
+
+    async def get_admin_user_result_detail(
+        self, user_id: int, attempt_id: int | None = None
+    ):
+        try:
+            return repository.get_admin_user_result_detail(
+                user_id=user_id,
+                attempt_id=attempt_id,
+            )
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
+
+    async def get_admin_user_attempts(self, user_id: int):
+        try:
+            return repository.get_admin_user_attempts(user_id=user_id)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
