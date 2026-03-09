@@ -13,7 +13,6 @@ def authenticate_user(request: Request) -> int:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     token = auth_header.split(" ")[1]

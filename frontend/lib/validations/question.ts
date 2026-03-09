@@ -18,7 +18,7 @@ export const mcqSchema = z.object({
     .refine((options) => options.some((opt) => opt.isCorrect), {
       message: "One option must be marked as correct",
     }),
-  explanation: z.string().min(5, "Explanation must be at least 5 characters"),
+  explanation: z.string().optional().or(z.literal("")),
 });
 
 // Image MCQ Specific Validations
@@ -35,7 +35,7 @@ export const imageMCQSchema = z.object({
     .refine((options) => options.some((opt) => opt.isCorrect), {
       message: "One option must be marked as correct",
     }),
-  explanation: z.string().min(5, "Explanation must be at least 5 characters"),
+  explanation: z.string().optional().or(z.literal("")),
 });
 
 // Subjective Specific Validations

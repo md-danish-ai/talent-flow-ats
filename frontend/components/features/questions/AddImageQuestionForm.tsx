@@ -7,56 +7,67 @@ import {
   type ImageMCQFormValues,
 } from "@lib/validations/question";
 import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import { classificationsApi, type Classification } from "@lib/api/classifications";
+import {
+  classificationsApi,
+  type Classification,
+} from "@lib/api/classifications";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
-import { Plus, MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X } from "lucide-react";
+import {
+  Plus,
+  MessageSquareText,
+  HelpCircle,
+  Loader2,
+  Upload,
+  FileImage,
+  X,
+} from "lucide-react";
 import Image from "next/image";
+import { toast } from "@lib/toast";
 
-export const AddImageQuestionForm = ({ 
+export const AddImageQuestionForm = ({
   questionType = "IMAGE_BASED_MCQ",
   questionId,
   initialData,
-  onSuccess 
-}: { 
+  onSuccess,
+}: {
   questionType?: string;
   questionId?: number;
   initialData?: ImageMCQFormValues;
-  onSuccess?: () => void 
+  onSuccess?: () => void;
 }) => {
   const [subjects, setSubjects] = React.useState<Classification[]>([]);
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [toast, setToast] = React.useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
 
   const getCanonicalImageUrl = (url?: string | null) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
+      /\/$/,
+      "",
+    );
     if (!base) return url;
     return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
   };
 
   React.useEffect(() => {
-    if (!toast) return;
-    const timeout = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(timeout);
-  }, [toast]);
-
-  React.useEffect(() => {
     const fetchClassifications = async () => {
       try {
         const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({ type: "subject", limit: 100 }),
-          classificationsApi.getClassifications({ type: "exam_level", limit: 100 }),
+          classificationsApi.getClassifications({
+            type: "subject",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
         ]);
         setSubjects(subjectsRes.data || []);
         setExamLevels(examLevelsRes.data || []);
@@ -68,20 +79,22 @@ export const AddImageQuestionForm = ({
   }, []);
 
   const form = useForm({
-    defaultValues: initialData || {
-      subject: "",
-      examLevel: "",
-      marks: 1,
-      questionImageUrl: "",
-      questionText: "",
-      explanation: "",
-      options: [
-        { id: "A", label: "A", content: "", isCorrect: false },
-        { id: "B", label: "B", content: "", isCorrect: false },
-        { id: "C", label: "C", content: "", isCorrect: false },
-        { id: "D", label: "D", content: "", isCorrect: false },
-      ],
-    } as ImageMCQFormValues,
+    defaultValues:
+      initialData ||
+      ({
+        subject: "",
+        examLevel: "",
+        marks: 1,
+        questionImageUrl: "",
+        questionText: "",
+        explanation: "",
+        options: [
+          { id: "A", label: "A", content: "", isCorrect: false },
+          { id: "B", label: "B", content: "", isCorrect: false },
+          { id: "C", label: "C", content: "", isCorrect: false },
+          { id: "D", label: "D", content: "", isCorrect: false },
+        ],
+      } as ImageMCQFormValues),
     validators: {
       onChange: imageMCQSchema,
     },
@@ -95,18 +108,19 @@ export const AddImageQuestionForm = ({
           question_text: value.questionText,
           marks: value.marks,
           is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
-          options: value.options.map(o => ({
+          options: value.options.map((o) => ({
             option_label: o.label,
             option_text: o.content,
-            is_correct: o.isCorrect
+            is_correct: o.isCorrect,
           })),
           answer: {
             explanation: value.explanation,
-            answer_text: value.options
-              .filter(o => o.isCorrect)
-              .map(o => o.label)
-              .join(", ") || "A" 
-          }
+            answer_text:
+              value.options
+                .filter((o) => o.isCorrect)
+                .map((o) => o.label)
+                .join(", ") || "A",
+          },
         };
 
         if (questionId) {
@@ -116,18 +130,9 @@ export const AddImageQuestionForm = ({
           form.reset();
         }
 
-        setToast({
-          type: "success",
-          message: `Question ${questionId ? "updated" : "added"} successfully.`,
-        });
         if (onSuccess) onSuccess();
       } catch (error) {
         console.error("Failed to create question:", error);
-        setToast({
-          type: "error",
-          message:
-            "Failed to create question: " + (error as Error).message,
-        });
       }
     },
   });
@@ -140,10 +145,10 @@ export const AddImageQuestionForm = ({
     try {
       const result = await questionsApi.uploadImage(file);
       form.setFieldValue("questionImageUrl", result.image_url);
-      setToast({ type: "success", message: "Image uploaded successfully" });
+      toast.success("Image uploaded successfully");
     } catch (error) {
       console.error("Upload failed:", error);
-      setToast({ type: "error", message: "Image upload failed: " + (error as Error).message });
+      toast.error("Image upload failed: " + (error as Error).message);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -211,7 +216,7 @@ export const AddImageQuestionForm = ({
                     onChange={(val) => field.handleChange(val as string)}
                     options={[
                       { id: "", label: "Select Subject" },
-                      ...subjects.map(s => ({ id: s.code, label: s.name }))
+                      ...subjects.map((s) => ({ id: s.code, label: s.name })),
                     ]}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
@@ -251,7 +256,10 @@ export const AddImageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -282,7 +290,10 @@ export const AddImageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -316,7 +327,9 @@ export const AddImageQuestionForm = ({
                       <div className="flex flex-col gap-2">
                         <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-muted/30 group">
                           <Image
-                            src={getCanonicalImageUrl(field.state.value) as string}
+                            src={
+                              getCanonicalImageUrl(field.state.value) as string
+                            }
                             alt="Preview"
                             fill
                             className="object-contain"
@@ -336,7 +349,10 @@ export const AddImageQuestionForm = ({
                         <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                           <FileImage size={16} />
                           <span className="text-xs font-medium truncate flex-1">
-                            {field.state.value.split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
+                            {field.state.value
+                              .split("/")
+                              .pop()
+                              ?.replace(/^[0-9a-f]{32}_/, "")}
                           </span>
                         </div>
                       </div>
@@ -358,7 +374,10 @@ export const AddImageQuestionForm = ({
                     )}
                   </div>
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -550,34 +569,6 @@ export const AddImageQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <div
-            className={cn(
-              "rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm",
-              toast.type === "success"
-                ? "border-emerald-300/80 dark:border-emerald-500/60"
-                : "border-red-300/80 dark:border-red-500/60",
-            )}
-          >
-            <Typography
-              variant="body5"
-              weight="bold"
-              className={cn(
-                "mb-1 uppercase tracking-widest text-[11px]",
-                toast.type === "success"
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-red-600 dark:text-red-400",
-              )}
-            >
-              {toast.type === "success" ? "Success" : "Error"}
-            </Typography>
-            <Typography variant="body4" className="text-foreground">
-              {toast.message}
-            </Typography>
-          </div>
-        </div>
-      )}
     </form>
   );
 };

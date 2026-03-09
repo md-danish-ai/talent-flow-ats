@@ -8,8 +8,8 @@ import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
-import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
+import { cn, getErrorMessage } from "@lib/utils";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
@@ -51,22 +51,22 @@ export const AddQuestionForm = ({
   }, []);
 
   const form = useForm({
-    defaultValues: initialData || {
-      subject: "",
-      examLevel: "",
-      marks: 1,
-      questionText: "",
-      explanation: "",
-      options: [
-        { id: "A", label: "A", content: "", isCorrect: false },
-        { id: "B", label: "B", content: "", isCorrect: false },
-        { id: "C", label: "C", content: "", isCorrect: false },
-        { id: "D", label: "D", content: "", isCorrect: false },
-      ],
-    } as MCQFormValues,
-    validators: {
-      onChange: mcqSchema,
-    },
+    defaultValues:
+      initialData ||
+      ({
+        subject: "",
+        examLevel: "",
+        marks: 1,
+        questionText: "",
+        explanation: "",
+        options: [
+          { id: "A", label: "A", content: "", isCorrect: false },
+          { id: "B", label: "B", content: "", isCorrect: false },
+          { id: "C", label: "C", content: "", isCorrect: false },
+          { id: "D", label: "D", content: "", isCorrect: false },
+        ],
+      } as MCQFormValues),
+    validators: { onChange: mcqSchema },
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
@@ -80,14 +80,10 @@ export const AddQuestionForm = ({
             option_text: opt.content,
             is_correct: opt.isCorrect,
           })),
-          answer: {
-            explanation: value.explanation,
-          },
+          answer: { explanation: value.explanation },
         };
 
-        if (!questionId) {
-          payload.is_active = true;
-        }
+        if (!questionId) payload.is_active = true;
 
         let mode: "created" | "updated";
         if (questionId) {
@@ -98,10 +94,12 @@ export const AddQuestionForm = ({
           mode = "created";
         }
 
+        // client.ts fires the success toast automatically using backend's message
         form.reset();
         if (onSuccess) onSuccess(mode);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to process question", error);
+        // Error toast is fired automatically by client.ts
       }
     },
   });
@@ -139,6 +137,7 @@ export const AddQuestionForm = ({
       }}
       className="space-y-8 p-1"
     >
+      {/* ── Question Details ── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
@@ -288,6 +287,7 @@ export const AddQuestionForm = ({
         </div>
       </div>
 
+      {/* ── Answer Options ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -377,6 +377,7 @@ export const AddQuestionForm = ({
         </form.Field>
       </div>
 
+      {/* ── Answer Explanation ── */}
       <div className="space-y-4">
         <form.Field name="explanation">
           {(field) => (
@@ -414,7 +415,8 @@ export const AddQuestionForm = ({
         </form.Field>
       </div>
 
-      <div className="bg-card flex justify-end">
+      {/* ── Submit ── */}
+      <div className="flex justify-end">
         <form.Subscribe
           selector={(state) => [state.isSubmitting, state.canSubmit]}
         >
@@ -443,4 +445,3 @@ export const AddQuestionForm = ({
     </form>
   );
 };
-

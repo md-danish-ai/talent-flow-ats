@@ -18,6 +18,29 @@ app = FastAPI(title="Talent Flow ATS")
 
 
 # ─────────────────────────────────────────────
+#  CORS — must be added before exception handlers
+#  so that even error responses get CORS headers
+# ─────────────────────────────────────────────
+
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:3002",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ─────────────────────────────────────────────
 #  Global Exception Handlers
 # ─────────────────────────────────────────────
 
@@ -44,35 +67,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-# middleware-name: log_requests
-# middleware-desc: this middleware is used for logging incoming requests and their origins.
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    origin = request.headers.get("origin")
-    print(
-        f"Incoming request: {request.method} {request.url} | Origin: {origin}")
-    response = await call_next(request)
-    return response
-
-
-# Set up CORS
-origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-]
-
-# middleware-name: CORSMiddleware
-# middleware-desc: this middleware is used for handling Cross-Origin Resource Sharing (CORS) to allow requests from specified origins.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """
+    Catch-all for all unexpected exceptions.
+    """
+    print(f"CRITICAL ERROR: {str(exc)}")
+    import traceback
+    traceback.print_exc()
+    return api_response(
+        status_code=StatusCode.INTERNAL_SERVER_ERROR,
+        message=ResponseMessage.INTERNAL_ERROR,
+        errors=str(exc)
+    )
 
 
 @app.get("/")
