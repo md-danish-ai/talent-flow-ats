@@ -43,3 +43,4 @@ export * from "./questions";
 export * from "./classifications";
 export * from "./interview-attempts";
 export * from "./results";
+export * from "./notifications";

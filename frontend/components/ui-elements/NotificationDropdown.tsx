@@ -4,36 +4,33 @@ import React from "react";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
-interface Notification {
-  id: string | number;
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-}
+import { type NotificationItem } from "@lib/api";
 
 interface NotificationDropdownProps {
   isOpen: boolean;
   onToggle: () => void;
-  notifications: Notification[];
+  notifications: NotificationItem[];
+  unreadCount: number;
 }
 
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   isOpen,
   onToggle,
   notifications,
+  unreadCount,
 }) => {
   return (
     <div className="relative">
-      <Button
-        variant="action"
-        size="rounded-icon"
-        isActive={isOpen}
-        onClick={onToggle}
-        className="hidden sm:inline-flex"
-      >
-        <div className="relative flex items-center justify-center">
+      <div className="relative inline-flex">
+        <Button
+          variant="action"
+          size="rounded-icon"
+          isActive={isOpen}
+          onClick={onToggle}
+          className="hidden sm:inline-flex"
+        >
           <motion.div
             whileHover={{ rotate: [0, -20, 20, -20, 20, 0] }}
             transition={{ duration: 0.4 }}
@@ -53,11 +50,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               />
             </svg>
           </motion.div>
-          {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
-          )}
-        </div>
-      </Button>
+        </Button>
+
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex items-center justify-center px-1 rounded-full bg-red-500 text-[9px] font-black text-white ring-2 ring-background min-w-[18px] h-[18px] shadow-sm animate-in zoom-in duration-300 pointer-events-none z-20">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </div>
 
       <AnimatePresence>
         {isOpen && (
@@ -87,7 +87,43 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
             <div className="max-h-[400px] overflow-y-auto">
               {notifications.length > 0 ? (
-                <div className="divide-y divide-border"></div>
+                <div className="divide-y divide-border">
+                  {notifications.map((notif: NotificationItem) => (
+                    <div
+                      key={notif.id}
+                      className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${
+                        !notif.is_read ? "bg-brand-primary/5" : ""
+                      }`}
+                      onClick={() => onToggle()} // We'll handle read later or just dismiss
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1">
+                          <span
+                            className={`block w-2.5 h-2.5 rounded-full ${!notif.is_read ? "bg-brand-primary" : "bg-muted"}`}
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <Typography variant="body4" weight="bold">
+                            {notif.title}
+                          </Typography>
+                          <Typography
+                            variant="body5"
+                            className="text-muted-foreground line-clamp-2"
+                          >
+                            {notif.message}
+                          </Typography>
+                          <Typography
+                            variant="body5"
+                            className="text-muted-foreground/60"
+                          >
+                            {new Date(notif.created_at).toLocaleDateString()}{" "}
+                            {new Date(notif.created_at).toLocaleTimeString()}
+                          </Typography>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -122,14 +158,16 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
             {notifications.length > 0 && (
               <div className="p-3 border-t border-border bg-muted/30">
-                <Button
-                  variant="ghost"
-                  color="primary"
-                  className="w-full text-xs font-bold"
-                  onClick={() => {}}
-                >
-                  View all notifications
-                </Button>
+                <Link href="/admin/notifications" passHref>
+                  <Button
+                    variant="ghost"
+                    color="primary"
+                    className="w-full text-xs font-bold"
+                    onClick={() => onToggle()}
+                  >
+                    View all notifications
+                  </Button>
+                </Link>
               </div>
             )}
           </motion.div>

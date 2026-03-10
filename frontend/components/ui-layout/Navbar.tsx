@@ -12,7 +12,7 @@ import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
-import { api } from "@lib/api";
+import { api, type NotificationItem, getAllNotifications } from "@lib/api";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -23,7 +23,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const { toggleSidebar } = useSidebar();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications] = useState([]); // Empty notifications for now
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,17 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
         console.error("Session check failed:", error);
       }
     };
-    checkSession();
+
+    const fetchNotifications = async () => {
+      if (user?.role !== "admin") return;
+      try {
+        const res = await getAllNotifications({ limit: 5 });
+        setNotifications(res.data);
+        setUnreadCount(res.unread_count);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -53,9 +65,18 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
         setIsNotificationsOpen(false);
       }
     };
+
+    checkSession();
+    fetchNotifications();
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    window.addEventListener("notificationsUpdated", fetchNotifications);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("notificationsUpdated", fetchNotifications);
+    };
+  }, [user?.role]);
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background border-b border-transparent h-[73px] flex items-center transition-colors">
@@ -115,6 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   setIsProfileOpen(false);
                 }}
                 notifications={notifications}
+                unreadCount={unreadCount}
               />
             </div>
 
