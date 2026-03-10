@@ -146,8 +146,15 @@ export async function apiClient<T>(
 
   if (!response.ok) {
     const apiErr = new ApiError(response.status, result as ApiErrorResponse);
+    const isAuthRequest =
+      endpoint.startsWith("/auth/signin") ||
+      endpoint.startsWith("/auth/signup");
 
-    if (response.status === 401 && typeof document !== "undefined") {
+    if (
+      response.status === 401 &&
+      typeof document !== "undefined" &&
+      !isAuthRequest
+    ) {
       // Clear all auth cookies on 401 Unauthorized
       document.cookie =
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
@@ -157,7 +164,7 @@ export async function apiClient<T>(
 
       // Redirect to sign-in page with clear_auth parameter
       window.location.href = "/sign-in?clear_auth=1";
-    } else if (!silentError && method !== "GET") {
+    } else if (!silentError && method !== "GET" && !isAuthRequest) {
       // Auto error toast for all non-GET failures (skip GET to avoid
       // spamming toast on background data fetches)
       toast.error(apiErr.message, { title: `Error ${response.status}` });
