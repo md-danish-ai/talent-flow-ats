@@ -20,15 +20,26 @@ export interface ToastEvent {
 type ToastListener = (event: ToastEvent) => void;
 
 let listeners: ToastListener[] = [];
+let queue: ToastEvent[] = [];
 
 function emit(event: ToastEvent) {
-  // Only runs in browser
   if (typeof window === "undefined") return;
+  if (listeners.length === 0) {
+    queue.push(event);
+    return;
+  }
   listeners.forEach((fn) => fn(event));
 }
 
 function subscribe(fn: ToastListener) {
   listeners.push(fn);
+
+  // Flush queue to new subscriber
+  if (queue.length > 0) {
+    queue.forEach((event) => fn(event));
+    queue = [];
+  }
+
   return () => {
     listeners = listeners.filter((l) => l !== fn);
   };
