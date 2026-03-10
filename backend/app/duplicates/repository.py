@@ -13,7 +13,7 @@ def get_notifications(
     )
 
     if is_read is not None:
-        query = query.filter(AdminNotification.is_read == is_read)
+        query = query.filter(AdminNotification.is_read.is_(is_read))
 
     if pagination.search:
         search_term = f"%{pagination.search}%"
@@ -38,8 +38,8 @@ def get_notifications(
     return results, total_records
 
 def get_counts(db: Session):
-    unread = db.query(AdminNotification).filter(AdminNotification.is_read == False).count()
-    read = db.query(AdminNotification).filter(AdminNotification.is_read == True).count()
+    unread = db.query(AdminNotification).filter(AdminNotification.is_read.is_(False)).count()
+    read = db.query(AdminNotification).filter(AdminNotification.is_read.is_(True)).count()
     return unread, read
 
 def update_notification_status(db: Session, ids: List[int], is_read: bool):
