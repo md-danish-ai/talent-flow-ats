@@ -39,6 +39,7 @@ export const interviewAttemptsApi = {
       paper_id: paperId,
     }),
 
+  // silentSuccess + silentError: fires on every answer change — must not spam toasts
   saveAnswer: (
     attemptId: number,
     questionId: number,
@@ -47,14 +48,18 @@ export const interviewAttemptsApi = {
     api.put<SaveAttemptAnswerResponse>(
       `/interview-attempts/${attemptId}/answers/${questionId}`,
       payload,
+      { silentSuccess: true, silentError: true },
     ),
 
   submitAttempt: (attemptId: number) =>
     api.post<AttemptSummaryResponse>(`/interview-attempts/${attemptId}/submit`),
 
+  // silentSuccess: triggered automatically by timer, not a user action
   autoSubmitAttempt: (attemptId: number) =>
     api.post<AttemptSummaryResponse>(
       `/interview-attempts/${attemptId}/auto-submit`,
+      undefined,
+      { silentSuccess: true },
     ),
 
   getSummary: (attemptId: number) =>

@@ -34,11 +34,13 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-import ActionMenu, { type ActionItem } from "@components/ui-elements/ActionMenu";
+import ActionMenu, {
+  type ActionItem,
+} from "@components/ui-elements/ActionMenu";
 import { ApiError } from "@lib/api/client";
 import { Loader2, MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import { Badge } from "@components/ui-elements/Badge";
 interface ImageMCQClientProps {
   initialData?: Question[];
   totalItems?: number;
@@ -64,16 +66,11 @@ export function ImageMCQClient({
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   // deletingId and handleDelete removed because delete action was removed
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
-  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
+  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(
+    null,
+  );
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!toastMessage) return;
-    const t = setTimeout(() => setToastMessage(null), 4000);
-    return () => clearTimeout(t);
-  }, [toastMessage]);
 
   const handleAuthError = (error: unknown): boolean => {
     if (error instanceof ApiError && error.status === 401) {
@@ -138,14 +135,18 @@ export function ImageMCQClient({
         setSubjects(resp.data || []);
       } catch (err) {
         if (err instanceof ApiError) {
-          console.error("Failed to fetch subjects (API):", err.status, err.data);
+          console.error(
+            "Failed to fetch subjects (API):",
+            err.status,
+            err.data,
+          );
         } else {
           console.error("Failed to fetch subjects:", err);
         }
       }
     };
     fetchSubjects();
-  // No question type fetch required since we force the IMAGE_MULTIPLE_CHOICE type.
+    // No question type fetch required since we force the IMAGE_MULTIPLE_CHOICE type.
   }, []);
 
   const fetchData = async () => {
@@ -156,7 +157,8 @@ export function ImageMCQClient({
         limit: pageSize,
         search: debouncedSearch,
         // Filter by subject using subject classification codes
-        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        subject:
+          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
         // Force IMAGE_MULTIPLE_CHOICE for this client
         question_type: FORCED_QUESTION_TYPE,
       });
@@ -167,7 +169,11 @@ export function ImageMCQClient({
       }
     } catch (error) {
       if (error instanceof ApiError) {
-        console.error("API Error fetching questions:", error.status, error.data);
+        console.error(
+          "API Error fetching questions:",
+          error.status,
+          error.data,
+        );
       } else {
         console.error("Error fetching questions:", error);
       }
@@ -185,7 +191,6 @@ export function ImageMCQClient({
   // Called after a new question is created from the Add modal
   const handleAddSuccess = async () => {
     setIsAddModalOpen(false);
-    setToastMessage("Question added successfully.");
     // Reset to first page so user sees newest questions
     setCurrentPage(1);
     await fetchData();
@@ -195,7 +200,6 @@ export function ImageMCQClient({
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      setToastMessage("Status updated");
       await fetchData();
     } catch (error) {
       if (handleAuthError(error)) return;
@@ -219,19 +223,41 @@ export function ImageMCQClient({
         key: "view",
         label: "View",
         icon: <ImageIcon size={16} />,
-        onClick: (e) => { e.stopPropagation(); setViewingQuestionId(id); },
+        onClick: (e) => {
+          e.stopPropagation();
+          setViewingQuestionId(id);
+        },
       },
       {
         key: "edit",
         label: "Edit",
         icon: <EditIcon size={16} />,
-        onClick: (e) => { e.stopPropagation(); const qd = data.find(d => d.id === id) || null; setEditingQuestion(qd); },
+        onClick: (e) => {
+          e.stopPropagation();
+          const qd = data.find((d) => d.id === id) || null;
+          setEditingQuestion(qd);
+        },
       },
       {
         key: "toggle",
-        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        onClick: (e) => { e.stopPropagation(); handleToggleStatus(id); },
+        label:
+          togglingId === id
+            ? "Updating..."
+            : isActive
+              ? "Deactivate"
+              : "Activate",
+        icon:
+          togglingId === id ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : isActive ? (
+            <ToggleRight size={16} />
+          ) : (
+            <ToggleLeft size={16} />
+          ),
+        onClick: (e) => {
+          e.stopPropagation();
+          handleToggleStatus(id);
+        },
         disabled: togglingId === id,
       },
       // Delete action removed per request
@@ -242,7 +268,9 @@ export function ImageMCQClient({
         <ActionMenu
           button={<MoreVertical size={20} />}
           items={items}
-          buttonClassName={"h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"}
+          buttonClassName={
+            "h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"
+          }
           menuClassName={"bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"}
         />
       </div>
@@ -302,7 +330,7 @@ export function ImageMCQClient({
             isFilterOpen && "border-r border-border",
           )}
         >
-              {/* header removed: question type is forced and no UI is needed */}
+          {/* header removed: question type is forced and no UI is needed */}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
@@ -313,7 +341,9 @@ export function ImageMCQClient({
                     </TableHead>
                   )}
                   {visibleColumns.includes("image") && (
-                    <TableHead className="w-[120px] text-center">Image</TableHead>
+                    <TableHead className="w-[120px] text-center">
+                      Image
+                    </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
                     <TableHead>Question</TableHead>
@@ -328,20 +358,33 @@ export function ImageMCQClient({
                     <TableHead>Created Date</TableHead>
                   )}
                   {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">Action</TableHead>
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center">
-                      <Typography variant="body5" className="text-muted-foreground">Loading questions...</Typography>
+                    <TableCell
+                      colSpan={visibleColumns.length}
+                      className="py-8 text-center"
+                    >
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground"
+                      >
+                        Loading questions...
+                      </Typography>
                     </TableCell>
                   </TableRow>
                 ) : data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={visibleColumns.length}
+                      className="py-8 text-center text-muted-foreground"
+                    >
                       No questions found.
                     </TableCell>
                   </TableRow>
@@ -350,7 +393,8 @@ export function ImageMCQClient({
                     <TableRow key={row.id}>
                       {visibleColumns.includes("srNo") && (
                         <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + (data.indexOf(row) + 1)}
+                          {(currentPage - 1) * pageSize +
+                            (data.indexOf(row) + 1)}
                         </TableCell>
                       )}
                       {visibleColumns.includes("image") && (
@@ -361,7 +405,10 @@ export function ImageMCQClient({
                                 e.stopPropagation();
                                 if (!row.image_url) return;
                                 // Ensure absolute URL so browser can load images served by the API server
-                                const base = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000").replace(/\/$/, "");
+                                const base = (
+                                  process.env.NEXT_PUBLIC_API_BASE_URL ??
+                                  "http://localhost:4000"
+                                ).replace(/\/$/, "");
                                 const full = /^(https?:)?\//.test(row.image_url)
                                   ? row.image_url.startsWith("http")
                                     ? row.image_url
@@ -385,19 +432,26 @@ export function ImageMCQClient({
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>
-                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
-                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-                            <Typography variant="body5" weight="medium" className="text-brand-primary">
-                              {typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}
-                            </Typography>
-                          </div>
+                          <Badge
+                            variant="outline"
+                            color={row.subject?.name ? "success" : "error"}
+                            shape="square"
+                          >
+                            {typeof row.subject === "string"
+                              ? row.subject
+                              : (row.subject?.name ?? "N/A")}
+                          </Badge>
                         </TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
                         <TableCell>{"System"}</TableCell>
                       )}
                       {visibleColumns.includes("createdDate") && (
-                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
+                        <TableCell>
+                          {row.created_at
+                            ? new Date(row.created_at).toLocaleDateString()
+                            : "N/A"}
+                        </TableCell>
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
@@ -467,7 +521,10 @@ export function ImageMCQClient({
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  ...subjects.map((s) => ({ id: s.code ?? s.id, label: s.name })),
+                  ...subjects.map((s) => ({
+                    id: s.code ?? s.id,
+                    label: s.name,
+                  })),
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => {
@@ -517,11 +574,17 @@ export function ImageMCQClient({
           onSuccess={async () => {
             // Try to refresh the updated question in-place to reflect changes immediately
             try {
-              const updated = await questionsApi.getQuestion(editingQuestion.id);
-              setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-              setToastMessage("Question updated successfully.");
+              const updated = await questionsApi.getQuestion(
+                editingQuestion.id,
+              );
+              setData((prev) =>
+                prev.map((d) => (d.id === updated.id ? updated : d)),
+              );
             } catch (err) {
-              console.error("Failed to fetch updated question after save:", err);
+              console.error(
+                "Failed to fetch updated question after save:",
+                err,
+              );
               // fallback to full refresh
               await fetchData();
             } finally {
@@ -541,10 +604,7 @@ export function ImageMCQClient({
 
       {/* Image lightbox: open when a row's image icon is clicked */}
       {lightboxUrl && (
-        <ImageLightbox
-          url={lightboxUrl}
-          onClose={() => setLightboxUrl(null)}
-        />
+        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
     </PageContainer>
   );

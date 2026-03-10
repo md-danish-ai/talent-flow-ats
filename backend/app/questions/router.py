@@ -59,7 +59,6 @@ async def create_question(
 
 
 @router.put("/update/{question_id}")
-@router.patch("/update/{question_id}")
 async def update_question(
     question_id:  int,
     payload:      schemas.QuestionUpdate,

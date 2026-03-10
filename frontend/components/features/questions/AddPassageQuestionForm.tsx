@@ -2,15 +2,27 @@
 
 import React from "react";
 import { useForm } from "@tanstack/react-form";
-import { passageSchema, type PassageFormValues } from "@lib/validations/question";
+import {
+  passageSchema,
+  type PassageFormValues,
+} from "@lib/validations/question";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn, getErrorMessage } from "@lib/utils";
-import { MessageSquareText, HelpCircle, Loader2, BookOpen, FileText } from "lucide-react";
+import {
+  MessageSquareText,
+  HelpCircle,
+  Loader2,
+  BookOpen,
+  FileText,
+} from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
-import { classificationsApi, type Classification } from "@lib/api/classifications";
+import {
+  classificationsApi,
+  type Classification,
+} from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
 
 export const AddPassageQuestionForm = ({
@@ -24,23 +36,19 @@ export const AddPassageQuestionForm = ({
 }) => {
   const [subjects, setSubjects] = React.useState<Classification[]>([]);
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
-  const [toast, setToast] = React.useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-
-  React.useEffect(() => {
-    if (!toast) return;
-    const timeout = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(timeout);
-  }, [toast]);
 
   React.useEffect(() => {
     const fetchClassifications = async () => {
       try {
         const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({ type: "subject", limit: 100 }),
-          classificationsApi.getClassifications({ type: "exam_level", limit: 100 }),
+          classificationsApi.getClassifications({
+            type: "subject",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
         ]);
         setSubjects(subjectsRes.data || []);
         setExamLevels(examLevelsRes.data || []);
@@ -52,15 +60,17 @@ export const AddPassageQuestionForm = ({
   }, []);
 
   const form = useForm({
-    defaultValues: initialData || {
-      subject: "",
-      examLevel: "",
-      marks: 1,
-      passage: "",
-      questionText: "",
-      answerText: "",
-      explanation: "",
-    } as PassageFormValues,
+    defaultValues:
+      initialData ||
+      ({
+        subject: "",
+        examLevel: "",
+        marks: 1,
+        passage: "",
+        questionText: "",
+        answerText: "",
+        explanation: "",
+      } as PassageFormValues),
     validators: {
       onChange: passageSchema,
     },
@@ -74,7 +84,7 @@ export const AddPassageQuestionForm = ({
           question_text: value.questionText,
           marks: value.marks,
           is_active: true,
-          options: [], 
+          options: [],
           answer: {
             answer_text: value.answerText,
             explanation: value.explanation,
@@ -83,20 +93,14 @@ export const AddPassageQuestionForm = ({
 
         if (questionId) {
           await questionsApi.updateQuestion(questionId, payload);
-          setToast({ type: "success", message: "Question updated successfully" });
           if (onSuccess) onSuccess("updated");
         } else {
           await questionsApi.createQuestion(payload as QuestionCreate);
-          setToast({ type: "success", message: "Question created successfully" });
           form.reset();
           if (onSuccess) onSuccess("created");
         }
       } catch (error) {
         console.error("Failed to process question:", error);
-        setToast({ 
-          type: "error", 
-          message: "Failed to process question: " + (error as Error).message 
-        });
       }
     },
   });
@@ -125,7 +129,11 @@ export const AddPassageQuestionForm = ({
             <form.Field name="subject">
               {(field) => (
                 <>
-                  <Typography variant="body5" weight="semibold" className="mb-2 block text-muted-foreground uppercase tracking-wider">
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
                     Subject
                   </Typography>
                   <SelectDropdown
@@ -140,7 +148,10 @@ export const AddPassageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -149,10 +160,14 @@ export const AddPassageQuestionForm = ({
             </form.Field>
           </div>
           <div className="md:col-span-1">
-             <form.Field name="examLevel">
+            <form.Field name="examLevel">
               {(field) => (
                 <>
-                  <Typography variant="body5" weight="semibold" className="mb-2 block text-muted-foreground uppercase tracking-wider">
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
                     Exam Level
                   </Typography>
                   <SelectDropdown
@@ -167,7 +182,10 @@ export const AddPassageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -179,7 +197,11 @@ export const AddPassageQuestionForm = ({
             <form.Field name="marks">
               {(field) => (
                 <>
-                  <Typography variant="body5" weight="semibold" className="mb-2 block text-muted-foreground uppercase tracking-wider">
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
                     Marks
                   </Typography>
                   <SelectDropdown
@@ -194,7 +216,10 @@ export const AddPassageQuestionForm = ({
                     error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -231,7 +256,10 @@ export const AddPassageQuestionForm = ({
                 onBlur={field.handleBlur}
               />
               {field.state.meta.errors.length > 0 && (
-                <Typography variant="body5" className="text-red-500 font-medium ml-1 mt-1">
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -244,7 +272,11 @@ export const AddPassageQuestionForm = ({
         <form.Field name="questionText">
           {(field) => (
             <>
-              <Typography variant="body5" weight="semibold" className="mb-2 block text-muted-foreground uppercase tracking-wider">
+              <Typography
+                variant="body5"
+                weight="semibold"
+                className="mb-2 block text-muted-foreground uppercase tracking-wider"
+              >
                 Question Text
               </Typography>
               <Input
@@ -257,7 +289,10 @@ export const AddPassageQuestionForm = ({
                 className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
               />
               {field.state.meta.errors.length > 0 && (
-                <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
+                <Typography
+                  variant="body5"
+                  className="text-red-500 mt-1 ml-1 font-medium"
+                >
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -292,7 +327,10 @@ export const AddPassageQuestionForm = ({
                 onBlur={field.handleBlur}
               />
               {field.state.meta.errors.length > 0 && (
-                <Typography variant="body5" className="text-red-500 font-medium ml-1 mt-1">
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -327,7 +365,10 @@ export const AddPassageQuestionForm = ({
                 onBlur={field.handleBlur}
               />
               {field.state.meta.errors.length > 0 && (
-                <Typography variant="body5" className="text-red-500 font-medium ml-1 mt-1">
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -338,7 +379,9 @@ export const AddPassageQuestionForm = ({
 
       {/* Submit Button */}
       <div className="bg-card flex justify-end">
-        <form.Subscribe selector={(state) => [state.isSubmitting, state.canSubmit]}>
+        <form.Subscribe
+          selector={(state) => [state.isSubmitting, state.canSubmit]}
+        >
           {([isSubmitting, canSubmit]) => (
             <Button
               type="submit"
@@ -361,36 +404,6 @@ export const AddPassageQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
-
-      {/* Custom Toast Placeholder */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <div
-            className={cn(
-              "rounded-xl border px-4 py-3 shadow-lg bg-card min-w-[260px] max-w-sm",
-              toast.type === "success"
-                ? "border-emerald-300/80 dark:border-emerald-500/60"
-                : "border-red-300/80 dark:border-red-500/60",
-            )}
-          >
-            <Typography
-              variant="body5"
-              weight="bold"
-              className={cn(
-                "mb-1 uppercase tracking-widest text-[11px]",
-                toast.type === "success"
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-red-600 dark:text-red-400",
-              )}
-            >
-              {toast.type === "success" ? "Success" : "Error"}
-            </Typography>
-            <Typography variant="body4" className="text-foreground">
-              {toast.message}
-            </Typography>
-          </div>
-        </div>
-      )}
     </form>
   );
 };

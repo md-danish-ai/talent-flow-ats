@@ -40,7 +40,7 @@ import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
 import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
-
+import { Badge } from "@components/ui-elements/Badge";
 import { Question } from "@lib/api/questions";
 
 interface MCQClientProps {
@@ -55,7 +55,9 @@ export function MCQClient({
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
+  const [subjectFilter, setSubjectFilter] = useState<
+    string | number | undefined
+  >(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -66,7 +68,9 @@ export function MCQClient({
   const [openMenuId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
+  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -84,19 +88,21 @@ export function MCQClient({
     };
   }, [openMenuId]);
 
-  const handleAuthError = useCallback((error: unknown): boolean => {
-    if (error instanceof ApiError && error.status === 401) {
-      if (typeof document !== "undefined") {
-        document.cookie = "role=; Max-Age=0; path=/";
-        document.cookie = "auth_token=; Max-Age=0; path=/";
-        document.cookie = "user_info=; Max-Age=0; path=/";
+  const handleAuthError = useCallback(
+    (error: unknown): boolean => {
+      if (error instanceof ApiError && error.status === 401) {
+        if (typeof document !== "undefined") {
+          document.cookie = "role=; Max-Age=0; path=/";
+          document.cookie = "auth_token=; Max-Age=0; path=/";
+          document.cookie = "user_info=; Max-Age=0; path=/";
+        }
+        router.push("/sign-in");
+        return true;
       }
-      router.push("/sign-in");
-      return true;
-    }
-    return false;
-  }, [router]);
-
+      return false;
+    },
+    [router],
+  );
 
   // Column Visibility State
   const allColumns = [
@@ -142,7 +148,8 @@ export function MCQClient({
         page: currentPage,
         limit: pageSize,
         search: debouncedSearch,
-        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        subject:
+          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
         question_type: "MULTIPLE_CHOICE", // Optional filter
       });
       setData(response.data || []);
@@ -166,7 +173,10 @@ export function MCQClient({
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await classificationsApi.getClassifications({ type: "subject", limit: 100 });
+        const response = await classificationsApi.getClassifications({
+          type: "subject",
+          limit: 100,
+        });
         setSubjects(response.data || []);
       } catch (error) {
         if (handleAuthError(error)) {
@@ -215,7 +225,7 @@ export function MCQClient({
         icon: <EditIcon size={16} />,
         onClick: (e) => {
           e.stopPropagation();
-          const qData = data.find(q => q.id === id);
+          const qData = data.find((q) => q.id === id);
           if (qData) {
             setEditingQuestion(qData);
           }
@@ -223,10 +233,22 @@ export function MCQClient({
       },
       {
         key: "toggle",
-        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        className: isActive 
-          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
+        label:
+          togglingId === id
+            ? "Updating..."
+            : isActive
+              ? "Deactivate"
+              : "Activate",
+        icon:
+          togglingId === id ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : isActive ? (
+            <ToggleRight size={16} />
+          ) : (
+            <ToggleLeft size={16} />
+          ),
+        className: isActive
+          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
           : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
         onClick: (e) => {
           e.stopPropagation();
@@ -305,9 +327,9 @@ export function MCQClient({
           )}
         >
           {isLoading && (
-             <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-                 <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-             </div>
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+            </div>
           )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
@@ -340,7 +362,10 @@ export function MCQClient({
               <TableBody>
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={visibleColumns.length}
+                      className="py-8 text-center text-muted-foreground"
+                    >
                       No questions found.
                     </TableCell>
                   </TableRow>
@@ -357,19 +382,26 @@ export function MCQClient({
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>
-                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
-                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-                            <Typography variant="body5" weight="medium" className="text-brand-primary">
-                              {typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}
-                            </Typography>
-                          </div>
+                          <Badge
+                            variant="outline"
+                            color={row.subject?.name ? "success" : "error"}
+                            shape="square"
+                          >
+                            {typeof row.subject === "string"
+                              ? row.subject
+                              : (row.subject?.name ?? "N/A")}
+                          </Badge>
                         </TableCell>
                       )}
                       {visibleColumns.includes("createdBy") && (
                         <TableCell>{"System"}</TableCell>
                       )}
                       {visibleColumns.includes("createdDate") && (
-                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
+                        <TableCell>
+                          {row.created_at
+                            ? new Date(row.created_at).toLocaleDateString()
+                            : "N/A"}
+                        </TableCell>
                       )}
                       {visibleColumns.includes("actions") && (
                         <TableCell className="text-center">
@@ -437,12 +469,13 @@ export function MCQClient({
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
+                  ...(subjects.map((s) => ({ id: s.code, label: s.name })) ||
+                    []),
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => {
-                   setSubjectFilter(val);
-                   setCurrentPage(1);
+                  setSubjectFilter(val);
+                  setCurrentPage(1);
                 }}
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="bottom"
@@ -481,23 +514,22 @@ export function MCQClient({
         }}
       />
 
-{editingQuestion && (
-  <EditQuestionModal
-    isOpen={true}
-    questionData={editingQuestion}
-    onClose={() => {
-      setEditingQuestion(null);
-      fetchData();
-    }}
-  />
-)}
+      {editingQuestion && (
+        <EditQuestionModal
+          isOpen={true}
+          questionData={editingQuestion}
+          onClose={() => {
+            setEditingQuestion(null);
+            fetchData();
+          }}
+        />
+      )}
 
       <ViewQuestionModal
         isOpen={!!viewingQuestionId}
         onClose={() => setViewingQuestionId(null)}
         questionId={viewingQuestionId}
       />
-
     </PageContainer>
   );
 }

@@ -38,6 +38,7 @@ import { cn } from "@lib/utils";
 import ViewQuestionModal from "./component/ViewQuestionModal";
 import EditQuestionModal from "./component/EditQuestionModal";
 import { AddQuestionModal } from "./component/AddQuestionModal";
+import { Badge } from "@components/ui-elements/Badge";
 
 export function SubjectiveClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -53,7 +54,9 @@ export function SubjectiveClient() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
+  const [subjectFilter, setSubjectFilter] = useState<
+    string | number | undefined
+  >(undefined);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
 
@@ -96,7 +99,8 @@ export function SubjectiveClient() {
         limit: pageSize,
         question_type: "SUBJECTIVE",
         search: debouncedSearch,
-        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        subject:
+          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
       });
 
       setData(response.data || []);
@@ -117,7 +121,10 @@ export function SubjectiveClient() {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await classificationsApi.getClassifications({ type: "subject", limit: 100 });
+        const response = await classificationsApi.getClassifications({
+          type: "subject",
+          limit: 100,
+        });
         setSubjects(response.data || []);
       } catch (error) {
         console.error("Failed to fetch subjects:", error);
@@ -163,9 +170,23 @@ export function SubjectiveClient() {
       },
       {
         key: "toggle",
-        label: togglingId === row.id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === row.id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        className: isActive ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10" : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
+        label:
+          togglingId === row.id
+            ? "Updating..."
+            : isActive
+              ? "Deactivate"
+              : "Activate",
+        icon:
+          togglingId === row.id ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : isActive ? (
+            <ToggleRight size={16} />
+          ) : (
+            <ToggleLeft size={16} />
+          ),
+        className: isActive
+          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
         onClick: (e) => {
           e.stopPropagation();
           handleToggleStatus(row.id);
@@ -181,7 +202,7 @@ export function SubjectiveClient() {
           items={items}
           buttonClassName={cn(
             "h-9 w-9 rounded-full transition-all duration-300 flex items-center justify-center",
-            "text-muted-foreground hover:bg-muted hover:text-foreground"
+            "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
           menuClassName="w-48 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-border rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
         />
@@ -252,7 +273,9 @@ export function SubjectiveClient() {
               <TableHeader className="bg-muted/30">
                 <TableRow>
                   {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
                     <TableHead>Question</TableHead>
@@ -264,7 +287,9 @@ export function SubjectiveClient() {
                     <TableHead>Created Date</TableHead>
                   )}
                   {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">Action</TableHead>
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -272,13 +297,20 @@ export function SubjectiveClient() {
               <TableBody>
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
-                      No subjective questions found. Click &quot;Add Question&quot; to create one.
+                    <TableCell
+                      colSpan={visibleColumns.length}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No subjective questions found. Click &quot;Add
+                      Question&quot; to create one.
                     </TableCell>
                   </TableRow>
                 ) : (
                   data.map((row, index) => (
-                    <TableRow key={row.id} className="hover:bg-muted/20 transition-colors">
+                    <TableRow
+                      key={row.id}
+                      className="hover:bg-muted/20 transition-colors"
+                    >
                       {visibleColumns.includes("srNo") && (
                         <TableCell className="font-medium text-center text-muted-foreground">
                           {(currentPage - 1) * pageSize + index + 1}
@@ -286,19 +318,26 @@ export function SubjectiveClient() {
                       )}
                       {visibleColumns.includes("question") && (
                         <TableCell className="max-w-[400px]">
-                          <Typography variant="body4" weight="semibold" className="line-clamp-2">
+                          <Typography
+                            variant="body4"
+                            weight="semibold"
+                            className="line-clamp-2"
+                          >
                             {row.question_text}
                           </Typography>
                         </TableCell>
                       )}
                       {visibleColumns.includes("subject") && (
                         <TableCell>
-                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
-                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-                            <Typography variant="body5" weight="medium" className="text-brand-primary">
-                              {row.subject?.name || "No Subject"}
-                            </Typography>
-                          </div>
+                          <Badge
+                            variant="outline"
+                            color={row.subject?.name ? "success" : "error"}
+                            shape="square"
+                          >
+                            {typeof row.subject === "string"
+                              ? row.subject
+                              : (row.subject?.name ?? "N/A")}
+                          </Badge>
                         </TableCell>
                       )}
                       {visibleColumns.includes("createdDate") && (
@@ -374,7 +413,8 @@ export function SubjectiveClient() {
                 placeholder="All Subjects"
                 options={[
                   { id: "all", label: "All Subjects" },
-                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
+                  ...(subjects.map((s) => ({ id: s.code, label: s.name })) ||
+                    []),
                 ]}
                 value={subjectFilter || "all"}
                 onChange={(val) => {
