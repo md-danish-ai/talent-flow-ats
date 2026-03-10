@@ -60,6 +60,13 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         row = result.mappings().first()
         
         db_session.commit()
+        
+        try:
+            from app.duplicates.service import detect_duplicates
+            detect_duplicates(db_session, int(user_id), data)
+        except Exception as dup_err:
+            print(f"Error detecting duplicates: {str(dup_err)}")
+
         return {
             "id": row["id"],
             "is_submitted": row["is_submitted"],

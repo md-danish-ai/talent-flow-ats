@@ -69,7 +69,7 @@ export const getAllNotifications = (params?: {
     query.append("is_read", params.is_read.toString());
 
   const queryString = query.toString() ? `?${query.toString()}` : "";
-  return api.get<NotificationResponse>(`/notifications/getall${queryString}`);
+  return api.get<NotificationResponse>(`/notifications/get${queryString}`);
 };
 
 export const markNotificationsRead = (notification_ids: number[]) =>
