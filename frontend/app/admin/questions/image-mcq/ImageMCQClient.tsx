@@ -33,6 +33,7 @@ import {
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import ActionMenu, {
   type ActionItem,
@@ -56,8 +57,7 @@ export function ImageMCQClient({
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
   >(undefined);
-  // We force IMAGE_MULTIPLE_CHOICE server-side; no UI filter required.
-  const FORCED_QUESTION_TYPE = "IMAGE_MULTIPLE_CHOICE";
+  // Force IMAGE_MULTIPLE_CHOICE for this page; no UI type filter required.
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -160,7 +160,7 @@ export function ImageMCQClient({
         subject:
           subjectFilter !== "all" ? (subjectFilter as string) : undefined,
         // Force IMAGE_MULTIPLE_CHOICE for this client
-        question_type: FORCED_QUESTION_TYPE,
+        question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
       });
 
       setData(response.data || []);
@@ -563,7 +563,6 @@ export function ImageMCQClient({
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        questionType={FORCED_QUESTION_TYPE}
         onSuccess={handleAddSuccess}
       />
       {editingQuestion && (

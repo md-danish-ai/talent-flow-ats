@@ -50,7 +50,6 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       className="max-w-4xl"
     >
       <AddQuestionForm
-        questionType="MULTIPLE_CHOICE"
         questionId={questionData.id}
         initialData={initialValues}
         onSuccess={() => {

@@ -13,14 +13,13 @@ import { cn, getErrorMessage } from "@lib/utils";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
 export const AddQuestionForm = ({
-  questionType = "MULTIPLE_CHOICE",
   initialData,
   questionId,
   onSuccess,
 }: {
-  questionType?: string;
   initialData?: MCQFormValues;
   questionId?: number;
   onSuccess?: (mode: "created" | "updated") => void;
@@ -70,7 +69,7 @@ export const AddQuestionForm = ({
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
-          question_type: questionType,
+          question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
           subject: value.subject,
           exam_level: value.examLevel,
           question_text: value.questionText,

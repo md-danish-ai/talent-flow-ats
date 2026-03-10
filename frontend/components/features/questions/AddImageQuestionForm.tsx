@@ -28,14 +28,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "@lib/toast";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
 export const AddImageQuestionForm = ({
-  questionType = "IMAGE_BASED_MCQ",
   questionId,
   initialData,
   onSuccess,
 }: {
-  questionType?: string;
   questionId?: number;
   initialData?: ImageMCQFormValues;
   onSuccess?: () => void;
@@ -101,7 +100,7 @@ export const AddImageQuestionForm = ({
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
-          question_type: questionType,
+          question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
           subject: value.subject,
           exam_level: value.examLevel,
           image_url: value.questionImageUrl,

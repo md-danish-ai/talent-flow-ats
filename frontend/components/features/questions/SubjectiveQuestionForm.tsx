@@ -2,7 +2,10 @@
 
 import React from "react";
 import { useForm } from "@tanstack/react-form";
-import { subjectiveSchema, type SubjectiveFormValues } from "@lib/validations/question";
+import {
+  subjectiveSchema,
+  type SubjectiveFormValues,
+} from "@lib/validations/question";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -11,6 +14,7 @@ import { cn, getErrorMessage } from "@lib/utils";
 import { MessageSquareText, HelpCircle, Loader2, BookOpen } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { type QuestionCreate } from "@lib/api/questions";
 
 export const SubjectiveQuestionForm = ({
@@ -48,21 +52,23 @@ export const SubjectiveQuestionForm = ({
   }, []);
 
   const form = useForm({
-    defaultValues: initialData || {
-      subject: "",
-      examLevel: "",
-      marks: 1,
-      questionText: "",
-      answerText: "",
-      explanation: "",
-    } as SubjectiveFormValues,
+    defaultValues:
+      initialData ||
+      ({
+        subject: "",
+        examLevel: "",
+        marks: 1,
+        questionText: "",
+        answerText: "",
+        explanation: "",
+      } as SubjectiveFormValues),
     validators: {
       onChange: subjectiveSchema,
     },
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
-          question_type: "SUBJECTIVE",
+          question_type: QUESTION_TYPES.SUBJECTIVE,
           subject: value.subject,
           exam_level: value.examLevel,
           question_text: value.questionText,
