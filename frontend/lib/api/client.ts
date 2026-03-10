@@ -155,8 +155,8 @@ export async function apiClient<T>(
       document.cookie =
         "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 
-      // Redirect to sign-in page
-      window.location.href = "/sign-in";
+      // Redirect to sign-in page with clear_auth parameter
+      window.location.href = "/sign-in?clear_auth=1";
     } else if (!silentError && method !== "GET") {
       // Auto error toast for all non-GET failures (skip GET to avoid
       // spamming toast on background data fetches)
