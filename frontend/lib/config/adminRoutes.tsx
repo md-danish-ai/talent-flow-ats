@@ -7,6 +7,7 @@ import {
   Settings,
   Package,
   Users,
+  Bell,
 } from "lucide-react";
 
 export interface NavItem {
@@ -77,6 +78,13 @@ export const ADMIN_ROUTES: NavSection[] = [
     ],
   },
   {
+    title: "Notifications",
+    icon: <Bell className="w-5 h-5" />,
+    type: "item",
+    href: "/admin/notifications",
+    items: [],
+  },
+  {
     title: "Settings",
     icon: <Settings className="w-5 h-5" />,
     type: "collapsible",
@@ -87,13 +95,13 @@ export const ADMIN_ROUTES: NavSection[] = [
   },
   ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
     ? [
-      {
-        title: "Packages",
-        icon: <Package className="w-5 h-5" />,
-        type: "item" as NavSectionType,
-        href: "/admin/packages",
-        items: [],
-      },
-    ]
+        {
+          title: "Packages",
+          icon: <Package className="w-5 h-5" />,
+          type: "item" as NavSectionType,
+          href: "/admin/packages",
+          items: [],
+        },
+      ]
     : []),
 ];

@@ -9,10 +9,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
-  LogOut,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
-import { Button } from "@components/ui-elements/Button";
 import Link from "next/link";
 import { Card } from "@components/ui-cards/Card";
 import type { CurrentUser } from "@lib/auth/user-utils";
@@ -55,15 +53,6 @@ export function DashboardClient({
   isDetailsComplete,
 }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
-  const handleLogout = () => {
-    if (typeof document !== "undefined") {
-      document.cookie = "auth_token=; Max-Age=0; path=/";
-      document.cookie = "role=; Max-Age=0; path=/";
-      document.cookie = "user_info=; Max-Age=0; path=/";
-    }
-    window.location.href = "/sign-in";
-  };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },

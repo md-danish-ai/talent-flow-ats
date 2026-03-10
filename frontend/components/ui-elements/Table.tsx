@@ -256,61 +256,119 @@ export function TableColumnToggle({
 export interface TableCollapsibleRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   expandedContent: React.ReactNode;
   colSpan?: number;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showToggleCell?: boolean;
 }
 
 export const TableCollapsibleRow = React.forwardRef<
   HTMLTableRowElement,
   TableCollapsibleRowProps
->(({ className, expandedContent, colSpan = 10, children, ...props }, ref) => {
-  const [isExpanded, setIsExpanded] = React.useState(false);
+>(
+  (
+    {
+      className,
+      expandedContent,
+      colSpan = 10,
+      isOpen: externalOpen,
+      onOpenChange,
+      showToggleCell = true,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const [internalOpen, setInternalOpen] = React.useState(false);
+    const isExpanded = externalOpen !== undefined ? externalOpen : internalOpen;
 
-  return (
-    <React.Fragment>
-      <TableRow
-        ref={ref}
-        className={cn(isExpanded ? "border-b-0" : "", className)}
-        {...props}
-      >
-        <TableCell className="w-[50px]">
-          <Button
-            variant="ghost"
-            color="default"
-            size="icon-sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <ChevronDown
-              size={18}
-              className={cn(
-                "transition-transform duration-500",
-                isExpanded ? "rotate-180" : "",
-              )}
-            />
-          </Button>
-        </TableCell>
-        {children}
-      </TableRow>
+    const handleToggle = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const newState = !isExpanded;
+      if (onOpenChange) {
+        onOpenChange(newState);
+      } else {
+        setInternalOpen(newState);
+      }
+    };
 
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={colSpan} className="p-0 border-b border-border">
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: [0.23, 1, 0.32, 1],
-                }}
-                className="overflow-hidden bg-muted/40"
+    return (
+      <React.Fragment>
+        <TableRow
+          ref={ref}
+          className={cn(
+            isExpanded ? "border-b-0 bg-muted/5 shadow-inner" : "",
+            className,
+          )}
+          {...props}
+        >
+          {showToggleCell && (
+            <TableCell className="w-[50px]">
+              <Button
+                variant="ghost"
+                color="default"
+                size="icon-sm"
+                onClick={handleToggle}
+                className="hover:bg-brand-primary/10 hover:text-brand-primary"
               >
-                {expandedContent}
-              </motion.div>
+                <ChevronDown
+                  size={18}
+                  className={cn(
+                    "transition-transform duration-500",
+                    isExpanded
+                      ? "rotate-180 text-brand-primary"
+                      : "text-muted-foreground",
+                  )}
+                />
+              </Button>
             </TableCell>
-          </TableRow>
-        )}
-      </AnimatePresence>
-    </React.Fragment>
-  );
-});
+          )}
+          {children}
+        </TableRow>
+
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <TableRow className="hover:bg-transparent border-t-0 p-0 overflow-hidden">
+              <TableCell
+                colSpan={colSpan}
+                className="p-0 border-b border-border overflow-hidden"
+              >
+                <motion.div
+                  initial={{ height: 0, opacity: 0, filter: "blur(5px)" }}
+                  animate={{
+                    height: "auto",
+                    opacity: 1,
+                    filter: "blur(0px)",
+                    transition: {
+                      height: {
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 15,
+                        mass: 0.8,
+                      },
+                      opacity: { duration: 0.2 },
+                      filter: { duration: 0.3 },
+                    },
+                  }}
+                  exit={{
+                    height: 0,
+                    opacity: 0,
+                    filter: "blur(5px)",
+                    transition: {
+                      height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+                      opacity: { duration: 0.2 },
+                      filter: { duration: 0.2 },
+                    },
+                  }}
+                  className="overflow-hidden bg-muted/40"
+                >
+                  {expandedContent}
+                </motion.div>
+              </TableCell>
+            </TableRow>
+          )}
+        </AnimatePresence>
+      </React.Fragment>
+    );
+  },
+);
 TableCollapsibleRow.displayName = "TableCollapsibleRow";
