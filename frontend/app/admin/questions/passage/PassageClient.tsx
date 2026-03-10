@@ -29,6 +29,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { questionsApi, type Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import {
   classificationsApi,
   type Classification,
@@ -93,7 +94,7 @@ export const PassageClient = () => {
         page: currentPage,
         limit: pageSize,
         subject: subjectFilter !== "all" ? subjectFilter : undefined,
-        question_type: "PASSAGE_CONTENT",
+        question_type: QUESTION_TYPES.PASSAGE_CONTENT,
       });
       setQuestions(response.data || []);
       if (response.pagination) {

@@ -33,6 +33,7 @@ import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
 import { questionsApi, Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import ViewQuestionModal from "./component/ViewQuestionModal";
@@ -97,7 +98,7 @@ export function SubjectiveClient() {
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
-        question_type: "SUBJECTIVE",
+        question_type: QUESTION_TYPES.SUBJECTIVE,
         search: debouncedSearch,
         subject:
           subjectFilter !== "all" ? (subjectFilter as string) : undefined,

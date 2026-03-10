@@ -37,6 +37,7 @@ import {
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
 import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
@@ -150,7 +151,7 @@ export function MCQClient({
         search: debouncedSearch,
         subject:
           subjectFilter !== "all" ? (subjectFilter as string) : undefined,
-        question_type: "MULTIPLE_CHOICE", // Optional filter
+        question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
       });
       setData(response.data || []);
       if (response.pagination) {

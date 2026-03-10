@@ -19,7 +19,6 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
       className="max-w-4xl"
     >
       <AddQuestionForm
-        questionType="MULTIPLE_CHOICE"
         onSuccess={() => {
           onClose();
         }}

@@ -24,6 +24,7 @@ import {
   type Classification,
 } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
 export const AddPassageQuestionForm = ({
   initialData,
@@ -77,7 +78,7 @@ export const AddPassageQuestionForm = ({
     onSubmit: async ({ value }) => {
       try {
         const payload: Partial<QuestionCreate> = {
-          question_type: "PASSAGE_CONTENT",
+          question_type: QUESTION_TYPES.PASSAGE_CONTENT,
           subject: value.subject,
           exam_level: value.examLevel,
           passage: value.passage,
