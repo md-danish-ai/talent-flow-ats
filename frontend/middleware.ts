@@ -4,9 +4,10 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  if (searchParams.get("clear_auth") === "1") {
+  // Handle explicit auth clearing via URL flag
+  if (searchParams.get("clear_auth") === "1" && pathname !== "/sign-in") {
     const url = new URL("/sign-in", request.url);
-    url.searchParams.delete("clear_auth");
+    url.searchParams.set("clear_auth", "1");
     const response = NextResponse.redirect(url);
     response.cookies.delete("auth_token");
     response.cookies.delete("role");

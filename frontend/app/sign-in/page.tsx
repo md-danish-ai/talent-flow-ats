@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
 import { SignInForm } from "@features/authforms/SignInForm";
@@ -70,7 +71,11 @@ export default function LoginPage() {
               </Typography>
             </div>
 
-            <SignInForm />
+            <Suspense
+              fallback={<div className="h-64 animate-pulse bg-muted/20" />}
+            >
+              <SignInForm />
+            </Suspense>
           </div>
         </div>
 
