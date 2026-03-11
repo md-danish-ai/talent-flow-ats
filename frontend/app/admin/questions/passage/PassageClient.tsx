@@ -66,20 +66,22 @@ export const PassageClient = () => {
 
   // Column Visibility State
   const allColumns = [
-    { id: "srNo", label: "Sr. No." },
-    { id: "question", label: "Question" },
+    { id: "srNo", label: "Sr. No.", pinned: true },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Action" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
     "question",
     "subject",
     "createdDate",
     "actions",
-  ]);
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -184,6 +186,7 @@ export const PassageClient = () => {
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
             <Button

@@ -123,7 +123,7 @@ class QuestionService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
-    async def toggle_question_status(self, question_id: int):
+    async def update_question_status(self, question_id: int):
         try:
             return repository.toggle_question_status(question_id)
         except Exception as exception:

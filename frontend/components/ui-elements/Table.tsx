@@ -85,9 +85,10 @@ export const TableCell = React.forwardRef<
 TableCell.displayName = "TableCell";
 
 export interface TableColumnToggleProps {
-  columns: { id: string; label: string }[];
+  columns: { id: string; label: string; pinned?: boolean }[];
   visibleColumns: string[];
   onToggle: (columnId: string) => void;
+  onReset?: () => void;
   className?: string;
 }
 
@@ -95,6 +96,7 @@ export function TableColumnToggle({
   columns,
   visibleColumns,
   onToggle,
+  onReset,
   className,
 }: TableColumnToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,10 +115,14 @@ export function TableColumnToggle({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const showAll = () => {
-    columns.forEach((col) => {
-      if (!visibleColumns.includes(col.id)) onToggle(col.id);
-    });
+  const handleReset = () => {
+    if (onReset) {
+      onReset();
+    } else {
+      columns.forEach((col) => {
+        if (!visibleColumns.includes(col.id)) onToggle(col.id);
+      });
+    }
   };
 
   return (
@@ -170,7 +176,7 @@ export function TableColumnToggle({
                 Active Grid Layout
               </Typography>
               <button
-                onClick={showAll}
+                onClick={handleReset}
                 className="text-[10px] uppercase font-black text-brand-primary hover:opacity-70 transition-opacity flex items-center gap-1"
               >
                 <RotateCcw size={10} />
@@ -181,15 +187,18 @@ export function TableColumnToggle({
             <div className="max-h-[350px] overflow-y-auto pr-1 space-y-1 custom-scrollbar">
               {columns.map((col) => {
                 const isActive = visibleColumns.includes(col.id);
+                const isPinned = col.pinned;
                 return (
                   <button
                     key={col.id}
-                    onClick={() => onToggle(col.id)}
+                    disabled={isPinned}
+                    onClick={() => !isPinned && onToggle(col.id)}
                     className={cn(
                       "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-300 group relative overflow-hidden",
                       isActive
                         ? "bg-gradient-to-r from-brand-primary/10 to-transparent text-foreground"
                         : "text-muted-foreground/40 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 grayscale",
+                      isPinned && "opacity-60 cursor-not-allowed",
                     )}
                   >
                     <div className="flex items-center gap-4 relative z-10">
@@ -199,6 +208,8 @@ export function TableColumnToggle({
                           isActive
                             ? "bg-brand-primary border-brand-primary shadow-[0_4px_12px_rgba(249,99,49,0.3)] scale-110"
                             : "border-slate-200 dark:border-slate-800 group-hover:border-brand-primary/40 rotate-[-15deg]",
+                          isPinned &&
+                            "bg-slate-400 border-slate-400 shadow-none scale-100 rotate-0",
                         )}
                       >
                         {isActive ? (
@@ -224,6 +235,11 @@ export function TableColumnToggle({
                           className="leading-none mb-0.5"
                         >
                           {col.label}
+                          {isPinned && (
+                            <span className="ml-2 text-[8px] uppercase font-black text-slate-400">
+                              (Required)
+                            </span>
+                          )}
                         </Typography>
                         <span className="text-[9px] uppercase font-bold opacity-30 tracking-widest">
                           Column ID: {col.id}
@@ -231,12 +247,17 @@ export function TableColumnToggle({
                       </div>
                     </div>
 
-                    {!isActive && (
+                    {!isActive && !isPinned && (
                       <Eye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10 text-foreground" />
                     )}
 
                     {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-primary rounded-full my-3" />
+                      <div
+                        className={cn(
+                          "absolute left-0 top-0 bottom-0 w-1 rounded-full my-3",
+                          isPinned ? "bg-slate-300" : "bg-brand-primary",
+                        )}
+                      />
                     )}
                   </button>
                 );
@@ -296,9 +317,11 @@ export const TableCollapsibleRow = React.forwardRef<
         <TableRow
           ref={ref}
           className={cn(
+            "cursor-pointer",
             isExpanded ? "border-b-0 bg-muted/5 shadow-inner" : "",
             className,
           )}
+          onClick={handleToggle}
           {...props}
         >
           {showToggleCell && (

@@ -87,23 +87,25 @@ export function ImageMCQClient({
 
   // Column Visibility State
   const allColumns = [
-    { id: "srNo", label: "Sr. No." },
+    { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "image", label: "Image" },
-    { id: "question", label: "Question" },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Action" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
     "image",
     "question",
     "subject",
     "createdBy",
     "actions",
-  ]);
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -296,6 +298,7 @@ export function ImageMCQClient({
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
             <Button

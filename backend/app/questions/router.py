@@ -68,11 +68,11 @@ async def update_question(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.patch("/toggle/{question_id}")
-async def toggle_question_status(
+@router.put("/update-status/{question_id}")
+async def update_question_status(
     question_id:  int,
 ):
-    data = await question_service.toggle_question_status(question_id)
+    data = await question_service.update_question_status(question_id)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
