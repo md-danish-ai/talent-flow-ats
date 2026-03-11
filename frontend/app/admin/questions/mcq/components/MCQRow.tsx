@@ -38,6 +38,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
         <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40">
           <QuestionDetailView
             question={row}
+            title="MCQ Analysis"
             className="bg-white dark:bg-slate-900"
           />
         </div>

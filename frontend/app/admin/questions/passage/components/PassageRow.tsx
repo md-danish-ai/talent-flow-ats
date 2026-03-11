@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, Edit as EditIcon, Image as ImageIcon } from "lucide-react";
+import { Loader2, Edit as EditIcon, FileText } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -7,9 +7,8 @@ import { Button } from "@components/ui-elements/Button";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@lib/api/questions";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
-import Image from "next/image";
 
-interface ImageSubjectiveRowProps {
+interface PassageRowProps {
   row: Question;
   index: number;
   currentPage: number;
@@ -18,10 +17,9 @@ interface ImageSubjectiveRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
-  onImageClick: (url: string) => void;
 }
 
-export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
+export const PassageRow: React.FC<PassageRowProps> = ({
   row,
   index,
   currentPage,
@@ -30,19 +28,7 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  onImageClick,
 }) => {
-  const getCanonicalImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
-    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
-  };
-
   return (
     <TableCollapsibleRow
       key={row.id}
@@ -52,7 +38,7 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
         <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40">
           <QuestionDetailView
             question={row}
-            title="Image Subjective Analysis"
+            title="Passage Analysis"
             className="bg-white dark:bg-slate-900"
           />
         </div>
@@ -65,47 +51,25 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
-      {visibleColumns.includes("image") && (
-        <TableCell className="text-center">
-          {row.image_url ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!row.image_url) return;
-                const full = getCanonicalImageUrl(row.image_url);
-                if (full) onImageClick(full);
-              }}
-              className="relative w-12 h-12 rounded-full overflow-hidden border border-border/60 hover:border-brand-primary transition-all group/img shadow-sm bg-muted/20"
-              title="Open image lightbox"
-            >
-              <Image
-                src={getCanonicalImageUrl(row.image_url) as string}
-                alt="preview"
-                fill
-                className="object-cover group-hover/img:scale-110 transition-transform duration-300"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 flex items-center justify-center transition-colors">
-                <ImageIcon
-                  size={14}
-                  className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity"
-                />
-              </div>
-            </button>
-          ) : (
-            <span className="text-muted-foreground/30">-</span>
-          )}
-        </TableCell>
-      )}
       {visibleColumns.includes("question") && (
         <TableCell className="max-w-[400px]">
-          <Typography
-            variant="body4"
-            weight="semibold"
-            className="truncate group-hover/row:text-brand-primary transition-colors"
-          >
-            {row.question_text}
-          </Typography>
+          <div className="flex flex-col gap-1">
+            <Typography
+              variant="body4"
+              weight="semibold"
+              className="truncate group-hover/row:text-brand-primary transition-colors"
+            >
+              {row.question_text}
+            </Typography>
+            {row.passage && (
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60 italic">
+                <FileText size={10} />
+                <span className="truncate max-w-[300px]">
+                  Passage: {row.passage.substring(0, 60)}...
+                </span>
+              </div>
+            )}
+          </div>
         </TableCell>
       )}
       {visibleColumns.includes("subject") && (
