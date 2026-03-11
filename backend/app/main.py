@@ -49,6 +49,7 @@ app.mount("/images", StaticFiles(directory=settings.UPLOAD_DIR), name="images")
 # 3. GLOBAL EXCEPTION HANDLERS
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return api_response(
@@ -56,32 +57,38 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         message=str(exc.detail),
     )
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return api_response(
         status_code=StatusCode.UNPROCESSABLE_ENTITY,
         message=ResponseMessage.VALIDATION_ERROR,
-        errors=exc.errors()
+        errors=exc.errors(),
     )
+
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     print(f"CRITICAL ERROR: {str(exc)}")
     import traceback
+
     traceback.print_exc()
     return api_response(
         status_code=StatusCode.INTERNAL_SERVER_ERROR,
         message=ResponseMessage.INTERNAL_ERROR,
-        errors=str(exc)
+        errors=str(exc),
     )
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 4. API ROUTES
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 @app.get("/")
 def health_check():
     return {"message": "FastAPI server is running 🚀"}
+
 
 app.include_router(auth_router)
 app.include_router(user_details_router)

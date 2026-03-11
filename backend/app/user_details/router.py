@@ -7,12 +7,14 @@ from app.utils.dependencies import authenticate_user
 router = APIRouter(
     prefix="/user-details",
     tags=["User Details"],
-    dependencies=[Depends(authenticate_user)]
+    dependencies=[Depends(authenticate_user)],
 )
 
 
 @router.post("/add")
-def add_user_details(data: UserDetailsSchema, user_id: int = Depends(authenticate_user)):
+def add_user_details(
+    data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
+):
     """
     Add user recruitment details.
     If details already exist, they will be overwritten (updated).

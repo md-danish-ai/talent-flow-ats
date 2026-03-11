@@ -53,12 +53,10 @@ def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
     correct_parts = _split_answer_values(correct_answer)
 
     user_keys = {
-        _extract_option_key(part) or _normalize_text(part)
-        for part in user_parts
+        _extract_option_key(part) or _normalize_text(part) for part in user_parts
     }
     correct_keys = {
-        _extract_option_key(part) or _normalize_text(part)
-        for part in correct_parts
+        _extract_option_key(part) or _normalize_text(part) for part in correct_parts
     }
 
     return user_keys == correct_keys
@@ -268,7 +266,9 @@ def save_answer(
         db_session.close()
 
 
-def _materialize_unanswered_rows(db_session, attempt: InterviewAttempt, is_auto_saved: bool) -> None:
+def _materialize_unanswered_rows(
+    db_session, attempt: InterviewAttempt, is_auto_saved: bool
+) -> None:
     paper = db_session.query(Paper).filter(Paper.id == attempt.paper_id).first()
     if not paper:
         return
@@ -456,7 +456,11 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
 def get_admin_user_attempts(user_id: int) -> dict:
     db_session = SessionLocal()
     try:
-        user = db_session.query(User).filter(User.id == user_id, User.role == "user").first()
+        user = (
+            db_session.query(User)
+            .filter(User.id == user_id, User.role == "user")
+            .first()
+        )
         if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
@@ -503,7 +507,11 @@ def get_admin_user_attempts(user_id: int) -> dict:
 def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) -> dict:
     db_session = SessionLocal()
     try:
-        user = db_session.query(User).filter(User.id == user_id, User.role == "user").first()
+        user = (
+            db_session.query(User)
+            .filter(User.id == user_id, User.role == "user")
+            .first()
+        )
         if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
@@ -539,7 +547,9 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         total_marks_obtained = 0.0
 
         for answer_row, question, correct_answer in answer_rows:
-            correct_answer_text = (correct_answer.answer_text if correct_answer else None) or ""
+            correct_answer_text = (
+                correct_answer.answer_text if correct_answer else None
+            ) or ""
             user_answer_text = (answer_row.answer_text or "").strip()
             is_attempted = bool(answer_row.is_attempted)
             is_correct = False

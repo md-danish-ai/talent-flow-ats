@@ -4,14 +4,13 @@ from app.utils.status_codes import StatusCode
 
 
 class ClassificationService:
-
     def create_classification(self, data):
         # 1. Check duplicate name
         count = repository.count_by_name_and_type(data.name, data.type)
         if count > 0:
             raise HTTPException(
                 status_code=StatusCode.CONFLICT,
-                detail=f"Classification with name '{data.name}' already exists for type '{data.type}'"
+                detail=f"Classification with name '{data.name}' already exists for type '{data.type}'",
             )
 
         # 2. Check duplicate code
@@ -20,7 +19,7 @@ class ClassificationService:
         if existing_code:
             raise HTTPException(
                 status_code=StatusCode.CONFLICT,
-                detail=f"Classification with code '{code}' already exists for type '{data.type}'"
+                detail=f"Classification with code '{code}' already exists for type '{data.type}'",
             )
 
         return repository.create(data, code)
@@ -33,7 +32,7 @@ class ClassificationService:
         sort_by: str = "sort_order",
         order: str = "asc",
         limit: int = 10,
-        offset: int = 0
+        offset: int = 0,
     ):
         try:
             return repository.get_all(
@@ -43,7 +42,7 @@ class ClassificationService:
                 sort_by=sort_by,
                 order=order,
                 limit=limit,
-                offset=offset
+                offset=offset,
             )
         except Exception as exception:
             raise HTTPException(
@@ -97,7 +96,7 @@ class ClassificationService:
                     f"Cannot delete '{existing['name']}' because it is still referenced by:\n"
                     f"{dep_summary}\n\n"
                     "Please remove or reassign all dependent records before deleting this classification."
-                )
+                ),
             )
 
         return repository.delete(classification_id)

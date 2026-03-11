@@ -13,7 +13,7 @@ os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")
 
 from app.database.db import SessionLocal
 from app.questions.models import Question
-from app.users.models import User # Required for foreign key mapping
+
 
 def update_images():
     db = SessionLocal()
@@ -29,19 +29,24 @@ def update_images():
 
         # 2. Update all IMAGE_MULTIPLE_CHOICE and IMAGE_SUBJECTIVE questions that don't have an image
         target_types = ["IMAGE_MULTIPLE_CHOICE", "IMAGE_SUBJECTIVE"]
-        questions_to_update = db.query(Question).filter(
-            Question.question_type.in_(target_types),
-            Question.image_url.is_(None)
-        ).all()
+        questions_to_update = (
+            db.query(Question)
+            .filter(
+                Question.question_type.in_(target_types), Question.image_url.is_(None)
+            )
+            .all()
+        )
 
         if not questions_to_update:
             print("No image-based questions found without an image.")
             return
 
-        print(f"Updating {len(questions_to_update)} questions with the found image_url...")
+        print(
+            f"Updating {len(questions_to_update)} questions with the found image_url..."
+        )
         for q in questions_to_update:
             q.image_url = image_url
-        
+
         db.commit()
         print("Successfully updated all image-based questions!")
 
@@ -50,6 +55,7 @@ def update_images():
         db.rollback()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     update_images()

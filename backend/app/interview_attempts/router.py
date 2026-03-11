@@ -54,7 +54,9 @@ async def auto_submit_attempt(
     attempt_id: int,
     current_user: int = Depends(authenticate_user),
 ):
-    data = await service.auto_submit_attempt(attempt_id=attempt_id, user_id=current_user)
+    data = await service.auto_submit_attempt(
+        attempt_id=attempt_id, user_id=current_user
+    )
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
 

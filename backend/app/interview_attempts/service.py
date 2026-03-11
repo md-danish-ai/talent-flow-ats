@@ -76,7 +76,9 @@ class InterviewAttemptService:
 
     async def get_summary(self, attempt_id: int, user_id: int):
         try:
-            return repository.get_attempt_summary(attempt_id=attempt_id, user_id=user_id)
+            return repository.get_attempt_summary(
+                attempt_id=attempt_id, user_id=user_id
+            )
         except HTTPException:
             raise
         except Exception as exception:
