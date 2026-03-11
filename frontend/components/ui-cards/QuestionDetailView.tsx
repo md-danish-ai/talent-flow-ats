@@ -17,7 +17,9 @@ import {
   Layers,
   Trophy,
   MessageSquareQuote,
+  FileImage,
 } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@lib/utils";
 
 interface QuestionDetailViewProps {
@@ -29,6 +31,17 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   question,
   className,
 }) => {
+  const getCanonicalImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
+      /\/$/,
+      "",
+    );
+    if (!base) return url;
+    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+  };
+
   return (
     <div
       className={cn(
@@ -69,6 +82,31 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               Primary Question
             </Typography>
           </div>
+          {question.image_url && (
+            <div className="mb-4">
+              <div className="relative w-full h-[300px] border border-border/40 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+                <Image
+                  src={getCanonicalImageUrl(question.image_url) as string}
+                  alt="Question material"
+                  fill
+                  className="object-contain p-2"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  unoptimized
+                />
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="px-2 py-1 rounded-md bg-muted text-[10px] font-mono text-muted-foreground flex items-center gap-1.5 border border-border/30">
+                  <FileImage size={10} className="text-brand-primary/60" />
+                  <span className="truncate max-w-[200px]">
+                    {question.image_url
+                      .split("/")
+                      .pop()
+                      ?.replace(/^[0-9a-f]{32}_/, "")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           <Typography
             variant="body3"
             weight="semibold"

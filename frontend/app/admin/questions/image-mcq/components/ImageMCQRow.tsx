@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, Edit as EditIcon } from "lucide-react";
+import { Loader2, Edit as EditIcon, Image as ImageIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -7,19 +7,21 @@ import { Button } from "@components/ui-elements/Button";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@lib/api/questions";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
+import Image from "next/image";
 
-interface MCQRowProps {
+interface ImageMCQRowProps {
   row: Question;
   index: number;
   currentPage: number;
   pageSize: number;
   visibleColumns: string[];
   togglingId: number | null;
-  onToggleStatus: (id: number, currentStatus: boolean) => void;
+  onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
+  onImageClick: (url: string) => void;
 }
 
-export const MCQRow: React.FC<MCQRowProps> = ({
+export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
   row,
   index,
   currentPage,
@@ -28,7 +30,19 @@ export const MCQRow: React.FC<MCQRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
+  onImageClick,
 }) => {
+  const getCanonicalImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
+      /\/$/,
+      "",
+    );
+    if (!base) return url;
+    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+  };
+
   return (
     <TableCollapsibleRow
       key={row.id}
@@ -50,8 +64,40 @@ export const MCQRow: React.FC<MCQRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
+      {visibleColumns.includes("image") && (
+        <TableCell className="text-center">
+          {row.image_url ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!row.image_url) return;
+                const full = getCanonicalImageUrl(row.image_url);
+                if (full) onImageClick(full);
+              }}
+              className="relative w-12 h-12 rounded-full overflow-hidden border border-border/60 hover:border-brand-primary transition-all group/img shadow-sm bg-muted/20"
+              title="Open image lightbox"
+            >
+              <Image
+                src={getCanonicalImageUrl(row.image_url) as string}
+                alt="preview"
+                fill
+                className="object-cover group-hover/img:scale-110 transition-transform duration-300"
+                unoptimized
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 flex items-center justify-center transition-colors">
+                <ImageIcon
+                  size={14}
+                  className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity"
+                />
+              </div>
+            </button>
+          ) : (
+            <span className="text-muted-foreground/30">-</span>
+          )}
+        </TableCell>
+      )}
       {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[400px]">
+        <TableCell className="max-w-[300px]">
           <Typography
             variant="body4"
             weight="semibold"
@@ -69,23 +115,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
             shape="square"
             className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
           >
-            {typeof row.subject === "string"
-              ? row.subject
-              : (row.subject?.name ?? "N/A")}
-          </Badge>
-        </TableCell>
-      )}
-      {visibleColumns.includes("examLevel") && (
-        <TableCell>
-          <Badge
-            variant="outline"
-            color={row.exam_level?.name ? "primary" : "default"}
-            shape="square"
-            className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
-          >
-            {typeof row.exam_level === "string"
-              ? row.exam_level
-              : (row.exam_level?.name ?? "N/A")}
+            {row.subject?.name || "N/A"}
           </Badge>
         </TableCell>
       )}
@@ -116,7 +146,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
             ) : (
               <Switch
                 checked={row.is_active !== false}
-                onChange={() => onToggleStatus(row.id, row.is_active !== false)}
+                onChange={() => onToggleStatus(row.id)}
                 size="sm"
               />
             )}
