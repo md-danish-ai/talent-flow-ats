@@ -15,8 +15,7 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         personal_details = data.personalDetails.model_dump()
         family_details = [item.model_dump() for item in data.familyDetails]
         source_of_information = data.sourceOfInformation.model_dump()
-        education_details = [item.model_dump()
-                             for item in data.educationDetails]
+        education_details = [item.model_dump() for item in data.educationDetails]
         work_experience_details = [
             item.model_dump() for item in data.workExperienceDetails
         ]
@@ -39,7 +38,7 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
             education_details=education_details,
             work_experience_details=work_experience_details,
             other_details=other_details,
-            is_submitted=data.is_submitted
+            is_submitted=data.is_submitted,
         )
 
         upsert_stmt = upsert_stmt.on_conflict_do_update(
@@ -52,17 +51,18 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
                 "work_experience_details": upsert_stmt.excluded.work_experience_details,
                 "other_details": upsert_stmt.excluded.other_details,
                 "is_submitted": upsert_stmt.excluded.is_submitted,
-                "updated_at": func.current_timestamp()
-            }
+                "updated_at": func.current_timestamp(),
+            },
         ).returning(UserDetail.id, UserDetail.is_submitted)
 
         result = db_session.execute(upsert_stmt)
         row = result.mappings().first()
-        
+
         db_session.commit()
-        
+
         try:
             from app.duplicates.service import detect_duplicates
+
             detect_duplicates(db_session, int(user_id), data)
         except Exception as dup_err:
             print(f"Error detecting duplicates: {str(dup_err)}")
@@ -78,7 +78,8 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         db_session.rollback()
         print(f"Error saving user details: {str(exception)}")
         raise HTTPException(
-            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
+            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
+        )
 
     finally:
         db_session.close()
@@ -90,20 +91,22 @@ def get_user_details(user_id: int):
         user = db_session.query(User).filter(User.id == user_id).first()
         if not user:
             return None
-        
-        details = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+
+        details = (
+            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        )
         if not details:
             return None
 
         return {
-            "is_submitted":        details.is_submitted,
-            "username":            user.username,
-            "personalDetails":     details.personal_details,
-            "familyDetails":       details.family_details,
+            "is_submitted": details.is_submitted,
+            "username": user.username,
+            "personalDetails": details.personal_details,
+            "familyDetails": details.family_details,
             "sourceOfInformation": details.source_of_information,
-            "educationDetails":    details.education_details,
+            "educationDetails": details.education_details,
             "workExperienceDetails": details.work_experience_details,
-            "otherDetails":        details.other_details,
+            "otherDetails": details.other_details,
         }
     finally:
         db_session.close()

@@ -94,8 +94,8 @@ export const questionsApi = {
     return api.put(`/questions/update/${id}`, data);
   },
   toggleQuestionStatus: async (id: number) => {
-    return api.patch<{ message: string; is_active: boolean }>(
-      `/questions/toggle/${id}`,
+    return api.put<{ message: string; is_active: boolean }>(
+      `/questions/update-status/${id}`,
       undefined,
       { silentSuccess: true },
     );

@@ -18,11 +18,12 @@ def get_pagination_params(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     search: Optional[str] = Query(None, description="Search query"),
-    sort_by: Optional[str] = Query(
-        "created_at", description="Field to sort by"),
+    sort_by: Optional[str] = Query("created_at", description="Field to sort by"),
     order: Optional[str] = Query("desc", description="Sort order (asc/desc)"),
 ) -> PaginationParams:
-    return PaginationParams(page=page, limit=limit, search=search, sort_by=sort_by, order=order)
+    return PaginationParams(
+        page=page, limit=limit, search=search, sort_by=sort_by, order=order
+    )
 
 
 class PaginationInfo(BaseModel):
@@ -42,12 +43,9 @@ class PaginatedResponse(BaseModel, Generic[T]):
 
 
 def create_paginated_response(
-    data: List[T],
-    total_records: int,
-    params: PaginationParams
+    data: List[T], total_records: int, params: PaginationParams
 ) -> dict:
-    total_pages = math.ceil(
-        total_records / params.limit) if params.limit > 0 else 0
+    total_pages = math.ceil(total_records / params.limit) if params.limit > 0 else 0
     return {
         "data": data,
         "pagination": {
@@ -56,6 +54,6 @@ def create_paginated_response(
             "current_page": params.page,
             "per_page": params.limit,
             "has_next": params.page < total_pages,
-            "has_previous": params.page > 1
-        }
+            "has_previous": params.page > 1,
+        },
     }

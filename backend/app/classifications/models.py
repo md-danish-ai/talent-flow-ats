@@ -23,13 +23,11 @@ class Classification(Base):
     is_active = Column(Boolean, server_default="true", nullable=False)
 
     created_at = Column(
-        TIMESTAMP,
-        server_default=func.current_timestamp(),
-        nullable=False
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
-        nullable=False
+        nullable=False,
     )

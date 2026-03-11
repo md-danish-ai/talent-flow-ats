@@ -4,13 +4,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
+
+import { toast } from "@lib/toast";
 import { AddQuestionModal } from "./components/AddQuestionModal";
 import { EditQuestionModal } from "./components/EditQuestionModal";
-import { ViewQuestionModal } from "./components/ViewQuestionModal";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -21,28 +18,18 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import {
-  Filter,
-  Search,
-  RotateCcw,
-  Plus,
-  ListChecks,
-  Loader2,
-  MoreVertical,
-  Eye,
-  ToggleLeft,
-  ToggleRight,
-  Edit as EditIcon,
-} from "lucide-react";
+
+import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
-import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
-import { Badge } from "@components/ui-elements/Badge";
+
 import { Question } from "@lib/api/questions";
+import { MCQFilters } from "./components/MCQFilters";
+import { MCQRow } from "./components/MCQRow";
 
 interface MCQClientProps {
   initialData?: Question[];
@@ -66,28 +53,8 @@ export function MCQClient({
   const [data, setData] = useState<Question[]>(initialData);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [subjects, setSubjects] = useState<Classification[]>([]);
-  const [openMenuId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-
-    const originalOverflow = document.body.style.overflow;
-
-    if (openMenuId !== null) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = originalOverflow || "";
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow || "";
-    };
-  }, [openMenuId]);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -106,22 +73,27 @@ export function MCQClient({
   );
 
   // Column Visibility State
-  const allColumns = [
-    { id: "srNo", label: "Sr. No." },
-    { id: "question", label: "Question" },
+  const availableColumns = [
+    { id: "srNo", label: "Sr. No.", pinned: true },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Action" },
+    { id: "status", label: "Status" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
     "question",
     "subject",
-    "createdBy",
+    "examLevel",
+    "status",
     "actions",
-  ]);
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -191,84 +163,23 @@ export function MCQClient({
     }
   }, [subjects.length, handleAuthError]);
 
-  const handleToggleStatus = async (id: number) => {
+  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
       await fetchData();
+      toast.success(
+        `Question ${!currentStatus ? "activated" : "deactivated"} successfully`,
+      );
     } catch (error) {
       if (handleAuthError(error)) {
         return;
       }
+      toast.error("Failed to update question status");
       console.error("Failed to toggle question status:", error);
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const RowActions = ({ id }: { id: number }) => {
-    const q = data.find((row) => row.id === id);
-    const isActive = q?.is_active !== false;
-
-    const items: ActionItem[] = [
-      {
-        key: "view",
-        label: "View Details",
-        icon: <Eye size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          setViewingQuestionId(id);
-        },
-      },
-      {
-        key: "edit",
-        label: "Edit Question",
-        icon: <EditIcon size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          const qData = data.find((q) => q.id === id);
-          if (qData) {
-            setEditingQuestion(qData);
-          }
-        },
-      },
-      {
-        key: "toggle",
-        label:
-          togglingId === id
-            ? "Updating..."
-            : isActive
-              ? "Deactivate"
-              : "Activate",
-        icon:
-          togglingId === id ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : isActive ? (
-            <ToggleRight size={16} />
-          ) : (
-            <ToggleLeft size={16} />
-          ),
-        className: isActive
-          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
-        onClick: (e) => {
-          e.stopPropagation();
-          handleToggleStatus(id);
-        },
-        disabled: togglingId === id,
-      },
-    ];
-
-    return (
-      <div className="relative flex justify-center items-center h-full px-2">
-        <ActionMenu
-          button={<MoreVertical size={20} />}
-          items={items}
-          buttonClassName="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"
-          menuClassName="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"
-        />
-      </div>
-    );
   };
 
   return (
@@ -287,9 +198,10 @@ export function MCQClient({
         action={
           <div className="flex items-center gap-3">
             <TableColumnToggle
-              columns={allColumns}
+              columns={availableColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
             <Button
@@ -309,10 +221,7 @@ export function MCQClient({
               shadow
               animate="scale"
               iconAnimation="rotate-90"
-              onClick={() => {
-                setIsAddModalOpen(true);
-                // In a real app, refresh data after adding.
-              }}
+              onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
@@ -336,6 +245,7 @@ export function MCQClient({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
@@ -347,11 +257,19 @@ export function MCQClient({
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
                   )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
+                  )}
                   {visibleColumns.includes("createdBy") && (
                     <TableHead>Created By</TableHead>
                   )}
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
                   )}
                   {visibleColumns.includes("actions") && (
                     <TableHead className="w-[140px] text-center">
@@ -364,7 +282,7 @@ export function MCQClient({
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={visibleColumns.length}
+                      colSpan={visibleColumns.length + 1}
                       className="py-8 text-center text-muted-foreground"
                     >
                       No questions found.
@@ -372,44 +290,17 @@ export function MCQClient({
                   </TableRow>
                 ) : (
                   data.map((row, index) => (
-                    <TableRow key={row.id}>
-                      {visibleColumns.includes("srNo") && (
-                        <TableCell className="font-medium text-center text-muted-foreground">
-                          {(currentPage - 1) * pageSize + index + 1}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("question") && (
-                        <TableCell>{row.question_text}</TableCell>
-                      )}
-                      {visibleColumns.includes("subject") && (
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            color={row.subject?.name ? "success" : "error"}
-                            shape="square"
-                          >
-                            {typeof row.subject === "string"
-                              ? row.subject
-                              : (row.subject?.name ?? "N/A")}
-                          </Badge>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("createdBy") && (
-                        <TableCell>{"System"}</TableCell>
-                      )}
-                      {visibleColumns.includes("createdDate") && (
-                        <TableCell>
-                          {row.created_at
-                            ? new Date(row.created_at).toLocaleDateString()
-                            : "N/A"}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("actions") && (
-                        <TableCell className="text-center">
-                          <RowActions id={row.id} />
-                        </TableCell>
-                      )}
-                    </TableRow>
+                    <MCQRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
+                    />
                   ))
                 )}
               </TableBody>
@@ -430,81 +321,23 @@ export function MCQClient({
           />
         </div>
 
-        <InlineDrawer
+        <MCQFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Questions
-              </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Subject
-              </Typography>
-              <SelectDropdown
-                placeholder="All Subjects"
-                options={[
-                  { id: "all", label: "All Subjects" },
-                  ...(subjects.map((s) => ({ id: s.code, label: s.name })) ||
-                    []),
-                ]}
-                value={subjectFilter || "all"}
-                onChange={(val) => {
-                  setSubjectFilter(val);
-                  setCurrentPage(1);
-                }}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={() => {
-                  setSearchQuery("");
-                  setSubjectFilter("all");
-                  setCurrentPage(1);
-                }}
-                className="font-bold w-full"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          subjectFilter={subjectFilter}
+          onSubjectFilterChange={(val) => {
+            setSubjectFilter(val);
+            setCurrentPage(1);
+          }}
+          subjects={subjects}
+          onReset={() => {
+            setSearchQuery("");
+            setSubjectFilter("all");
+            setCurrentPage(1);
+          }}
+        />
       </MainCard>
 
       <AddQuestionModal
@@ -525,12 +358,6 @@ export function MCQClient({
           }}
         />
       )}
-
-      <ViewQuestionModal
-        isOpen={!!viewingQuestionId}
-        onClose={() => setViewingQuestionId(null)}
-        questionId={viewingQuestionId}
-      />
     </PageContainer>
   );
 }

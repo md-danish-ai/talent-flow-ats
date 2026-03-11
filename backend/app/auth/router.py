@@ -1,13 +1,22 @@
 from fastapi import APIRouter, Depends, Query
 from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema
-from app.auth.service import signup_user, signin_user, create_admin, get_user_by_id, get_users_by_role
+from app.auth.service import (
+    signup_user,
+    signin_user,
+    create_admin,
+    get_user_by_id,
+    get_users_by_role,
+)
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+
 @router.get("/get-all-users", dependencies=[Depends(require_roles(["admin"]))])
-async def get_users(role: str = Query(..., description="Role to filter users by (e.g., admin, user)")):
+async def get_users(
+    role: str = Query(..., description="Role to filter users by (e.g., admin, user)"),
+):
     data = get_users_by_role(role)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
@@ -38,7 +47,9 @@ async def signin(data: SignInSchema):
 
     if "error" in result:
         return api_response(
-            StatusCode.UNAUTHORIZED, ResponseMessage.UNAUTHORIZED, errors=result["error"]
+            StatusCode.UNAUTHORIZED,
+            ResponseMessage.UNAUTHORIZED,
+            errors=result["error"],
         )
 
     return api_response(StatusCode.OK, ResponseMessage.LOGIN_SUCCESS, data=result)
