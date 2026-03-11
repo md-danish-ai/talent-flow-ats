@@ -14,32 +14,16 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  Plus,
-  Edit,
-  Eye,
-  MoreVertical,
-  Loader2,
-  Filter,
-  Search,
-  RotateCcw,
-  ListChecks,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
+import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
-import ViewQuestionModal from "./component/ViewQuestionModal";
+import { toast } from "@lib/toast";
 import EditQuestionModal from "./component/EditQuestionModal";
 import { AddQuestionModal } from "./component/AddQuestionModal";
-import { Badge } from "@components/ui-elements/Badge";
+import { SubjectiveFilters } from "./component/SubjectiveFilters";
+import { SubjectiveRow } from "./component/SubjectiveRow";
 
 export function SubjectiveClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -50,7 +34,6 @@ export function SubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   // Filters
@@ -67,6 +50,7 @@ export function SubjectiveClient() {
     { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "createdDate", label: "Created Date" },
+    { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
@@ -74,7 +58,7 @@ export function SubjectiveClient() {
     "srNo",
     "question",
     "subject",
-    "createdDate",
+    "status",
     "actions",
   ];
 
@@ -143,74 +127,13 @@ export function SubjectiveClient() {
     try {
       await questionsApi.toggleQuestionStatus(id);
       await fetchData();
+      toast.success("Status updated successfully");
     } catch (error) {
       console.error("Failed to toggle question status:", error);
+      toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const RowActions = ({ row }: { row: Question }) => {
-    const isActive = row.is_active !== false;
-    const items: ActionItem[] = [
-      {
-        key: "view",
-        label: "View Details",
-        icon: <Eye size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          setViewingQuestion(row);
-        },
-      },
-      {
-        key: "edit",
-        label: "Edit Question",
-        icon: <Edit size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          setEditingQuestion(row);
-        },
-      },
-      {
-        key: "toggle",
-        label:
-          togglingId === row.id
-            ? "Updating..."
-            : isActive
-              ? "Deactivate"
-              : "Activate",
-        icon:
-          togglingId === row.id ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : isActive ? (
-            <ToggleRight size={16} />
-          ) : (
-            <ToggleLeft size={16} />
-          ),
-        className: isActive
-          ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
-        onClick: (e) => {
-          e.stopPropagation();
-          handleToggleStatus(row.id);
-        },
-        disabled: togglingId === row.id,
-      },
-    ];
-
-    return (
-      <div className="relative flex justify-center items-center h-full px-2">
-        <ActionMenu
-          button={<MoreVertical size={20} />}
-          items={items}
-          buttonClassName={cn(
-            "h-9 w-9 rounded-full transition-all duration-300 flex items-center justify-center",
-            "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-          menuClassName="w-48 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-border rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
-        />
-      </div>
-    );
   };
 
   return (
@@ -276,6 +199,7 @@ export function SubjectiveClient() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
@@ -290,6 +214,11 @@ export function SubjectiveClient() {
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("actions") && (
                     <TableHead className="w-[140px] text-center">
                       Action
@@ -302,7 +231,7 @@ export function SubjectiveClient() {
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={visibleColumns.length}
+                      colSpan={visibleColumns.length + 1}
                       className="py-8 text-center text-muted-foreground"
                     >
                       No subjective questions found. Click &quot;Add
@@ -311,52 +240,17 @@ export function SubjectiveClient() {
                   </TableRow>
                 ) : (
                   data.map((row, index) => (
-                    <TableRow
+                    <SubjectiveRow
                       key={row.id}
-                      className="hover:bg-muted/20 transition-colors"
-                    >
-                      {visibleColumns.includes("srNo") && (
-                        <TableCell className="font-medium text-center text-muted-foreground">
-                          {(currentPage - 1) * pageSize + index + 1}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("question") && (
-                        <TableCell className="max-w-[400px]">
-                          <Typography
-                            variant="body4"
-                            weight="semibold"
-                            className="line-clamp-2"
-                          >
-                            {row.question_text}
-                          </Typography>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("subject") && (
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            color={row.subject?.name ? "success" : "error"}
-                            shape="square"
-                          >
-                            {typeof row.subject === "string"
-                              ? row.subject
-                              : (row.subject?.name ?? "N/A")}
-                          </Badge>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("createdDate") && (
-                        <TableCell className="text-muted-foreground">
-                          {row.created_at
-                            ? new Date(row.created_at).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("actions") && (
-                        <TableCell className="text-center">
-                          <RowActions row={row} />
-                        </TableCell>
-                      )}
-                    </TableRow>
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
+                    />
                   ))
                 )}
               </TableBody>
@@ -377,81 +271,20 @@ export function SubjectiveClient() {
           />
         </div>
 
-        <InlineDrawer
+        <SubjectiveFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Questions
-              </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Subject
-              </Typography>
-              <SelectDropdown
-                placeholder="All Subjects"
-                options={[
-                  { id: "all", label: "All Subjects" },
-                  ...(subjects.map((s) => ({ id: s.code, label: s.name })) ||
-                    []),
-                ]}
-                value={subjectFilter || "all"}
-                onChange={(val) => {
-                  setSubjectFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={() => {
-                  setSearchQuery("");
-                  setSubjectFilter("all");
-                  setCurrentPage(1);
-                }}
-                className="font-bold w-full"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          subjectFilter={subjectFilter}
+          onSubjectFilterChange={setSubjectFilter}
+          subjects={subjects}
+          onReset={() => {
+            setSearchQuery("");
+            setSubjectFilter("all");
+            setCurrentPage(1);
+          }}
+        />
       </MainCard>
 
       {/* Modals */}
@@ -467,14 +300,6 @@ export function SubjectiveClient() {
           isOpen={true}
           onClose={() => setEditingQuestion(null)}
           onSuccess={fetchData}
-        />
-      )}
-
-      {viewingQuestion && (
-        <ViewQuestionModal
-          question={viewingQuestion}
-          isOpen={true}
-          onClose={() => setViewingQuestion(null)}
         />
       )}
     </PageContainer>

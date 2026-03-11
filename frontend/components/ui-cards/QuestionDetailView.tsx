@@ -18,9 +18,11 @@ import {
   Trophy,
   MessageSquareQuote,
   FileImage,
+  CheckCircle2,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@lib/utils";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
 interface QuestionDetailViewProps {
   question: Question;
@@ -31,6 +33,10 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   question,
   className,
 }) => {
+  const isSubjective =
+    question.question_type?.code === QUESTION_TYPES.SUBJECTIVE ||
+    question.question_type?.code === QUESTION_TYPES.IMAGE_SUBJECTIVE;
+
   const getCanonicalImageUrl = (url?: string | null) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -60,10 +66,14 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               weight="bold"
               className="tracking-tight"
             >
-              Question Details & Options
+              {isSubjective
+                ? "Subjective Question Details"
+                : "Question Details & Options"}
             </Typography>
             <Typography variant="body5" className="text-muted-foreground/80">
-              Overview of the selected question and its options.
+              {isSubjective
+                ? "Overview of the selected subjective question."
+                : "Overview of the selected question and its options."}
             </Typography>
           </div>
         </div>
@@ -190,84 +200,110 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Options Table */}
-        <div className="rounded-xl border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-border/40 hover:bg-transparent shadow-none">
-                <TableHead className="w-[80px] h-10">
-                  <Typography
-                    variant="body5"
-                    weight="bold"
-                    className="uppercase tracking-widest text-muted-foreground/60 text-center w-full block"
-                  >
-                    Label
-                  </Typography>
-                </TableHead>
-                <TableHead className="h-10">
-                  <Typography
-                    variant="body5"
-                    weight="bold"
-                    className="uppercase tracking-widest text-muted-foreground/60"
-                  >
-                    Option Content
-                  </Typography>
-                </TableHead>
-                <TableHead className="w-[130px] text-right h-10 pr-5">
-                  <Typography
-                    variant="body5"
-                    weight="bold"
-                    className="uppercase tracking-widest text-muted-foreground/60 text-right w-full block"
-                  >
-                    Status
-                  </Typography>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(question.options || []).map(
-                (opt: QuestionOption, index: number) => (
-                  <TableRow
-                    key={opt.option_label ?? index}
-                    className="border-b border-border/30 last:border-0 transition-colors hover:bg-slate-50/30 dark:hover:bg-slate-800/20 shadow-none"
-                  >
-                    <TableCell className="py-2.5 font-bold text-slate-400 dark:text-slate-500 text-center">
-                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 mx-auto border border-border/20">
-                        <Typography variant="body4" weight="bold">
-                          {opt.option_label || String.fromCharCode(65 + index)}
-                        </Typography>
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        "py-2.5 text-muted-foreground",
-                        opt.is_correct &&
-                          "text-emerald-600 dark:text-emerald-400 font-bold",
-                      )}
+        {/* Dynamic Content Based on Type */}
+        {!isSubjective ? (
+          /* Options Table for MCQs */
+          <div className="rounded-xl border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-border/40 hover:bg-transparent shadow-none">
+                  <TableHead className="w-[80px] h-10">
+                    <Typography
+                      variant="body5"
+                      weight="bold"
+                      className="uppercase tracking-widest text-muted-foreground/60 text-center w-full block"
                     >
-                      <Typography
-                        variant="body4"
-                        weight={opt.is_correct ? "bold" : "medium"}
+                      Label
+                    </Typography>
+                  </TableHead>
+                  <TableHead className="h-10">
+                    <Typography
+                      variant="body5"
+                      weight="bold"
+                      className="uppercase tracking-widest text-muted-foreground/60"
+                    >
+                      Option Content
+                    </Typography>
+                  </TableHead>
+                  <TableHead className="w-[130px] text-right h-10 pr-5">
+                    <Typography
+                      variant="body5"
+                      weight="bold"
+                      className="uppercase tracking-widest text-muted-foreground/60 text-right w-full block"
+                    >
+                      Status
+                    </Typography>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(question.options || []).map(
+                  (opt: QuestionOption, index: number) => (
+                    <TableRow
+                      key={opt.option_label ?? index}
+                      className="border-b border-border/30 last:border-0 transition-colors hover:bg-slate-50/30 dark:hover:bg-slate-800/20 shadow-none"
+                    >
+                      <TableCell className="py-2.5 font-bold text-slate-400 dark:text-slate-500 text-center">
+                        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 mx-auto border border-border/20">
+                          <Typography variant="body4" weight="bold">
+                            {opt.option_label ||
+                              String.fromCharCode(65 + index)}
+                          </Typography>
+                        </div>
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          "py-2.5 text-muted-foreground",
+                          opt.is_correct &&
+                            "text-emerald-600 dark:text-emerald-400 font-bold",
+                        )}
                       >
-                        {opt.option_text}
-                      </Typography>
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right pr-5">
-                      <Badge
-                        variant="outline"
-                        color={opt.is_correct ? "success" : "error"}
-                        shape="curve"
-                        className="px-2.5 py-0"
-                      >
-                        {opt.is_correct ? "Correct" : "Incorrect"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ),
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                        <Typography
+                          variant="body4"
+                          weight={opt.is_correct ? "bold" : "medium"}
+                        >
+                          {opt.option_text}
+                        </Typography>
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right pr-5">
+                        <Badge
+                          variant="outline"
+                          color={opt.is_correct ? "success" : "error"}
+                          shape="curve"
+                          className="px-2.5 py-0"
+                        >
+                          {opt.is_correct ? "Correct" : "Incorrect"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ),
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          /* Model Answer for Subjective Questions */
+          <div className="p-4 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 size={16} />
+              </div>
+              <Typography
+                variant="body4"
+                weight="bold"
+                className="text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
+              >
+                Answer
+              </Typography>
+            </div>
+            <Typography
+              variant="body4"
+              className="text-muted-foreground leading-relaxed pl-1"
+            >
+              {question.answer?.answer_text || "No model answer provided."}
+            </Typography>
+          </div>
+        )}
 
         {/* Explanation Section */}
         <div className="relative p-4 rounded-xl bg-brand-primary/[0.03] border border-brand-primary/10 overflow-hidden group mt-2">
@@ -286,7 +322,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                 weight="bold"
                 className="text-brand-primary uppercase tracking-wider"
               >
-                Explanation & Feedback
+                Explanation
               </Typography>
               <Typography
                 variant="body4"
