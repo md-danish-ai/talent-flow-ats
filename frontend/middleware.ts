@@ -4,11 +4,18 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // Handle explicit auth clearing via URL flag
-  if (searchParams.get("clear_auth") === "1" && pathname !== "/sign-in") {
-    const url = new URL("/sign-in", request.url);
-    url.searchParams.set("clear_auth", "1");
-    const response = NextResponse.redirect(url);
+  const isClearingAuth = searchParams.get("clear_auth") === "1";
+
+  // Handle explicit auth clearing via URL flag.
+  // Always delete cookies when clear_auth=1 is present.
+  // KEY FIX: If already on /sign-in, use NextResponse.next() (NOT redirect)
+  // so the page renders and we break the loop.
+  // If on any other page, redirect to /sign-in?clear_auth=1.
+  if (isClearingAuth) {
+    const response =
+      pathname === "/sign-in"
+        ? NextResponse.next() // Already on sign-in → just clear cookies & let page render
+        : NextResponse.redirect(new URL("/sign-in?clear_auth=1", request.url));
     response.cookies.delete("auth_token");
     response.cookies.delete("role");
     response.cookies.delete("user_info");
@@ -26,7 +33,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  // 2. If logged in, prevent access to login/register pages
+  // 2. If logged in, prevent accessing login/root page
   if (authToken && (pathname === "/sign-in" || pathname === "/")) {
     if (role === "admin") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
@@ -48,7 +55,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: ["/", "/sign-in", "/admin/:path*", "/user/:path*"],
 };
