@@ -15,7 +15,7 @@ class Classification(Base):
     __tablename__ = "classifications"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    code = Column(String(100), nullable=False)
+    code = Column(String(100), nullable=False, unique=True)
     type = Column(String(100), nullable=False)
     name = Column(String(255), nullable=False)
     extra_metadata = Column("metadata", JSONB, nullable=True)
@@ -23,13 +23,11 @@ class Classification(Base):
     is_active = Column(Boolean, server_default="true", nullable=False)
 
     created_at = Column(
-        TIMESTAMP,
-        server_default=func.current_timestamp(),
-        nullable=False
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
-        nullable=False
+        nullable=False,
     )

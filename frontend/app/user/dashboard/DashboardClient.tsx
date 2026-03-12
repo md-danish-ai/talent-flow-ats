@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Lock,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Typography } from "@components/ui-elements/Typography";
 import Link from "next/link";
 import { Card } from "@components/ui-cards/Card";
@@ -53,17 +52,7 @@ export function DashboardClient({
   user,
   isDetailsComplete,
 }: DashboardClientProps) {
-  const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
-  const handleLogout = () => {
-    document.cookie =
-      "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie =
-      "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    router.push("/sign-in");
-  };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -139,7 +128,7 @@ export function DashboardClient({
           <motion.div variants={itemVariants}>
             <Link
               href={isDetailsComplete ? "#" : "/user/personal-details"}
-              onClick={(e) => isDetailsComplete && e.preventDefault()}
+              onClick={(event) => isDetailsComplete && event.preventDefault()}
               className={`group relative block h-full ${
                 isDetailsComplete ? "cursor-not-allowed" : "cursor-pointer"
               }`}
@@ -225,7 +214,9 @@ export function DashboardClient({
             >
               <Link
                 href={isDetailsComplete ? "/user/interview-test" : "#"}
-                onClick={(e) => !isDetailsComplete && e.preventDefault()}
+                onClick={(event) =>
+                  !isDetailsComplete && event.preventDefault()
+                }
                 className={`block h-full ${isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"}`}
               >
                 <Card

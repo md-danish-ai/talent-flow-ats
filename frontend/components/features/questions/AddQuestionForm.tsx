@@ -8,30 +8,98 @@ import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
-import { cn, getErrorMessage } from "@lib/utils";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
+import { cn, getErrorMessage } from "@lib/utils";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi, Classification } from "@lib/api/classifications";
+import { type QuestionCreate } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
-export const AddQuestionForm = () => {
+export const AddQuestionForm = ({
+  initialData,
+  questionId,
+  onSuccess,
+}: {
+  initialData?: MCQFormValues;
+  questionId?: number;
+  onSuccess?: (mode: "created" | "updated") => void;
+}) => {
+  const [subjects, setSubjects] = React.useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
+
+  React.useEffect(() => {
+    const fetchClassifications = async () => {
+      try {
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch classifications:", error);
+      }
+    };
+    fetchClassifications();
+  }, []);
+
   const form = useForm({
-    defaultValues: {
-      subject: "",
-      questionText: "",
-      explanation: "",
-      options: [
-        { id: "A", label: "A", content: "", isCorrect: false },
-        { id: "B", label: "B", content: "", isCorrect: false },
-        { id: "C", label: "C", content: "", isCorrect: false },
-        { id: "D", label: "D", content: "", isCorrect: false },
-      ],
-    } as MCQFormValues,
-    validators: {
-      onChange: mcqSchema,
-    },
+    defaultValues:
+      initialData ||
+      ({
+        subject: "",
+        examLevel: "",
+        marks: 1,
+        questionText: "",
+        explanation: "",
+        options: [
+          { id: "A", label: "A", content: "", isCorrect: false },
+          { id: "B", label: "B", content: "", isCorrect: false },
+          { id: "C", label: "C", content: "", isCorrect: false },
+          { id: "D", label: "D", content: "", isCorrect: false },
+        ],
+      } as MCQFormValues),
+    validators: { onChange: mcqSchema },
     onSubmit: async ({ value }) => {
-      // Simulate API call
-      console.log(value);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert("Question added successfully!");
+      try {
+        const payload: Partial<QuestionCreate> = {
+          question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
+          subject: value.subject,
+          exam_level: value.examLevel,
+          question_text: value.questionText,
+          marks: value.marks,
+          options: value.options.map((opt) => ({
+            option_label: opt.label,
+            option_text: opt.content,
+            is_correct: opt.isCorrect,
+          })),
+          answer: { explanation: value.explanation },
+        };
+
+        if (!questionId) payload.is_active = true;
+
+        let mode: "created" | "updated";
+        if (questionId) {
+          await questionsApi.updateQuestion(questionId, payload);
+          mode = "updated";
+        } else {
+          await questionsApi.createQuestion(payload as QuestionCreate);
+          mode = "created";
+        }
+
+        // client.ts fires the success toast automatically using backend's message
+        form.reset();
+        if (onSuccess) onSuccess(mode);
+      } catch (error: unknown) {
+        console.error("Failed to process question", error);
+        // Error toast is fired automatically by client.ts
+      }
     },
   });
 
@@ -66,8 +134,9 @@ export const AddQuestionForm = () => {
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="space-y-8 p-1"
+      className="space-y-6 p-1"
     >
+      {/* ── Question Details ── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
@@ -94,11 +163,10 @@ export const AddQuestionForm = () => {
                     placeholder="Select Subject"
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val as string)}
-                    options={[
-                      { id: "Industry Awareness", label: "Industry Awareness" },
-                      { id: "Comprehension", label: "Comprehension" },
-                      { id: "Logical Reasoning", label: "Logical Reasoning" },
-                    ]}
+                    options={subjects.map((s) => ({
+                      id: s.code,
+                      label: s.name,
+                    }))}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -114,8 +182,8 @@ export const AddQuestionForm = () => {
               )}
             </form.Field>
           </div>
-          <div className="md:col-span-2">
-            <form.Field name="questionText">
+          <div className="md:col-span-1">
+            <form.Field name="examLevel">
               {(field) => (
                 <>
                   <Typography
@@ -123,16 +191,52 @@ export const AddQuestionForm = () => {
                     weight="semibold"
                     className="mb-2 block text-muted-foreground uppercase tracking-wider"
                   >
-                    Question Text
+                    Exam Level
                   </Typography>
-                  <Input
-                    type="text"
-                    placeholder="Enter the main question here..."
+                  <SelectDropdown
+                    placeholder="Select Exam Level"
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={examLevels.map((e) => ({
+                      id: e.code,
+                      label: e.name,
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
-                    className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="text-red-500 mt-1 ml-1 font-medium"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </form.Field>
+          </div>
+          <div className="md:col-span-1">
+            <form.Field name="marks">
+              {(field) => (
+                <>
+                  <Typography
+                    variant="body5"
+                    weight="semibold"
+                    className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                  >
+                    Marks
+                  </Typography>
+                  <SelectDropdown
+                    placeholder="Select Marks"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(Number(val))}
+                    options={Array.from({ length: 10 }, (_, i) => ({
+                      id: String(i + 1),
+                      label: String(i + 1),
+                    }))}
+                    className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
+                    error={field.state.meta.errors.length > 0}
                   />
                   {field.state.meta.errors.length > 0 && (
                     <Typography
@@ -147,8 +251,42 @@ export const AddQuestionForm = () => {
             </form.Field>
           </div>
         </div>
+
+        <div className="mt-4">
+          <form.Field name="questionText">
+            {(field) => (
+              <>
+                <Typography
+                  variant="body5"
+                  weight="semibold"
+                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                >
+                  Question Text
+                </Typography>
+                <Input
+                  type="text"
+                  placeholder="Enter the main question here..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="text-red-500 mt-1 ml-1 font-medium"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
+                )}
+              </>
+            )}
+          </form.Field>
+        </div>
       </div>
 
+      {/* ── Answer Options ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -200,13 +338,10 @@ export const AddQuestionForm = () => {
                             field.state.meta.errors.length > 0
                           }
                           onMarkCorrect={() => {
-                            const isCurrentlyCorrect =
-                              field.state.value[index].isCorrect;
                             const newOptions = field.state.value.map(
                               (o, i) => ({
                                 ...o,
-                                isCorrect:
-                                  i === index ? !isCurrentlyCorrect : false,
+                                isCorrect: i === index ? !o.isCorrect : false,
                               }),
                             );
                             field.handleChange(newOptions);
@@ -240,6 +375,7 @@ export const AddQuestionForm = () => {
         </form.Field>
       </div>
 
+      {/* ── Answer Explanation ── */}
       <div className="space-y-4">
         <form.Field name="explanation">
           {(field) => (
@@ -277,7 +413,8 @@ export const AddQuestionForm = () => {
         </form.Field>
       </div>
 
-      <div className="bg-card flex justify-end">
+      {/* ── Submit ── */}
+      <div className="flex justify-end">
         <form.Subscribe
           selector={(state) => [state.isSubmitting, state.canSubmit]}
         >

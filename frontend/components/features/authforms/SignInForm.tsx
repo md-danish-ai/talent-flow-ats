@@ -9,9 +9,10 @@ import {
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "@lib/toast";
 import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
 import { useSignIn } from "@lib/react-query/user/use-auth";
 import { Input } from "@components/ui-elements/Input";
@@ -24,6 +25,33 @@ export function SignInForm() {
   const router = useRouter();
   const [role, setRole] = useState("user");
   const [serverError, setServerError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Check both Next.js hook and raw window location
+    const urlParams = new URLSearchParams(window.location.search);
+    const clearAuth =
+      searchParams.get("clear_auth") || urlParams.get("clear_auth");
+
+    if (clearAuth === "1") {
+      console.log("Session expiration detected via URL flag");
+
+      // Small delay to ensure ToastProvider is ready and portal is mounted
+      const timer = setTimeout(() => {
+        toast.error("Session expired. Please sign in again.", {
+          title: "Auth Alert",
+          duration: 20000,
+        });
+
+        // Clean up URL without refreshing
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const signInMutation = useSignIn();
 

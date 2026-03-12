@@ -15,12 +15,7 @@ class UserDetail(Base):
     __tablename__ = "user_details"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id"),
-        unique=True,
-        nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
 
     personal_details = Column(JSONB, nullable=True)
     family_details = Column(JSONB, nullable=True)
@@ -35,5 +30,5 @@ class UserDetail(Base):
         TIMESTAMP,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
-        nullable=False
+        nullable=False,
     )

@@ -19,7 +19,9 @@ services:
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
       SECRET_KEY: supersecretkey1234567890123456
-    command: uvicorn app.main:app --host 0.0.0.0 --port 4000
+    volumes:
+      - ./backend:/backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 4000 --reload
 
   migrations:
     image: talent-flow-ats-backend
@@ -33,7 +35,8 @@ services:
       DB_NAME: talent_flow_ats
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
-    command: sh /backend/scripts/run_migrations.sh
+    entrypoint: ["sh", "/backend/scripts/run_migrations.sh"]
+    command: ["upgrade", "head"]
 
   db:
     container_name: talent-flow-postgres
@@ -54,4 +57,3 @@ services:
 
 volumes:
   postgres_data:
-  

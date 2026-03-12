@@ -15,12 +15,7 @@ from app.database.db import Base
 class Question(Base):
     __tablename__ = "questions"
 
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True,
-        autoincrement=True
-    )
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     question_type = Column(String(100), nullable=False)
     subject_type = Column(String(100), nullable=False)
@@ -37,21 +32,15 @@ class Question(Base):
     # JSONB instead of relationship
     options = Column(JSONB, nullable=True)
 
-    created_by = Column(
-        Integer,
-        ForeignKey("users.id"),
-        nullable=True
-    )
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     created_at = Column(
-        TIMESTAMP,
-        server_default=func.current_timestamp(),
-        nullable=False
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
 
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
-        nullable=False
+        nullable=False,
     )

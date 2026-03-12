@@ -7,6 +7,7 @@ import {
   Settings,
   Package,
   Users,
+  Bell,
 } from "lucide-react";
 
 export interface NavItem {
@@ -61,20 +62,26 @@ export const ADMIN_ROUTES: NavSection[] = [
     title: "Results",
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
-    items: [{ label: "View All Results", href: "/admin/results" }],
+    items: [
+      { label: "View All Results", href: "/admin/results" },
+      { label: "User Result", href: "/admin/results/user-results" },
+    ],
   },
   {
-    title: "Admin Management",
+    title: "Management",
     icon: <Users className="w-5 h-5" />,
-    type: "item",
-    href: "/admin/admin-management",
-    items: [],
+    type: "collapsible",
+    items: [
+      { label: "Admins", href: "/admin/management/admins" },
+      { label: "Users", href: "/admin/management/users" },
+      { label: "Add Subject & Level", href: "/admin/management/subject-level" },
+    ],
   },
   {
-    title: "User Management",
-    icon: <Users className="w-5 h-5" />,
+    title: "Notifications",
+    icon: <Bell className="w-5 h-5" />,
     type: "item",
-    href: "/admin/user-management",
+    href: "/admin/notifications",
     items: [],
   },
   {

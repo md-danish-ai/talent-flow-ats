@@ -5,9 +5,7 @@ from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import authenticate_user
 
 router = APIRouter(
-    prefix="/answers",
-    tags=["Answers"],
-    dependencies=[Depends(authenticate_user)]
+    prefix="/answers", tags=["Answers"], dependencies=[Depends(authenticate_user)]
 )
 answer_service = AnswerService()
 

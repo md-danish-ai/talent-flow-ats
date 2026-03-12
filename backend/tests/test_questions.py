@@ -23,7 +23,7 @@ client = TestClient(app)
 # ---------------------------
 sample_question = {
     "question_type": "MCQ",
-    "subject_type": "GRAMMAR",
+    "subject": "GRAMMAR",
     "exam_level": "BEGINNER",
     "question_text": "What is 2+2?",
     "image_url": None,
@@ -34,10 +34,7 @@ sample_question = {
         {"option_label": "A", "option_text": "3", "is_correct": False},
         {"option_label": "B", "option_text": "4", "is_correct": True},
     ],
-    "answer": {
-        "answer_text": "4",
-        "explanation": "2+2 equals 4"
-    }
+    "answer": {"answer_text": "4", "explanation": "2+2 equals 4"},
 }
 
 # ---------------------------
@@ -48,8 +45,7 @@ sample_question = {
 @pytest.fixture
 def mock_create_question():
     with patch("app.questions.service.QuestionService.create_question") as mock:
-        mock.return_value = {
-            "message": "Question created successfully", "id": 1}
+        mock.return_value = {"message": "Question created successfully", "id": 1}
         yield mock
 
 
@@ -85,17 +81,17 @@ def mock_save_image():
 # Test Cases
 # ---------------------------
 
+
 def test_create_question(mock_create_question):
-    response = client.post("/questions/", json=sample_question)
+    response = client.post("/questions/create", json=sample_question)
 
     assert response.status_code == 201
     assert response.json()["status"] == 201
-    assert response.json()[
-        "data"]["message"] == "Question created successfully"
+    assert response.json()["data"]["message"] == "Question created successfully"
 
 
 def test_get_questions(mock_get_questions):
-    response = client.get("/questions/")
+    response = client.get("/questions/get")
 
     assert response.status_code == 200
     assert response.json()["status"] == 200
@@ -105,19 +101,17 @@ def test_get_questions(mock_get_questions):
 def test_update_question(mock_update_question):
     update_payload = {"question_text": "Updated question"}
 
-    response = client.put("/questions/1", json=update_payload)
+    response = client.put("/questions/update/1", json=update_payload)
 
     assert response.status_code == 200
-    assert response.json()[
-        "data"]["message"] == "Question 1 updated successfully"
+    assert response.json()["data"]["message"] == "Question 1 updated successfully"
 
 
 def test_delete_question(mock_delete_question):
     response = client.delete("/questions/1")
 
     assert response.status_code == 200
-    assert response.json()[
-        "data"]["message"] == "Question 1 deactivated successfully"
+    assert response.json()["data"]["message"] == "Question 1 deactivated successfully"
 
 
 def test_upload_image(mock_save_image):

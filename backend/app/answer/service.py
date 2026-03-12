@@ -9,9 +9,9 @@ class AnswerService:
             return repository.create_answer(payload, user_id)
         except HTTPException:
             raise
-        except Exception as e:
+        except Exception as exception:
             raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
     async def get_answer(self, question_id: int):
@@ -19,9 +19,9 @@ class AnswerService:
             return repository.get_answer_by_question(question_id)
         except HTTPException:
             raise
-        except Exception as e:
+        except Exception as exception:
             raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
     async def update_answer(self, question_id: int, payload, user_id: int):
@@ -29,7 +29,7 @@ class AnswerService:
             return repository.update_answer(question_id, payload, user_id)
         except HTTPException:
             raise
-        except Exception as e:
+        except Exception as exception:
             raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )

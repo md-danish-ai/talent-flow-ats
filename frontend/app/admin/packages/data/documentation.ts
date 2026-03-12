@@ -6,6 +6,7 @@ export const CATEGORIES = [
       { id: "button", name: "Button" },
       { id: "input", name: "Input" },
       { id: "select", name: "Select Dropdown" },
+      { id: "tabs", name: "Tabs" },
     ],
   },
   {

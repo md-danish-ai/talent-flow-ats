@@ -1,4 +1,6 @@
 // Base API client for making HTTP requests to the backend
+import { toast } from "@lib/toast";
+
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
@@ -12,6 +14,10 @@ export interface ApiRequestOptions {
   cookies?: string;
   // Custom cache / revalidate options for Next.js fetch
   next?: NextFetchRequestConfig;
+  // Suppress the automatic success toast for this request (e.g. silent auto-saves)
+  silentSuccess?: boolean;
+  // Suppress the automatic error toast for this request
+  silentError?: boolean;
 }
 
 interface ValidationError {
@@ -68,6 +74,8 @@ export async function apiClient<T>(
     headers: customHeaders = {},
     cookies,
     next: nextOptions,
+    silentSuccess = false,
+    silentError = false,
   } = options;
 
   const headers: Record<string, string> = {
@@ -94,11 +102,18 @@ export async function apiClient<T>(
       .split(";")
       .find((row) => row.trim().startsWith("auth_token="));
     if (authRow) {
-      let val = authRow.trim().split("=").slice(1).join("=").trim();
-      // Remove wrapping quotes
-      val = val.replace(/^["%22]+|["%22]+$/g, "");
+      // Grab everything after the first '='
+      let val = authRow.trim().substring("auth_token=".length).trim();
+      // Remove wrapping double-quotes or URL-encoded quotes (%22)
+      val = val.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+      // URL-decode the value in case it was encoded
+      try {
+        val = decodeURIComponent(val);
+      } catch {
+        /* keep raw val */
+      }
 
-      if (val && val !== "undefined" && val !== "null") {
+      if (val && val !== "undefined" && val !== "null" && val.length > 10) {
         token = val;
       }
     }
@@ -114,6 +129,9 @@ export async function apiClient<T>(
     method,
     headers,
     ...(body ? { body: JSON.stringify(body) } : {}),
+    // When cookies are forwarded (SSR context), always bypass the Next.js
+    // fetch data cache so we never serve stale server-side data.
+    ...(cookies ? { cache: "no-store" as RequestCache } : {}),
     ...(nextOptions ? { next: nextOptions } : {}),
   };
 
@@ -127,7 +145,16 @@ export async function apiClient<T>(
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    if (response.status === 401 && typeof document !== "undefined") {
+    const apiErr = new ApiError(response.status, result as ApiErrorResponse);
+    const isAuthRequest =
+      endpoint.startsWith("/auth/signin") ||
+      endpoint.startsWith("/auth/signup");
+
+    if (
+      response.status === 401 &&
+      typeof document !== "undefined" &&
+      !isAuthRequest
+    ) {
       // Clear all auth cookies on 401 Unauthorized
       document.cookie =
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
@@ -135,10 +162,34 @@ export async function apiClient<T>(
       document.cookie =
         "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 
-      // Redirect to sign-in page
-      window.location.href = "/sign-in";
+      // Redirect to sign-in page with clear_auth parameter
+      window.location.href = "/sign-in?clear_auth=1";
+    } else if (!silentError && method !== "GET" && !isAuthRequest) {
+      // Auto error toast for all non-GET failures (skip GET to avoid
+      // spamming toast on background data fetches)
+      toast.error(apiErr.message, { title: `Error ${response.status}` });
     }
-    throw new ApiError(response.status, result as ApiErrorResponse);
+
+    throw apiErr;
+  }
+
+  // ── Auto success toast for mutations ──────────────────────────────────────
+  // Fire a success toast for all non-GET calls using the backend's message.
+  // Suppressed if silentSuccess is set (e.g. per-keystroke auto-saves).
+  // Auth endpoints (signin/signup) are handled by the form itself.
+  const isAuthEndpoint =
+    endpoint.startsWith("/auth/signin") || endpoint.startsWith("/auth/signup");
+  if (
+    !silentSuccess &&
+    method !== "GET" &&
+    !isAuthEndpoint &&
+    typeof window !== "undefined" &&
+    result &&
+    typeof result === "object" &&
+    "message" in result &&
+    typeof result.message === "string"
+  ) {
+    toast.success(result.message);
   }
 
   // Handle standard backend wrapper: { status, message, data }

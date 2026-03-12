@@ -183,7 +183,7 @@ export function UserDetailView({
           >
             <div className="space-y-6">
               {!workExperienceDetails?.length ||
-              workExperienceDetails[0].company === "" ? (
+                workExperienceDetails[0].company === "" ? (
                 <p className="text-sm text-muted-foreground italic">
                   No work experience added.
                 </p>

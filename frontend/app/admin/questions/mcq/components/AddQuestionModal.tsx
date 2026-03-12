@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { AddQuestionForm } from "@features/questions/AddQuestionForm";
+import { AddQuestionForm } from "@components/features/questions/AddQuestionForm";
 
 interface AddQuestionModalProps {
   isOpen: boolean;
@@ -16,9 +16,13 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Multiple Choice Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
-      <AddQuestionForm />
+      <AddQuestionForm
+        onSuccess={() => {
+          onClose();
+        }}
+      />
     </Modal>
   );
 };

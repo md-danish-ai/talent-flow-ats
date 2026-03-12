@@ -28,8 +28,8 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   } catch (error: unknown) {
     const apiError = error as { status?: number };
     if (apiError && apiError.status === 401) {
-      // Token expired or invalid — redirect to sign-in
-      redirect("/sign-in");
+      // Token expired or invalid — redirect to sign-in with clear_auth flag
+      redirect("/sign-in?clear_auth=1");
     }
     console.error("Error fetching current user:", error);
     return null;

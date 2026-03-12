@@ -1,13 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
-import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -16,64 +11,91 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableCollapsibleRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import {
-  Filter,
-  Search,
-  RotateCcw,
-  Plus,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Filter, Plus, Image as ImageIcon, Loader2 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-
-interface ImageMCQQuestion {
-  id: number;
-  question: string;
-  subject: string;
-  createdBy: string;
-  createdDate: string;
-}
+import { questionsApi, Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
+import { classificationsApi, Classification } from "@lib/api/classifications";
+import { ApiError } from "@lib/api/client";
+import { useRouter } from "next/navigation";
+import { toast } from "@lib/toast";
+import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
+import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
+import ImageLightbox from "./components/ImageLightbox";
+import { ImageMCQFilters } from "./components/ImageMCQFilters";
+import { ImageMCQRow } from "./components/ImageMCQRow";
 
 interface ImageMCQClientProps {
-  initialData: ImageMCQQuestion[];
-  totalItems: number;
+  initialData?: Question[];
+  totalItems?: number;
 }
 
 export function ImageMCQClient({
-  initialData,
-  totalItems: initialTotalItems,
+  initialData = [],
+  totalItems: initialTotalItems = 0,
 }: ImageMCQClientProps) {
+  const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
   >(undefined);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Question[]>(initialData || []);
+  const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
+  const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  const handleAuthError = useCallback(
+    (error: unknown): boolean => {
+      if (error instanceof ApiError && error.status === 401) {
+        if (typeof document !== "undefined") {
+          document.cookie = "role=; Max-Age=0; path=/";
+          document.cookie = "auth_token=; Max-Age=0; path=/";
+          document.cookie = "user_info=; Max-Age=0; path=/";
+        }
+        router.push("/sign-in");
+        return true;
+      }
+      return false;
+    },
+    [router],
+  );
 
   // Column Visibility State
   const allColumns = [
-    { id: "srNo", label: "Sr. No." },
-    { id: "question", label: "Question" },
+    { id: "srNo", label: "Sr. No.", pinned: true },
+    { id: "image", label: "Image" },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
+    { id: "status", label: "Status" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
+    "image",
     "question",
     "subject",
-    "createdBy",
-  ]);
+    "status",
+    "actions",
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const totalItems = initialTotalItems;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -81,20 +103,79 @@ export function ImageMCQClient({
     );
   };
 
-  // For now we still use mock since we don't have a real API to call for filters/pagination in this demo
-  const mockData =
-    initialData.length > 0
-      ? initialData
-      : Array.from({ length: pageSize }).map((_, i) => {
-          const actualId = (currentPage - 1) * pageSize + i + 1;
-          return {
-            id: actualId,
-            question: `Sample Image-Based Multiple Choice Question ${actualId} for testing the UI layout and scroll behavior.`,
-            subject: i % 2 === 0 ? "Industry Awareness" : "Comprehension",
-            createdBy: "Manish Joshi - Mohan Lal",
-            createdDate: "17/11/2018",
-          };
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset page on search
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await questionsApi.getQuestions({
+        page: currentPage,
+        limit: pageSize,
+        search: debouncedSearch,
+        subject:
+          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
+      });
+
+      setData(response.data || []);
+      if (response.pagination) {
+        setTotalItems(response.pagination.total_records);
+      }
+    } catch (error) {
+      if (handleAuthError(error)) return;
+      console.error("Error fetching questions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, pageSize, debouncedSearch, subjectFilter, handleAuthError]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const resp = await classificationsApi.getClassifications({
+          type: "subject",
+          limit: 100,
         });
+        setSubjects(resp.data || []);
+      } catch (err) {
+        if (handleAuthError(err)) return;
+        console.error("Failed to fetch subjects:", err);
+      }
+    };
+    if (subjects.length === 0) fetchSubjects();
+  }, [subjects.length, handleAuthError]);
+
+  const handleToggleStatus = async (id: number) => {
+    setTogglingId(id);
+    try {
+      await questionsApi.toggleQuestionStatus(id);
+      await fetchData();
+      toast.success("Question status updated successfully");
+    } catch (error) {
+      if (handleAuthError(error)) return;
+      toast.error("Failed to update status");
+      console.error("Failed to toggle status:", error);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleAddSuccess = async () => {
+    setIsAddModalOpen(false);
+    setCurrentPage(1);
+    await fetchData();
+  };
 
   return (
     <PageContainer animate>
@@ -115,6 +196,7 @@ export function ImageMCQClient({
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
             <Button
@@ -145,10 +227,15 @@ export function ImageMCQClient({
       >
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden",
+            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden relative",
             isFilterOpen && "border-r border-border",
           )}
         >
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+            </div>
+          )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
@@ -157,6 +244,11 @@ export function ImageMCQClient({
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("image") && (
+                    <TableHead className="w-[80px] text-center">
+                      Image
                     </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
@@ -171,136 +263,44 @@ export function ImageMCQClient({
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockData.map((row) => (
-                  <TableCollapsibleRow
-                    key={row.id}
-                    colSpan={visibleColumns.length + 1}
-                    expandedContent={
-                      <div className="m-4 md:my-4 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
-                              <ImageIcon size={18} />
-                            </div>
-                            <div>
-                              <Typography variant="body3" weight="bold">
-                                Question Details & Options
-                              </Typography>
-                              <Typography
-                                variant="body5"
-                                className="text-muted-foreground"
-                              >
-                                Review all options and correct answer
-                                explanation.
-                              </Typography>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-5">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30 border-b border-border">
-                                <TableHead className="w-[80px] h-10">
-                                  Option
-                                </TableHead>
-                                <TableHead className="h-10">Content</TableHead>
-                                <TableHead className="w-[120px] text-right h-10">
-                                  Status
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option A
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  B
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground font-bold text-green-600 dark:text-green-500">
-                                  Sample Image Option B (Correct)
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-green-500 font-medium">
-                                  Correct
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option C
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                              <TableRow className="border-b border-border bg-red-500/5 hover:bg-red-500/10 transition-colors">
-                                <TableCell className="px-5 py-3 font-medium text-foreground">
-                                  D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-muted-foreground">
-                                  Sample Image Option D
-                                </TableCell>
-                                <TableCell className="px-5 py-3 text-right text-red-500 font-medium">
-                                  Incorrect
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </div>
-
-                        <div className="px-5 py-3 bg-muted/20 border-t border-border">
-                          <Typography
-                            variant="body3"
-                            weight="semibold"
-                            className="inline-block mr-1"
-                          >
-                            Explanation:
-                          </Typography>
-                          <Typography
-                            variant="body3"
-                            className="text-muted-foreground inline-block"
-                          >
-                            This is a sample explanation for the image-based
-                            multiple choice question. It expands seamlessly
-                            below the row.
-                          </Typography>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {visibleColumns.includes("srNo") && (
-                      <TableCell className="font-medium text-center">
-                        {row.id}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes("question") && (
-                      <TableCell>{row.question}</TableCell>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableCell>{row.subject}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableCell>{row.createdBy}</TableCell>
-                    )}
-                    {visibleColumns.includes("createdDate") && (
-                      <TableCell>{row.createdDate}</TableCell>
-                    )}
-                  </TableCollapsibleRow>
-                ))}
+                {data.length === 0 && !isLoading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={visibleColumns.length + 1}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No questions found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data.map((row, index) => (
+                    <ImageMCQRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
+                      onImageClick={setLightboxUrl}
+                    />
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -319,83 +319,46 @@ export function ImageMCQClient({
           />
         </div>
 
-        <InlineDrawer
+        <ImageMCQFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Questions
-              </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Subject
-              </Typography>
-              <SelectDropdown
-                placeholder="All Subjects"
-                options={[
-                  { id: "all", label: "All Subjects" },
-                  { id: "ia", label: "Industry Awareness" },
-                  { id: "comp", label: "Comprehension" },
-                ]}
-                value={subjectFilter || "all"}
-                onChange={(val) => setSubjectFilter(val)}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={() => {
-                  setSearchQuery("");
-                  setSubjectFilter(undefined);
-                }}
-                className="font-bold w-full"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          subjectFilter={subjectFilter}
+          onSubjectFilterChange={(val) => {
+            setSubjectFilter(val as string);
+            setCurrentPage(1);
+          }}
+          subjects={subjects}
+          onReset={() => {
+            setSearchQuery("");
+            setSubjectFilter("all");
+            setCurrentPage(1);
+          }}
+        />
       </MainCard>
 
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
       />
+      {editingQuestion && (
+        <EditImageQuestionModal
+          isOpen={true}
+          questionData={editingQuestion}
+          onClose={() => setEditingQuestion(null)}
+          onSuccess={async () => {
+            await fetchData();
+            setEditingQuestion(null);
+          }}
+        />
+      )}
+
+      {/* Image lightbox: open when a row's image icon is clicked */}
+      {lightboxUrl && (
+        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
+      )}
     </PageContainer>
   );
 }
