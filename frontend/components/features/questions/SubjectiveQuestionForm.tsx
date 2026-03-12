@@ -7,10 +7,10 @@ import {
   type SubjectiveFormValues,
 } from "@lib/validations/question";
 import { Button } from "@components/ui-elements/Button";
-import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
-import { cn, getErrorMessage } from "@lib/utils";
+import { Textarea } from "@components/ui-elements/Textarea";
+import { getErrorMessage } from "@lib/utils";
 import { MessageSquareText, HelpCircle, Loader2, BookOpen } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -108,7 +108,7 @@ export const SubjectiveQuestionForm = ({
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="space-y-8 p-1"
+      className="space-y-6 p-1"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -236,14 +236,13 @@ export const SubjectiveQuestionForm = ({
                 >
                   Question Text
                 </Typography>
-                <Input
-                  type="text"
+                <Textarea
                   placeholder="Enter the main question here..."
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   error={field.state.meta.errors.length > 0}
-                  className="h-12 bg-muted/20 transition-colors border-border/60 hover:border-border"
+                  className="h-28 bg-muted/20 transition-colors border-border/60 hover:border-border"
                 />
                 {field.state.meta.errors.length > 0 && (
                   <Typography
@@ -259,78 +258,73 @@ export const SubjectiveQuestionForm = ({
         </div>
       </div>
 
-      <div className="space-y-4">
-        <form.Field name="answerText">
-          {(field) => (
-            <>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
-                  <BookOpen size={18} />
+      {/* Answer & Explanation Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <form.Field name="answerText">
+            {(field) => (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
+                    <BookOpen size={18} />
+                  </div>
+                  <Typography variant="body3" weight="bold">
+                    Correct Answer
+                  </Typography>
                 </div>
-                <Typography variant="body3" weight="bold">
-                  Correct Answer
-                </Typography>
-              </div>
-              <textarea
-                placeholder="Write the expected correct answer..."
-                className={cn(
-                  "w-full min-h-[150px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
-                  field.state.meta.errors.length > 0
-                    ? "border-red-500 ring-1 ring-red-500/20 hover:border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                    : "border-border/60 hover:border-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+                <Textarea
+                  placeholder="Write the expected correct answer..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="bg-muted/20 min-h-[150px]"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="text-red-500 font-medium ml-1 mt-1"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
                 )}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors.length > 0 && (
-                <Typography
-                  variant="body5"
-                  className="text-red-500 font-medium ml-1 mt-1"
-                >
-                  {getErrorMessage(field.state.meta.errors[0])}
-                </Typography>
-              )}
-            </>
-          )}
-        </form.Field>
-      </div>
+              </>
+            )}
+          </form.Field>
+        </div>
 
-      <div className="space-y-4">
-        <form.Field name="explanation">
-          {(field) => (
-            <>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-                  <MessageSquareText size={18} />
+        <div className="space-y-4">
+          <form.Field name="explanation">
+            {(field) => (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+                    <MessageSquareText size={18} />
+                  </div>
+                  <Typography variant="body3" weight="bold">
+                    Answer Explanation
+                  </Typography>
                 </div>
-                <Typography variant="body3" weight="bold">
-                  Answer Explanation
-                </Typography>
-              </div>
-              <textarea
-                placeholder="Explain the logic or reasoning behind the correct answer..."
-                className={cn(
-                  "w-full min-h-[120px] p-4 rounded-md border bg-muted/20 transition-all resize-none text-foreground placeholder:text-muted-foreground/50",
-                  field.state.meta.errors.length > 0
-                    ? "border-red-500 ring-1 ring-red-500/20 hover:border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                    : "border-border/60 hover:border-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+                <Textarea
+                  placeholder="Explain the logic or reasoning behind the correct answer..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="bg-muted/20 min-h-[150px]"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="text-red-500 font-medium ml-1 mt-1"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
                 )}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors.length > 0 && (
-                <Typography
-                  variant="body5"
-                  className="text-red-500 font-medium ml-1 mt-1"
-                >
-                  {getErrorMessage(field.state.meta.errors[0])}
-                </Typography>
-              )}
-            </>
-          )}
-        </form.Field>
+              </>
+            )}
+          </form.Field>
+        </div>
       </div>
 
       <div className="bg-card flex justify-end">

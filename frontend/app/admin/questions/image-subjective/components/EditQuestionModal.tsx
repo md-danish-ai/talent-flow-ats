@@ -43,7 +43,7 @@ export const EditQuestionModal: React.FC<EditImageQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Image Subjective Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddImageSubjectiveQuestionForm
         questionId={questionData.id}

@@ -134,7 +134,7 @@ export const AddQuestionForm = ({
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="space-y-8 p-1"
+      className="space-y-6 p-1"
     >
       {/* ── Question Details ── */}
       <div className="space-y-4">
@@ -341,8 +341,7 @@ export const AddQuestionForm = ({
                             const newOptions = field.state.value.map(
                               (o, i) => ({
                                 ...o,
-                                isCorrect:
-                                  i === index ? !o.isCorrect : o.isCorrect,
+                                isCorrect: i === index ? !o.isCorrect : false,
                               }),
                             );
                             field.handleChange(newOptions);

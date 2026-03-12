@@ -22,7 +22,9 @@ export const EditQuestionModal = ({
   onSuccess,
 }: EditQuestionModalProps) => {
   const [loading, setLoading] = useState(true);
-  const [initialData, setInitialData] = useState<PassageFormValues | null>(null);
+  const [initialData, setInitialData] = useState<PassageFormValues | null>(
+    null,
+  );
 
   useEffect(() => {
     if (isOpen && questionId) {
@@ -54,32 +56,34 @@ export const EditQuestionModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Passage Question"
+      className="max-w-5xl"
     >
-      <div className="py-4">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            <Typography variant="body4" className="text-muted-foreground animate-pulse">
-              Loading question data...
-            </Typography>
-          </div>
-        ) : initialData ? (
-          <AddPassageQuestionForm
-            questionId={questionId}
-            initialData={initialData}
-            onSuccess={() => {
-              onSuccess();
-              onClose();
-            }}
-          />
-        ) : (
-          <div className="py-10 text-center">
-             <Typography variant="body4" className="text-red-500">
-               Failed to load question data. Please try again.
-             </Typography>
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+          <Typography
+            variant="body4"
+            className="text-muted-foreground animate-pulse"
+          >
+            Loading question data...
+          </Typography>
+        </div>
+      ) : initialData ? (
+        <AddPassageQuestionForm
+          questionId={questionId}
+          initialData={initialData}
+          onSuccess={() => {
+            onSuccess();
+            onClose();
+          }}
+        />
+      ) : (
+        <div className="py-10 text-center">
+          <Typography variant="body4" className="text-red-500">
+            Failed to load question data. Please try again.
+          </Typography>
+        </div>
+      )}
     </Modal>
   );
 };

@@ -50,7 +50,7 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Image Multiple Choice Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddImageQuestionForm
         questionId={questionData.id}

@@ -33,18 +33,16 @@ export default function EditQuestionModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Subjective Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
-      <div className="p-4">
-        <SubjectiveQuestionForm
-          questionId={question.id}
-          initialData={initialValues}
-          onSuccess={() => {
-            onSuccess();
-            onClose();
-          }}
-        />
-      </div>
+      <SubjectiveQuestionForm
+        questionId={question.id}
+        initialData={initialValues}
+        onSuccess={() => {
+          onSuccess();
+          onClose();
+        }}
+      />
     </Modal>
   );
 }

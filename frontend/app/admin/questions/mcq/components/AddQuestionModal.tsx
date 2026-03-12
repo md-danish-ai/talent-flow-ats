@@ -16,7 +16,7 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Multiple Choice Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddQuestionForm
         onSuccess={() => {

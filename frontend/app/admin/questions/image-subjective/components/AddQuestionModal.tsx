@@ -18,16 +18,14 @@ export const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Image Subjective Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
-      <div className="p-4">
-        <AddImageSubjectiveQuestionForm
-          onSuccess={() => {
-            onClose();
-            onSuccess?.();
-          }}
-        />
-      </div>
+      <AddImageSubjectiveQuestionForm
+        onSuccess={() => {
+          onClose();
+          onSuccess?.();
+        }}
+      />
     </Modal>
   );
 };
