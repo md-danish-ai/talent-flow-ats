@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { Question, QuestionOption } from "@lib/api/questions";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
@@ -25,6 +26,34 @@ import Image from "next/image";
 import { cn } from "@lib/utils";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 
+/**
+ * Clean Border Animation Component
+ */
+function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible">
+      <motion.rect
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        rx="16px"
+        ry="16px"
+        fill="none"
+        stroke={color}
+        strokeWidth="5"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{
+          pathLength: active ? 1 : 0,
+          opacity: active ? 1 : 0,
+        }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      />
+    </svg>
+  );
+}
+
 interface QuestionDetailViewProps {
   question: Question;
   className?: string;
@@ -38,6 +67,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   title,
   subtitle,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const typeCode =
     typeof question.question_type === "string"
       ? question.question_type
@@ -63,10 +93,14 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+        "relative rounded-2xl border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+        isHovered && "scale-[1.01] border-brand-primary/30 shadow-2xl",
         className,
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      <AnimatedBorder color="var(--color-brand-primary)" active={isHovered} />
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-slate-50/50 dark:bg-slate-800/30">
         <div className="flex items-center gap-4">
           <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
@@ -75,7 +109,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           <div>
             <Typography
               variant="body2"
-              weight="black"
+              weight="bold"
               className="tracking-tight text-foreground/90"
             >
               {title ||

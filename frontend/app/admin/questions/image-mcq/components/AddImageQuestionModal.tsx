@@ -18,7 +18,7 @@ export const AddImageQuestionModal: React.FC<AddImageQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Image-Based MCQ"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddImageQuestionForm onSuccess={onSuccess ?? onClose} />
     </Modal>

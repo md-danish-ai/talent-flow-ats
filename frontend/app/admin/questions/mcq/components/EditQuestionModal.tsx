@@ -47,7 +47,7 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Multiple Choice Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddQuestionForm
         questionId={questionData.id}
