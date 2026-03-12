@@ -4,8 +4,7 @@ import React, { forwardRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@lib/utils";
 
-export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -34,7 +33,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             (endIcon || true) && "pr-[42px]",
             error &&
               "!border-red-500 ring-1 !ring-red-500/20 focus:!border-red-500 focus:!ring-red-500/20 hover:!border-red-500",
-            className
+            className,
           )}
           {...props}
         >
@@ -47,7 +46,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 Select.displayName = "Select";

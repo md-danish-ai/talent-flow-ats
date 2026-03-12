@@ -44,8 +44,13 @@ export interface ClassificationUpdate {
 
 export const classificationsApi = {
   getClassifications: async (
-    params?: { type?: string, is_active?: boolean, page?: number, limit?: number },
-    options?: ApiRequestOptions
+    params?: {
+      type?: string;
+      is_active?: boolean;
+      page?: number;
+      limit?: number;
+    },
+    options?: ApiRequestOptions,
   ) => {
     const queryParams = new URLSearchParams();
     if (params) {

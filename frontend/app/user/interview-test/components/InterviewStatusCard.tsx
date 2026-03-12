@@ -87,7 +87,11 @@ export function InterviewStatusCard({
                   </Badge>
                 )}
                 {!isCurrent && !isLocked && (
-                  <Badge variant="outline" color="default" icon={<Lock size={12} />}>
+                  <Badge
+                    variant="outline"
+                    color="default"
+                    icon={<Lock size={12} />}
+                  >
                     Pending
                   </Badge>
                 )}

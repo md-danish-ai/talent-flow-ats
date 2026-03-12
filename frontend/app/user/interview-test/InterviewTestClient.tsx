@@ -24,7 +24,10 @@ import type { InterviewQuestion, InterviewSection } from "./types";
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const totalSections = sections.length;
-  const emptyLockedSections = useMemo(() => sections.map(() => false), [sections]);
+  const emptyLockedSections = useMemo(
+    () => sections.map(() => false),
+    [sections],
+  );
   const allLockedSections = useMemo(() => sections.map(() => true), [sections]);
   const [hasStarted, setHasStarted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -38,7 +41,8 @@ export function InterviewTestClient() {
   const [startError, setStartError] = useState<string | null>(null);
   const [isSectionChangeConfirmOpen, setIsSectionChangeConfirmOpen] =
     useState(false);
-  const [lockedSections, setLockedSections] = useState<boolean[]>(emptyLockedSections);
+  const [lockedSections, setLockedSections] =
+    useState<boolean[]>(emptyLockedSections);
   const [examRemainingSeconds, setExamRemainingSeconds] = useState(
     OVERALL_EXAM_TOTAL_SECONDS,
   );
@@ -46,16 +50,16 @@ export function InterviewTestClient() {
   const hasHandledOverallTimeoutRef = useRef(false);
   const latestAnswersRef = useRef<Record<number, string>>({});
   const [attemptId, setAttemptId] = useState<number | null>(null);
-  const [finalSummary, setFinalSummary] = useState<AttemptSummaryResponse | null>(
-    null,
-  );
+  const [finalSummary, setFinalSummary] =
+    useState<AttemptSummaryResponse | null>(null);
 
   const currentSection = sections[sectionIndex];
   const currentQuestion = currentSection.questions[questionIndex];
   const currentAnswer = answers[currentQuestion.id] || "";
 
   const totalQuestions = useMemo(
-    () => sections.reduce((total, section) => total + section.questions.length, 0),
+    () =>
+      sections.reduce((total, section) => total + section.questions.length, 0),
     [sections],
   );
 
@@ -75,7 +79,8 @@ export function InterviewTestClient() {
 
   const notAttemptedCount = totalQuestions - answeredCount;
 
-  const completedBeforeCurrentSection = sections.slice(0, sectionIndex)
+  const completedBeforeCurrentSection = sections
+    .slice(0, sectionIndex)
     .reduce((sum, section) => sum + section.questions.length, 0);
 
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
@@ -134,7 +139,9 @@ export function InterviewTestClient() {
 
       setSectionIndex(currentIndex + 1);
       setQuestionIndex(0);
-      setMessage(notice ?? "Section locked. You cannot return to this section.");
+      setMessage(
+        notice ?? "Section locked. You cannot return to this section.",
+      );
     },
     [totalSections],
   );
@@ -160,17 +167,24 @@ export function InterviewTestClient() {
           );
           await Promise.all(saveRequests);
 
-          const summary = await interviewAttemptsApi.autoSubmitAttempt(attemptId);
+          const summary =
+            await interviewAttemptsApi.autoSubmitAttempt(attemptId);
           setFinalSummary(summary);
         }
       } catch {
-        setMessage("Time is over. Local submission completed, but server sync failed.");
+        setMessage(
+          "Time is over. Local submission completed, but server sync failed.",
+        );
       } finally {
         setLockedSections(allLockedSections);
         setIsSectionChangeConfirmOpen(false);
         setCompletionReason("time_over");
         setIsCompleted(true);
-        setMessage((prev) => prev ?? "Overall interview time is over. Answers were auto-submitted.");
+        setMessage(
+          (prev) =>
+            prev ??
+            "Overall interview time is over. Answers were auto-submitted.",
+        );
       }
     };
 
@@ -242,7 +256,9 @@ export function InterviewTestClient() {
         setFinalSummary(summary);
       }
     } catch {
-      setMessage("Interview finished locally, but final server submission failed.");
+      setMessage(
+        "Interview finished locally, but final server submission failed.",
+      );
     }
 
     lockAndMoveToNextSection(sectionIndex);
@@ -275,7 +291,9 @@ export function InterviewTestClient() {
     latestAnswersRef.current = {};
   };
 
-  const resolveQuestionType = (question: Question): InterviewQuestion["type"] => {
+  const resolveQuestionType = (
+    question: Question,
+  ): InterviewQuestion["type"] => {
     const typeCode = question.question_type?.code || "";
     if (typeCode === "IMAGE_MULTIPLE_CHOICE") return "IMAGE_MCQ";
     if (typeCode === "SUBJECTIVE") return "SUBJECTIVE";
@@ -295,9 +313,11 @@ export function InterviewTestClient() {
     return question.options
       .map((option) => {
         const optionText = option.option_text;
-        if (typeof optionText === "string" && optionText.trim()) return optionText;
+        if (typeof optionText === "string" && optionText.trim())
+          return optionText;
         const optionLabel = option.option_label;
-        if (typeof optionLabel === "string" && optionLabel.trim()) return optionLabel;
+        if (typeof optionLabel === "string" && optionLabel.trim())
+          return optionLabel;
         return null;
       })
       .filter((value): value is string => Boolean(value));
@@ -342,9 +362,8 @@ export function InterviewTestClient() {
   const handleStartInterview = async () => {
     try {
       setStartError(null);
-      const startResponse = await interviewAttemptsApi.startAttempt(
-        INTERVIEW_PAPER_ID,
-      );
+      const startResponse =
+        await interviewAttemptsApi.startAttempt(INTERVIEW_PAPER_ID);
       const paperQuestionIds = startResponse.paper_question_ids || [];
       const fetchedQuestions = await Promise.all(
         paperQuestionIds.map((questionId) =>

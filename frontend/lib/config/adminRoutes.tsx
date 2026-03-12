@@ -74,7 +74,8 @@ export const ADMIN_ROUTES: NavSection[] = [
     items: [
       { label: "Admins", href: "/admin/management/admins" },
       { label: "Users", href: "/admin/management/users" },
-      { label: "Add Subject & Level", href: "/admin/management/subject-level" },
+      { label: "Subject & Level", href: "/admin/management/subject-level" },
+      { label: "Department", href: "/admin/management/department" },
     ],
   },
   {

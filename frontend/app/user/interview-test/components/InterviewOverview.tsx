@@ -29,7 +29,10 @@ export function InterviewOverview({
     <>Once a section is completed, it gets locked and cannot be reopened.</>,
     <>
       The complete paper has one overall timer of{" "}
-      <span className="font-semibold">{overallExamDurationMinutes} minutes</span>.
+      <span className="font-semibold">
+        {overallExamDurationMinutes} minutes
+      </span>
+      .
     </>,
     <>
       When time ends, the paper is auto-submitted with selected answers as
@@ -60,9 +63,9 @@ export function InterviewOverview({
             Start Your Interview Assessment
           </Typography>
           <Typography variant="body2" className="max-w-3xl">
-            This flow follows your approved rules: overall paper timer, no direct
-            jump, previous/next navigation, and mandatory section lock after
-            section completion.
+            This flow follows your approved rules: overall paper timer, no
+            direct jump, previous/next navigation, and mandatory section lock
+            after section completion.
           </Typography>
         </div>
 

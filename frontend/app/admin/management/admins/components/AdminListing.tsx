@@ -13,7 +13,13 @@ import {
 import { Plus, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { AddAdminModal } from "./AddAdminModal";
-import { getUsersByRole, UserListResponse } from "@lib/api/auth";
+import {
+  getUsersByRole,
+  UserListResponse,
+  toggleUserStatus,
+} from "@lib/api/auth";
+import { Badge } from "@components/ui-elements/Badge";
+import { Switch } from "@components/ui-elements/Switch";
 
 interface AdminListingProps {
   initialData?: UserListResponse[];
@@ -23,6 +29,7 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
   const [loading, setLoading] = useState(!initialData.length);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const fetchUsers = React.useCallback(async () => {
     try {
@@ -37,14 +44,24 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
   }, []);
 
   useEffect(() => {
-    // If we have initial data (from SSR), just use it initially, no need to overwrite unless refreshed
-    // Actually we will fetch on mount to ensure freshness, or rely on SSR. Let's rely on fetch if no initial data.
     if (!initialData.length) {
       fetchUsers();
     } else {
       setLoading(false);
     }
   }, [initialData, fetchUsers]);
+
+  const handleToggleStatus = async (user: UserListResponse) => {
+    setTogglingId(user.id);
+    try {
+      await toggleUserStatus(user.id);
+      fetchUsers();
+    } catch (error) {
+      console.error("Toggle failed:", error);
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   return (
     <>
@@ -88,7 +105,7 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
                   <TableHead>Name</TableHead>
                   <TableHead>Mobile</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -114,14 +131,21 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
                       <TableCell>{row.mobile}</TableCell>
                       <TableCell>{row.email || "-"}</TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${row.is_active
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                              : "bg-red-500/10 text-red-600 dark:text-red-400"
-                            }`}
-                        >
-                          {row.is_active ? "Active" : "Inactive"}
-                        </span>
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Switch
+                            checked={row.is_active}
+                            onChange={() => handleToggleStatus(row)}
+                            size="sm"
+                            disabled={togglingId === row.id}
+                          />
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color={row.is_active ? "success" : "error"}
+                          >
+                            {row.is_active ? "Activate" : "Deactivate"}
+                          </Badge>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

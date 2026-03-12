@@ -93,3 +93,26 @@ export async function getUsersByRole(
     options,
   );
 }
+
+// PUT /auth/toggle-status/{user_id} - Toggle user's active status
+export async function toggleUserStatus(
+  userId: number,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ id: number; is_active: boolean }> {
+  return api.put<{ id: number; is_active: boolean }>(
+    `/auth/toggle-status/${userId}`,
+    {},
+    options,
+  );
+}
+
+// DELETE /auth/delete/{user_id} - Delete a user
+export async function deleteUser(
+  userId: number,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ id: number; message: string }> {
+  return api.delete<{ id: number; message: string }>(
+    `/auth/delete/${userId}`,
+    options,
+  );
+}
