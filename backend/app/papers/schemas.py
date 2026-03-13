@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional, Any
+from pydantic import BaseModel, ConfigDict, field_validator
+from typing import List, Optional
 from datetime import datetime
 
 class SubjectConfigItem(BaseModel):
@@ -16,6 +16,11 @@ class PaperBase(BaseModel):
     department_id: int
     test_level_id: int
     subject_ids_data: List[SubjectConfigItem]
+
+    @field_validator("subject_ids_data")
+    @classmethod
+    def sort_subjects(cls, v: List[SubjectConfigItem]) -> List[SubjectConfigItem]:
+        return sorted(v, key=lambda x: x.order)
     question_id: List[int] = []
     total_time: Optional[str] = None
     total_marks: Optional[int] = None
@@ -31,6 +36,16 @@ class PaperUpdate(BaseModel):
     department_id: Optional[int] = None
     test_level_id: Optional[int] = None
     subject_ids_data: Optional[List[SubjectConfigItem]] = None
+
+    @field_validator("subject_ids_data")
+    @classmethod
+    def sort_subjects(
+        cls, v: Optional[List[SubjectConfigItem]]
+    ) -> Optional[List[SubjectConfigItem]]:
+        if v is None:
+            return v
+        return sorted(v, key=lambda x: x.order)
+
     question_id: Optional[List[int]] = None
     total_time: Optional[str] = None
     total_marks: Optional[int] = None

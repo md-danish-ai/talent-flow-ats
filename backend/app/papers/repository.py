@@ -1,4 +1,3 @@
-from app.database.db import SessionLocal
 from app.papers.models import Paper
 from app.papers.schemas import PaperCreate, PaperUpdate
 from sqlalchemy.orm import Session

@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 from app.database.db import SessionLocal
 from app.papers import repository, schemas
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import authenticate_user
+from app.utils.pagination import (
+    PaginationParams,
+    get_pagination_params,
+    create_paginated_response,
+)
 
 router = APIRouter(
     prefix="/papers",
@@ -19,11 +23,6 @@ def get_db():
     finally:
         db.close()
 
-from app.utils.pagination import (
-    PaginationParams,
-    get_pagination_params,
-    create_paginated_response,
-)
 
 @router.get("/get")
 def read_papers(

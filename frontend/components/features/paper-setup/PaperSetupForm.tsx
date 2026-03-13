@@ -85,9 +85,10 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
       onBlur: paperSetupSchema,
     },
     onSubmit: async ({ value }) => {
-      const selectedConfigs = value.subject_ids_data.filter(
-        (c) => c.is_selected,
-      );
+      const selectedConfigs = value.subject_ids_data
+        .filter((c) => c.is_selected)
+        .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+
       const totalTimeMins = selectedConfigs.reduce(
         (sum, c) => sum + (Number(c.time_minutes) || 0),
         0,
