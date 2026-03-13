@@ -36,7 +36,7 @@ def upgrade() -> None:
         sa.Column('description', sa.String(length=1000), nullable=True),
         sa.Column('department_id', sa.Integer(), nullable=False),
         sa.Column('test_level_id', sa.Integer(), nullable=False),
-        sa.Column('subject_id', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column('subject_ids_data', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('question_id', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('total_time', sa.String(length=50), nullable=True),
         sa.Column('total_marks', sa.Integer(), nullable=True),

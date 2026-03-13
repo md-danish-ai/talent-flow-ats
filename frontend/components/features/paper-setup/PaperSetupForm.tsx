@@ -34,6 +34,7 @@ interface PaperSetupFormProps {
   onSubmit: (data: PaperSetupCreate) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  title?: string;
 }
 
 export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
@@ -41,6 +42,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
   onSubmit,
   onCancel,
   isLoading,
+  title = "Paper Setting - Control Panel",
 }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [testLevels, setTestLevels] = useState<Classification[]>([]);
@@ -76,14 +78,14 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
       test_level_id: initialData?.test_level_id || 0,
       paper_name: initialData?.paper_name || "",
       description: initialData?.description || "",
-      subject_configs: initialData?.subject_configs || [],
+      subject_ids_data: initialData?.subject_ids_data || [],
     } as PaperSetupFormValues,
     validators: {
       onChange: paperSetupSchema,
       onBlur: paperSetupSchema,
     },
     onSubmit: async ({ value }) => {
-      const selectedConfigs = value.subject_configs.filter(
+      const selectedConfigs = value.subject_ids_data.filter(
         (c) => c.is_selected,
       );
       const totalTimeMins = selectedConfigs.reduce(
@@ -102,7 +104,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
         description: value.description || "",
         total_time: minutesToHHMMSS(totalTimeMins),
         total_marks: calculatedTotalMarks,
-        subject_configs: selectedConfigs.map((c) => {
+        subject_ids_data: selectedConfigs.map((c) => {
           const {
             subject_id,
             is_selected,
@@ -144,19 +146,54 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
         setDepartments(deptRes.data || []);
         setTestLevels(levelRes.data || []);
 
-        if (!initialData?.id) {
-          const initialConfigs = (subRes.data || []).map(
-            (sub: Classification) => ({
-              subject_id: sub.id,
-              subject_name: sub.name,
-              is_selected: false,
-              question_count: 0,
-              total_marks: 0,
-              time_minutes: 0,
-              order: 0,
-            }),
+        const masterSubjects = subRes.data || [];
+
+        // Merge strategy:
+        // 1. Start with all subjects from the master list.
+        // 2. If initialData has a config for a subject, use it (and it's marked as selected).
+        // 3. Otherwise, use a default unselected config.
+
+        const mergedConfigs = masterSubjects.map((sub: Classification) => {
+          const existingConfig = initialData?.subject_ids_data?.find(
+            (c) => c.subject_id === sub.id,
           );
-          form.setFieldValue("subject_configs", initialConfigs);
+
+          if (existingConfig) {
+            return {
+              ...existingConfig,
+              subject_name: sub.name, // Ensure name is always present from master list
+              is_selected: true,
+            };
+          }
+
+          return {
+            subject_id: sub.id,
+            subject_name: sub.name,
+            is_selected: false,
+            question_count: 0,
+            total_marks: 0,
+            time_minutes: 0,
+            order: 0,
+          };
+        });
+
+        // If editing, sort selected ones to top or by their defined order
+        if (initialData?.id) {
+          mergedConfigs.sort((a, b) => {
+            if (a.is_selected && !b.is_selected) return -1;
+            if (!a.is_selected && b.is_selected) return 1;
+            return (a.order || 0) - (b.order || 0);
+          });
+        }
+
+        form.setFieldValue("subject_ids_data", mergedConfigs);
+
+        // Reset other fields if in Edit mode
+        if (initialData?.id) {
+          form.setFieldValue("department_id", initialData.department_id || 0);
+          form.setFieldValue("test_level_id", initialData.test_level_id || 0);
+          form.setFieldValue("paper_name", initialData.paper_name || "");
+          form.setFieldValue("description", initialData.description || "");
         }
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
@@ -169,7 +206,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
   const formValues = useStore(form.store, (state) => state.values);
 
   const totalMarks =
-    formValues.subject_configs
+    formValues.subject_ids_data
       ?.filter((c: PaperSubjectConfig) => c.is_selected)
       .reduce(
         (sum: number, c: PaperSubjectConfig) =>
@@ -178,7 +215,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
       ) || 0;
 
   const totalTimeMinutes =
-    formValues.subject_configs
+    formValues.subject_ids_data
       ?.filter((c: PaperSubjectConfig) => c.is_selected)
       .reduce(
         (sum: number, c: PaperSubjectConfig) =>
@@ -198,7 +235,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
           >
             <ArrowLeft size={18} />
           </Button>
-          Paper Setting - Control Panel
+          {title}
         </div>
       }
       className="mb-6 overflow-visible"
@@ -369,10 +406,10 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
           </div>
 
           <form.Field
-            name="subject_configs"
+            name="subject_ids_data"
             validators={{
-              onChange: paperSetupSchema.shape.subject_configs,
-              onBlur: paperSetupSchema.shape.subject_configs,
+              onChange: paperSetupSchema.shape.subject_ids_data,
+              onBlur: paperSetupSchema.shape.subject_ids_data,
             }}
           >
             {(field) => (

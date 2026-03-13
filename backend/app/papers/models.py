@@ -19,7 +19,7 @@ class Paper(Base):
     description = Column(String(1000), nullable=True)
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
     test_level_id = Column(Integer, ForeignKey("classifications.id"), nullable=False)
-    subject_id = Column(JSONB, nullable=False)
+    subject_ids_data = Column(JSONB, nullable=False)
     question_id = Column(JSONB, nullable=False)
     total_time = Column(String(50), nullable=True)
     total_marks = Column(Integer, nullable=True)

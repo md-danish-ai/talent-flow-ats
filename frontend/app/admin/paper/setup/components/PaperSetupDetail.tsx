@@ -138,22 +138,20 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center gap-4 mb-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="rounded-full hover:bg-white/10"
-        >
-          <ArrowLeft size={20} />
-        </Button>
-        <Typography variant="h3" weight="bold">
-          Paper Setup Detail
-        </Typography>
-      </div>
-
       <MainCard
-        title="Paper Overview"
+        title={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="h-8 w-8"
+            >
+              <ArrowLeft size={18} />
+            </Button>
+            Paper Overview
+          </div>
+        }
         className="overflow-hidden border-none shadow-xl"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 p-8 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">

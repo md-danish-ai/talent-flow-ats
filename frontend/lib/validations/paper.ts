@@ -48,7 +48,7 @@ export const paperSetupSchema = z.object({
   test_level_id: z.number().min(1, "Please select a test level"),
   paper_name: z.string().min(3, "Paper name must be at least 3 characters"),
   description: z.string().min(1, "Description is required"),
-  subject_configs: z
+  subject_ids_data: z
     .array(paperSubjectConfigSchema)
     .refine((configs) => configs.some((c) => c.is_selected), {
       message: "At least one subject must be selected",

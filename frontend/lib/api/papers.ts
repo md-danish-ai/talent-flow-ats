@@ -1,9 +1,9 @@
-// import { Classification } from "./classifications";
+import { api, type ApiRequestOptions } from "./index";
 
 export interface PaperSubjectConfig {
   id?: number;
   subject_id: number;
-  subject_name: string;
+  subject_name?: string;
   is_selected: boolean;
   question_count: number;
   total_marks: number;
@@ -14,17 +14,20 @@ export interface PaperSubjectConfig {
 export interface PaperSetup {
   id: number;
   department_id: number;
-  department_name?: string;
   test_level_id: number;
-  test_level_name?: string;
   paper_name: string;
   description: string;
   total_time: string;
-  total_marks?: number;
+  total_marks: number;
   is_active: boolean;
+  grade?: string;
+  created_by: number;
   created_at: string;
   updated_at: string;
-  subject_configs: PaperSubjectConfig[];
+  department_name?: string;
+  test_level_name?: string;
+  subject_ids_data: PaperSubjectConfig[];
+  question_id?: number[];
 }
 
 export interface PaperSetupCreate {
@@ -34,106 +37,60 @@ export interface PaperSetupCreate {
   description: string;
   total_time: string;
   total_marks: number;
-  subject_configs: Omit<PaperSubjectConfig, "subject_name">[];
+  subject_ids_data: PaperSubjectConfig[];
+  question_id?: number[];
+}
+
+export interface PaginatedPapersResponse {
+  data: PaperSetup[];
+  pagination: {
+    total_records: number;
+    total_pages: number;
+    current_page: number;
+    per_page: number;
+  };
 }
 
 export const papersApi = {
-  getPapers: async () => {
-    // Mocking the API response
-    return {
-      data: [
-        {
-          id: 1,
-          paper_name: "Research Analyst - Test Paper",
-          test_level_name: "Fresher",
-          description: "Edited on October 02, 2019",
-          total_time: "02:15:00",
-          total_marks: 350,
-          is_active: true,
-          created_at: "2019-10-02T10:00:00Z",
-        },
-        {
-          id: 2,
-          paper_name: "Quality Analyst - Test Paper",
-          test_level_name: "Quality Analyst",
-          description: "October 2020",
-          total_time: "02:00:00",
-          total_marks: 360,
-          is_active: true,
-          created_at: "2020-10-01T10:00:00Z",
-        },
-        {
-          id: 3,
-          paper_name: "Team Lead - Test Paper",
-          test_level_name: "Team Lead",
-          description: "Edited on October 02, 2019",
-          total_time: "02:00:00",
-          total_marks: 350,
-          is_active: true,
-          created_at: "2019-10-02T10:00:00Z",
-        },
-      ] as Partial<PaperSetup>[],
-      pagination: {
-        total_records: 3,
-      },
-    };
+  getPapers: async (
+    params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      is_active?: boolean;
+    },
+    options?: ApiRequestOptions,
+  ) => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    const endpoint = `/papers/get${queryString ? `?${queryString}` : ""}`;
+    return api.get<PaginatedPapersResponse>(endpoint, options);
   },
 
   getPaperById: async (id: number) => {
-    // Mocking
-    return {
-      id,
-      paper_name: "Temp",
-      department_name: "KPO",
-      test_level_name: "Team Lead",
-      description: "Temp",
-      total_time: "01:50:00",
-      total_marks: 350,
-      subject_configs: [
-        {
-          subject_name: "Comprehension",
-          question_count: 5,
-          total_marks: 10,
-          time_minutes: 30,
-          order: 1,
-        },
-        {
-          subject_id: 2,
-          subject_name: "Written",
-          is_selected: true,
-          question_count: 10,
-          total_marks: 20,
-          time_minutes: 60,
-          order: 2,
-        },
-        {
-          subject_id: 3,
-          subject_name: "Grammar",
-          is_selected: true,
-          question_count: 7,
-          total_marks: 7,
-          time_minutes: 20,
-          order: 3,
-        },
-      ],
-    } as PaperSetup;
+    return api.get<PaperSetup>(`/papers/get/${id}`);
   },
 
   createPaper: async (data: PaperSetupCreate) => {
-    return { id: Math.floor(Math.random() * 1000), ...data };
+    return api.post<PaperSetup>("/papers/create", data);
   },
 
   updatePaper: async (id: number, data: Partial<PaperSetupCreate>) => {
-    return { id, ...data };
+    return api.put<PaperSetup>(`/papers/update/${id}`, data);
   },
 
   deletePaper: async (id: number) => {
-    console.log("Deleting paper:", id);
-    return { success: true };
+    return api.delete<void>(`/papers/delete/${id}`);
   },
 
-  togglePaperStatus: async (id: number) => {
-    console.log("Toggling paper status:", id);
-    return { success: true };
+  togglePaperStatus: async (id: number, is_active: boolean) => {
+    return api.put<PaperSetup>(`/papers/update/${id}`, { is_active });
   },
 };

@@ -19,32 +19,66 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/", response_model=List[schemas.PaperResponse])
-def read_papers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    papers = repository.get_papers(db, skip=skip, limit=limit)
-    return papers
+from app.utils.pagination import (
+    PaginationParams,
+    get_pagination_params,
+    create_paginated_response,
+)
 
-@router.get("/{paper_id}", response_model=schemas.PaperResponse)
+@router.get("/get")
+def read_papers(
+    pagination: PaginationParams = Depends(get_pagination_params),
+    db: Session = Depends(get_db),
+):
+    offset = (pagination.page - 1) * pagination.limit
+    papers, total_records = repository.get_papers(db, skip=offset, limit=pagination.limit)
+    
+    # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization
+    paper_list = [
+        schemas.PaperResponse.model_validate(paper).model_dump() for paper in papers
+    ]
+    
+    paginated_data = create_paginated_response(paper_list, total_records, pagination)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+
+@router.get("/get/{paper_id}")
 def read_paper(paper_id: int, db: Session = Depends(get_db)):
     db_paper = repository.get_paper(db, paper_id=paper_id)
     if db_paper is None:
-        raise HTTPException(status_code=404, detail="Paper not found")
-    return db_paper
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.FETCHED,
+        data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
+    )
 
-@router.post("/", response_model=schemas.PaperResponse)
-def create_paper(paper: schemas.PaperCreate, db: Session = Depends(get_db)):
-    return repository.create_paper(db=db, paper=paper)
+@router.post("/create")
+def create_paper(
+    paper: schemas.PaperCreate,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(authenticate_user),
+):
+    db_paper = repository.create_paper(db=db, paper=paper, user_id=user_id)
+    return api_response(
+        StatusCode.CREATED,
+        ResponseMessage.CREATED,
+        data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
+    )
 
-@router.put("/{paper_id}", response_model=schemas.PaperResponse)
+@router.put("/update/{paper_id}")
 def update_paper(paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)):
     db_paper = repository.update_paper(db=db, paper_id=paper_id, paper_update=paper)
     if db_paper is None:
-        raise HTTPException(status_code=404, detail="Paper not found")
-    return db_paper
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.UPDATED,
+        data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
+    )
 
-@router.delete("/{paper_id}")
+@router.delete("/delete/{paper_id}")
 def delete_paper(paper_id: int, db: Session = Depends(get_db)):
     success = repository.delete_paper(db=db, paper_id=paper_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Paper not found")
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.DELETED)

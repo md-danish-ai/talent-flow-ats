@@ -6,6 +6,7 @@ import { PaperSetupForm } from "@components/features/paper-setup";
 import { papersApi, PaperSetupCreate } from "@lib/api/papers";
 import { toast } from "@lib/toast";
 import { PageContainer } from "@components/ui-layout/PageContainer";
+import { PageHeader } from "@components/ui-elements/PageHeader";
 
 export default function CreatePaperPage() {
   const router = useRouter();
@@ -26,11 +27,19 @@ export default function CreatePaperPage() {
 
   return (
     <PageContainer animate>
-      <PaperSetupForm
-        onSubmit={handleCreate}
-        onCancel={() => router.push("/admin/paper/setup")}
-        isLoading={isLoading}
+      <PageHeader
+        title="Create New Paper"
+        description="Define paper structure, allocate marks, and set timing for a new assessment."
       />
+
+      <div className="mt-6">
+        <PaperSetupForm
+          title="New Paper Configuration"
+          onSubmit={handleCreate}
+          onCancel={() => router.push("/admin/paper/setup")}
+          isLoading={isLoading}
+        />
+      </div>
     </PageContainer>
   );
 }

@@ -24,6 +24,7 @@ interface PaperSetupTableProps {
   onEdit: (paper: Partial<PaperSetup>) => void;
   onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
+  visibleColumns: string[];
 }
 
 export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
@@ -39,42 +40,40 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
   onEdit,
   onDelete,
   onViewDetails,
+  visibleColumns,
 }) => {
+  const isVisible = (id: string) => visibleColumns.includes(id);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-x-auto">
         <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+          <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 font-bold">
             <TableRow>
-              <TableHead className="w-[80px] text-center text-slate-500 font-bold">
-                Sr. No.
-              </TableHead>
-              <TableHead className="text-slate-500 font-bold">
-                Test Paper
-              </TableHead>
-              <TableHead className="text-slate-500 font-bold">
-                Test Level
-              </TableHead>
-              <TableHead className="text-slate-500 font-bold">
-                Description
-              </TableHead>
-              <TableHead className="text-slate-500 font-bold">Timing</TableHead>
-              <TableHead className="text-slate-500 font-bold">
-                Total Marks
-              </TableHead>
-              <TableHead className="w-[100px] text-center text-slate-500 font-bold">
-                Active
-              </TableHead>
-              <TableHead className="w-[200px] text-center text-brand-primary font-bold">
-                Settings / Grading / Edit / Delete
-              </TableHead>
+              {isVisible("sr_no") && (
+                <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+              )}
+              {isVisible("paper_name") && <TableHead>Test Paper</TableHead>}
+              {isVisible("department") && <TableHead>Department</TableHead>}
+              {isVisible("test_level") && <TableHead>Test Level</TableHead>}
+              {isVisible("description") && <TableHead>Description</TableHead>}
+              {isVisible("timing") && <TableHead>Timing</TableHead>}
+              {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}
+              {isVisible("active") && (
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+              )}
+              {isVisible("actions") && (
+                <TableHead className="w-[200px] text-center text-brand-primary">
+                  Settings / Grading / Edit / Delete
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={visibleColumns.length}
                   className="py-8 text-center text-muted-foreground"
                 >
                   Loading papers...
@@ -83,7 +82,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
             ) : data.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={visibleColumns.length}
                   className="py-8 text-center text-muted-foreground"
                 >
                   No papers found.
@@ -102,6 +101,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onViewDetails={onViewDetails}
+                  visibleColumns={visibleColumns}
                 />
               ))
             )}
