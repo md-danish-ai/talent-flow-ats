@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -19,7 +19,10 @@ import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { classificationsApi } from "@/lib/api/classifications";
+import {
+  classificationsApi,
+  type Classification,
+} from "@/lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
 
 interface BaseType {
@@ -42,6 +45,7 @@ export function TypesManagementClient({
   const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
   const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,13 +56,58 @@ export function TypesManagementClient({
   const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+
+  const classificationType =
+    activeTab === "subjects" ? "subject" : "exam_level";
+  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
+  const currentData = activeTab === "subjects" ? subjects : levels;
+
+  const fetchData = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const params: {
+        type?: string;
+        is_active?: boolean;
+        limit?: number;
+      } = {
+        type: classificationType,
+        limit: 100,
+      };
+
+      if (statusFilter === "active") params.is_active = true;
+      if (statusFilter === "inactive") params.is_active = false;
+
+      const response = await classificationsApi.getClassifications(params);
+      const formattedData = response.data.map((item: Classification) => ({
+        id: item.id,
+        name: item.name,
+        description: (item.metadata?.description as string) || "",
+        is_active: item.is_active,
+      }));
+
+      setTargetData(formattedData);
+    } catch (error) {
+      console.error("Failed to fetch classifications:", error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [classificationType, statusFilter, setTargetData]);
+
+  // Refetch when tab or status filter changes
+  useEffect(() => {
+    // Skip initial fetch for the server-provided data if it's the first render
+    // But for simplicity and correctness with filters, we can just fetch
+    fetchData();
+  }, [fetchData]);
 
   const tabs: TabItem[] = [
     { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
     { label: "Level", value: "levels", icon: <Gauge size={18} /> },
   ];
 
-  const currentData = activeTab === "subjects" ? subjects : levels;
   const totalItems = currentData.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
@@ -68,10 +117,7 @@ export function TypesManagementClient({
     currentPage * pageSize,
   );
 
-  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
   const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
-  const classificationType =
-    activeTab === "subjects" ? "subject" : "exam_level";
 
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
@@ -186,8 +232,34 @@ export function TypesManagementClient({
         description="Configure and manage subject categories and seniority levels in one place."
       />
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-border shrink-0">
+          <Button
+            variant={statusFilter === "all" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("all")}
+            className="h-8 px-3 text-xs"
+          >
+            All
+          </Button>
+          <Button
+            variant={statusFilter === "active" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("active")}
+            className="h-8 px-3 text-xs"
+          >
+            Active
+          </Button>
+          <Button
+            variant={statusFilter === "inactive" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("inactive")}
+            className="h-8 px-3 text-xs"
+          >
+            Inactive
+          </Button>
+        </div>
       </div>
 
       <MainCard
@@ -214,7 +286,7 @@ export function TypesManagementClient({
             animate="scale"
             iconAnimation="rotate-90"
             onClick={() => handleOpenModal()}
-            disabled={isLoading}
+            disabled={isLoading || isFetching}
             startIcon={<Plus size={18} />}
             className="font-bold"
           >

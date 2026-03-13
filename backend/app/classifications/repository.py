@@ -108,6 +108,26 @@ def get_by_code_and_type(code: str, type_: str):
         db_session.close()
 
 
+def get_by_code(code: str):
+    db_session = SessionLocal()
+    try:
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.code == code.upper())
+            .first()
+        )
+        if not classification:
+            return None
+        return {
+            "id": classification.id,
+            "code": classification.code,
+            "type": classification.type,
+            "name": classification.name,
+        }
+    finally:
+        db_session.close()
+
+
 def update(classification_id: int, data):
     db_session = SessionLocal()
     try:
@@ -194,7 +214,7 @@ def _cascade_code_update(
                 SET subject_id = (
                     SELECT jsonb_agg(
                         CASE WHEN elem::text = :old_code_quoted
-                             THEN :new_code::jsonb
+                             THEN CAST(:new_code AS jsonb)
                              ELSE elem
                         END
                     )
@@ -312,6 +332,22 @@ def count_by_name_and_type(name: str, type_: str):
         return (
             db_session.query(Classification)
             .filter(Classification.name == name, Classification.type == type_)
+            .count()
+        )
+    finally:
+        db_session.close()
+
+
+def count_by_name_and_type_exclude_id(name: str, type_: str, exclude_id: int):
+    db_session = SessionLocal()
+    try:
+        return (
+            db_session.query(Classification)
+            .filter(
+                Classification.name == name,
+                Classification.type == type_,
+                Classification.id != exclude_id,
+            )
             .count()
         )
     finally:
