@@ -193,8 +193,8 @@ export function MCQClient({
             Multiple Choice Questions
           </>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[600px]"
-        bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
             <TableColumnToggle
@@ -232,7 +232,7 @@ export function MCQClient({
       >
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden relative",
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
             isFilterOpen && "border-r border-border",
           )}
         >

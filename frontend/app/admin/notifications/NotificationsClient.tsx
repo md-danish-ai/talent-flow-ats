@@ -161,7 +161,7 @@ export function NotificationsClient() {
             </div>
           )
         }
-        className="mb-8"
+        className="mb-6"
         bodyClassName="p-0 flex flex-col items-stretch"
       >
         <div className="flex flex-col min-w-0 relative">

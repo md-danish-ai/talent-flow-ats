@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, Edit as EditIcon } from "lucide-react";
+import { Edit as EditIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -107,20 +107,21 @@ export const MCQRow: React.FC<MCQRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("status") && (
-        <TableCell className="text-center">
-          <div
-            className="flex justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {togglingId === row.id ? (
-              <Loader2 size={18} className="animate-spin text-brand-primary" />
-            ) : (
-              <Switch
-                checked={row.is_active !== false}
-                onChange={() => onToggleStatus(row.id, row.is_active !== false)}
-                size="sm"
-              />
-            )}
+        <TableCell>
+          <div className="flex flex-col items-center justify-center gap-1">
+            <Switch
+              checked={row.is_active !== false}
+              onChange={() => onToggleStatus(row.id, row.is_active !== false)}
+              size="sm"
+              disabled={togglingId === row.id}
+            />
+            <Badge
+              variant="outline"
+              shape="square"
+              color={row.is_active !== false ? "success" : "error"}
+            >
+              {row.is_active !== false ? "Activate" : "Deactivate"}
+            </Badge>
           </div>
         </TableCell>
       )}

@@ -34,7 +34,8 @@ interface ParsedOption {
   isCorrect: boolean;
 }
 
-const normalizeText = (value?: string | null) => (value || "").trim().toLowerCase();
+const normalizeText = (value?: string | null) =>
+  (value || "").trim().toLowerCase();
 
 const extractOptionKey = (value?: string | null) => {
   if (!value) return "";
@@ -42,12 +43,15 @@ const extractOptionKey = (value?: string | null) => {
   return match ? match[1].toUpperCase() : "";
 };
 
-const parseQuestionOptions = (options: Array<Record<string, unknown>> | null | undefined) => {
+const parseQuestionOptions = (
+  options: Array<Record<string, unknown>> | null | undefined,
+) => {
   if (!Array.isArray(options)) return [] as ParsedOption[];
 
   return options.map((raw, index) => ({
-    optionLabel:
-      String(raw.option_label ?? String.fromCharCode(65 + index)).toUpperCase(),
+    optionLabel: String(
+      raw.option_label ?? String.fromCharCode(65 + index),
+    ).toUpperCase(),
     optionText: String(raw.option_text ?? ""),
     isCorrect: Boolean(raw.is_correct),
   }));
@@ -69,9 +73,9 @@ export function AttemptDetailClient({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [manualMarks, setManualMarks] = useState<Record<string, string>>({});
-  const [manualMarksApplied, setManualMarksApplied] = useState<Record<string, string>>(
-    {},
-  );
+  const [manualMarksApplied, setManualMarksApplied] = useState<
+    Record<string, string>
+  >({});
   const [expandedSections, setExpandedSections] = useState({
     attempted: false,
     unattempted: false,
@@ -101,7 +105,9 @@ export function AttemptDetailClient({
 
     const initialMarks: Record<string, string> = {};
     data.answers.forEach((answer, index) => {
-      initialMarks[`${answer.question_id}-${index}`] = String(answer.marks_obtained ?? "");
+      initialMarks[`${answer.question_id}-${index}`] = String(
+        answer.marks_obtained ?? "",
+      );
     });
     setManualMarks(initialMarks);
     setManualMarksApplied({});
@@ -174,10 +180,14 @@ export function AttemptDetailClient({
 
   const statusCounts = data
     ? {
-        correct: data.answers.filter((answer) => answer.status === "correct").length,
-        incorrect: data.answers.filter((answer) => answer.status === "incorrect").length,
-        notAttempted: data.answers.filter((answer) => answer.status === "not_attempted")
+        correct: data.answers.filter((answer) => answer.status === "correct")
           .length,
+        incorrect: data.answers.filter(
+          (answer) => answer.status === "incorrect",
+        ).length,
+        notAttempted: data.answers.filter(
+          (answer) => answer.status === "not_attempted",
+        ).length,
       }
     : {
         correct: 0,
@@ -195,8 +205,12 @@ export function AttemptDetailClient({
   const questionItems = data
     ? data.answers.map((answer, index) => ({ answer, index }))
     : [];
-  const attemptedQuestionItems = questionItems.filter((item) => item.answer.is_attempted);
-  const unattemptedQuestionItems = questionItems.filter((item) => !item.answer.is_attempted);
+  const attemptedQuestionItems = questionItems.filter(
+    (item) => item.answer.is_attempted,
+  );
+  const unattemptedQuestionItems = questionItems.filter(
+    (item) => !item.answer.is_attempted,
+  );
 
   const toggleSection = (section: "attempted" | "unattempted") => {
     setExpandedSections((previous) => ({
@@ -214,8 +228,12 @@ export function AttemptDetailClient({
     const normalizedUserAnswer = normalizeText(answer.user_answer);
     const isChoiceType =
       options.length > 0 ||
-      String(answer.question_type || "").toUpperCase().includes("MCQ") ||
-      String(answer.question_type || "").toUpperCase().includes("MULTIPLE_CHOICE");
+      String(answer.question_type || "")
+        .toUpperCase()
+        .includes("MCQ") ||
+      String(answer.question_type || "")
+        .toUpperCase()
+        .includes("MULTIPLE_CHOICE");
 
     return (
       <div
@@ -278,7 +296,10 @@ export function AttemptDetailClient({
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-card p-4 xl:col-span-2">
-            <Typography variant="body5" className="font-semibold text-foreground">
+            <Typography
+              variant="body5"
+              className="font-semibold text-foreground"
+            >
               {isChoiceType ? "Option Review" : "Answer Review"}
             </Typography>
 
@@ -310,7 +331,9 @@ export function AttemptDetailClient({
                           >
                             {option.optionLabel}
                           </div>
-                          <Typography variant="body4">{option.optionText}</Typography>
+                          <Typography variant="body4">
+                            {option.optionText}
+                          </Typography>
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {isSelected && (
@@ -338,7 +361,10 @@ export function AttemptDetailClient({
                   >
                     User Answer
                   </Typography>
-                  <Typography variant="body4" className="mt-1 whitespace-pre-wrap">
+                  <Typography
+                    variant="body4"
+                    className="mt-1 whitespace-pre-wrap"
+                  >
                     {answer.user_answer || "Not answered"}
                   </Typography>
                 </div>
@@ -349,7 +375,10 @@ export function AttemptDetailClient({
                   >
                     Expected Answer
                   </Typography>
-                  <Typography variant="body4" className="mt-1 whitespace-pre-wrap">
+                  <Typography
+                    variant="body4"
+                    className="mt-1 whitespace-pre-wrap"
+                  >
                     {answer.correct_answer || "N/A"}
                   </Typography>
                 </div>
@@ -367,7 +396,10 @@ export function AttemptDetailClient({
           </div>
 
           <div className="rounded-xl border border-border bg-card p-4">
-            <Typography variant="body5" className="font-semibold text-foreground">
+            <Typography
+              variant="body5"
+              className="font-semibold text-foreground"
+            >
               Manual Evaluation
             </Typography>
             <div className="mt-3 space-y-3">
@@ -394,15 +426,19 @@ export function AttemptDetailClient({
                 variant="outline"
                 color="default"
                 className="w-full"
-                onClick={() => handleManualMarksApply(`${answer.question_id}-${index}`)}
+                onClick={() =>
+                  handleManualMarksApply(`${answer.question_id}-${index}`)
+                }
               >
                 Apply Manual Marks
               </Button>
 
-              {manualMarksApplied[`${answer.question_id}-${index}`] !== undefined && (
+              {manualMarksApplied[`${answer.question_id}-${index}`] !==
+                undefined && (
                 <div className="rounded-lg border border-brand-primary/25 bg-brand-primary/10 px-3 py-2">
                   <Typography variant="body5" className="text-brand-primary">
-                    Manual marks set: {manualMarksApplied[`${answer.question_id}-${index}`]}
+                    Manual marks set:{" "}
+                    {manualMarksApplied[`${answer.question_id}-${index}`]}
                   </Typography>
                 </div>
               )}
@@ -422,13 +458,21 @@ export function AttemptDetailClient({
           className="mb-0"
         />
         <Link href={`/admin/results/user-results/${userId}`}>
-          <Button variant="outline" color="default" startIcon={<ArrowLeft size={14} />}>
+          <Button
+            variant="outline"
+            color="default"
+            startIcon={<ArrowLeft size={14} />}
+          >
             Back to Attempts
           </Button>
         </Link>
       </div>
 
-      {loading && <Typography variant="body4">Loading selected attempt detail...</Typography>}
+      {loading && (
+        <Typography variant="body4">
+          Loading selected attempt detail...
+        </Typography>
+      )}
       {error && <Alert variant="error" description={error} />}
 
       {!loading && data && (
@@ -449,10 +493,7 @@ export function AttemptDetailClient({
             </div>
           </div>
 
-          <MainCard
-            title="Attempt Summary"
-            bodyClassName="space-y-4"
-          >
+          <MainCard title="Attempt Summary" bodyClassName="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
               {scoreCards.map((stat) => (
                 <div
@@ -460,7 +501,9 @@ export function AttemptDetailClient({
                   className={`rounded-2xl border border-border bg-gradient-to-br ${stat.tone} p-4`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`rounded-lg p-2 ${stat.iconTone}`}>{stat.icon}</div>
+                    <div className={`rounded-lg p-2 ${stat.iconTone}`}>
+                      {stat.icon}
+                    </div>
                     <div>
                       <Typography variant="body5">{stat.label}</Typography>
                       <Typography variant="h3" className="mt-0.5">
@@ -479,7 +522,9 @@ export function AttemptDetailClient({
                   className={`rounded-2xl border border-border bg-gradient-to-br ${stat.tone} p-4`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`rounded-lg p-2 ${stat.iconTone}`}>{stat.icon}</div>
+                    <div className={`rounded-lg p-2 ${stat.iconTone}`}>
+                      {stat.icon}
+                    </div>
                     <div>
                       <Typography variant="body5">{stat.label}</Typography>
                       <Typography variant="h3" className="mt-0.5">
@@ -517,7 +562,10 @@ export function AttemptDetailClient({
                   className="flex w-full items-center justify-between gap-3 bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30"
                 >
                   <div className="flex items-center gap-2">
-                    <Typography variant="body4" className="font-semibold text-foreground">
+                    <Typography
+                      variant="body4"
+                      className="font-semibold text-foreground"
+                    >
                       Attempted Questions
                     </Typography>
                     <Badge variant="outline" color="success">
@@ -539,7 +587,9 @@ export function AttemptDetailClient({
                       )
                     ) : (
                       <div className="rounded-xl border border-dashed border-border bg-muted/10 p-4 text-center">
-                        <Typography variant="body5">No attempted questions found.</Typography>
+                        <Typography variant="body5">
+                          No attempted questions found.
+                        </Typography>
                       </div>
                     )}
                   </div>
@@ -553,7 +603,10 @@ export function AttemptDetailClient({
                   className="flex w-full items-center justify-between gap-3 bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30"
                 >
                   <div className="flex items-center gap-2">
-                    <Typography variant="body4" className="font-semibold text-foreground">
+                    <Typography
+                      variant="body4"
+                      className="font-semibold text-foreground"
+                    >
                       Unattempted Questions
                     </Typography>
                     <Badge variant="outline" color="warning">
@@ -575,7 +628,9 @@ export function AttemptDetailClient({
                       )
                     ) : (
                       <div className="rounded-xl border border-dashed border-border bg-muted/10 p-4 text-center">
-                        <Typography variant="body5">No unattempted questions found.</Typography>
+                        <Typography variant="body5">
+                          No unattempted questions found.
+                        </Typography>
                       </div>
                     )}
                   </div>

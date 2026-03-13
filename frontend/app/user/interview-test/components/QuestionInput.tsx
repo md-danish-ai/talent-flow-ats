@@ -87,7 +87,7 @@ export function QuestionInput({
                 <Typography
                   variant="body3"
                   className={`transition-colors break-words ${
-                  isChecked
+                    isChecked
                       ? "text-brand-primary font-semibold"
                       : "text-foreground group-hover:text-brand-primary"
                   }`}

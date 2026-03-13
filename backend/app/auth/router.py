@@ -4,8 +4,10 @@ from app.auth.service import (
     signup_user,
     signin_user,
     create_admin,
-    get_user_by_id,
     get_users_by_role,
+    toggle_user_status,
+    delete_user,
+    get_user_by_id,
 )
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
@@ -65,3 +67,14 @@ async def create_admin_user(data: CreateAdminSchema):
         )
 
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+
+@router.put("/toggle-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+async def toggle_status(user_id: int):
+    data = toggle_user_status(user_id)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+
+
+@router.delete("/delete/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+async def delete_user_route(user_id: int):
+    data = delete_user(user_id)
+    return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)

@@ -238,8 +238,14 @@ def update_question(
         if options_data is not None:
             question.options = options_data
 
+        # Remove classification fields from data as they are handled separately or via params
+        data.pop("question_type", None)
+        data.pop("subject", None)
+        data.pop("exam_level", None)
+
         for key, value in data.items():
-            setattr(question, key, value)
+            if hasattr(question, key):
+                setattr(question, key, value)
 
         if answer_data:
             answer = (
