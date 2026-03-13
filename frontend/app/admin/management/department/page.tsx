@@ -15,13 +15,13 @@ async function getDepartmentsData() {
       .join("; ");
 
     const response = await departmentsApi.getDepartments(
-      { limit: 100 },
+      { limit: 10 },
       { cookies: cookieStr },
     );
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error fetching departments data:", error);
-    return [];
+    return undefined;
   }
 }
 

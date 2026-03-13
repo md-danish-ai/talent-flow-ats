@@ -203,8 +203,8 @@ export function TypesManagementClient({
             {currentEntityName} List
           </div>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[500px]"
-        bodyClassName="p-0 flex flex-col items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-col items-stretch w-full"
         action={
           <Button
             variant="primary"
@@ -222,7 +222,7 @@ export function TypesManagementClient({
           </Button>
         }
       >
-        <div className="flex-1 overflow-x-auto w-full">
+        <div className="overflow-x-auto w-full">
           <Table>
             <TableHeader>
               <TableRow>

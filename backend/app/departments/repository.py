@@ -1,6 +1,5 @@
 from app.database.db import SessionLocal
 from app.departments.models import Department
-from sqlalchemy.orm import Session
 
 def _to_dict(department):
     if not department:

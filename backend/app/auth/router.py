@@ -7,6 +7,7 @@ from app.auth.service import (
     get_users_by_role,
     toggle_user_status,
     delete_user,
+    get_user_by_id,
 )
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user

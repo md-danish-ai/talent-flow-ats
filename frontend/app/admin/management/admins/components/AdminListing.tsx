@@ -74,8 +74,8 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
             Admins
           </>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[600px]"
-        bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
             <Button
@@ -94,8 +94,8 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
           </div>
         }
       >
-        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-x-auto w-full min-h-0">
+        <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
+          <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader>
                 <TableRow>
