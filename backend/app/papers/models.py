@@ -2,6 +2,7 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
+    Boolean,
     TIMESTAMP,
     ForeignKey,
     func,
@@ -14,18 +15,23 @@ class Paper(Base):
     __tablename__ = "papers"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-
+    paper_name = Column(String(255), nullable=False)
+    description = Column(String(1000), nullable=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
+    test_level_id = Column(Integer, ForeignKey("classifications.id"), nullable=False)
     subject_id = Column(JSONB, nullable=False)
     question_id = Column(JSONB, nullable=False)
-
-    duration = Column(JSONB, nullable=False)
-    level = Column(String(100), nullable=False)
-    weights = Column(JSONB, nullable=False)
-
+    total_time = Column(String(50), nullable=True)
+    total_marks = Column(Integer, nullable=True)
+    is_active = Column(Boolean, server_default="true", nullable=False)
     grade = Column(String(100), nullable=True)
-
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-
     created_at = Column(
         TIMESTAMP, server_default=func.current_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
+        nullable=False,
     )

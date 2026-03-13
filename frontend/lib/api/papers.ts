@@ -7,6 +7,7 @@ export interface PaperSubjectConfig {
   is_selected: boolean;
   question_count: number;
   total_marks: number;
+  time_minutes: number;
   order: number;
 }
 
@@ -18,12 +19,6 @@ export interface PaperSetup {
   test_level_name?: string;
   paper_name: string;
   description: string;
-  english_test_time: string;
-  excel_time: string;
-  company_details_time: string;
-  lead_generation_time: string;
-  typing_test_time: string;
-  rpit_test_time: string;
   total_time: string;
   total_marks?: number;
   is_active: boolean;
@@ -37,12 +32,8 @@ export interface PaperSetupCreate {
   test_level_id: number;
   paper_name: string;
   description: string;
-  english_test_time: string;
-  excel_time: string;
-  company_details_time: string;
-  lead_generation_time: string;
-  typing_test_time: string;
-  rpit_test_time: string;
+  total_time: string;
+  total_marks: number;
   subject_configs: Omit<PaperSubjectConfig, "subject_name">[];
 }
 
@@ -103,22 +94,29 @@ export const papersApi = {
           subject_name: "Comprehension",
           question_count: 5,
           total_marks: 10,
+          time_minutes: 30,
           order: 1,
         },
         {
+          subject_id: 2,
           subject_name: "Written",
+          is_selected: true,
           question_count: 10,
           total_marks: 20,
+          time_minutes: 60,
           order: 2,
         },
         {
+          subject_id: 3,
           subject_name: "Grammar",
+          is_selected: true,
           question_count: 7,
           total_marks: 7,
+          time_minutes: 20,
           order: 3,
         },
       ],
-    };
+    } as PaperSetup;
   },
 
   createPaper: async (data: PaperSetupCreate) => {
@@ -129,11 +127,13 @@ export const papersApi = {
     return { id, ...data };
   },
 
-  deletePaper: async (_: number) => {
+  deletePaper: async (id: number) => {
+    console.log("Deleting paper:", id);
     return { success: true };
   },
 
-  togglePaperStatus: async (_: number) => {
+  togglePaperStatus: async (id: number) => {
+    console.log("Toggling paper status:", id);
     return { success: true };
   },
 };

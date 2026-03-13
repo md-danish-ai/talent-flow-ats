@@ -45,17 +45,24 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
   const [departments, setDepartments] = useState<Department[]>([]);
   const [testLevels, setTestLevels] = useState<Classification[]>([]);
 
-  // Helpers for time conversion
-  const parseTimeToMinutes = (timeStr: string | undefined): number => {
-    if (!timeStr || typeof timeStr !== "string") return 0;
-    const parts = timeStr.split(":").map((p) => parseInt(p) || 0);
-    if (parts.length === 3) {
-      return parts[0] * 60 + parts[1]; // Convert HH:MM:SS to total minutes
-    } else if (parts.length === 2) {
-      return parts[0] * 60 + parts[1];
-    }
-    return parseInt(timeStr) || 0;
+  // Helper to check for field errors in subject_configs array
+  const getFieldError = (
+    errors: unknown[] | undefined,
+    idx: number,
+    fieldName: string,
+  ) => {
+    if (!errors) return undefined;
+    const found = errors.find((err) => {
+      const e = err as { path?: (string | number)[] };
+      const path = e?.path || [];
+      const isFormLevelMatch = path[1] === idx && path[2] === fieldName;
+      const isFieldLevelMatch = path[0] === idx && path[1] === fieldName;
+      return isFormLevelMatch || isFieldLevelMatch;
+    });
+    return found as { message?: string } | undefined;
   };
+
+  // Helpers for time conversion
 
   const minutesToHHMMSS = (totalMinutes: number): string => {
     const h = Math.floor(totalMinutes / 60);
@@ -69,49 +76,50 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
       test_level_id: initialData?.test_level_id || 0,
       paper_name: initialData?.paper_name || "",
       description: initialData?.description || "",
-      english_test_time: parseTimeToMinutes(initialData?.english_test_time),
-      excel_time: parseTimeToMinutes(initialData?.excel_time),
-      company_details_time: parseTimeToMinutes(
-        initialData?.company_details_time,
-      ),
-      lead_generation_time: parseTimeToMinutes(
-        initialData?.lead_generation_time,
-      ),
-      typing_test_time: parseTimeToMinutes(initialData?.typing_test_time),
-      rpit_test_time: parseTimeToMinutes(initialData?.rpit_test_time),
       subject_configs: initialData?.subject_configs || [],
     } as PaperSetupFormValues,
     validators: {
       onChange: paperSetupSchema,
+      onBlur: paperSetupSchema,
     },
     onSubmit: async ({ value }) => {
+      const selectedConfigs = value.subject_configs.filter(
+        (c) => c.is_selected,
+      );
+      const totalTimeMins = selectedConfigs.reduce(
+        (sum, c) => sum + (Number(c.time_minutes) || 0),
+        0,
+      );
+      const calculatedTotalMarks = selectedConfigs.reduce(
+        (sum, c) => sum + (Number(c.total_marks) || 0),
+        0,
+      );
+
       const payload: PaperSetupCreate = {
-        ...value,
+        department_id: value.department_id,
+        test_level_id: value.test_level_id,
+        paper_name: value.paper_name,
         description: value.description || "",
-        english_test_time: minutesToHHMMSS(value.english_test_time),
-        excel_time: minutesToHHMMSS(value.excel_time),
-        company_details_time: minutesToHHMMSS(value.company_details_time),
-        lead_generation_time: minutesToHHMMSS(value.lead_generation_time),
-        typing_test_time: minutesToHHMMSS(value.typing_test_time),
-        rpit_test_time: minutesToHHMMSS(value.rpit_test_time),
-        subject_configs: value.subject_configs
-          .filter((c) => c.is_selected)
-          .map((c) => {
-            const {
-              subject_id,
-              is_selected,
-              question_count,
-              total_marks,
-              order,
-            } = c;
-            return {
-              subject_id,
-              is_selected,
-              question_count,
-              total_marks,
-              order,
-            };
-          }),
+        total_time: minutesToHHMMSS(totalTimeMins),
+        total_marks: calculatedTotalMarks,
+        subject_configs: selectedConfigs.map((c) => {
+          const {
+            subject_id,
+            is_selected,
+            question_count,
+            total_marks,
+            time_minutes,
+            order,
+          } = c;
+          return {
+            subject_id,
+            is_selected,
+            question_count,
+            total_marks,
+            time_minutes,
+            order,
+          };
+        }),
       };
       onSubmit(payload);
     },
@@ -144,6 +152,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
               is_selected: false,
               question_count: 0,
               total_marks: 0,
+              time_minutes: 0,
               order: 0,
             }),
           );
@@ -169,12 +178,13 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
       ) || 0;
 
   const totalTimeMinutes =
-    (formValues.english_test_time || 0) +
-    (formValues.excel_time || 0) +
-    (formValues.company_details_time || 0) +
-    (formValues.lead_generation_time || 0) +
-    (formValues.typing_test_time || 0) +
-    (formValues.rpit_test_time || 0);
+    formValues.subject_configs
+      ?.filter((c: PaperSubjectConfig) => c.is_selected)
+      .reduce(
+        (sum: number, c: PaperSubjectConfig) =>
+          sum + (Number(c.time_minutes) || 0),
+        0,
+      ) || 0;
 
   return (
     <MainCard
@@ -286,7 +296,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
 
           <form.Field name="description">
             {(field) => (
-              <div className="md:col-span-1 space-y-1.5">
+              <div className="md:col-span-3 space-y-1.5">
                 <Typography
                   variant="body5"
                   weight="bold"
@@ -299,7 +309,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  rows={1}
+                  rows={2}
                   error={field.state.meta.errors.length > 0}
                 />
                 {field.state.meta.errors.length > 0 && (
@@ -310,183 +320,6 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
               </div>
             )}
           </form.Field>
-
-          <form.Field name="english_test_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  English Test Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="excel_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  Excel Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="company_details_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  Company Details Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="lead_generation_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  Lead Generation Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="typing_test_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  Typing Test Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="rpit_test_time">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="text-muted-foreground uppercase tracking-wider"
-                >
-                  RPIT Test Time (Mins)
-                </Typography>
-                <Input
-                  type="number"
-                  placeholder="Minutes"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="text-red-500 mt-1">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </div>
-            )}
-          </form.Field>
-
-          <div className="space-y-1.5">
-            <Typography
-              variant="body5"
-              weight="bold"
-              className="text-muted-foreground uppercase tracking-wider"
-            >
-              Total Time (HH:MM:SS)
-            </Typography>
-            <Input
-              disabled
-              value={minutesToHHMMSS(totalTimeMinutes)}
-              className="bg-slate-50"
-            />
-          </div>
         </div>
 
         <div className="mt-10">
@@ -498,25 +331,50 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
             >
               Set Required type of questions:
             </Typography>
-            <div className="bg-slate-50 dark:bg-slate-800/40 px-5 py-2.5 rounded-xl border border-border/60 shadow-sm flex items-center gap-3">
-              <Typography
-                variant="body4"
-                weight="bold"
-                className="text-slate-500 uppercase tracking-widest text-[11px]"
-              >
-                Total Marks :
-              </Typography>
-              <Typography
-                variant="h4"
-                weight="black"
-                className="text-red-500 tabular-nums"
-              >
-                {totalMarks.toFixed(2)}
-              </Typography>
+            <div className="flex items-center gap-4">
+              <div className="bg-slate-50 dark:bg-slate-800/40 px-5 py-2.5 rounded-xl border border-border/60 shadow-sm flex items-center gap-3">
+                <Typography
+                  variant="body4"
+                  weight="bold"
+                  className="text-slate-500 uppercase tracking-widest text-[11px]"
+                >
+                  Total Time :
+                </Typography>
+                <Typography
+                  variant="h4"
+                  weight="black"
+                  className="text-brand-primary tabular-nums"
+                >
+                  {minutesToHHMMSS(totalTimeMinutes)}
+                </Typography>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/40 px-5 py-2.5 rounded-xl border border-border/60 shadow-sm flex items-center gap-3">
+                <Typography
+                  variant="body4"
+                  weight="bold"
+                  className="text-slate-500 uppercase tracking-widest text-[11px]"
+                >
+                  Total Marks :
+                </Typography>
+                <Typography
+                  variant="h4"
+                  weight="black"
+                  className="text-red-500 tabular-nums"
+                >
+                  {totalMarks.toFixed(2)}
+                </Typography>
+              </div>
             </div>
           </div>
 
-          <form.Field name="subject_configs">
+          <form.Field
+            name="subject_configs"
+            validators={{
+              onChange: paperSetupSchema.shape.subject_configs,
+              onBlur: paperSetupSchema.shape.subject_configs,
+            }}
+          >
             {(field) => (
               <div className="border border-border/60 rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-slate-950">
                 <Table>
@@ -529,10 +387,13 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                         Select
                       </TableHead>
                       <TableHead className="text-white font-bold px-6">
-                        Question Required?
+                        No. of Ques.
                       </TableHead>
                       <TableHead className="text-white font-bold px-6">
                         Total Marks
+                      </TableHead>
+                      <TableHead className="text-white font-bold px-6">
+                        Time (Mins)
                       </TableHead>
                       <TableHead className="text-white font-bold px-6">
                         Order
@@ -561,60 +422,174 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                                   is_selected: !config.is_selected,
                                 };
                                 field.handleChange(newConfigs);
+                                field.handleBlur();
                               }}
                             />
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Input
-                            placeholder="Qty"
-                            type="number"
-                            value={config.question_count || ""}
-                            onChange={(e) => {
-                              const newConfigs = [...field.state.value];
-                              newConfigs[index] = {
-                                ...newConfigs[index],
-                                question_count: Number(e.target.value),
-                              };
-                              field.handleChange(newConfigs);
-                            }}
-                            disabled={!config.is_selected}
-                            className="h-9"
-                          />
+                          {(() => {
+                            const err = getFieldError(
+                              field.state.meta.errors,
+                              index,
+                              "question_count",
+                            );
+                            return (
+                              <div className="space-y-1">
+                                <Input
+                                  placeholder="Qty"
+                                  type="number"
+                                  value={config.question_count || ""}
+                                  onChange={(e) => {
+                                    const newConfigs = [...field.state.value];
+                                    newConfigs[index] = {
+                                      ...newConfigs[index],
+                                      question_count: Number(e.target.value),
+                                    };
+                                    field.handleChange(newConfigs);
+                                  }}
+                                  onBlur={field.handleBlur}
+                                  disabled={!config.is_selected}
+                                  className={`h-9 ${
+                                    err
+                                      ? "border-red-500 focus:ring-red-500"
+                                      : ""
+                                  }`}
+                                />
+                                {err && (
+                                  <Typography
+                                    variant="body5"
+                                    className="text-red-500 text-[10px]"
+                                  >
+                                    {err.message}
+                                  </Typography>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
-                          <Input
-                            placeholder="Marks"
-                            type="number"
-                            value={config.total_marks || ""}
-                            onChange={(e) => {
-                              const newConfigs = [...field.state.value];
-                              newConfigs[index] = {
-                                ...newConfigs[index],
-                                total_marks: Number(e.target.value),
-                              };
-                              field.handleChange(newConfigs);
-                            }}
-                            disabled={!config.is_selected}
-                            className="h-9"
-                          />
+                          {(() => {
+                            const err = getFieldError(
+                              field.state.meta.errors,
+                              index,
+                              "total_marks",
+                            );
+                            return (
+                              <div className="space-y-1">
+                                <Input
+                                  placeholder="Marks"
+                                  type="number"
+                                  value={config.total_marks || ""}
+                                  onChange={(e) => {
+                                    const newConfigs = [...field.state.value];
+                                    newConfigs[index] = {
+                                      ...newConfigs[index],
+                                      total_marks: Number(e.target.value),
+                                    };
+                                    field.handleChange(newConfigs);
+                                  }}
+                                  onBlur={field.handleBlur}
+                                  disabled={!config.is_selected}
+                                  className={`h-9 ${
+                                    err
+                                      ? "border-red-500 focus:ring-red-500"
+                                      : ""
+                                  }`}
+                                />
+                                {err && (
+                                  <Typography
+                                    variant="body5"
+                                    className="text-red-500 text-[10px]"
+                                  >
+                                    {err.message}
+                                  </Typography>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
-                          <Input
-                            placeholder="Order"
-                            type="number"
-                            value={config.order || ""}
-                            onChange={(e) => {
-                              const newConfigs = [...field.state.value];
-                              newConfigs[index] = {
-                                ...newConfigs[index],
-                                order: Number(e.target.value),
-                              };
-                              field.handleChange(newConfigs);
-                            }}
-                            disabled={!config.is_selected}
-                            className="h-9"
-                          />
+                          {(() => {
+                            const err = getFieldError(
+                              field.state.meta.errors,
+                              index,
+                              "time_minutes",
+                            );
+                            return (
+                              <div className="space-y-1">
+                                <Input
+                                  placeholder="Time"
+                                  type="number"
+                                  value={config.time_minutes || ""}
+                                  onChange={(e) => {
+                                    const newConfigs = [...field.state.value];
+                                    newConfigs[index] = {
+                                      ...newConfigs[index],
+                                      time_minutes: Number(e.target.value),
+                                    };
+                                    field.handleChange(newConfigs);
+                                  }}
+                                  onBlur={field.handleBlur}
+                                  disabled={!config.is_selected}
+                                  className={`h-9 ${
+                                    err
+                                      ? "border-red-500 focus:ring-red-500"
+                                      : ""
+                                  }`}
+                                />
+                                {err && (
+                                  <Typography
+                                    variant="body5"
+                                    className="text-red-500 text-[10px]"
+                                  >
+                                    {err.message}
+                                  </Typography>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const err = getFieldError(
+                              field.state.meta.errors,
+                              index,
+                              "order",
+                            );
+                            return (
+                              <div className="space-y-1">
+                                <Input
+                                  placeholder="Order"
+                                  type="number"
+                                  value={config.order || ""}
+                                  onChange={(e) => {
+                                    const newConfigs = [...field.state.value];
+                                    newConfigs[index] = {
+                                      ...newConfigs[index],
+                                      order: Number(e.target.value),
+                                    };
+                                    field.handleChange(newConfigs);
+                                  }}
+                                  onBlur={field.handleBlur}
+                                  disabled={!config.is_selected}
+                                  className={`h-9 ${
+                                    err
+                                      ? "border-red-500 focus:ring-red-500"
+                                      : ""
+                                  }`}
+                                />
+                                {err && (
+                                  <Typography
+                                    variant="body5"
+                                    className="text-red-500 text-[10px]"
+                                  >
+                                    {err.message}
+                                  </Typography>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                       </TableRow>
                     ))}
