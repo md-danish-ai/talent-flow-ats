@@ -71,7 +71,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     type: "collapsible",
     items: [
       { label: "Admins", href: "/admin/management/admins" },
-      { label: "Candidates", href: "/admin/management/users" },
+      { label: "Users", href: "/admin/management/users" },
       { label: "Departments", href: "/admin/management/department" },
       { label: "Subjects & Levels", href: "/admin/management/subject-level" },
     ],
