@@ -68,7 +68,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
             variant="outline"
             color={row.subject?.name ? "success" : "error"}
             shape="square"
-            className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
+            //
           >
             {typeof row.subject === "string"
               ? row.subject
@@ -82,7 +82,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
             variant="outline"
             color={row.exam_level?.name ? "primary" : "default"}
             shape="square"
-            className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
+            //
           >
             {typeof row.exam_level === "string"
               ? row.exam_level

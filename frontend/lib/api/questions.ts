@@ -89,7 +89,11 @@ export const questionsApi = {
     return api.get<Question>(`/questions/get/${id}`);
   },
   getQuestionsByIds: async (ids: number[]) => {
-    return api.post<Question[]>("/questions/get-by-ids", { ids }, { silentSuccess: true });
+    return api.post<Question[]>(
+      "/questions/get-by-ids",
+      { ids },
+      { silentSuccess: true },
+    );
   },
   createQuestion: async (data: QuestionCreate) => {
     return api.post("/questions/create", data);

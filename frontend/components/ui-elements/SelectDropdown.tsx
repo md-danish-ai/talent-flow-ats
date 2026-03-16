@@ -36,7 +36,12 @@ export function SelectDropdown({
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const [coords, setCoords] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -105,7 +110,10 @@ export function SelectDropdown({
           transition={{ duration: 0.15, ease: "easeOut" }}
           style={{
             position: "absolute",
-            top: placement === "top" ? coords.top - 8 : coords.top + coords.height + 8,
+            top:
+              placement === "top"
+                ? coords.top - 8
+                : coords.top + coords.height + 8,
             left: coords.left,
             width: Math.max(coords.width, 280),
             zIndex: 10000,

@@ -319,7 +319,10 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                 <SelectDropdown
                   placeholder="Please Select Test Level"
                   value={field.state.value || ""}
-                  options={testLevels.map((l) => ({ id: l.code, label: l.name }))}
+                  options={testLevels.map((l) => ({
+                    id: l.code,
+                    label: l.name,
+                  }))}
                   onChange={(val) => field.handleChange(String(val))}
                   error={field.state.meta.errors.length > 0}
                 />
