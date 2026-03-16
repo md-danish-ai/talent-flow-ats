@@ -63,9 +63,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
                 <TableHead className="w-[100px] text-center">Status</TableHead>
               )}
               {isVisible("actions") && (
-                <TableHead className="w-[200px] text-center text-brand-primary">
-                  Settings / Grading / Edit / Delete
-                </TableHead>
+                <TableHead className="text-center">Action</TableHead>
               )}
             </TableRow>
           </TableHeader>
