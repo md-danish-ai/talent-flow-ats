@@ -205,38 +205,9 @@ def _cascade_code_update(
             {"subject_type": new_code}, synchronize_session=False
         )
 
-        # papers.subject_id stores subject codes as a JSONB array e.g. ["GRAMMAR", "MATH"].
-        # Replace the specific old element with the new one, preserving other elements.
-        db_session.execute(
-            __import__("sqlalchemy").text(
-                """
-                UPDATE papers
-                SET subject_id = (
-                    SELECT jsonb_agg(
-                        CASE WHEN elem::text = :old_code_quoted
-                             THEN CAST(:new_code AS jsonb)
-                             ELSE elem
-                        END
-                    )
-                    FROM jsonb_array_elements(subject_id) AS elem
-                )
-                WHERE subject_id @> CAST(:old_code_array AS jsonb)
-                """
-            ),
-            {
-                "old_code_quoted": f'"{old_code}"',
-                "new_code": f'"{new_code}"',
-                "old_code_array": f'["{old_code}"]',
-            },
-        )
-
     elif classification_type == "exam_level":
         db_session.query(Question).filter(Question.exam_level == old_code).update(
             {"exam_level": new_code}, synchronize_session=False
-        )
-
-        db_session.query(Paper).filter(Paper.level == old_code).update(
-            {"level": new_code}, synchronize_session=False
         )
 
 
@@ -276,20 +247,20 @@ def check_dependencies(classification_id: int) -> dict:
             if count:
                 deps["questions.subject_type"] = count
 
-            # papers.subject_id stores subject codes as a JSONB array.
-            # Use the @> containment operator to find rows that include the code.
+            # papers.subject_ids_data stores subjects as a JSONB array of objects e.g. [{"subject_id": 1}, ...].
+            # Use @> containment to find rows including this subject ID.
             paper_count = (
                 db_session.execute(
                     __import__("sqlalchemy").text(
                         "SELECT COUNT(*) FROM papers "
-                        "WHERE subject_id @> CAST(:code_array AS jsonb)"
+                        "WHERE subject_ids_data @> CAST(:id_obj_array AS jsonb)"
                     ),
-                    {"code_array": f'["{code}"]'},
+                    {"id_obj_array": f'[{{\"subject_id\": {classification.id}}}]'},
                 ).scalar()
                 or 0
             )
             if paper_count:
-                deps["papers.subject_id"] = paper_count
+                deps["papers.subject_config"] = paper_count
 
         elif classification_type == "exam_level":
             q_count = (
@@ -298,9 +269,9 @@ def check_dependencies(classification_id: int) -> dict:
             if q_count:
                 deps["questions.exam_level"] = q_count
 
-            p_count = db_session.query(Paper).filter(Paper.level == code).count()
+            p_count = db_session.query(Paper).filter(Paper.test_level_id == classification.id).count()
             if p_count:
-                deps["papers.level"] = p_count
+                deps["papers.test_level"] = p_count
 
         return deps
     finally:
