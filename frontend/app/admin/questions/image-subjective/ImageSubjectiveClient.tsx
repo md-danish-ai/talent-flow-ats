@@ -148,10 +148,12 @@ export function ImageSubjectiveClient() {
         const [subjectsRes, examLevelsRes] = await Promise.all([
           classificationsApi.getClassifications({
             type: "subject",
+            is_active: true,
             limit: 100,
           }),
           classificationsApi.getClassifications({
             type: "exam_level",
+            is_active: true,
             limit: 100,
           }),
         ]);
