@@ -134,7 +134,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
               shadow
               animate="scale"
               startIcon={<FileStack size={16} />}
-              className="font-black text-[10px] tracking-widest uppercase border-none px-6 rounded-xl"
+              className="font-black text-[10px] tracking-widest uppercase border-none px-6"
             >
               VIEW FULL PAPER SET
             </Button>
@@ -236,21 +236,15 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
 
         <div className="border border-border rounded-[1.5rem] overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] bg-white dark:bg-slate-950">
           <Table>
-            <TableHeader className="bg-slate-50 dark:bg-slate-900/50 border-b border-border">
-              <TableRow className="hover:bg-transparent h-14">
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="text-center w-[80px] font-bold">
-                  Sr. No.
-                </TableHead>
-                <TableHead className="font-bold">Subject</TableHead>
-                <TableHead className="font-bold">
-                  Total Selected Questions
-                </TableHead>
-                <TableHead className="font-bold">Question Count</TableHead>
-                <TableHead className="font-bold">Question Marks</TableHead>
-                <TableHead className="w-[100px] text-center font-bold">
-                  Order
-                </TableHead>
+            <TableHeader>
+              <TableRow>
+                <TableHead></TableHead>
+                <TableHead>Sr. No.</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Total Selected Questions</TableHead>
+                <TableHead>Question Count</TableHead>
+                <TableHead>Question Marks</TableHead>
+                <TableHead>Order</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -283,9 +277,11 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                           </Typography>
                           <Button
                             variant="primary"
+                            color="primary"
                             size="sm"
+                            animate="scale"
                             startIcon={<PlusCircle size={16} />}
-                            className="bg-brand-primary hover:bg-brand-primary/90 border-none h-9 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-primary/20"
+                            className="font-black text-[10px] tracking-widest uppercase border-none px-6"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedSubjectForAdd(
@@ -325,32 +321,23 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                       </div>
                     }
                   >
-                    <TableCell className="text-center pl-6 h-20">
-                      <div className="flex flex-col items-center justify-center">
-                        <Typography
-                          variant="body5"
-                          weight="black"
-                          className="text-slate-400 dark:text-slate-600"
-                        >
-                          {String(index + 1).padStart(2, "0")}
-                        </Typography>
-                        <div className="w-4 h-[2px] bg-slate-100 dark:bg-slate-800 mt-1 rounded-full" />
-                      </div>
+                    <TableCell>
+                      <Typography variant="body5" weight="black">
+                        {String(index + 1).padStart(2, "0")}
+                      </Typography>
                     </TableCell>
                     <TableCell className="font-extrabold text-brand-primary hover:text-brand-hover cursor-pointer transition-all">
                       {getSubjectName(config.subject_id)}
                     </TableCell>
-                    <TableCell className="font-bold">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          shape="square"
-                          color="primary"
-                          className="font-black text-[10px] px-3 py-1 border-brand-primary/20"
-                        >
-                          0 / {config.question_count}
-                        </Badge>
-                      </div>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        shape="square"
+                        color="primary"
+                        className="font-black text-[10px] px-3 py-1 border-brand-primary/20"
+                      >
+                        0 / {config.question_count}
+                      </Badge>
                     </TableCell>
                     <TableCell className="font-black text-slate-500">
                       {config.question_count}
@@ -358,21 +345,18 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                     <TableCell>
                       <Typography
                         variant="body4"
-                        weight="black"
+                        weight="bold"
                         className="text-slate-900 dark:text-slate-100"
                       >
                         {config.total_marks.toFixed(2)}
-                        <span className="ml-1 text-[10px] text-muted-foreground/60 font-medium">
+                        <span className="ml-1 text-[10px] font-medium">
                           PTS
                         </span>
                       </Typography>
                     </TableCell>
                     <TableCell className="text-center pr-8">
-                      <div className="relative inline-flex items-center justify-center">
-                        <div className="absolute inset-[-4px] rounded-full border border-brand-primary/10 opacity-0 group-hover/row:opacity-100 transition-opacity duration-500" />
-                        <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-brand-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-slate-900/20 dark:shadow-brand-primary/20 transition-transform duration-300 group-hover/row:scale-110">
-                          {config.order}
-                        </div>
+                      <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-brand-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-slate-900/20 dark:shadow-brand-primary/20 transition-transform duration-300 group-hover/row:scale-110">
+                        {config.order}
                       </div>
                     </TableCell>
                   </TableCollapsibleRow>
