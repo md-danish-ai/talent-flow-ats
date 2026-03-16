@@ -14,7 +14,7 @@ export interface PaperSubjectConfig {
 export interface PaperSetup {
   id: number;
   department_id: number;
-  test_level_id: number;
+  test_level_id: string;
   paper_name: string;
   description: string;
   total_time: string;
@@ -32,7 +32,7 @@ export interface PaperSetup {
 
 export interface PaperSetupCreate {
   department_id: number;
-  test_level_id: number;
+  test_level_id: string;
   paper_name: string;
   description: string;
   total_time: string;
