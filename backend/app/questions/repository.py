@@ -65,6 +65,7 @@ def get_questions(
     subject: str = None,
     exam_level: str = None,
     is_active: bool = None,
+    marks: int = None,
     search: str = None,
     sort_by: str = "created_at",
     order: str = "desc",
@@ -133,6 +134,8 @@ def get_questions(
             query = query.filter(Question.exam_level == exam_level)
         if is_active is not None:
             query = query.filter(Question.is_active == is_active)
+        if marks is not None:
+            query = query.filter(Question.marks == marks)
         if search:
             query = query.filter(Question.question_text.ilike(f"%{search}%"))
 

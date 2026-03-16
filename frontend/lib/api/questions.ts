@@ -70,6 +70,7 @@ export const questionsApi = {
       subject?: string;
       exam_level?: string;
       is_active?: boolean;
+      marks?: number;
     },
   ) => {
     const queryParams = new URLSearchParams();

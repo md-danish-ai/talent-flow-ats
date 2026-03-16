@@ -104,11 +104,11 @@ export function SelectDropdown({
             exit={{ opacity: 0, y: placement === "top" ? 4 : -4 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute left-0 right-0 z-50 overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-xl transition-colors",
+              "absolute left-0 right-0 z-50 overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-xl transition-colors min-w-[280px]",
               placementStyles,
             )}
           >
-            <div className="max-h-[240px] overflow-y-auto">
+            <div className="max-h-[320px] overflow-y-auto">
               {options.map((option) => (
                 <Button
                   key={option.id}
@@ -120,16 +120,16 @@ export function SelectDropdown({
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-md px-4 py-2.5 text-sm font-semibold transition-all mb-0.5 last:mb-0",
+                    "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
                     value === option.id
                       ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
                       : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
                   )}
                 >
-                  <Typography variant="body4" weight="semibold" as="span">
+                  <Typography variant="body4" weight="semibold" as="span" className="flex-1 text-left leading-tight pr-4">
                     {option.label}
                   </Typography>
-                  {value === option.id && <Check className="h-4 w-4" />}
+                  {value === option.id && <Check className="h-4 w-4 flex-shrink-0" />}
                 </Button>
               ))}
             </div>

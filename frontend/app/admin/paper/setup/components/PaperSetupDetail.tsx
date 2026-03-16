@@ -47,6 +47,11 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   const [selectedSubjectForAdd, setSelectedSubjectForAdd] = useState<
     string | null
   >(null);
+  const [selectedSubjectCodeForAdd, setSelectedSubjectCodeForAdd] = useState<
+    string | null
+  >(null);
+  const [targetCountForAdd, setTargetCountForAdd] = useState(0);
+  const [targetMarksForAdd, setTargetMarksForAdd] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,10 +77,12 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     fetchData();
   }, [paperId]);
 
-  const getSubjectName = (subjectId: number) => {
+  const getSubjectNameAndCode = (subjectId: number) => {
     const subject = subjects.find((s) => s.id === subjectId);
-    return subject ? subject.name : `Subject ${subjectId}`;
+    return subject ? { name: subject.name, code: subject.code } : { name: `Subject ${subjectId}`, code: "" };
   };
+
+  const getSubjectName = (subjectId: number) => getSubjectNameAndCode(subjectId).name;
 
   if (isLoading) {
     return (
@@ -284,13 +291,15 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             className="font-black text-[10px] tracking-widest uppercase border-none px-6"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedSubjectForAdd(
-                                getSubjectName(config.subject_id),
-                              );
+                              const sInfo = getSubjectNameAndCode(config.subject_id);
+                              setSelectedSubjectForAdd(sInfo.name);
+                              setSelectedSubjectCodeForAdd(sInfo.code);
+                              setTargetCountForAdd(config.question_count);
+                              setTargetMarksForAdd(config.total_marks);
                               setIsAddModalOpen(true);
                             }}
                           >
-                            ADD CONTENT
+                            Add Content
                           </Button>
                         </div>
                         <Table>
@@ -349,7 +358,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                         className="text-slate-900 dark:text-slate-100"
                       >
                         {config.total_marks.toFixed(2)}
-                        <span className="ml-1 text-[10px] font-medium">
+                        <span className="ml-1 text-[10px] text-muted-foreground/60 font-medium">
                           PTS
                         </span>
                       </Typography>
@@ -368,7 +377,11 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
 
       {isAddModalOpen && selectedSubjectForAdd && (
         <AddContentModal
-          subjectName={selectedSubjectForAdd}
+          subjectName={selectedSubjectForAdd || ""}
+          subjectCode={selectedSubjectCodeForAdd || ""}
+          examLevel={paper.test_level_id}
+          targetQuestionCount={targetCountForAdd}
+          targetTotalMarks={targetMarksForAdd}
           onClose={() => setIsAddModalOpen(false)}
           onSave={(ids) => {
             console.log("Selected Question IDs:", ids);
