@@ -3,6 +3,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Checkbox } from "@components/ui-elements/Checkbox";
+import { Badge } from "@components/ui-elements/Badge";
 import {
   Table,
   TableBody,
@@ -23,6 +24,7 @@ interface AddContentModalProps {
   onClose: () => void;
   onSave: (selectedIds: number[]) => void;
   initialSelectedIds?: number[];
+  initialSelectedMarksMap?: Record<number, number>;
   targetQuestionCount: number;
   targetTotalMarks: number;
 }
@@ -34,6 +36,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
   onClose,
   onSave,
   initialSelectedIds = [],
+  initialSelectedMarksMap = {},
   targetQuestionCount,
   targetTotalMarks,
 }) => {
@@ -45,7 +48,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
     useState<number[]>(initialSelectedIds);
   const [selectedMarksMap, setSelectedMarksMap] = useState<
     Record<number, number>
-  >({});
+  >(initialSelectedMarksMap || {});
   const [isLoading, setIsLoading] = useState(false);
 
   // Pagination state
@@ -180,7 +183,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
               weight="black"
               className="text-slate-800 dark:text-white flex items-center gap-3"
             >
-              <div className="w-1.5 h-6 bg-brand-primary rounded-full" />
+              <span className="w-1.5 h-6 bg-brand-primary rounded-full block shrink-0" />
               Assign Questions:{" "}
               <span className="text-brand-primary">{subjectName}</span>
             </Typography>
@@ -192,12 +195,14 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             </Typography>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all rounded-md"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Filters and Target Stats */}
@@ -240,6 +245,10 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 { id: "3", label: "3 Marks" },
                 { id: "4", label: "4 Marks" },
                 { id: "5", label: "5 Marks" },
+                { id: "6", label: "6 Marks" },
+                { id: "7", label: "7 Marks" },
+                { id: "8", label: "8 Marks" },
+                { id: "9", label: "9 Marks" },
                 { id: "10", label: "10 Marks" },
               ]}
               className="h-10 border-slate-200 dark:border-slate-800 rounded-md"
@@ -247,12 +256,12 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
           </div>
           <div className="flex items-center gap-2 pb-0.5">
             <Button
-              variant="outline"
-              size="icon"
-              // className="h-10 w-10 border border-slate-200 hover:text-brand-primary rounded-md"
+              variant="ghost"
+              size="icon-sm"
               onClick={fetchQuestions}
               disabled={isLoading}
               title="Refresh Questions"
+              className="text-slate-400 hover:text-brand-primary"
             >
               <RotateCw size={18} className={isLoading ? "animate-spin" : ""} />
             </Button>
@@ -376,7 +385,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                   <TableRow>
                     <TableHead>Sr.</TableHead>
                     <TableHead>Question Details</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead className="w-[180px]">Type</TableHead>
                     <TableHead>Marks</TableHead>
                     <TableHead>
                       <div className="flex flex-col items-center gap-1">
@@ -416,15 +425,14 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <div className="px-3 py-1 bg-slate-100 dark:bg-brand-primary/10 border border-transparent dark:border-brand-primary/20 inline-block rounded-sm">
-                          <Typography
-                            variant="body5"
-                            weight="bold"
-                            className="text-slate-500 dark:text-brand-primary uppercase tracking-widest text-[9px]"
-                          >
-                            {q.question_type?.name || "N/A"}
-                          </Typography>
-                        </div>
+                        <Badge
+                          variant="outline"
+                          shape="square"
+                          color="primary"
+                          className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
+                        >
+                          {q.question_type?.name || "N/A"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         <Typography

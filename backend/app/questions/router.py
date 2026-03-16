@@ -53,6 +53,14 @@ async def get_question(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
+@router.post("/get-by-ids")
+async def get_questions_by_ids(
+    payload: schemas.QuestionIds,
+):
+    data = await question_service.get_questions_by_ids(payload.ids)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
 @router.post("/create")
 async def create_question(
     payload: schemas.QuestionCreate, current_user: int = Depends(authenticate_user)

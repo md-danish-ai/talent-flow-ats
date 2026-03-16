@@ -214,6 +214,67 @@ def get_question_by_id(question_id: int):
         db_session.close()
 
 
+def get_questions_by_ids(question_ids: list[int]):
+    if not question_ids:
+        return []
+    db_session = SessionLocal()
+    try:
+        question_type_alias = aliased(Classification)
+        subject_type_alias = aliased(Classification)
+        exam_level_alias = aliased(Classification)
+
+        results = (
+            db_session.query(
+                Question,
+                QuestionAnswer.answer_text.label("ans_text"),
+                QuestionAnswer.explanation.label("ans_explanation"),
+                question_type_alias.id.label("qt_id"),
+                question_type_alias.code.label("qt_code"),
+                question_type_alias.type.label("qt_type"),
+                question_type_alias.name.label("qt_name"),
+                question_type_alias.extra_metadata.label("qt_metadata"),
+                question_type_alias.is_active.label("qt_is_active"),
+                question_type_alias.sort_order.label("qt_sort_order"),
+                subject_type_alias.id.label("st_id"),
+                subject_type_alias.code.label("st_code"),
+                subject_type_alias.type.label("st_type"),
+                subject_type_alias.name.label("st_name"),
+                subject_type_alias.extra_metadata.label("st_metadata"),
+                subject_type_alias.is_active.label("st_is_active"),
+                subject_type_alias.sort_order.label("st_sort_order"),
+                exam_level_alias.id.label("el_id"),
+                exam_level_alias.code.label("el_code"),
+                exam_level_alias.type.label("el_type"),
+                exam_level_alias.name.label("el_name"),
+                exam_level_alias.extra_metadata.label("el_metadata"),
+                exam_level_alias.is_active.label("el_is_active"),
+                exam_level_alias.sort_order.label("el_sort_order"),
+            )
+            .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
+            .outerjoin(
+                question_type_alias,
+                (question_type_alias.code == Question.question_type)
+                & (question_type_alias.type == "question_type"),
+            )
+            .outerjoin(
+                subject_type_alias,
+                (subject_type_alias.code == Question.subject_type)
+                & (subject_type_alias.type == "subject"),
+            )
+            .outerjoin(
+                exam_level_alias,
+                (exam_level_alias.code == Question.exam_level)
+                & (exam_level_alias.type == "exam_level"),
+            )
+            .filter(Question.id.in_(question_ids))
+            .all()
+        )
+
+        return [_format_question_orm(row) for row in results]
+    finally:
+        db_session.close()
+
+
 def update_question(
     question_id: int,
     payload,

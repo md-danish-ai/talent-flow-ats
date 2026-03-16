@@ -22,9 +22,11 @@ import {
   Trophy,
   Clock,
   FileStack,
+  Trash2,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
 import { papersApi, PaperSetup } from "@lib/api/papers";
+import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 
@@ -50,8 +52,26 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   const [selectedSubjectCodeForAdd, setSelectedSubjectCodeForAdd] = useState<
     string | null
   >(null);
+  const [selectedSubjectIdForAdd, setSelectedSubjectIdForAdd] = useState<
+    number | null
+  >(null);
   const [targetCountForAdd, setTargetCountForAdd] = useState(0);
   const [targetMarksForAdd, setTargetMarksForAdd] = useState(0);
+  const [assignedQuestions, setAssignedQuestions] = useState<Question[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const fetchAssignedQuestions = async (ids: number[]) => {
+    if (!ids || ids.length === 0) {
+      setAssignedQuestions([]);
+      return;
+    }
+    try {
+      const res = await questionsApi.getQuestionsByIds(ids);
+      setAssignedQuestions(res || []);
+    } catch (error) {
+      console.error("Failed to fetch assigned questions:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,12 +97,78 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     fetchData();
   }, [paperId]);
 
+  useEffect(() => {
+    if (paper?.question_id) {
+      fetchAssignedQuestions(paper.question_id);
+    } else {
+      setAssignedQuestions([]);
+    }
+  }, [paper?.question_id]);
+
   const getSubjectNameAndCode = (subjectId: number) => {
     const subject = subjects.find((s) => s.id === subjectId);
-    return subject ? { name: subject.name, code: subject.code } : { name: `Subject ${subjectId}`, code: "" };
+    return subject
+      ? { name: subject.name, code: subject.code }
+      : { name: `Subject ${subjectId}`, code: "" };
   };
 
-  const getSubjectName = (subjectId: number) => getSubjectNameAndCode(subjectId).name;
+  const getSubjectName = (subjectId: number) =>
+    getSubjectNameAndCode(subjectId).name;
+
+  const handleSaveQuestions = async (newIds: number[]) => {
+    console.log("Handle Save Questions - New IDs received:", newIds);
+    if (!paper || selectedSubjectIdForAdd === null) return;
+
+    try {
+      setIsUpdating(true);
+      // We need to merge the new selections for THIS subject with existing selections for OTHER subjects
+      // 1. Get other subjects' questions (those that don't match the current subject's ID)
+      const otherSubjectsQuestionIds = assignedQuestions
+        .filter((q) => q.subject?.id !== selectedSubjectIdForAdd)
+        .map((q) => q.id);
+
+      // 2. Combine with new IDs
+      const combinedIds = [...otherSubjectsQuestionIds, ...newIds];
+
+      await papersApi.updatePaper(
+        paper.id,
+        { question_id: combinedIds },
+        { silentSuccess: true },
+      );
+
+      // 3. Refresh paper data to trigger re-fetch of questions
+      const updatedPaper = await papersApi.getPaperById(paper.id);
+      setPaper(updatedPaper);
+
+      toast.success("Questions updated successfully");
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error("Failed to update questions:", error);
+      toast.error("Failed to update questions");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleRemoveQuestion = async (questionId: number) => {
+    if (!paper) return;
+    try {
+      const updatedIds =
+        paper.question_id?.filter((id) => id !== questionId) || [];
+      await papersApi.updatePaper(
+        paper.id,
+        { question_id: updatedIds },
+        { silentSuccess: true },
+      );
+
+      const updatedPaper = await papersApi.getPaperById(paper.id);
+      setPaper(updatedPaper);
+      toast.success("Question removed");
+    } catch (error) {
+      console.error("Failed to remove question:", error);
+      toast.error("Failed to remove question");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -291,15 +377,25 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             className="font-black text-[10px] tracking-widest uppercase border-none px-6"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const sInfo = getSubjectNameAndCode(config.subject_id);
+                              const sInfo = getSubjectNameAndCode(
+                                config.subject_id,
+                              );
                               setSelectedSubjectForAdd(sInfo.name);
                               setSelectedSubjectCodeForAdd(sInfo.code);
+                              setSelectedSubjectIdForAdd(config.subject_id);
                               setTargetCountForAdd(config.question_count);
                               setTargetMarksForAdd(config.total_marks);
                               setIsAddModalOpen(true);
                             }}
+                            disabled={isUpdating}
                           >
-                            Add Content
+                            {isUpdating &&
+                            selectedSubjectCodeForAdd ===
+                              getSubjectNameAndCode(config.subject_id).code ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              "Add Content"
+                            )}
                           </Button>
                         </div>
                         <Table>
@@ -311,20 +407,82 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                               <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px]">
                                 Questions
                               </TableHead>
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[120px] pr-8">
-                                Select
+                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] w-[180px]">
+                                Type
+                              </TableHead>
+                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[80px]">
+                                Marks
+                              </TableHead>
+                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[100px] pr-8">
+                                Action
                               </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            <TableRow>
-                              <TableCell
-                                colSpan={3}
-                                className="text-center py-8 text-muted-foreground italic"
-                              >
-                                No questions assigned to this subject yet.
-                              </TableCell>
-                            </TableRow>
+                            {assignedQuestions.filter(
+                              (q) => q.subject?.id === config.subject_id,
+                            ).length > 0 ? (
+                              assignedQuestions
+                                .filter(
+                                  (q) => q.subject?.id === config.subject_id,
+                                )
+                                .map((q, qIndex) => (
+                                  <TableRow key={q.id}>
+                                    <TableCell className="text-center font-bold text-slate-400 pl-8">
+                                      {String(qIndex + 1).padStart(2, "0")}
+                                    </TableCell>
+                                    <TableCell className="max-w-[400px]">
+                                      <Typography
+                                        variant="body5"
+                                        weight="bold"
+                                        className="line-clamp-2"
+                                      >
+                                        {q.question_text}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant="outline"
+                                        shape="square"
+                                        color="primary"
+                                        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
+                                      >
+                                        {q.question_type?.name || "N/A"}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      <Typography
+                                        variant="body5"
+                                        weight="black"
+                                        className="text-brand-primary"
+                                      >
+                                        {q.marks}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell className="text-center pr-8">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        onClick={() =>
+                                          handleRemoveQuestion(q.id)
+                                        }
+                                        className="text-slate-400 hover:text-red-500"
+                                      >
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))
+                            ) : (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={5}
+                                  className="text-center py-8 text-muted-foreground italic"
+                                >
+                                  No questions assigned to this subject yet.
+                                </TableCell>
+                              </TableRow>
+                            )}
                           </TableBody>
                         </Table>
                       </div>
@@ -342,10 +500,21 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                       <Badge
                         variant="outline"
                         shape="square"
-                        color="primary"
+                        color={
+                          assignedQuestions.filter(
+                            (q) => q.subject?.id === config.subject_id,
+                          ).length === config.question_count
+                            ? "success"
+                            : "primary"
+                        }
                         className="font-black text-[10px] px-3 py-1 border-brand-primary/20"
                       >
-                        0 / {config.question_count}
+                        {
+                          assignedQuestions.filter(
+                            (q) => q.subject?.id === config.subject_id,
+                          ).length
+                        }{" "}
+                        / {config.question_count}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-black text-slate-500">
@@ -382,11 +551,14 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
           examLevel={paper.test_level_id}
           targetQuestionCount={targetCountForAdd}
           targetTotalMarks={targetMarksForAdd}
+          initialSelectedIds={assignedQuestions
+            .filter((q) => q.subject?.id === selectedSubjectIdForAdd)
+            .map((q) => q.id)}
+          initialSelectedMarksMap={assignedQuestions
+            .filter((q) => q.subject?.id === selectedSubjectIdForAdd)
+            .reduce((acc, q) => ({ ...acc, [q.id]: q.marks }), {})}
           onClose={() => setIsAddModalOpen(false)}
-          onSave={(ids) => {
-            console.log("Selected Question IDs:", ids);
-            setIsAddModalOpen(false);
-          }}
+          onSave={handleSaveQuestions}
         />
       )}
     </div>

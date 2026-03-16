@@ -88,6 +88,14 @@ class QuestionService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
             )
 
+    async def get_questions_by_ids(self, question_ids: list[int]):
+        try:
+            return repository.get_questions_by_ids(question_ids)
+        except Exception as e:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+            )
+
     async def update_question(self, question_id: int, payload, current_user: int):
         try:
             # Validate Codes (only if provided)

@@ -50,3 +50,7 @@ class QuestionUpdate(BaseModel):
     is_active: Optional[bool] = None
     options: Optional[List[OptionUpdate]] = None
     answer: Optional[AnswerUpdate] = None
+
+
+class QuestionIds(BaseModel):
+    ids: List[int]

@@ -82,8 +82,12 @@ export const papersApi = {
     return api.post<PaperSetup>("/papers/create", data);
   },
 
-  updatePaper: async (id: number, data: Partial<PaperSetupCreate>) => {
-    return api.put<PaperSetup>(`/papers/update/${id}`, data);
+  updatePaper: async (
+    id: number,
+    data: Partial<PaperSetupCreate>,
+    options?: ApiRequestOptions,
+  ) => {
+    return api.put<PaperSetup>(`/papers/update/${id}`, data, options);
   },
 
   deletePaper: async (id: number) => {
