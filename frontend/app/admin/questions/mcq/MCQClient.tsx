@@ -45,7 +45,16 @@ export function MCQClient({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
-  >(undefined);
+  >("all");
+  const [examLevelFilter, setExamLevelFilter] = useState<
+    string | number | undefined
+  >("all");
+  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
+    "all",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -53,6 +62,7 @@ export function MCQClient({
   const [data, setData] = useState<Question[]>(initialData);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
@@ -78,6 +88,7 @@ export function MCQClient({
     { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
+    { id: "marks", label: "Marks" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
@@ -89,7 +100,7 @@ export function MCQClient({
     "question",
     "subject",
     "examLevel",
-    "status",
+    "marks",
     "actions",
   ];
 
@@ -122,7 +133,21 @@ export function MCQClient({
         limit: pageSize,
         search: debouncedSearch,
         subject:
-          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+          subjectFilter && subjectFilter !== "all"
+            ? (subjectFilter as string)
+            : undefined,
+        exam_level:
+          examLevelFilter && examLevelFilter !== "all"
+            ? (examLevelFilter as string)
+            : undefined,
+        marks:
+          marksFilter && marksFilter !== "all"
+            ? Number(marksFilter)
+            : undefined,
+        is_active:
+          statusFilter && statusFilter !== "all"
+            ? statusFilter === "true"
+            : undefined,
         question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
       });
       setData(response.data || []);
@@ -137,31 +162,45 @@ export function MCQClient({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter, handleAuthError]);
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearch,
+    subjectFilter,
+    examLevelFilter,
+    marksFilter,
+    statusFilter,
+    handleAuthError,
+  ]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchClassifications = async () => {
       try {
-        const response = await classificationsApi.getClassifications({
-          type: "subject",
-          limit: 100,
-        });
-        setSubjects(response.data || []);
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         if (handleAuthError(error)) {
           return;
         }
-        console.error("Failed to fetch subjects:", error);
+        console.error("Failed to fetch classifications:", error);
       }
     };
-    if (subjects.length === 0) {
-      fetchSubjects();
-    }
-  }, [subjects.length, handleAuthError]);
+    fetchClassifications();
+  }, [handleAuthError]);
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
@@ -260,6 +299,11 @@ export function MCQClient({
                   {visibleColumns.includes("examLevel") && (
                     <TableHead>Exam Level</TableHead>
                   )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("createdBy") && (
                     <TableHead>Created By</TableHead>
                   )}
@@ -332,9 +376,28 @@ export function MCQClient({
             setCurrentPage(1);
           }}
           subjects={subjects}
+          examLevelFilter={examLevelFilter}
+          onExamLevelFilterChange={(val) => {
+            setExamLevelFilter(val);
+            setCurrentPage(1);
+          }}
+          examLevels={examLevels}
+          marksFilter={marksFilter}
+          onMarksFilterChange={(val) => {
+            setMarksFilter(val);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusFilterChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}
           onReset={() => {
             setSearchQuery("");
             setSubjectFilter("all");
+            setExamLevelFilter("all");
+            setMarksFilter("all");
+            setStatusFilter("all");
             setCurrentPage(1);
           }}
         />

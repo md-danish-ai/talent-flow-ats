@@ -90,6 +90,18 @@ export const MCQRow: React.FC<MCQRowProps> = ({
           </Badge>
         </TableCell>
       )}
+      {visibleColumns.includes("marks") && (
+        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
+          <Badge
+            color="primary"
+            variant="outline"
+            shape="square"
+            className="flex items-center justify-center w-8 h-8 mx-auto"
+          >
+            {row.marks || "0"}
+          </Badge>
+        </TableCell>
+      )}
       {visibleColumns.includes("createdBy") && (
         <TableCell className="text-muted-foreground/70 font-medium italic text-[13px]">
           {"System"}

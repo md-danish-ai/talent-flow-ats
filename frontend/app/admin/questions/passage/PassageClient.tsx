@@ -40,15 +40,26 @@ export function PassageClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
-  >(undefined);
+  >("all");
+  const [examLevelFilter, setExamLevelFilter] = useState<
+    string | number | undefined
+  >("all");
+  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
+    "all",
+  );
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "question", label: "Question & Passage", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "marks", label: "Marks" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
@@ -58,7 +69,7 @@ export function PassageClient() {
     "srNo",
     "question",
     "subject",
-    "status",
+    "marks",
     "actions",
   ];
 
@@ -87,7 +98,21 @@ export function PassageClient() {
         question_type: QUESTION_TYPES.PASSAGE_CONTENT,
         search: debouncedSearch,
         subject:
-          subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+          subjectFilter && subjectFilter !== "all"
+            ? (subjectFilter as string)
+            : undefined,
+        exam_level:
+          examLevelFilter && examLevelFilter !== "all"
+            ? (examLevelFilter as string)
+            : undefined,
+        marks:
+          marksFilter && marksFilter !== "all"
+            ? Number(marksFilter)
+            : undefined,
+        is_active:
+          statusFilter && statusFilter !== "all"
+            ? statusFilter === "true"
+            : undefined,
       });
 
       setData(response.data || []);
@@ -99,28 +124,41 @@ export function PassageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearch,
+    subjectFilter,
+    examLevelFilter,
+    marksFilter,
+    statusFilter,
+  ]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchClassifications = async () => {
       try {
-        const response = await classificationsApi.getClassifications({
-          type: "subject",
-          limit: 100,
-        });
-        setSubjects(response.data || []);
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            limit: 100,
+          }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
       } catch (error) {
-        console.error("Failed to fetch subjects:", error);
+        console.error("Failed to fetch classifications:", error);
       }
     };
-    if (subjects.length === 0) {
-      fetchSubjects();
-    }
-  }, [subjects.length]);
+    fetchClassifications();
+  }, []);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
@@ -211,6 +249,11 @@ export function PassageClient() {
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
                   )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
@@ -277,11 +320,33 @@ export function PassageClient() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           subjectFilter={subjectFilter}
-          onSubjectFilterChange={setSubjectFilter}
+          onSubjectFilterChange={(val) => {
+            setSubjectFilter(val);
+            setCurrentPage(1);
+          }}
           subjects={subjects}
+          examLevelFilter={examLevelFilter}
+          onExamLevelFilterChange={(val) => {
+            setExamLevelFilter(val);
+            setCurrentPage(1);
+          }}
+          examLevels={examLevels}
+          marksFilter={marksFilter}
+          onMarksFilterChange={(val) => {
+            setMarksFilter(val);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusFilterChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}
           onReset={() => {
             setSearchQuery("");
             setSubjectFilter("all");
+            setExamLevelFilter("all");
+            setMarksFilter("all");
+            setStatusFilter("all");
             setCurrentPage(1);
           }}
         />

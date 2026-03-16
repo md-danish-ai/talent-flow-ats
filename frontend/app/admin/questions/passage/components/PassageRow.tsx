@@ -86,6 +86,18 @@ export const PassageRow: React.FC<PassageRowProps> = ({
           </Badge>
         </TableCell>
       )}
+      {visibleColumns.includes("marks") && (
+        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
+          <Badge
+            color="primary"
+            variant="outline"
+            shape="square"
+            className="flex items-center justify-center w-8 h-8 mx-auto"
+          >
+            {row.marks || "0"}
+          </Badge>
+        </TableCell>
+      )}
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
           {row.created_at
