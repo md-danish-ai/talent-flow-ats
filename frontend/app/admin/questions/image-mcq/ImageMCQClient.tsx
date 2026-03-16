@@ -85,6 +85,7 @@ export function ImageMCQClient({
     { id: "image", label: "Image" },
     { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
@@ -97,6 +98,7 @@ export function ImageMCQClient({
     "image",
     "question",
     "subject",
+    "examLevel",
     "marks",
     "actions",
   ];
@@ -299,6 +301,9 @@ export function ImageMCQClient({
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
+                  )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
                   )}
                   {visibleColumns.includes("marks") && (
                     <TableHead className="w-[80px] text-center">

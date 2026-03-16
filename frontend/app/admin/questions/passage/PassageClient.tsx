@@ -59,6 +59,7 @@ export function PassageClient() {
     { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "question", label: "Question & Passage", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
@@ -69,6 +70,7 @@ export function PassageClient() {
     "srNo",
     "question",
     "subject",
+    "examLevel",
     "marks",
     "actions",
   ];
@@ -250,6 +252,9 @@ export function PassageClient() {
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
+                  )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
                   )}
                   {visibleColumns.includes("marks") && (
                     <TableHead className="w-[80px] text-center">

@@ -62,6 +62,7 @@ export function ImageSubjectiveClient() {
     { id: "image", label: "Image" },
     { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
@@ -73,6 +74,7 @@ export function ImageSubjectiveClient() {
     "image",
     "question",
     "subject",
+    "examLevel",
     "marks",
     "actions",
   ];
@@ -259,6 +261,9 @@ export function ImageSubjectiveClient() {
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
+                  )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
                   )}
                   {visibleColumns.includes("marks") && (
                     <TableHead className="w-[80px] text-center">

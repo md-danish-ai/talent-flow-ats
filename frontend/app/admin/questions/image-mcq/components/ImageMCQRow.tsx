@@ -120,6 +120,20 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
           </Badge>
         </TableCell>
       )}
+      {visibleColumns.includes("examLevel") && (
+        <TableCell>
+          <Badge
+            variant="outline"
+            color={row.exam_level?.name ? "primary" : "default"}
+            shape="square"
+            className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
+          >
+            {typeof row.exam_level === "string"
+              ? row.exam_level
+              : (row.exam_level?.name ?? "N/A")}
+          </Badge>
+        </TableCell>
+      )}
       {visibleColumns.includes("marks") && (
         <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
           <Badge
