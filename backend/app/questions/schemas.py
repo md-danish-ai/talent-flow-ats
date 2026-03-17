@@ -1,7 +1,7 @@
 # app/questions/schemas.py
 
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 class OptionCreate(BaseModel):
@@ -35,7 +35,7 @@ class QuestionCreate(BaseModel):
     passage: Optional[str] = None
     marks: int
     is_active: bool = True
-    options: List[OptionCreate]
+    options: Optional[Any] = None
     answer: AnswerCreate
 
 
@@ -48,7 +48,7 @@ class QuestionUpdate(BaseModel):
     passage: Optional[str] = None
     marks: Optional[int] = None
     is_active: Optional[bool] = None
-    options: Optional[List[OptionUpdate]] = None
+    options: Optional[Any] = None
     answer: Optional[AnswerUpdate] = None
 
 

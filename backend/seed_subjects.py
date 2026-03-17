@@ -5,27 +5,27 @@ from app.classifications.models import Classification
 
 # Final authorized list of subjects with their proper descriptions
 ALLOWED_SUBJECTS = {
+    "Aptitude": "Assessment of logical reasoning, problem-solving skills, and mathematical ability.",
+    "Brand Awareness": "Evaluation of knowledge about brand positioning, marketing strategies, and consumer perception.",
+    "Company Contact Details Test": "Testing accuracy in finding and validating contact information for businesses.",
+    "Company Details": "Evaluation of knowledge regarding company structure, history, services, and organizational hierarchy.",
+    "Comprehension": "Evaluation of ability to understand, interpret, and draw conclusions from written passages.",
+    "Data Interpretation & Analytics": "Assessment of ability to analyze complex data sets and extract actionable insights.",
     "English": "Comprehensive assessment of English language proficiency, including grammar, vocabulary, and reading comprehension.",
     "Excel": "Proficient use of Microsoft Excel for data analysis, reporting, and administrative tasks.",
-    "Company Details": "Evaluation of knowledge regarding company structure, history, services, and organizational hierarchy.",
-    "Company Contact Details Test": "Testing accuracy in finding and validating contact information for businesses.",
-    "Lead Generation": "Testing skills in identifying potential clients, gathering contact information, and understanding sales funnels.",
-    "Typing Test": "Assessment of typing speed (WPM) and accuracy to ensure data entry efficiency.",
-    "Real Estate": "Testing knowledge of property markets, real estate terminology, and industry-specific regulations.",
-    "Comprehension": "Evaluation of ability to understand, interpret, and draw conclusions from written passages.",
-    "Written": "Assessment of professional writing skills, including clarity, structure, and tone.",
-    "Grammar": "Detailed testing of grammatical rules, sentence structure, and punctuation.",
-    "Aptitude": "Assessment of logical reasoning, problem-solving skills, and mathematical ability.",
-    "Industry Awareness": "Evaluation of knowledge concerning current trends, key players, and developments in the specific industry.",
-    "e-Commerce & Online Shopping": "Testing understanding of online retail operations, customer journey, and digital marketplaces.",
-    "Brand Awareness": "Evaluation of knowledge about brand positioning, marketing strategies, and consumer perception.",
     "Food Industry": "Testing knowledge of food safety, culinary trends, and hospitality management.",
-    "Data Interpretation & Analytics": "Assessment of ability to analyze complex data sets and extract actionable insights."
+    "Grammar": "Detailed testing of grammatical rules, sentence structure, and punctuation.",
+    "Industry Awareness": "Evaluation of knowledge concerning current trends, key players, and developments in the specific industry.",
+    "Lead Generation": "Testing skills in identifying potential clients, gathering contact information, and understanding sales funnels.",
+    "Real Estate": "Testing knowledge of property markets, real estate terminology, and industry-specific regulations.",
+    "Typing Test": "Assessment of typing speed (WPM) and accuracy to ensure data entry efficiency.",
+    "Written": "Assessment of professional writing skills, including clarity, structure, and tone.",
+    "e-Commerce & Online Shopping": "Testing understanding of online retail operations, customer journey, and digital marketplaces."
 }
 
 def generate_code(name: str):
     """Utility to generate consistent codes."""
-    return name.upper().replace(" ", "_").replace("-", "_").replace("/", "_").replace(".", "_").replace("'", "")
+    return name.upper().replace(" ", "_").replace("-", "_").replace("/", "_").replace(".", "_").replace("&", "").replace("'", "").replace("__", "_").strip("_")
 
 def seed():
     db = SessionLocal()
@@ -48,7 +48,8 @@ def seed():
         if existing:
             # Update existing
             metadata = existing.extra_metadata or {}
-            if not isinstance(metadata, dict): metadata = {}
+            if not isinstance(metadata, dict):
+                metadata = {}
             metadata["description"] = description
             existing.extra_metadata = metadata
             existing.is_active = True

@@ -21,9 +21,7 @@ def create_question(
             passage=data.passage,
             marks=data.marks,
             is_active=data.is_active,
-            options=[option.model_dump() for option in data.options]
-            if data.options
-            else [],
+            options=data.options if data.options is not None else [],
             created_by=user_id,
         )
         db_session.add(new_question)
@@ -33,12 +31,12 @@ def create_question(
 
         if data.answer:
             answer_text = data.answer.answer_text
-            if not answer_text and data.options:
+            if not answer_text and data.options and isinstance(data.options, list):
                 answer_text = ", ".join(
                     [
-                        option.option_label
+                        option.get("option_label", "")
                         for option in data.options
-                        if option.is_correct
+                        if isinstance(option, dict) and option.get("is_correct")
                     ]
                 )
 
@@ -324,12 +322,12 @@ def update_question(
                     answer.explanation = answer_data["explanation"]
             else:
                 answer_text = answer_data.get("answer_text")
-                if not answer_text and options_data:
+                if not answer_text and options_data and isinstance(options_data, list):
                     answer_text = ", ".join(
                         [
                             option.get("option_label", "")
                             for option in options_data
-                            if option.get("is_correct")
+                            if isinstance(option, dict) and option.get("is_correct")
                         ]
                     )
 

@@ -28,7 +28,7 @@ export interface Question {
   passage?: string | null;
   marks: number;
   is_active: boolean;
-  options: QuestionOption[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer?: QuestionAnswer;
   question_type?: ClassificationRef | null;
   subject?: ClassificationRef | null;
@@ -57,7 +57,7 @@ export interface QuestionCreate {
   passage?: string | null;
   marks: number;
   is_active?: boolean;
-  options: OptionCreate[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer: AnswerCreate;
 }
 
