@@ -59,18 +59,26 @@ export function ContactDetailsClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "WebSiteURL", pinned: true },
+    { id: "websiteUrl", label: "WebSiteURL", pinned: true },
+    { id: "companyName", label: "CompanyName" },
+    { id: "streetAddress", label: "StreetAddress" },
+    { id: "city", label: "City" },
+    { id: "state", label: "State" },
+    { id: "zipCode", label: "ZipCode" },
+    { id: "companyPhoneNumber", label: "CompanyPhoneNumber" },
+    { id: "generalEmail", label: "GeneralEmail" },
+    { id: "facebookPage", label: "FacebookPage" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "question",
+    "websiteUrl",
+    "companyName",
     "subject",
     "examLevel",
     "marks",
@@ -259,8 +267,32 @@ export function ContactDetailsClient() {
                       Sr. No.
                     </TableHead>
                   )}
-                  {visibleColumns.includes("question") && (
+                  {visibleColumns.includes("websiteUrl") && (
                     <TableHead>WebSiteURL</TableHead>
+                  )}
+                  {visibleColumns.includes("companyName") && (
+                    <TableHead>CompanyName</TableHead>
+                  )}
+                  {visibleColumns.includes("streetAddress") && (
+                    <TableHead>StreetAddress</TableHead>
+                  )}
+                  {visibleColumns.includes("city") && (
+                    <TableHead>City</TableHead>
+                  )}
+                  {visibleColumns.includes("state") && (
+                    <TableHead>State</TableHead>
+                  )}
+                  {visibleColumns.includes("zipCode") && (
+                    <TableHead>ZipCode</TableHead>
+                  )}
+                  {visibleColumns.includes("companyPhoneNumber") && (
+                    <TableHead>CompanyPhoneNumber</TableHead>
+                  )}
+                  {visibleColumns.includes("generalEmail") && (
+                    <TableHead>GeneralEmail</TableHead>
+                  )}
+                  {visibleColumns.includes("facebookPage") && (
+                    <TableHead>FacebookPage</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
