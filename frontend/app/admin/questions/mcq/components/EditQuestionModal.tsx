@@ -32,7 +32,7 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     marks: questionData.marks || 1,
     questionText: questionData.question_text || "",
     explanation: questionData.answer?.explanation || "",
-    options: (questionData.options || []).map(
+    options: ((questionData.options as QuestionOption[]) || []).map(
       (opt: QuestionOption, index: number) => ({
         id: opt.option_label || String.fromCharCode(65 + index),
         label: opt.option_label || String.fromCharCode(65 + index),

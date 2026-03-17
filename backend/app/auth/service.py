@@ -206,15 +206,16 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str):
+def get_users_by_role(role: str, date: str = None):
     db_session = SessionLocal()
     try:
-        results = (
-            db_session.query(User)
-            .filter(User.role == role)
-            .order_by(User.id.desc())
-            .all()
-        )
+        from sqlalchemy import func
+        query = db_session.query(User).filter(User.role == role)
+        
+        if date:
+            query = query.filter(func.date(User.created_at) == date)
+            
+        results = query.order_by(User.id.desc()).all()
         return [
             {
                 "id": user.id,
@@ -230,6 +231,54 @@ def get_users_by_role(role: str):
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
             detail="An internal server error occurred. Please try again later.",
+        )
+    finally:
+        db_session.close()
+
+
+def toggle_user_status(user_id: int):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+        user.is_active = not user.is_active
+        db_session.commit()
+        return {"id": user.id, "is_active": user.is_active}
+    except HTTPException:
+        raise
+    except Exception:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail="An internal server error occurred.",
+        )
+    finally:
+        db_session.close()
+
+
+def delete_user(user_id: int):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+        db_session.delete(user)
+        db_session.commit()
+        return {"id": user_id, "message": "User deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail="An internal server error occurred.",
         )
     finally:
         db_session.close()

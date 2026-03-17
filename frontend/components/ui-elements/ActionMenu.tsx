@@ -64,7 +64,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         let el = triggerRef.current?.parentElement || null;
         while (el && el !== document.body) {
           const cls = (el.className || "") as string;
-          if (/card|main|container|panel|section/i.test(cls) || el.getAttribute("role") === "region") {
+          if (
+            /card|main|container|panel|section/i.test(cls) ||
+            el.getAttribute("role") === "region"
+          ) {
             boundary = el;
             break;
           }
@@ -109,14 +112,21 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         }
 
         // Compute top coordinate depending on placement and clamp
-        let finalTop = finalPlacement === "bottom" ? rect.bottom + 4 : rect.top - menuH - 4;
-        finalTop = Math.min(Math.max(finalTop, areaTop + margin), areaBottom - menuH - margin);
+        let finalTop =
+          finalPlacement === "bottom" ? rect.bottom + 4 : rect.top - menuH - 4;
+        finalTop = Math.min(
+          Math.max(finalTop, areaTop + margin),
+          areaBottom - menuH - margin,
+        );
 
         // Center horizontally aligned with the button
         let finalLeft = rect.left + rect.width / 2 - menuW / 2;
 
         // Ensure it doesn't clip on the left or right
-        finalLeft = Math.min(Math.max(finalLeft, areaLeft + margin), areaRight - menuW - margin);
+        finalLeft = Math.min(
+          Math.max(finalLeft, areaLeft + margin),
+          areaRight - menuW - margin,
+        );
 
         setPlacement(finalPlacement);
         setPos({ top: finalTop, left: finalLeft });
@@ -125,7 +135,12 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
 
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (menuRef.current && !menuRef.current.contains(target) && triggerRef.current && !triggerRef.current.contains(target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -143,7 +158,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       {open && pos && (
         <motion.div
           ref={menuRef}
-          initial={{ opacity: 0, scale: 0.98, y: placement === "bottom" ? -4 : 4 }}
+          initial={{
+            opacity: 0,
+            scale: 0.98,
+            y: placement === "bottom" ? -4 : 4,
+          }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: placement === "bottom" ? -4 : 4 }}
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
@@ -152,7 +171,8 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             position: "fixed",
             top: pos.top,
             left: pos.left,
-            transformOrigin: placement === "bottom" ? "top center" : "bottom center",
+            transformOrigin:
+              placement === "bottom" ? "top center" : "bottom center",
             zIndex: 99999,
             pointerEvents: "auto",
             width: "auto",
@@ -198,7 +218,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       >
         {button}
       </button>
-      {typeof document !== "undefined" ? createPortal(menuNode, document.body) : menuNode}
+      {typeof document !== "undefined"
+        ? createPortal(menuNode, document.body)
+        : menuNode}
     </div>
   );
 };

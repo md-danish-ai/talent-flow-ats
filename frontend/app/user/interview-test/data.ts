@@ -15,7 +15,8 @@ const resolveOverallExamDurationMinutes = () => {
   return Math.floor(configured);
 };
 
-export const OVERALL_EXAM_DURATION_MINUTES = resolveOverallExamDurationMinutes();
+export const OVERALL_EXAM_DURATION_MINUTES =
+  resolveOverallExamDurationMinutes();
 export const OVERALL_EXAM_TOTAL_SECONDS = OVERALL_EXAM_DURATION_MINUTES * 60;
 
 const resolveInterviewPaperId = () => {

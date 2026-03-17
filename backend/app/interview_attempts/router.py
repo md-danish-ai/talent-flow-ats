@@ -23,7 +23,6 @@ async def start_attempt(
 
 
 @router.put("/{attempt_id}/answers/{question_id}")
-@router.patch("/{attempt_id}/answers/{question_id}")
 async def save_answer(
     attempt_id: int,
     question_id: int,

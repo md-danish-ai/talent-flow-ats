@@ -9,12 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, Pencil } from "lucide-react";
+import { Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { Button } from "@components/ui-elements/Button";
-import Link from "next/link";
-import { getUsersByRole, UserListResponse } from "@lib/api/auth";
-
+import {
+  getUsersByRole,
+  UserListResponse,
+  toggleUserStatus,
+} from "@lib/api/auth";
+import { Badge } from "@components/ui-elements/Badge";
+import { Switch } from "@components/ui-elements/Switch";
 interface UserListingProps {
   initialData?: UserListResponse[];
 }
@@ -22,6 +25,7 @@ interface UserListingProps {
 export function UserListing({ initialData = [] }: UserListingProps) {
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
   const [loading, setLoading] = useState(!initialData.length);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const fetchUsers = React.useCallback(async () => {
     try {
@@ -43,6 +47,18 @@ export function UserListing({ initialData = [] }: UserListingProps) {
     }
   }, [initialData, fetchUsers]);
 
+  const handleToggleStatus = async (user: UserListResponse) => {
+    setTogglingId(user.id);
+    try {
+      await toggleUserStatus(user.id);
+      fetchUsers();
+    } catch (error) {
+      console.error("Toggle failed:", error);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   return (
     <>
       <MainCard
@@ -54,11 +70,11 @@ export function UserListing({ initialData = [] }: UserListingProps) {
             Users
           </>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[600px]"
-        bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
       >
-        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-x-auto w-full min-h-0">
+        <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
+          <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -68,22 +84,19 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                   <TableHead>Name</TableHead>
                   <TableHead>Mobile</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
+                  <TableHead className="text-center">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : !Array.isArray(users) || users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
@@ -97,44 +110,20 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                       <TableCell>{row.mobile}</TableCell>
                       <TableCell>{row.email || "-"}</TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${row.is_active
-                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                            : "bg-red-500/10 text-red-600 dark:text-red-400"
-                            }`}
-                        >
-                          {row.is_active ? "Active" : "Inactive"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-2">
-                          <Link
-                            href={`/admin/management/users/view-details/${row.id}`}
-                            passHref
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Switch
+                            checked={row.is_active}
+                            onChange={() => handleToggleStatus(row)}
+                            size="sm"
+                            disabled={togglingId === row.id}
+                          />
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color={row.is_active ? "success" : "error"}
                           >
-                            <Button
-                              variant="secondary"
-                              color="primary"
-                              size="icon-sm"
-                              animate="scale"
-                              title="View"
-                            >
-                              <Eye size={16} />
-                            </Button>
-                          </Link>
-                          <Link
-                            href={`/admin/management/users/update-details/${row.id}`}
-                            passHref
-                          >
-                            <Button
-                              variant="primary"
-                              size="icon-sm"
-                              animate="scale"
-                              title="Edit"
-                            >
-                              <Pencil size={16} />
-                            </Button>
-                          </Link>
+                            {row.is_active ? "Activate" : "Deactivate"}
+                          </Badge>
                         </div>
                       </TableCell>
                     </TableRow>

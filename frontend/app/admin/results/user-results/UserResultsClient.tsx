@@ -112,7 +112,10 @@ export function UserResultsClient() {
               <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-brand-primary/70 to-brand-primary/20 opacity-60 transition-opacity group-hover:opacity-100" />
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
-                  <Typography variant="h4" className="text-foreground flex items-center gap-3">
+                  <Typography
+                    variant="h4"
+                    className="text-foreground flex items-center gap-3"
+                  >
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary/25 to-brand-primary/10 text-xs font-bold text-brand-primary ring-1 ring-brand-primary/20">
                       {item.username?.[0]?.toUpperCase() || "U"}
                     </span>
@@ -120,10 +123,18 @@ export function UserResultsClient() {
                   </Typography>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" color="default" icon={<Phone size={12} />}>
+                    <Badge
+                      variant="outline"
+                      color="default"
+                      icon={<Phone size={12} />}
+                    >
                       {item.mobile}
                     </Badge>
-                    <Badge variant="outline" color="default" icon={<User2 size={12} />}>
+                    <Badge
+                      variant="outline"
+                      color="default"
+                      icon={<User2 size={12} />}
+                    >
                       Attempts: {item.attempts_count}
                     </Badge>
                   </div>
@@ -135,8 +146,12 @@ export function UserResultsClient() {
                       <Badge variant="outline" color={statusColor}>
                         {latest.status}
                       </Badge>
-                      <Typography variant="body5" className="text-muted-foreground">
-                        Attempted: {latest.attempted_count}/{latest.total_questions}
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground"
+                      >
+                        Attempted: {latest.attempted_count}/
+                        {latest.total_questions}
                       </Typography>
                     </>
                   ) : (
@@ -177,7 +192,8 @@ export function UserResultsClient() {
             Interview Result Center
           </Typography>
           <Typography variant="body5">
-            Track user progress, review latest status, and open complete attempt history.
+            Track user progress, review latest status, and open complete attempt
+            history.
           </Typography>
         </div>
       </div>
@@ -189,7 +205,9 @@ export function UserResultsClient() {
             className={`rounded-2xl border border-border bg-gradient-to-br ${stat.tone} p-4`}
           >
             <div className="flex items-center gap-3">
-              <div className={`rounded-lg p-2 ${stat.iconTone}`}>{stat.icon}</div>
+              <div className={`rounded-lg p-2 ${stat.iconTone}`}>
+                {stat.icon}
+              </div>
               <div>
                 <Typography variant="body5">{stat.label}</Typography>
                 <Typography variant="h3">{stat.value}</Typography>

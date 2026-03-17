@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { AddImageQuestionForm } from "@components/features/questions/AddImageQuestionForm";
-import { Question } from "@lib/api/questions";
+import { Question, QuestionOption } from "@lib/api/questions";
 import { ImageMCQFormValues } from "@lib/validations/question";
 
 interface EditImageQuestionModalProps {
@@ -37,7 +37,7 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
     questionImageUrl: questionData.image_url || "",
     questionText: questionData.question_text || "",
     explanation: questionData.answer?.explanation || "",
-    options: (questionData.options || []).map((opt, index) => ({
+    options: ((questionData.options as QuestionOption[]) || []).map((opt: QuestionOption, index: number) => ({
       id: opt.option_label || String.fromCharCode(65 + index),
       label: opt.option_label || String.fromCharCode(65 + index),
       content: opt.option_text || "",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -13,14 +13,16 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
-import { Plus, Pencil, Trash2, Layers, Gauge } from "lucide-react";
+import { Plus, Edit, Trash2, Layers, Gauge } from "lucide-react";
 import { Tabs, TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
-import { ToggleTypeModal } from "./components/ToggleTypeModal";
-import { ActionMenu } from "@components/ui-elements/ActionMenu";
-import { MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
-import { classificationsApi } from "@/lib/api/classifications";
+import { Badge } from "@components/ui-elements/Badge";
+import { Switch } from "@components/ui-elements/Switch";
+import {
+  classificationsApi,
+  type Classification,
+} from "@/lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
 
 interface BaseType {
@@ -43,6 +45,7 @@ export function TypesManagementClient({
   const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
   const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,16 +54,60 @@ export function TypesManagementClient({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<BaseType | null>(null);
   const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
-  const [typeToToggle, setTypeToToggle] = useState<BaseType | null>(null);
-  const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+
+  const classificationType =
+    activeTab === "subjects" ? "subject" : "exam_level";
+  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
+  const currentData = activeTab === "subjects" ? subjects : levels;
+
+  const fetchData = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const params: {
+        type?: string;
+        is_active?: boolean;
+        limit?: number;
+      } = {
+        type: classificationType,
+        limit: 100,
+      };
+
+      if (statusFilter === "active") params.is_active = true;
+      if (statusFilter === "inactive") params.is_active = false;
+
+      const response = await classificationsApi.getClassifications(params);
+      const formattedData = response.data.map((item: Classification) => ({
+        id: item.id,
+        name: item.name,
+        description: (item.metadata?.description as string) || "",
+        is_active: item.is_active,
+      }));
+
+      setTargetData(formattedData);
+    } catch (error) {
+      console.error("Failed to fetch classifications:", error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [classificationType, statusFilter, setTargetData]);
+
+  // Refetch when tab or status filter changes
+  useEffect(() => {
+    // Skip initial fetch for the server-provided data if it's the first render
+    // But for simplicity and correctness with filters, we can just fetch
+    fetchData();
+  }, [fetchData]);
 
   const tabs: TabItem[] = [
     { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
     { label: "Level", value: "levels", icon: <Gauge size={18} /> },
   ];
 
-  const currentData = activeTab === "subjects" ? subjects : levels;
   const totalItems = currentData.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
@@ -70,10 +117,7 @@ export function TypesManagementClient({
     currentPage * pageSize,
   );
 
-  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
   const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
-  const classificationType =
-    activeTab === "subjects" ? "subject" : "exam_level";
 
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
@@ -161,35 +205,23 @@ export function TypesManagementClient({
     }
   };
 
-  const handleToggleClick = (item: BaseType) => {
-    setTypeToToggle(item);
-    setIsToggleModalOpen(true);
-  };
-
-  const confirmToggle = async () => {
-    if (typeToToggle) {
-      setIsLoading(true);
-      try {
-        const response = await classificationsApi.updateClassification(
-          typeToToggle.id,
-          {
-            is_active: !typeToToggle.is_active,
-          },
-        );
-        const updatedItem = {
-          ...typeToToggle,
-          is_active: response.is_active,
-        };
-        setTargetData(
-          currentData.map((t) => (t.id === typeToToggle.id ? updatedItem : t)),
-        );
-        setIsToggleModalOpen(false);
-        setTypeToToggle(null);
-      } catch {
-        // Error toast is handled globally
-      } finally {
-        setIsLoading(false);
-      }
+  const handleToggleStatus = async (item: BaseType) => {
+    setTogglingId(item.id);
+    try {
+      const response = await classificationsApi.updateClassification(item.id, {
+        is_active: !item.is_active,
+      });
+      const updatedItem = {
+        ...item,
+        is_active: response.is_active,
+      };
+      setTargetData(
+        currentData.map((t) => (t.id === item.id ? updatedItem : t)),
+      );
+    } catch {
+      // Error toast is handled globally
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -200,8 +232,34 @@ export function TypesManagementClient({
         description="Configure and manage subject categories and seniority levels in one place."
       />
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-border shrink-0">
+          <Button
+            variant={statusFilter === "all" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("all")}
+            className="h-8 px-3 text-xs"
+          >
+            All
+          </Button>
+          <Button
+            variant={statusFilter === "active" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("active")}
+            className="h-8 px-3 text-xs"
+          >
+            Active
+          </Button>
+          <Button
+            variant={statusFilter === "inactive" ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => setStatusFilter("inactive")}
+            className="h-8 px-3 text-xs"
+          >
+            Inactive
+          </Button>
+        </div>
       </div>
 
       <MainCard
@@ -217,8 +275,8 @@ export function TypesManagementClient({
             {currentEntityName} List
           </div>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[500px]"
-        bodyClassName="p-0 flex flex-col items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-col items-stretch w-full"
         action={
           <Button
             variant="primary"
@@ -228,7 +286,7 @@ export function TypesManagementClient({
             animate="scale"
             iconAnimation="rotate-90"
             onClick={() => handleOpenModal()}
-            disabled={isLoading}
+            disabled={isLoading || isFetching}
             startIcon={<Plus size={18} />}
             className="font-bold"
           >
@@ -236,7 +294,7 @@ export function TypesManagementClient({
           </Button>
         }
       >
-        <div className="flex-1 overflow-x-auto w-full">
+        <div className="overflow-x-auto w-full">
           <Table>
             <TableHeader>
               <TableRow>
@@ -245,7 +303,7 @@ export function TypesManagementClient({
                   {activeTab === "subjects" ? "Name" : "Level Name"}
                 </TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-center w-[100px]">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -268,67 +326,52 @@ export function TypesManagementClient({
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${item.is_active ? "bg-emerald-500" : "bg-red-500"}`}
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <Switch
+                          checked={item.is_active}
+                          onChange={() => handleToggleStatus(item)}
+                          size="sm"
+                          disabled={togglingId === item.id}
                         />
-                        <span
-                          className={
-                            item.is_active
-                              ? "text-emerald-600 dark:text-emerald-400 font-medium"
-                              : "text-red-600 dark:text-red-400 font-medium"
-                          }
+                        <Badge
+                          variant="outline"
+                          shape="square"
+                          color={item.is_active ? "success" : "error"}
                         >
-                          {item.is_active ? "Active" : "Disabled"}
-                        </span>
+                          {item.is_active ? "Activate" : "Deactivate"}
+                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-center">
-                        <ActionMenu
-                          button={
-                            <div className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors">
-                              <MoreVertical size={18} />
-                            </div>
-                          }
-                          items={[
-                            {
-                              key: "edit",
-                              label: "Edit",
-                              icon: <Pencil size={16} />,
-                              onClick: (event) => {
-                                event.stopPropagation();
-                                handleOpenModal(item);
-                              },
-                            },
-                            {
-                              key: "toggle",
-                              label: item.is_active ? "Disable" : "Enable",
-                              icon: item.is_active ? (
-                                <ToggleRight size={16} />
-                              ) : (
-                                <ToggleLeft size={16} />
-                              ),
-                              onClick: (event) => {
-                                event.stopPropagation();
-                                handleToggleClick(item);
-                              },
-                            },
-                            {
-                              key: "delete",
-                              label: "Delete",
-                              icon: (
-                                <Trash2 size={16} className="text-red-500" />
-                              ),
-                              className:
-                                "hover:!bg-red-50 hover:!text-red-600 dark:hover:!bg-red-900/20",
-                              onClick: (event) => {
-                                event.stopPropagation();
-                                handleDeleteClick(item.id);
-                              },
-                            },
-                          ]}
-                        />
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          color="primary"
+                          size="icon"
+                          animate="scale"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenModal(item);
+                          }}
+                          title={`Edit ${currentEntityName}`}
+                          className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          color="error"
+                          size="icon"
+                          animate="scale"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDeleteClick(item.id);
+                          }}
+                          title={`Delete ${currentEntityName}`}
+                          className="h-8 w-8 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -360,13 +403,6 @@ export function TypesManagementClient({
         setFormData={setFormData}
         onSubmit={handleSubmit}
         isLoading={isLoading}
-      />
-
-      <ToggleTypeModal
-        isOpen={isToggleModalOpen}
-        onClose={() => setIsToggleModalOpen(false)}
-        onConfirm={confirmToggle}
-        isActive={typeToToggle?.is_active ?? false}
       />
 
       <DeleteTypeModal

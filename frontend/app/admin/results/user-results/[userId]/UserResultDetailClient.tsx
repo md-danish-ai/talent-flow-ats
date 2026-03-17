@@ -28,10 +28,11 @@ interface UserResultDetailClientProps {
   userId: number;
 }
 
-export function UserResultDetailClient({ userId }: UserResultDetailClientProps) {
-  const [attemptData, setAttemptData] = useState<AdminUserAttemptsResponse | null>(
-    null,
-  );
+export function UserResultDetailClient({
+  userId,
+}: UserResultDetailClientProps) {
+  const [attemptData, setAttemptData] =
+    useState<AdminUserAttemptsResponse | null>(null);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,10 +70,12 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
 
   const totalAttempts = attemptData?.attempts.length ?? 0;
   const submittedAttempts =
-    attemptData?.attempts.filter((attempt) => attempt.status === "submitted").length ?? 0;
+    attemptData?.attempts.filter((attempt) => attempt.status === "submitted")
+      .length ?? 0;
   const autoSubmittedAttempts =
-    attemptData?.attempts.filter((attempt) => attempt.status === "auto_submitted").length ??
-    0;
+    attemptData?.attempts.filter(
+      (attempt) => attempt.status === "auto_submitted",
+    ).length ?? 0;
 
   const summaryCards = [
     {
@@ -110,13 +113,19 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
           className="mb-0"
         />
         <Link href="/admin/results/user-results">
-          <Button variant="outline" color="default" startIcon={<ArrowLeft size={14} />}>
+          <Button
+            variant="outline"
+            color="default"
+            startIcon={<ArrowLeft size={14} />}
+          >
             Back to User Results
           </Button>
         </Link>
       </div>
 
-      {loadingAttempts && <Typography variant="body4">Loading attempts...</Typography>}
+      {loadingAttempts && (
+        <Typography variant="body4">Loading attempts...</Typography>
+      )}
       {error && <Alert variant="error" description={error} />}
 
       {!loadingAttempts && attemptData && (
@@ -137,7 +146,9 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
                 className={`rounded-2xl border border-border bg-gradient-to-br ${stat.tone} p-4`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-lg p-2 ${stat.iconTone}`}>{stat.icon}</div>
+                  <div className={`rounded-lg p-2 ${stat.iconTone}`}>
+                    {stat.icon}
+                  </div>
                   <div>
                     <Typography variant="body5">{stat.label}</Typography>
                     <Typography variant="h3">{stat.value}</Typography>
@@ -147,19 +158,22 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
             ))}
           </div>
 
-          <MainCard
-            title="Attempt History"
-            bodyClassName="space-y-4"
-          >
+          <MainCard title="Attempt History" bodyClassName="space-y-4">
             <div className="rounded-xl border border-border bg-gradient-to-r from-brand-primary/10 to-card px-4 py-3 flex items-center gap-2">
               <History size={16} className="text-brand-primary" />
-              <Typography variant="body4" className="text-foreground font-medium">
+              <Typography
+                variant="body4"
+                className="text-foreground font-medium"
+              >
                 Attempt History ({attemptData.attempts.length})
               </Typography>
             </div>
 
             {attemptData.attempts.length === 0 ? (
-              <Alert variant="warning" description="No attempts found for this user." />
+              <Alert
+                variant="warning"
+                description="No attempts found for this user."
+              />
             ) : (
               <div className="space-y-3">
                 {attemptData.attempts.map((attempt) => {
@@ -171,13 +185,22 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
                       <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-brand-primary/70 to-brand-primary/25 opacity-70 transition-opacity group-hover:opacity-100" />
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div className="space-y-2">
-                          <Typography variant="body4" className="font-semibold text-foreground">
+                          <Typography
+                            variant="body4"
+                            className="font-semibold text-foreground"
+                          >
                             Attempt #{attempt.attempt_id}
                           </Typography>
                           <div className="flex flex-wrap items-center gap-2">
                             {renderAttemptStatusBadge(attempt)}
-                            <Badge variant="outline" color="default" icon={<Clock3 size={12} />}>
-                              {attempt.submitted_at ? "Submitted" : "In Progress"}
+                            <Badge
+                              variant="outline"
+                              color="default"
+                              icon={<Clock3 size={12} />}
+                            >
+                              {attempt.submitted_at
+                                ? "Submitted"
+                                : "In Progress"}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -185,7 +208,8 @@ export function UserResultDetailClient({ userId }: UserResultDetailClientProps) 
                               variant="body5"
                               className="rounded-lg bg-muted/40 px-2 py-1 text-muted-foreground"
                             >
-                              Attempted: {attempt.attempted_count}/{attempt.total_questions}
+                              Attempted: {attempt.attempted_count}/
+                              {attempt.total_questions}
                             </Typography>
                             <Typography
                               variant="body5"

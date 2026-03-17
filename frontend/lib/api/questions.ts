@@ -28,7 +28,7 @@ export interface Question {
   passage?: string | null;
   marks: number;
   is_active: boolean;
-  options: QuestionOption[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer?: QuestionAnswer;
   question_type?: ClassificationRef | null;
   subject?: ClassificationRef | null;
@@ -57,7 +57,7 @@ export interface QuestionCreate {
   passage?: string | null;
   marks: number;
   is_active?: boolean;
-  options: OptionCreate[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer: AnswerCreate;
 }
 
@@ -70,6 +70,7 @@ export const questionsApi = {
       subject?: string;
       exam_level?: string;
       is_active?: boolean;
+      marks?: number;
     },
   ) => {
     const queryParams = new URLSearchParams();
@@ -86,6 +87,13 @@ export const questionsApi = {
   },
   getQuestion: async (id: number) => {
     return api.get<Question>(`/questions/get/${id}`);
+  },
+  getQuestionsByIds: async (ids: number[]) => {
+    return api.post<Question[]>(
+      "/questions/get-by-ids",
+      { ids },
+      { silentSuccess: true },
+    );
   },
   createQuestion: async (data: QuestionCreate) => {
     return api.post("/questions/create", data);
