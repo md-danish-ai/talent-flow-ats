@@ -41,6 +41,9 @@ export const ADMIN_ROUTES: NavSection[] = [
       { label: "Subjective Questions", href: "/admin/questions/subjective" },
       { label: "Image Subjective", href: "/admin/questions/image-subjective" },
       { label: "Passage Content", href: "/admin/questions/passage" },
+      { label: "Typing Test", href: "/admin/questions/typing-test" },
+      { label: "Lead Generation", href: "/admin/questions/lead-generation" },
+      { label: "Contact Details", href: "/admin/questions/contact-details" },
     ],
   },
   {
@@ -50,10 +53,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     items: [
       { label: "Paper Setup", href: "/admin/paper/setup" },
       { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
-      { label: "Typing Test", href: "/admin/paper/typing-test" },
       { label: "Reset User Status", href: "/admin/paper/reset-user" },
-      { label: "Lead Generation", href: "/admin/paper/lead-generation" },
-      { label: "Contact Details", href: "/admin/paper/contact-details" },
     ],
   },
   {
