@@ -14,7 +14,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -24,6 +24,7 @@ import EditTypingTestModal from "./components/EditTypingTestModal";
 import { AddTypingTestModal } from "./components/AddTypingTestModal";
 import { TypingTestFilters } from "./components/TypingTestFilters";
 import { TypingTestRow } from "./components/TypingTestRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 export function TypingTestClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -35,6 +36,7 @@ export function TypingTestClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -200,6 +202,16 @@ export function TypingTestClient() {
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -374,6 +386,13 @@ export function TypingTestClient() {
           onSuccess={fetchData}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.TYPING_TEST}
+      />
     </PageContainer>
   );
 }

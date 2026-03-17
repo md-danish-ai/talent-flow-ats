@@ -19,7 +19,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -30,6 +30,7 @@ import { ApiError } from "@lib/api/client";
 import { Question } from "@lib/api/questions";
 import { MCQFilters } from "./components/MCQFilters";
 import { MCQRow } from "./components/MCQRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 interface MCQClientProps {
   initialData?: Question[];
@@ -65,6 +66,7 @@ export function MCQClient({
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -248,6 +250,16 @@ export function MCQClient({
             <Button
               variant="action"
               size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
+            <Button
+              variant="action"
+              size="rounded-icon"
               isActive={isFilterOpen}
               animate="scale"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -423,6 +435,13 @@ export function MCQClient({
           }}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
+      />
     </PageContainer>
   );
 }

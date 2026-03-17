@@ -14,7 +14,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -25,6 +25,7 @@ import { AddQuestionModal } from "./components/AddQuestionModal";
 import { ImageSubjectiveFilters } from "./components/ImageSubjectiveFilters";
 import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
 import ImageLightbox from "../image-mcq/components/ImageLightbox";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 export function ImageSubjectiveClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -37,6 +38,7 @@ export function ImageSubjectiveClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -204,6 +206,16 @@ export function ImageSubjectiveClient() {
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -389,6 +401,13 @@ export function ImageSubjectiveClient() {
       {lightboxUrl && (
         <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.IMAGE_SUBJECTIVE}
+      />
     </PageContainer>
   );
 }

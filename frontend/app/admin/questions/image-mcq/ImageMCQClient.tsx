@@ -13,7 +13,7 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { Filter, Plus, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Filter, Plus, Image as ImageIcon, Loader2, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
@@ -27,6 +27,7 @@ import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
 import ImageLightbox from "./components/ImageLightbox";
 import { ImageMCQFilters } from "./components/ImageMCQFilters";
 import { ImageMCQRow } from "./components/ImageMCQRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 interface ImageMCQClientProps {
   initialData?: Question[];
@@ -62,6 +63,7 @@ export function ImageMCQClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -244,6 +246,16 @@ export function ImageMCQClient({
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -431,6 +443,13 @@ export function ImageMCQClient({
       {lightboxUrl && (
         <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
+      />
     </PageContainer>
   );
 }
