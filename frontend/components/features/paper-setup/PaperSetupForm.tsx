@@ -75,7 +75,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
   const form = useForm({
     defaultValues: {
       department_id: initialData?.department_id || 0,
-      test_level_id: initialData?.test_level_id || 0,
+      test_level_id: initialData?.test_level_id || "",
       paper_name: initialData?.paper_name || "",
       description: initialData?.description || "",
       subject_ids_data: initialData?.subject_ids_data || [],
@@ -192,7 +192,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
         // Reset other fields if in Edit mode
         if (initialData?.id) {
           form.setFieldValue("department_id", initialData.department_id || 0);
-          form.setFieldValue("test_level_id", initialData.test_level_id || 0);
+          form.setFieldValue("test_level_id", initialData.test_level_id || "");
           form.setFieldValue("paper_name", initialData.paper_name || "");
           form.setFieldValue("description", initialData.description || "");
         }
@@ -318,9 +318,12 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                 </Typography>
                 <SelectDropdown
                   placeholder="Please Select Test Level"
-                  value={field.state.value || 0}
-                  options={testLevels.map((l) => ({ id: l.id, label: l.name }))}
-                  onChange={(val) => field.handleChange(Number(val))}
+                  value={field.state.value || ""}
+                  options={testLevels.map((l) => ({
+                    id: l.code,
+                    label: l.name,
+                  }))}
+                  onChange={(val) => field.handleChange(String(val))}
                   error={field.state.meta.errors.length > 0}
                 />
                 {field.state.meta.errors.length > 0 && (

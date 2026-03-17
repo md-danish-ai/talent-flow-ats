@@ -48,6 +48,7 @@ class QuestionService:
         subject: str = None,
         exam_level: str = None,
         is_active: bool = None,
+        marks: int = None,
         search: str = None,
         sort_by: str = "created_at",
         order: str = "desc",
@@ -60,6 +61,7 @@ class QuestionService:
                 subject=subject,
                 exam_level=exam_level,
                 is_active=is_active,
+                marks=marks,
                 search=search,
                 sort_by=sort_by,
                 order=order,
@@ -81,6 +83,14 @@ class QuestionService:
             return result
         except HTTPException:
             raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+            )
+
+    async def get_questions_by_ids(self, question_ids: list[int]):
+        try:
+            return repository.get_questions_by_ids(question_ids)
         except Exception as e:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)

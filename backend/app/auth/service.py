@@ -206,15 +206,16 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str):
+def get_users_by_role(role: str, date: str = None):
     db_session = SessionLocal()
     try:
-        results = (
-            db_session.query(User)
-            .filter(User.role == role)
-            .order_by(User.id.desc())
-            .all()
-        )
+        from sqlalchemy import func
+        query = db_session.query(User).filter(User.role == role)
+        
+        if date:
+            query = query.filter(func.date(User.created_at) == date)
+            
+        results = query.order_by(User.id.desc()).all()
         return [
             {
                 "id": user.id,

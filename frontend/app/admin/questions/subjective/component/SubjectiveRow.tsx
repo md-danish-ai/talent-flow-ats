@@ -68,11 +68,35 @@ export const SubjectiveRow: React.FC<SubjectiveRowProps> = ({
             variant="outline"
             color={row.subject?.name ? "success" : "error"}
             shape="square"
-            className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 bg-transparent border-border/60"
           >
             {typeof row.subject === "string"
               ? row.subject
               : (row.subject?.name ?? "N/A")}
+          </Badge>
+        </TableCell>
+      )}
+      {visibleColumns.includes("examLevel") && (
+        <TableCell>
+          <Badge
+            variant="outline"
+            color={row.exam_level?.name ? "primary" : "default"}
+            shape="square"
+          >
+            {typeof row.exam_level === "string"
+              ? row.exam_level
+              : (row.exam_level?.name ?? "N/A")}
+          </Badge>
+        </TableCell>
+      )}
+      {visibleColumns.includes("marks") && (
+        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
+          <Badge
+            color="primary"
+            variant="outline"
+            shape="square"
+            className="flex items-center justify-center w-8 h-8 mx-auto"
+          >
+            {row.marks || "0"}
           </Badge>
         </TableCell>
       )}

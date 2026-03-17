@@ -14,7 +14,7 @@ export interface PaperSubjectConfig {
 export interface PaperSetup {
   id: number;
   department_id: number;
-  test_level_id: number;
+  test_level_id: string;
   paper_name: string;
   description: string;
   total_time: string;
@@ -32,7 +32,7 @@ export interface PaperSetup {
 
 export interface PaperSetupCreate {
   department_id: number;
-  test_level_id: number;
+  test_level_id: string;
   paper_name: string;
   description: string;
   total_time: string;
@@ -82,8 +82,12 @@ export const papersApi = {
     return api.post<PaperSetup>("/papers/create", data);
   },
 
-  updatePaper: async (id: number, data: Partial<PaperSetupCreate>) => {
-    return api.put<PaperSetup>(`/papers/update/${id}`, data);
+  updatePaper: async (
+    id: number,
+    data: Partial<PaperSetupCreate>,
+    options?: ApiRequestOptions,
+  ) => {
+    return api.put<PaperSetup>(`/papers/update/${id}`, data, options);
   },
 
   deletePaper: async (id: number) => {

@@ -294,7 +294,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(question.options || []).map(
+                {((question.options as QuestionOption[]) || []).map(
                   (opt: QuestionOption, index: number) => (
                     <TableRow
                       key={opt.option_label ?? index}

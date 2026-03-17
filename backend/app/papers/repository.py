@@ -11,6 +11,7 @@ def get_papers(db: Session, skip: int = 0, limit: int = 100) -> tuple[List[Paper
         Paper,
         Department.name.label("department_name"),
         Classification.name.label("test_level_name"),
+        Classification.code.label("test_level_code"),
     ).outerjoin(Department, Paper.department_id == Department.id)\
      .outerjoin(Classification, Paper.test_level_id == Classification.id)
     
@@ -18,9 +19,10 @@ def get_papers(db: Session, skip: int = 0, limit: int = 100) -> tuple[List[Paper
     results = query.offset(skip).limit(limit).all()
     
     papers = []
-    for paper, dept_name, level_name in results:
+    for paper, dept_name, level_name, level_code in results:
         paper.department_name = dept_name
         paper.test_level_name = level_name
+        paper.test_level_id = level_code if level_code else str(paper.test_level_id)
         papers.append(paper)
         
     return papers, total_records
@@ -30,6 +32,7 @@ def get_paper(db: Session, paper_id: int) -> Optional[Paper]:
         Paper,
         Department.name.label("department_name"),
         Classification.name.label("test_level_name"),
+        Classification.code.label("test_level_code"),
     ).outerjoin(Department, Paper.department_id == Department.id)\
      .outerjoin(Classification, Paper.test_level_id == Classification.id)\
      .filter(Paper.id == paper_id).first()
@@ -37,13 +40,21 @@ def get_paper(db: Session, paper_id: int) -> Optional[Paper]:
     if not result:
         return None
         
-    paper, dept_name, level_name = result
+    paper, dept_name, level_name, level_code = result
     paper.department_name = dept_name
     paper.test_level_name = level_name
+    paper.test_level_id = level_code if level_code else str(paper.test_level_id)
     return paper
 
 def create_paper(db: Session, paper: PaperCreate, user_id: int) -> Paper:
-    db_paper = Paper(**paper.model_dump(), created_by=user_id)
+    paper_data = paper.model_dump()
+    test_level_code = paper_data.pop("test_level_id")
+    
+    # Resolve test_level_id (code) to actual ID
+    test_level = db.query(Classification).filter(Classification.code == test_level_code).first()
+    test_level_id = test_level.id if test_level else None
+
+    db_paper = Paper(**paper_data, test_level_id=test_level_id, created_by=user_id)
     db.add(db_paper)
     db.commit()
     db.refresh(db_paper)
@@ -55,6 +66,14 @@ def update_paper(db: Session, paper_id: int, paper_update: PaperUpdate) -> Optio
         return None
     
     update_data = paper_update.model_dump(exclude_unset=True)
+    
+    # If test_level_id (code) is being updated, resolve it to actual ID
+    if "test_level_id" in update_data:
+        test_level_code = update_data.pop("test_level_id")
+        test_level = db.query(Classification).filter(Classification.code == test_level_code).first()
+        if test_level:
+            update_data["test_level_id"] = test_level.id
+            
     for key, value in update_data.items():
         setattr(db_paper, key, value)
     

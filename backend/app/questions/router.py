@@ -24,6 +24,7 @@ async def get_questions(
     subject: Optional[str] = None,
     exam_level: Optional[str] = None,
     is_active: Optional[bool] = None,
+    marks: Optional[int] = None,
     pagination: PaginationParams = Depends(get_pagination_params),
 ):
     offset = (pagination.page - 1) * pagination.limit
@@ -32,6 +33,7 @@ async def get_questions(
         subject=subject,
         exam_level=exam_level,
         is_active=is_active,
+        marks=marks,
         search=pagination.search,
         sort_by=pagination.sort_by,
         order=pagination.order,
@@ -48,6 +50,14 @@ async def get_question(
     question_id: int,
 ):
     data = await question_service.get_question_by_id(question_id)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.post("/get-by-ids")
+async def get_questions_by_ids(
+    payload: schemas.QuestionIds,
+):
+    data = await question_service.get_questions_by_ids(payload.ids)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 

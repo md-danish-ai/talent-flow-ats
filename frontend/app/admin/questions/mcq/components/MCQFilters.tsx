@@ -15,6 +15,13 @@ interface MCQFiltersProps {
   subjectFilter: string | number | undefined;
   onSubjectFilterChange: (value: string | number | undefined) => void;
   subjects: Classification[];
+  examLevelFilter: string | number | undefined;
+  onExamLevelFilterChange: (value: string | number | undefined) => void;
+  examLevels: Classification[];
+  marksFilter: string | number | undefined;
+  onMarksFilterChange: (value: string | number | undefined) => void;
+  statusFilter: string | number | undefined;
+  onStatusFilterChange: (value: string | number | undefined) => void;
   onReset: () => void;
 }
 
@@ -26,6 +33,13 @@ export const MCQFilters: React.FC<MCQFiltersProps> = ({
   subjectFilter,
   onSubjectFilterChange,
   subjects,
+  examLevelFilter,
+  onExamLevelFilterChange,
+  examLevels,
+  marksFilter,
+  onMarksFilterChange,
+  statusFilter,
+  onStatusFilterChange,
   onReset,
 }) => {
   return (
@@ -71,6 +85,73 @@ export const MCQFilters: React.FC<MCQFiltersProps> = ({
             onChange={onSubjectFilterChange}
             className="h-12 border-border/60 hover:border-border bg-muted/20"
             placement="bottom"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <Typography
+            variant="body5"
+            weight="bold"
+            className="uppercase tracking-widest text-muted-foreground"
+          >
+            Exam Level
+          </Typography>
+          <SelectDropdown
+            placeholder="All Levels"
+            options={[
+              { id: "all", label: "All Levels" },
+              ...(examLevels.map((e) => ({ id: e.code, label: e.name })) || []),
+            ]}
+            value={examLevelFilter || "all"}
+            onChange={onExamLevelFilterChange}
+            className="h-12 border-border/60 hover:border-border bg-muted/20"
+            placement="bottom"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <Typography
+            variant="body5"
+            weight="bold"
+            className="uppercase tracking-widest text-muted-foreground"
+          >
+            By Marks
+          </Typography>
+          <SelectDropdown
+            placeholder="All Marks"
+            options={[
+              { id: "all", label: "All Marks" },
+              ...Array.from({ length: 10 }, (_, i) => ({
+                id: String(i + 1),
+                label: `${i + 1} Mark${i > 0 ? "s" : ""}`,
+              })),
+            ]}
+            value={marksFilter || "all"}
+            onChange={onMarksFilterChange}
+            className="h-12 border-border/60 hover:border-border bg-muted/20"
+            placement="top"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <Typography
+            variant="body5"
+            weight="bold"
+            className="uppercase tracking-widest text-muted-foreground"
+          >
+            By Status
+          </Typography>
+          <SelectDropdown
+            placeholder="All Status"
+            options={[
+              { id: "all", label: "All Status" },
+              { id: "true", label: "Active" },
+              { id: "false", label: "Inactive" },
+            ]}
+            value={statusFilter || "all"}
+            onChange={onStatusFilterChange}
+            className="h-12 border-border/60 hover:border-border bg-muted/20"
+            placement="top"
           />
         </div>
 
