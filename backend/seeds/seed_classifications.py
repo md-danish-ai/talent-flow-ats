@@ -1,24 +1,5 @@
-"""Seed classifications in new sequence
-
-Revision ID: 7ce554207c66
-Revises: dba95901fa50
-Create Date: 2026-03-17 11:59:48.471531
-Created By: unknown
-
-"""
-
-from typing import Sequence, Union
-
-from alembic import op
-import sqlalchemy as sa
-
-
-# revision identifiers, used by Alembic.
-revision: str = "7ce554207c66"
-down_revision: Union[str, Sequence[str], None] = "dba95901fa50"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
-
+from app.database.db import SessionLocal
+from app.classifications.models import Classification
 
 # Classification Data in Sequence: question_type, exam_level, subject
 CLASSIFICATIONS = [
@@ -156,99 +137,95 @@ DEPARTMENTS = [
 ]
 
 
-def upgrade() -> None:
-    """Seed data in the specified order."""
-    import json
+def seed():
+    db = SessionLocal()
+    from app.departments.models import Department
 
-    conn = op.get_bind()
+    print("🚀 Starting master data sync in sequence...")
 
-    # 1. Update Schema: Drop globally unique 'code' constraint and add composite (type, code)
-    try:
-        op.drop_constraint(
-            "classifications_code_key", "classifications", type_="unique"
-        )
-    except Exception:
-        pass
+    # Track codes to keep active
+    current_key_codes = set()
 
-    try:
-        op.create_unique_constraint(
-            "classifications_type_code_key", "classifications", ["type", "code"]
-        )
-    except Exception:
-        pass
-
-    # 2. Seed Classifications
-    allowed_keys = []
+    # 1-3. Sync Classifications
     for i, item in enumerate(CLASSIFICATIONS):
-        # Specific check for (type, code)
-        res = conn.execute(
-            sa.text(
-                "SELECT id FROM classifications WHERE code = :code AND type = :type"
-            ),
-            {"code": item["code"], "type": item["type"]},
-        ).fetchone()
+        code = item["code"]
+        type_ = item["type"]
+        name = item["name"]
+        metadata = item.get("metadata", {})
 
-        metadata_json = json.dumps(item.get("metadata", {}))
-        allowed_keys.append((item["type"], item["code"]))
+        current_key_codes.add((type_, code))
 
-        if res:
-            # Update existing
-            conn.execute(
-                sa.text(
-                    "UPDATE classifications SET name = :name, metadata = :metadata, sort_order = :sort_order, is_active = true WHERE code = :code AND type = :type"
-                ),
-                {
-                    "name": item["name"],
-                    "metadata": metadata_json,
-                    "sort_order": i,
-                    "code": item["code"],
-                    "type": item["type"],
-                },
-            )
+        # Check if exists
+        existing = (
+            db.query(Classification)
+            .filter(Classification.type == type_, Classification.code == code)
+            .first()
+        )
+
+        if existing:
+            existing.name = name
+            existing.extra_metadata = metadata
+            existing.sort_order = i
+            existing.is_active = True
+            print(f"✅ Updated [Classification]: [{type_}] {name}")
         else:
-            # Insert new
-            conn.execute(
-                sa.text(
-                    "INSERT INTO classifications (code, type, name, metadata, sort_order, is_active) VALUES (:code, :type, :name, :metadata, :sort_order, true)"
-                ),
-                {
-                    "code": item["code"],
-                    "type": item["type"],
-                    "name": item["name"],
-                    "metadata": metadata_json,
-                    "sort_order": i,
-                },
-            )
+            try:
+                new_cl = Classification(
+                    type=type_,
+                    name=name,
+                    code=code,
+                    extra_metadata=metadata,
+                    sort_order=i,
+                    is_active=True,
+                )
+                db.add(new_cl)
+                print(f"➕ Added [Classification]: [{type_}] {name}")
+            except Exception as e:
+                print(f"❌ Error adding classification {name}: {str(e)}")
 
-    # 3. Seed Departments
+    db.commit()
+
+    # 4. Sync Departments
+    print("\n🏢 Syncing departments...")
+    allowed_departments = [d["name"] for d in DEPARTMENTS]
     for dept_data in DEPARTMENTS:
         name = dept_data["name"]
-        res = conn.execute(
-            sa.text("SELECT id FROM departments WHERE name = :name"), {"name": name}
-        ).fetchone()
-
-        if res:
-            conn.execute(
-                sa.text("UPDATE departments SET is_active = true WHERE name = :name"),
-                {"name": name},
-            )
+        existing = db.query(Department).filter(Department.name == name).first()
+        if existing:
+            existing.is_active = True
+            print(f"✅ Updated [Department]: {name}")
         else:
-            conn.execute(
-                sa.text(
-                    "INSERT INTO departments (name, is_active) VALUES (:name, true)"
-                ),
-                {"name": name},
+            new_dept = Department(name=name, is_active=True)
+            db.add(new_dept)
+            print(f"➕ Added [Department]: {name}")
+
+    # Disable others
+    db.query(Department).filter(~Department.name.in_(allowed_departments)).update(
+        {"is_active": False}, synchronize_session=False
+    )
+
+    db.commit()
+
+    # Disable all other classifications for these types NOT in the allowed list
+    print("\n🔒 Disabling unauthorized records...")
+    for type_ in set(i["type"] for i in CLASSIFICATIONS):
+        allowed_codes_for_type = [
+            i["code"] for i in CLASSIFICATIONS if i["type"] == type_
+        ]
+        disabled_count = (
+            db.query(Classification)
+            .filter(
+                Classification.type == type_,
+                ~Classification.code.in_(allowed_codes_for_type),
             )
+            .update({"is_active": False}, synchronize_session=False)
+        )
+        print(f"🚫 Disabled {disabled_count} other records for type: {type_}")
+
+    db.commit()
+    print("\n✨ Database successfully synced with the final authorized list.")
+    db.close()
 
 
-def downgrade() -> None:
-    """Cleanup new constraint and ideally restore old one."""
-    try:
-        op.drop_constraint(
-            "classifications_type_code_key", "classifications", type_="unique"
-        )
-        op.create_unique_constraint(
-            "classifications_code_key", "classifications", ["code"]
-        )
-    except Exception:
-        pass
+if __name__ == "__main__":
+    seed()

@@ -14,7 +14,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -24,6 +24,7 @@ import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
 import { AddLeadGenerationModal } from "./components/AddLeadGenerationModal";
 import { LeadGenerationFilters } from "./components/LeadGenerationFilters";
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 export function LeadGenerationClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -35,6 +36,7 @@ export function LeadGenerationClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,18 +59,22 @@ export function LeadGenerationClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Company Name", pinned: true },
+    { id: "companyName", label: "CompanyName", pinned: true },
+    { id: "website", label: "WebSite" },
+    { id: "name", label: "Name" },
+    { id: "title", label: "Title" },
+    { id: "email", label: "Email Address" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "question",
+    "companyName",
+    "email",
     "subject",
     "examLevel",
     "marks",
@@ -203,6 +209,16 @@ export function LeadGenerationClient() {
             <Button
               variant="action"
               size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
+            <Button
+              variant="action"
+              size="rounded-icon"
               isActive={isFilterOpen}
               animate="scale"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -247,8 +263,20 @@ export function LeadGenerationClient() {
                       Sr. No.
                     </TableHead>
                   )}
-                  {visibleColumns.includes("question") && (
-                    <TableHead>Company Name</TableHead>
+                  {visibleColumns.includes("companyName") && (
+                    <TableHead>CompanyName</TableHead>
+                  )}
+                  {visibleColumns.includes("website") && (
+                    <TableHead>WebSite</TableHead>
+                  )}
+                  {visibleColumns.includes("name") && (
+                    <TableHead>Name</TableHead>
+                  )}
+                  {visibleColumns.includes("title") && (
+                    <TableHead>Title</TableHead>
+                  )}
+                  {visibleColumns.includes("email") && (
+                    <TableHead>Email Address</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
@@ -284,8 +312,8 @@ export function LeadGenerationClient() {
                       colSpan={visibleColumns.length + 1}
                       className="py-8 text-center text-muted-foreground"
                     >
-                      No lead generation questions found. Click &quot;Add
-                      Lead Generation&quot; to create one.
+                      No lead generation questions found. Click &quot;Add Lead
+                      Generation&quot; to create one.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -374,6 +402,13 @@ export function LeadGenerationClient() {
           onSuccess={fetchData}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.LEAD_GENERATION}
+      />
     </PageContainer>
   );
 }

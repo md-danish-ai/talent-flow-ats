@@ -7,6 +7,8 @@ import { Button } from "@components/ui-elements/Button";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@lib/api/questions";
 
+import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
+
 interface ContactDetailsRowProps {
   row: Question;
   index: number;
@@ -33,78 +35,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
       key={row.id}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
-      expandedContent={
-        <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Typography
-              variant="body3"
-              weight="bold"
-              className="mb-1 text-slate-700 dark:text-slate-300"
-            >
-              Company Name:
-            </Typography>
-            <Typography variant="body4" className="text-muted-foreground">
-              {String(
-                (row.options as Record<string, unknown>)?.companyName || "N/A",
-              )}
-            </Typography>
-          </div>
-          <div>
-            <Typography
-              variant="body3"
-              weight="bold"
-              className="mb-1 text-slate-700 dark:text-slate-300"
-            >
-              Website:
-            </Typography>
-            <Typography variant="body4" className="text-muted-foreground">
-              {String(
-                (row.options as Record<string, unknown>)?.websiteUrl || "N/A",
-              )}
-            </Typography>
-          </div>
-          <div className="md:col-span-2">
-            <Typography
-              variant="body3"
-              weight="bold"
-              className="mb-1 text-slate-700 dark:text-slate-300"
-            >
-              Address:
-            </Typography>
-            <Typography variant="body4" className="text-muted-foreground">
-              {String(
-                (row.options as Record<string, unknown>)?.streetAddress || "",
-              )}{" "}
-              {String((row.options as Record<string, unknown>)?.city || "")}{" "}
-              {String((row.options as Record<string, unknown>)?.state || "")}{" "}
-              {String((row.options as Record<string, unknown>)?.zipCode || "")}
-            </Typography>
-          </div>
-          <div className="md:col-span-2">
-            <Typography
-              variant="body3"
-              weight="bold"
-              className="mb-1 text-slate-700 dark:text-slate-300"
-            >
-              Email / Phone / Facebook:
-            </Typography>
-            <Typography variant="body4" className="text-muted-foreground">
-              {String(
-                (row.options as Record<string, unknown>)?.generalEmail || "N/A",
-              )}{" "}
-              /{" "}
-              {String(
-                (row.options as Record<string, unknown>)?.companyPhoneNumber ||
-                  "N/A",
-              )}{" "}
-              /{" "}
-              {String(
-                (row.options as Record<string, unknown>)?.facebookPage || "N/A",
-              )}
-            </Typography>
-          </div>
-        </div>
-      }
+      expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
         <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">
@@ -113,14 +44,70 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
-      {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[400px]">
+      {visibleColumns.includes("websiteUrl") && (
+        <TableCell>
           <Typography
             variant="body4"
             weight="semibold"
             className="truncate group-hover/row:text-brand-primary transition-colors"
           >
-            {row.question_text}
+            {((row.options as Record<string, unknown>)?.websiteUrl as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("companyName") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.companyName as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("streetAddress") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.streetAddress as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("city") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.city as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("state") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.state as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("zipCode") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.zipCode as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("companyPhoneNumber") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.companyPhoneNumber as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("generalEmail") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)?.generalEmail as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("facebookPage") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground truncate max-w-[200px]">
+            {((row.options as Record<string, unknown>)?.facebookPage as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
