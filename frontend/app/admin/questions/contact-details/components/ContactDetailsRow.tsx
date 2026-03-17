@@ -35,38 +35,74 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={
         <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40 grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Company Name:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.companyName || "N/A")}
-             </Typography>
-           </div>
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Website:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.websiteUrl || "N/A")}
-             </Typography>
-           </div>
-           <div className="md:col-span-2">
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Address:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.streetAddress || "")} {String((row.options as Record<string, unknown>)?.city || "")} {String((row.options as Record<string, unknown>)?.state || "")} {String((row.options as Record<string, unknown>)?.zipCode || "")}
-             </Typography>
-           </div>
-           <div className="md:col-span-2">
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Email / Phone / Facebook:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.generalEmail || "N/A")} / {String((row.options as Record<string, unknown>)?.companyPhoneNumber || "N/A")} / {String((row.options as Record<string, unknown>)?.facebookPage || "N/A")}
-             </Typography>
-           </div>
+          <div>
+            <Typography
+              variant="body3"
+              weight="bold"
+              className="mb-1 text-slate-700 dark:text-slate-300"
+            >
+              Company Name:
+            </Typography>
+            <Typography variant="body4" className="text-muted-foreground">
+              {String(
+                (row.options as Record<string, unknown>)?.companyName || "N/A",
+              )}
+            </Typography>
+          </div>
+          <div>
+            <Typography
+              variant="body3"
+              weight="bold"
+              className="mb-1 text-slate-700 dark:text-slate-300"
+            >
+              Website:
+            </Typography>
+            <Typography variant="body4" className="text-muted-foreground">
+              {String(
+                (row.options as Record<string, unknown>)?.websiteUrl || "N/A",
+              )}
+            </Typography>
+          </div>
+          <div className="md:col-span-2">
+            <Typography
+              variant="body3"
+              weight="bold"
+              className="mb-1 text-slate-700 dark:text-slate-300"
+            >
+              Address:
+            </Typography>
+            <Typography variant="body4" className="text-muted-foreground">
+              {String(
+                (row.options as Record<string, unknown>)?.streetAddress || "",
+              )}{" "}
+              {String((row.options as Record<string, unknown>)?.city || "")}{" "}
+              {String((row.options as Record<string, unknown>)?.state || "")}{" "}
+              {String((row.options as Record<string, unknown>)?.zipCode || "")}
+            </Typography>
+          </div>
+          <div className="md:col-span-2">
+            <Typography
+              variant="body3"
+              weight="bold"
+              className="mb-1 text-slate-700 dark:text-slate-300"
+            >
+              Email / Phone / Facebook:
+            </Typography>
+            <Typography variant="body4" className="text-muted-foreground">
+              {String(
+                (row.options as Record<string, unknown>)?.generalEmail || "N/A",
+              )}{" "}
+              /{" "}
+              {String(
+                (row.options as Record<string, unknown>)?.companyPhoneNumber ||
+                  "N/A",
+              )}{" "}
+              /{" "}
+              {String(
+                (row.options as Record<string, unknown>)?.facebookPage || "N/A",
+              )}
+            </Typography>
+          </div>
         </div>
       }
     >
@@ -168,7 +204,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
                 e.stopPropagation();
                 onEdit(row);
               }}
-              title="Edit Contact Details"
+              title="Edit Company Contact Details"
               className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
             >
               <EditIcon size={16} />

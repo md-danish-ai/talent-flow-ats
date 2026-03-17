@@ -99,7 +99,7 @@ export const leadGenerationSchema = z.object({
   email: z.string().email("Invalid email").min(1, "Email is required"),
 });
 
-// Contact Details Validations
+// Company Contact Details Validations
 export const contactDetailsSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),

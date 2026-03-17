@@ -186,7 +186,7 @@ export function ContactDetailsClient() {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
-            Contact Detailss
+            Company Contact Details
           </>
         }
         className="mb-6 flex flex-col"
@@ -221,7 +221,7 @@ export function ContactDetailsClient() {
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
-              Add Contact Details
+              Add Company Contact Details
             </Button>
           </div>
         }
@@ -285,7 +285,7 @@ export function ContactDetailsClient() {
                       className="py-8 text-center text-muted-foreground"
                     >
                       No contact details questions found. Click &quot;Add
-                      Contact Details&quot; to create one.
+                      Company Contact Details&quot; to create one.
                     </TableCell>
                   </TableRow>
                 ) : (

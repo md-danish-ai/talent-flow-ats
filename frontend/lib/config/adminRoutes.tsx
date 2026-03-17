@@ -43,7 +43,10 @@ export const ADMIN_ROUTES: NavSection[] = [
       { label: "Passage Content", href: "/admin/questions/passage" },
       { label: "Typing Test", href: "/admin/questions/typing-test" },
       { label: "Lead Generation", href: "/admin/questions/lead-generation" },
-      { label: "Contact Details", href: "/admin/questions/contact-details" },
+      {
+        label: "Company Contact Details",
+        href: "/admin/questions/contact-details",
+      },
     ],
   },
   {

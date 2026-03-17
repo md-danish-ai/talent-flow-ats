@@ -17,7 +17,7 @@ export const AddContactDetailsModal: React.FC<AddContactDetailsModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add Contact Details"
+      title="Add Company Contact Details"
       className="max-w-5xl"
     >
       <ContactDetailsForm
