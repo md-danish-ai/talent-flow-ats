@@ -1,7 +1,6 @@
 from app.database.db import SessionLocal
 from app.questions.models import Question
 from app.answer.models import QuestionAnswer
-from app.users.models import User
 
 CONTACTS = [
     {
@@ -13,7 +12,7 @@ CONTACTS = [
         "zipCode": "75039",
         "companyPhoneNumber": "+1 972-443-4000",
         "generalEmail": "questions@celanese.com",
-        "facebookPage": "https://www.facebook.com/Celanese/"
+        "facebookPage": "https://www.facebook.com/Celanese/",
     },
     {
         "websiteUrl": "http://calgoncarbon.com",
@@ -24,7 +23,7 @@ CONTACTS = [
         "zipCode": "15108",
         "companyPhoneNumber": "412-787-6700",
         "generalEmail": "info@calgoncarbon.com",
-        "facebookPage": "https://www.facebook.com/calgoncarbon/"
+        "facebookPage": "https://www.facebook.com/calgoncarbon/",
     },
     {
         "websiteUrl": "http://beltpower.com",
@@ -35,9 +34,10 @@ CONTACTS = [
         "zipCode": "30339",
         "companyPhoneNumber": "800-886-2358",
         "generalEmail": "sales@beltpower.com",
-        "facebookPage": "https://www.facebook.com/BeltPower/"
-    }
+        "facebookPage": "https://www.facebook.com/BeltPower/",
+    },
 ]
+
 
 def seed_contacts():
     db = SessionLocal()
@@ -45,11 +45,15 @@ def seed_contacts():
         print("🚀 Seeding Company Contact Details questions...")
         for contact in CONTACTS:
             # Check if exists
-            existing = db.query(Question).filter(
-                Question.question_type == "CONTACT_DETAILS",
-                Question.question_text == contact["websiteUrl"]
-            ).first()
-            
+            existing = (
+                db.query(Question)
+                .filter(
+                    Question.question_type == "CONTACT_DETAILS",
+                    Question.question_text == contact["websiteUrl"],
+                )
+                .first()
+            )
+
             if not existing:
                 new_q = Question(
                     question_type="CONTACT_DETAILS",
@@ -67,25 +71,22 @@ def seed_contacts():
                         "zipCode": contact["zipCode"],
                         "companyPhoneNumber": contact["companyPhoneNumber"],
                         "generalEmail": contact["generalEmail"],
-                        "facebookPage": contact["facebookPage"]
+                        "facebookPage": contact["facebookPage"],
                     },
-                    created_by=1
+                    created_by=1,
                 )
                 db.add(new_q)
                 db.flush()
-                
+
                 # Add dummy answer
                 new_ans = QuestionAnswer(
-                    question_id=new_q.id,
-                    answer_text="",
-                    explanation="",
-                    created_by=1
+                    question_id=new_q.id, answer_text="", explanation="", created_by=1
                 )
                 db.add(new_ans)
                 print(f"✅ Added contact: {contact['companyName']}")
             else:
                 print(f"⏭️ Skipping (already exists): {contact['companyName']}")
-        
+
         db.commit()
         print("✨ Seeding complete!")
     except Exception as e:
@@ -93,6 +94,7 @@ def seed_contacts():
         print(f"❌ Error seeding contacts: {str(e)}")
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     seed_contacts()

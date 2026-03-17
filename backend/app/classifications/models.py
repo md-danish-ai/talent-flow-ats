@@ -5,7 +5,7 @@ from sqlalchemy import (
     Boolean,
     TIMESTAMP,
     func,
-    UniqueConstraint
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -23,9 +23,7 @@ class Classification(Base):
     sort_order = Column(Integer, server_default="0", nullable=False)
     is_active = Column(Boolean, server_default="true", nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("type", "code", name="uix_type_code"),
-    )
+    __table_args__ = (UniqueConstraint("type", "code", name="uix_type_code"),)
 
     created_at = Column(
         TIMESTAMP, server_default=func.current_timestamp(), nullable=False

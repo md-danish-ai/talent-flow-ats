@@ -69,7 +69,10 @@ async def create_admin_user(data: CreateAdminSchema):
 
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
-@router.put("/toggle-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+
+@router.put(
+    "/toggle-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
+)
 async def toggle_status(user_id: int):
     data = toggle_user_status(user_id)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)

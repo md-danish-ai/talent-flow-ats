@@ -255,7 +255,7 @@ def check_dependencies(classification_id: int) -> dict:
                         "SELECT COUNT(*) FROM papers "
                         "WHERE subject_ids_data @> CAST(:id_obj_array AS jsonb)"
                     ),
-                    {"id_obj_array": f'[{{\"subject_id\": {classification.id}}}]'},
+                    {"id_obj_array": f'[{{"subject_id": {classification.id}}}]'},
                 ).scalar()
                 or 0
             )
@@ -269,7 +269,11 @@ def check_dependencies(classification_id: int) -> dict:
             if q_count:
                 deps["questions.exam_level"] = q_count
 
-            p_count = db_session.query(Paper).filter(Paper.test_level_id == classification.id).count()
+            p_count = (
+                db_session.query(Paper)
+                .filter(Paper.test_level_id == classification.id)
+                .count()
+            )
             if p_count:
                 deps["papers.test_level"] = p_count
 

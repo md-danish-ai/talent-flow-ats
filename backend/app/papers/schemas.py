@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from typing import List, Optional
 from datetime import datetime
 
+
 class SubjectConfigItem(BaseModel):
     subject_id: int
     is_selected: bool
@@ -9,6 +10,7 @@ class SubjectConfigItem(BaseModel):
     total_marks: int
     time_minutes: int
     order: int
+
 
 class PaperBase(BaseModel):
     paper_name: str
@@ -21,14 +23,17 @@ class PaperBase(BaseModel):
     @classmethod
     def sort_subjects(cls, v: List[SubjectConfigItem]) -> List[SubjectConfigItem]:
         return sorted(v, key=lambda x: x.order)
+
     question_id: List[int] = []
     total_time: Optional[str] = None
     total_marks: Optional[int] = None
     is_active: bool = True
     grade: Optional[str] = None
 
+
 class PaperCreate(PaperBase):
     pass
+
 
 class PaperUpdate(BaseModel):
     paper_name: Optional[str] = None
@@ -51,6 +56,7 @@ class PaperUpdate(BaseModel):
     total_marks: Optional[int] = None
     is_active: Optional[bool] = None
     grade: Optional[str] = None
+
 
 class PaperResponse(PaperBase):
     id: int

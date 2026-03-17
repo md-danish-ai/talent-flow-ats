@@ -17,6 +17,7 @@ router = APIRouter(
 )
 service = DepartmentService()
 
+
 @router.get("/get")
 def get_all(
     is_active: Optional[bool] = None,
@@ -32,6 +33,7 @@ def get_all(
     paginated_data = create_paginated_response(data, total_records, pagination)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
+
 @router.get("/get/{department_id}")
 def get_by_id(department_id: int):
     data = service.get_by_id(department_id)
@@ -39,10 +41,12 @@ def get_by_id(department_id: int):
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
+
 @router.post("/create")
 def create(payload: DepartmentCreate):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+
 
 @router.put("/update/{department_id}")
 def update(department_id: int, payload: DepartmentUpdate):
@@ -50,6 +54,7 @@ def update(department_id: int, payload: DepartmentUpdate):
     if not data:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+
 
 @router.delete("/delete/{department_id}")
 def delete(department_id: int):

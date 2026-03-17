@@ -1,5 +1,6 @@
 from app.departments import repository
 
+
 class DepartmentService:
     def get_all(self, **kwargs):
         return repository.get_all(**kwargs)

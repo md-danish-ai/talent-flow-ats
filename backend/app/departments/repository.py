@@ -1,6 +1,7 @@
 from app.database.db import SessionLocal
 from app.departments.models import Department
 
+
 def _to_dict(department):
     if not department:
         return None
@@ -11,6 +12,7 @@ def _to_dict(department):
         "created_at": department.created_at,
         "updated_at": department.updated_at,
     }
+
 
 def get_all(
     is_active: bool = None,
@@ -28,26 +30,29 @@ def get_all(
 
         total_records = query.count()
         results = query.order_by(Department.id.desc()).offset(offset).limit(limit).all()
-        
+
         data = [_to_dict(dept) for dept in results]
         return data, total_records
     finally:
         db_session.close()
 
+
 def get_by_id(department_id: int):
     db_session = SessionLocal()
     try:
-        department = db_session.query(Department).filter(Department.id == department_id).first()
+        department = (
+            db_session.query(Department).filter(Department.id == department_id).first()
+        )
         return _to_dict(department)
     finally:
         db_session.close()
+
 
 def create(data):
     db_session = SessionLocal()
     try:
         new_department = Department(
-            name=data.name,
-            is_active=getattr(data, "is_active", True)
+            name=data.name, is_active=getattr(data, "is_active", True)
         )
         db_session.add(new_department)
         db_session.commit()
@@ -59,17 +64,20 @@ def create(data):
     finally:
         db_session.close()
 
+
 def update(department_id: int, data):
     db_session = SessionLocal()
     try:
-        department = db_session.query(Department).filter(Department.id == department_id).first()
+        department = (
+            db_session.query(Department).filter(Department.id == department_id).first()
+        )
         if not department:
             return None
-        
+
         fields = data.dict(exclude_unset=True)
         for key, value in fields.items():
             setattr(department, key, value)
-            
+
         db_session.commit()
         db_session.refresh(department)
         return _to_dict(department)
@@ -79,10 +87,13 @@ def update(department_id: int, data):
     finally:
         db_session.close()
 
+
 def delete(department_id: int):
     db_session = SessionLocal()
     try:
-        department = db_session.query(Department).filter(Department.id == department_id).first()
+        department = (
+            db_session.query(Department).filter(Department.id == department_id).first()
+        )
         if department:
             db_session.delete(department)
             db_session.commit()

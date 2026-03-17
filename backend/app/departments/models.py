@@ -8,6 +8,7 @@ from sqlalchemy import (
 )
 from app.database.db import Base
 
+
 class Department(Base):
     __tablename__ = "departments"
 
