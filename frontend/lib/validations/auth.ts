@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ─── Enum Constants (mirrors backend enums — single source of truth) ─────
-export const TEST_LEVELS = ["fresher", "QA", "team-lead"] as const;
+export const TEST_LEVELS = ["FRESHER", "QA", "TEAMLEAD"] as const;
 export const ROLES = ["user", "admin"] as const;
 
 // ─── Sign Up Schema ─────────────────────────────────────────────────────

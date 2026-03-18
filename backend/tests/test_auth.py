@@ -13,7 +13,7 @@ def test_signup_success():
         json={
             "name": "test user",
             "mobile": "9000000001",
-            "testLevel": "fresher",
+            "testLevel": "FRESHER",
             "email": "testuser@example.com",
         },
     )
@@ -29,7 +29,7 @@ def test_signup_success():
 def test_signup_success_without_email():
     response = client.post(
         "/auth/signup",
-        json={"name": "test user", "mobile": "9000000002", "testLevel": "fresher"},
+        json={"name": "test user", "mobile": "9000000002", "testLevel": "FRESHER"},
     )
     assert response.status_code == 201
     assert response.json()["message"] == "data created successfully"
@@ -39,7 +39,7 @@ def test_signup_duplicate_mobile():
     payload = {
         "name": "test user",
         "mobile": "9000000003",
-        "testLevel": "fresher",
+        "testLevel": "FRESHER",
         "email": "testuser3@example.com",
     }
     client.post("/auth/signup", json=payload)
@@ -51,7 +51,7 @@ def test_signup_duplicate_mobile():
 def test_signup_invalid_mobile_less_than_10_digits():
     response = client.post(
         "/auth/signup",
-        json={"name": "test user", "mobile": "12345", "testLevel": "fresher"},
+        json={"name": "test user", "mobile": "12345", "testLevel": "FRESHER"},
     )
     assert response.status_code == 422
 
@@ -59,7 +59,7 @@ def test_signup_invalid_mobile_less_than_10_digits():
 def test_signup_invalid_mobile_more_than_10_digits():
     response = client.post(
         "/auth/signup",
-        json={"name": "test user", "mobile": "12345678901", "testLevel": "fresher"},
+        json={"name": "test user", "mobile": "12345678901", "testLevel": "FRESHER"},
     )
     assert response.status_code == 422
 
@@ -67,7 +67,7 @@ def test_signup_invalid_mobile_more_than_10_digits():
 def test_signup_invalid_mobile_with_letters():
     response = client.post(
         "/auth/signup",
-        json={"name": "test user", "mobile": "9000abc001", "testLevel": "fresher"},
+        json={"name": "test user", "mobile": "9000abc001", "testLevel": "FRESHER"},
     )
     assert response.status_code == 422
 
@@ -75,7 +75,7 @@ def test_signup_invalid_mobile_with_letters():
 def test_signup_invalid_name_single_word():
     response = client.post(
         "/auth/signup",
-        json={"name": "testuser", "mobile": "9000000004", "testLevel": "fresher"},
+        json={"name": "testuser", "mobile": "9000000004", "testLevel": "FRESHER"},
     )
     assert response.status_code == 422
 
@@ -83,7 +83,7 @@ def test_signup_invalid_name_single_word():
 def test_signup_invalid_name_with_numbers():
     response = client.post(
         "/auth/signup",
-        json={"name": "test user123", "mobile": "9000000005", "testLevel": "fresher"},
+        json={"name": "test user123", "mobile": "9000000005", "testLevel": "FRESHER"},
     )
     assert response.status_code == 422
 
@@ -102,7 +102,7 @@ def test_signup_invalid_email_format():
         json={
             "name": "test user",
             "mobile": "9000000007",
-            "testLevel": "fresher",
+            "testLevel": "FRESHER",
             "email": "notanemail",
         },
     )
@@ -129,7 +129,7 @@ def test_signup_default_role_is_user():
 def test_signin_success():
     client.post(
         "/auth/signup",
-        json={"name": "signin user", "mobile": "9000000009", "testLevel": "fresher"},
+        json={"name": "signin user", "mobile": "9000000009", "testLevel": "FRESHER"},
     )
     response = client.post(
         "/auth/signin",
@@ -154,7 +154,7 @@ def test_signin_user_not_exist():
 def test_signin_wrong_password():
     client.post(
         "/auth/signup",
-        json={"name": "signin user", "mobile": "9000000010", "testLevel": "fresher"},
+        json={"name": "signin user", "mobile": "9000000010", "testLevel": "FRESHER"},
     )
     response = client.post(
         "/auth/signin",

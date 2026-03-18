@@ -8,9 +8,9 @@ import re
 
 
 class TestLevelEnum(str, Enum):
-    fresher = "fresher"
-    qa = "QA"
-    team_lead = "team-lead"
+    FRESHER = "FRESHER"
+    QA = "QA"
+    TEAMLEAD = "TEAMLEAD"
 
 
 class RoleEnum(str, Enum):
