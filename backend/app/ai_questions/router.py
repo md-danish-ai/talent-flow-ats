@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
 from .schemas import AIQuestionRequest, AIQuestionResponse
 from .service import AIQuestionService

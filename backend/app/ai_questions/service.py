@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from difflib import SequenceMatcher
 
-from .schemas import AIQuestionRequest, GeneratedQuestion
+from .schemas import AIQuestionRequest
 from .utils import AIClient
 from app.questions.models import Question
 from app.classifications.models import Classification
@@ -58,9 +58,8 @@ class AIQuestionService:
             # 6. Prepare Metadata/Data
             # For image-based questions, we might store the AI's description in metadata or use it later
             # For now, we'll prefix the image_url if it's an image question type
-            image_url = None
             if "image" in q_type.code.lower():
-                image_url = "PENDING_IMAGE_GENERATION" # Placeholder or logic for image-gen
+                pass # Placeholder or logic for image-gen
                 
             # Handle multi-select vs single answer validation
             correct_ans = parsed_data.get("correct_answer")
