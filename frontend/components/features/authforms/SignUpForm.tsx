@@ -29,7 +29,7 @@ export function SignUpForm() {
       name: "",
       mobile: "",
       email: "",
-      testLevel: "fresher",
+      testLevel: "FRESHER",
       role: "user",
     } as SignUpFormValues,
     validators: {
@@ -55,9 +55,9 @@ export function SignUpForm() {
   });
 
   const levelLabels: Record<(typeof TEST_LEVELS)[number], string> = {
-    fresher: "Fresher",
+    FRESHER: "Fresher",
     QA: "Quality Analyst",
-    "team-lead": "Team Lead",
+    TEAMLEAD: "Team Lead",
   };
   const levels = TEST_LEVELS.map((id) => ({ id, label: levelLabels[id] }));
 
