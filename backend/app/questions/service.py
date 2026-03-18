@@ -8,19 +8,7 @@ from uuid import uuid4
 from app.core.config import settings
 from app.utils.status_codes import StatusCode
 
-
 class QuestionService:
-
-    def _validate_classification_code(self, code: str, expected_type: str):
-        """Ensure the classification code exists and belongs to the correct type."""
-        if code is None:
-            return
-        record = classification_repo.get_by_code_and_type(code, expected_type)
-        if not record:
-            raise HTTPException(
-                status_code=StatusCode.BAD_REQUEST,
-                detail=f"Classification code '{code}' not found for type '{expected_type}'"
-            )
 
     async def create_question(self, payload, user_id: int):
         try:
@@ -28,7 +16,7 @@ class QuestionService:
             self._validate_classification_code(
                 payload.question_type, "question_type")
             self._validate_classification_code(
-                payload.subject, "subject")
+                payload.subject, "subject_type")
             self._validate_classification_code(
                 payload.exam_level, "exam_level")
 
@@ -96,7 +84,7 @@ class QuestionService:
                     payload.question_type, "question_type")
             if payload.subject:
                 self._validate_classification_code(
-                    payload.subject, "subject")
+                    payload.subject, "subject_type")
             if payload.exam_level:
                 self._validate_classification_code(
                     payload.exam_level, "exam_level")
@@ -144,3 +132,13 @@ class QuestionService:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
+
+    # ─── Private Helpers ──────────────────────────────────────────────────────────
+
+    def _validate_classification_code(self, code: str, type_name: str):
+        if not classification_repo.get_by_code_and_type(code, type_name):
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail=f"Invalid {type_name} code: {code}"
+            )
+

@@ -7,37 +7,46 @@ from app.answer.models import QuestionAnswer
 from app.classifications.models import Classification
 
 
-def create_question(data, question_type: str, subject: str, exam_level: str, user_id: int):
+
+def create_question(data, question_type: str = None, subject: str = None, exam_level: str = None, user_id: int = None):
     db_session = SessionLocal()
     try:
         new_question = Question(
-            question_type=question_type,
-            subject_type=subject,
-            exam_level=exam_level,
+            question_type=question_type or getattr(data, 'question_type', None),
+            subject_type=subject or getattr(data, 'subject_type', getattr(data, 'subject', None)),
+            exam_level=exam_level or getattr(data, 'exam_level', None),
             question_text=data.question_text,
             image_url=data.image_url,
             passage=data.passage,
-            marks=data.marks,
-            is_active=data.is_active,
-            options=[option.model_dump()
+            marks=getattr(data, 'marks', 1),
+            is_active=getattr(data, 'is_active', True),
+            options=[option.model_dump() if hasattr(option, 'model_dump') else option
                      for option in data.options] if data.options else [],
             created_by=user_id
         )
         db_session.add(new_question)
-        db_session.flush()  # To get the ID
+        db_session.flush()
 
         question_id = new_question.id
 
-        if data.answer:
-            answer_text = data.answer.answer_text
+        if hasattr(data, 'answer') and data.answer:
+            answer_text = getattr(data.answer, 'answer_text', "")
             if not answer_text and data.options:
-                answer_text = ", ".join(
-                    [option.option_label for option in data.options if option.is_correct])
+                # Fallback: if options are provided, try to find correct ones
+                if isinstance(data.options, list):
+                    correct_labels = []
+                    for opt in data.options:
+                        if isinstance(opt, dict) and opt.get('is_correct'):
+                            correct_labels.append(opt.get('option_label', ''))
+                        elif hasattr(opt, 'is_correct') and opt.is_correct:
+                            correct_labels.append(getattr(opt, 'option_label', ''))
+                    if correct_labels:
+                        answer_text = ", ".join(correct_labels)
 
             new_answer = QuestionAnswer(
                 question_id=question_id,
-                answer_text=answer_text or "",
-                explanation=data.answer.explanation,
+                answer_text=answer_text,
+                explanation=getattr(data.answer, 'explanation', ""),
                 created_by=user_id
             )
             db_session.add(new_answer)
@@ -50,7 +59,6 @@ def create_question(data, question_type: str, subject: str, exam_level: str, use
         raise exception
     finally:
         db_session.close()
-
 
 def get_questions(
     question_type: str = None,
@@ -65,7 +73,6 @@ def get_questions(
 ):
     db_session = SessionLocal()
     try:
-        # Aliases for multiple classification joins
         question_type_alias = aliased(Classification)
         subject_type_alias = aliased(Classification)
         exam_level_alias = aliased(Classification)
@@ -95,7 +102,7 @@ def get_questions(
         query = query.outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (
             question_type_alias.type == 'question_type'))
         query = query.outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (
-            subject_type_alias.type == 'subject'))
+            subject_type_alias.type == 'subject_type'))
         query = query.outerjoin(exam_level_alias, (exam_level_alias.code == Question.exam_level) & (
             exam_level_alias.type == 'exam_level'))
 
@@ -125,7 +132,6 @@ def get_questions(
     finally:
         db_session.close()
 
-
 def get_question_by_id(question_id: int):
     db_session = SessionLocal()
     try:
@@ -153,7 +159,7 @@ def get_question_by_id(question_id: int):
                 "el_is_active"), exam_level_alias.sort_order.label("el_sort_order")
         ).outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)\
          .outerjoin(question_type_alias, (question_type_alias.code == Question.question_type) & (question_type_alias.type == 'question_type'))\
-         .outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (subject_type_alias.type == 'subject'))\
+         .outerjoin(subject_type_alias, (subject_type_alias.code == Question.subject_type) & (subject_type_alias.type == 'subject_type'))\
          .outerjoin(exam_level_alias, (exam_level_alias.code == Question.exam_level) & (exam_level_alias.type == 'exam_level'))\
          .filter(Question.id == question_id).first()
 
@@ -176,32 +182,41 @@ def update_question(question_id: int, payload, question_type_param: str = None, 
 
         if question_type_param:
             question.question_type = question_type_param
+        elif "question_type" in data:
+            question.question_type = data.pop("question_type")
+
         if subject_param:
             question.subject_type = subject_param
+        elif "subject_type" in data:
+            question.subject_type = data.pop("subject_type")
+        elif "subject" in data:
+            question.subject_type = data.pop("subject")
+
         if exam_level_param:
             question.exam_level = exam_level_param
+        elif "exam_level" in data:
+            question.exam_level = data.pop("exam_level")
 
         if options_data is not None:
             question.options = options_data
 
         for key, value in data.items():
-            setattr(question, key, value)
+            if hasattr(question, key):
+                setattr(question, key, value)
 
         if answer_data:
             answer = db_session.query(QuestionAnswer).filter(
                 QuestionAnswer.question_id == question_id).first()
             if answer:
-                if "answer_text" in answer_data:
-                    answer.answer_text = answer_data["answer_text"]
-                if "explanation" in answer_data:
-                    answer.explanation = answer_data["explanation"]
+                for a_key, a_val in answer_data.items():
+                    if hasattr(answer, a_key):
+                        setattr(answer, a_key, a_val)
             else:
                 answer_text = answer_data.get("answer_text")
                 if not answer_text and options_data:
                     answer_text = ", ".join(
                         [option.get("option_label", "") for option in options_data if option.get("is_correct")])
 
-                # If no answer exists, create one (optional, based on logic)
                 new_answer_obj = QuestionAnswer(
                     question_id=question_id,
                     answer_text=answer_text or "",
@@ -211,13 +226,11 @@ def update_question(question_id: int, payload, question_type_param: str = None, 
 
         db_session.commit()
         return {"message": f"Question {question_id} updated successfully"}
-
     except Exception as exception:
         db_session.rollback()
         raise exception
     finally:
         db_session.close()
-
 
 def delete_question(question_id: int):
     db_session = SessionLocal()
@@ -261,7 +274,27 @@ def _format_question_orm(row) -> dict:
     if not row:
         return None
 
-    question = row.Question
+    # Handle both Joined result (row object) and single Question object
+    if hasattr(row, 'Question'):
+        question = row.Question
+    else:
+        # Fallback if it's just a Question object (though rich logic prefers row)
+        question = row
+        return {
+            "id":            question.id,
+            "question_text": question.question_text,
+            "image_url":     question.image_url,
+            "passage":       question.passage,
+            "marks":         question.marks,
+            "is_active":     question.is_active,
+            "options":       question.options,
+            "created_at":    str(question.created_at),
+            "updated_at":    str(question.updated_at),
+            "question_type": question.question_type,
+            "subject_type":  question.subject_type,
+            "exam_level":    question.exam_level
+        }
+
     return {
         "id":            question.id,
         "question_text": question.question_text,
@@ -281,7 +314,7 @@ def _format_question_orm(row) -> dict:
             "metadata":   row.qt_metadata,
             "is_active":  row.qt_is_active,
             "sort_order": row.qt_sort_order,
-        } if row.qt_id else None,
+        } if getattr(row, 'qt_id', None) else question.question_type,
 
         "subject": {
             "id":         row.st_id,
@@ -291,7 +324,7 @@ def _format_question_orm(row) -> dict:
             "metadata":   row.st_metadata,
             "is_active":  row.st_is_active,
             "sort_order": row.st_sort_order,
-        } if row.st_id else None,
+        } if getattr(row, 'st_id', None) else question.subject_type,
 
         "exam_level": {
             "id":         row.el_id,
@@ -301,9 +334,11 @@ def _format_question_orm(row) -> dict:
             "metadata":   row.el_metadata,
             "is_active":  row.el_is_active,
             "sort_order": row.el_sort_order,
-        } if row.el_id else None,
+        } if getattr(row, 'el_id', None) else question.exam_level,
+        
         "answer": {
             "answer_text": row.ans_text,
             "explanation": row.ans_explanation,
         } if hasattr(row, 'ans_text') and row.ans_text is not None else None,
     }
+

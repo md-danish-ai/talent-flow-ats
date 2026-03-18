@@ -10,6 +10,7 @@ from app.user_details.router import router as user_details_router
 from app.questions.router import router as questions_router
 from app.answer.router import router as answer_router
 from app.classifications.router import router as classifications_router
+from app.ai_questions.router import router as ai_questions_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -80,11 +81,12 @@ def health_check():
 
 
 # Routers
-app.include_router(auth_router)
-app.include_router(user_details_router)
-app.include_router(questions_router)
-app.include_router(answer_router)
-app.include_router(classifications_router)
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(user_details_router, prefix="/user-details", tags=["User Details"])
+app.include_router(questions_router, prefix="/questions", tags=["Questions"])
+app.include_router(ai_questions_router, prefix="/ai_questions", tags=["AI Questions"])
+app.include_router(answer_router, prefix="/answers", tags=["Answers"])
+app.include_router(classifications_router, prefix="/classifications", tags=["Classifications"])
 
 
 # Images
