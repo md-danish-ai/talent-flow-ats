@@ -1,3 +1,4 @@
+# ruff: noqa
 from app.database.db import SessionLocal
 from app.classifications.models import Classification
 
