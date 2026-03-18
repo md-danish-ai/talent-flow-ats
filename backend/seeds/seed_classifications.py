@@ -39,18 +39,11 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Company Contact Details Test",
-        "code": "COMPANY_CONTACT_DETAILS_TEST",
-        "metadata": {"description": "Testing accuracy in finding contact information."},
-    },
-    {
-        "type": "subject",
-        "name": "Company Details",
-        "code": "COMPANY_DETAILS",
+        "name": "Company Contact Details",
+        "code": "COMPANY_CONTACT_DETAILS",
         "metadata": {
             "description": "Knowledge regarding company structure and history."
-        },
-    },
+        }, },
     {
         "type": "subject",
         "name": "Comprehension",
