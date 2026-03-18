@@ -1,7 +1,7 @@
 // Base API client for making HTTP requests to the backend
 import { toast } from "@lib/toast";
 
-const BASE_URL =
+export const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
