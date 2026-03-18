@@ -58,7 +58,7 @@ export const LeadGenerationForm = ({
     defaultValues:
       initialData ||
       ({
-        subject: "",
+        subject: "LEAD_GENERATION",
         examLevel: "",
         marks: 1,
         questionText: "",
@@ -153,6 +153,7 @@ export const LeadGenerationForm = ({
                       id: s.code,
                       label: s.name,
                     }))}
+                    disabled={true}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
