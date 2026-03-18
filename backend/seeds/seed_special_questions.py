@@ -1,3 +1,4 @@
+# ruff: noqa
 from app.users.models import User
 from app.answer.models import QuestionAnswer
 from app.questions.models import Question
