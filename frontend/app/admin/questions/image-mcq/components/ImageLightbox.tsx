@@ -10,7 +10,10 @@ interface ImageLightboxProps {
   onClose: () => void;
 }
 
-export const ImageLightbox: React.FC<ImageLightboxProps> = ({ url, onClose }) => {
+export const ImageLightbox: React.FC<ImageLightboxProps> = ({
+  url,
+  onClose,
+}) => {
   useEffect(() => {
     if (!url) return;
     const onKey = (e: KeyboardEvent) => {
@@ -30,7 +33,10 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ url, onClose }) =>
       return parsed.href;
     } catch {
       // relative path: prefix with NEXT_PUBLIC_API_BASE_URL if available
-      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
+        /\/$/,
+        "",
+      );
       if (!base) return u;
       return u.startsWith("/") ? `${base}${u}` : `${base}/${u}`;
     }
@@ -43,7 +49,10 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ url, onClose }) =>
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       onClick={onClose}
     >
-      <div className="relative max-w-[95%] max-h-[95%]" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="relative max-w-[95%] max-h-[95%]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="rounded-md shadow-lg bg-white p-2">
           {src ? (
             <div className="relative w-[90vw] h-[80vh]">

@@ -160,7 +160,9 @@ function DynamicTableDemo() {
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
-      prev.includes(id) ? prev.filter((column) => column !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((column) => column !== id)
+        : [...prev, id],
     );
   };
 

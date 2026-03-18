@@ -1,16 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
-import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
-import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
-import { ViewImageQuestionModal } from "./components/ViewImageQuestionModal";
-import ImageLightbox from "./components/ImageLightbox";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -19,25 +11,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  // TableCollapsibleRow removed - using plain rows
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import {
-  Filter,
-  Search,
-  RotateCcw,
-  Plus,
-  Image as ImageIcon,
-  Edit as EditIcon,
-} from "lucide-react";
+import { Filter, Plus, Image as ImageIcon, Loader2, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-import ActionMenu, { type ActionItem } from "@components/ui-elements/ActionMenu";
 import { ApiError } from "@lib/api/client";
-import { Loader2, MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "@lib/toast";
+import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
+import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
+import ImageLightbox from "./components/ImageLightbox";
+import { ImageMCQFilters } from "./components/ImageMCQFilters";
+import { ImageMCQRow } from "./components/ImageMCQRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 interface ImageMCQClientProps {
   initialData?: Question[];
@@ -48,65 +38,74 @@ export function ImageMCQClient({
   initialData = [],
   totalItems: initialTotalItems = 0,
 }: ImageMCQClientProps) {
+  const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const router = useRouter();
   const [subjectFilter, setSubjectFilter] = useState<
     string | number | undefined
-  >(undefined);
-  // We force IMAGE_MULTIPLE_CHOICE server-side; no UI filter required.
-  const FORCED_QUESTION_TYPE = "IMAGE_MULTIPLE_CHOICE";
+  >("all");
+  const [examLevelFilter, setExamLevelFilter] = useState<
+    string | number | undefined
+  >("all");
+  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
+    "all",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<Question[]>(initialData || []);
   const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
   const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  // deletingId and handleDelete removed because delete action was removed
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
-  const [viewingQuestionId, setViewingQuestionId] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
-  useEffect(() => {
-    if (!toastMessage) return;
-    const t = setTimeout(() => setToastMessage(null), 4000);
-    return () => clearTimeout(t);
-  }, [toastMessage]);
-
-  const handleAuthError = (error: unknown): boolean => {
-    if (error instanceof ApiError && error.status === 401) {
-      if (typeof document !== "undefined") {
-        document.cookie = "role=; Max-Age=0; path=/";
-        document.cookie = "auth_token=; Max-Age=0; path=/";
-        document.cookie = "user_info=; Max-Age=0; path=/";
+  const handleAuthError = useCallback(
+    (error: unknown): boolean => {
+      if (error instanceof ApiError && error.status === 401) {
+        if (typeof document !== "undefined") {
+          document.cookie = "role=; Max-Age=0; path=/";
+          document.cookie = "auth_token=; Max-Age=0; path=/";
+          document.cookie = "user_info=; Max-Age=0; path=/";
+        }
+        router.push("/sign-in");
+        return true;
       }
-      router.push("/sign-in");
-      return true;
-    }
-    return false;
-  };
+      return false;
+    },
+    [router],
+  );
 
   // Column Visibility State
   const allColumns = [
-    { id: "srNo", label: "Sr. No." },
+    { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "image", label: "Image" },
-    { id: "question", label: "Question" },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
+    { id: "marks", label: "Marks" },
     { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Action" },
+    { id: "status", label: "Status" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
     "image",
     "question",
     "subject",
-    "createdBy",
+    "examLevel",
+    "marks",
     "actions",
-  ]);
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,42 +122,35 @@ export function ImageMCQClient({
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset page on search
     }, 500);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        // Align with questions API, which expects `subject` classification codes
-        const resp = await classificationsApi.getClassifications({
-          type: "subject",
-          limit: 100,
-        });
-        setSubjects(resp.data || []);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          console.error("Failed to fetch subjects (API):", err.status, err.data);
-        } else {
-          console.error("Failed to fetch subjects:", err);
-        }
-      }
-    };
-    fetchSubjects();
-  // No question type fetch required since we force the IMAGE_MULTIPLE_CHOICE type.
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
         search: debouncedSearch,
-        // Filter by subject using subject classification codes
-        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
-        // Force IMAGE_MULTIPLE_CHOICE for this client
-        question_type: FORCED_QUESTION_TYPE,
+        subject:
+          subjectFilter && subjectFilter !== "all"
+            ? (subjectFilter as string)
+            : undefined,
+        exam_level:
+          examLevelFilter && examLevelFilter !== "all"
+            ? (examLevelFilter as string)
+            : undefined,
+        marks:
+          marksFilter && marksFilter !== "all"
+            ? Number(marksFilter)
+            : undefined,
+        is_active:
+          statusFilter && statusFilter !== "all"
+            ? statusFilter === "true"
+            : undefined,
+        question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
       });
 
       setData(response.data || []);
@@ -166,87 +158,70 @@ export function ImageMCQClient({
         setTotalItems(response.pagination.total_records);
       }
     } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("API Error fetching questions:", error.status, error.data);
-      } else {
-        console.error("Error fetching questions:", error);
-      }
+      if (handleAuthError(error)) return;
+      console.error("Error fetching questions:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearch,
+    subjectFilter,
+    examLevelFilter,
+    marksFilter,
+    statusFilter,
+    handleAuthError,
+  ]);
 
   useEffect(() => {
-    // Fetch whenever pagination/search/subject changes
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+  }, [fetchData]);
 
-  // Called after a new question is created from the Add modal
-  const handleAddSuccess = async () => {
-    setIsAddModalOpen(false);
-    setToastMessage("Question added successfully.");
-    // Reset to first page so user sees newest questions
-    setCurrentPage(1);
-    await fetchData();
-  };
+  useEffect(() => {
+    const fetchClassifications = async () => {
+      try {
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            is_active: true,
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            is_active: true,
+            limit: 100,
+          }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
+      } catch (err) {
+        if (handleAuthError(err)) return;
+        console.error("Failed to fetch classifications:", err);
+      }
+    };
+    fetchClassifications();
+  }, [handleAuthError]);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      setToastMessage("Status updated");
       await fetchData();
+      toast.success("Question status updated successfully");
     } catch (error) {
       if (handleAuthError(error)) return;
-      if (error instanceof ApiError) {
-        console.error("API Error toggling status:", error.status, error.data);
-      } else {
-        console.error("Failed to toggle status:", error);
-      }
+      toast.error("Failed to update status");
+      console.error("Failed to toggle status:", error);
     } finally {
       setTogglingId(null);
     }
   };
 
-  // delete functionality removed per request (no delete in actions)
-
-  const RowActions = ({ id }: { id: number }) => {
-    const q = data.find((d) => d.id === id);
-    const isActive = q?.is_active !== false;
-    const items: ActionItem[] = [
-      {
-        key: "view",
-        label: "View",
-        icon: <ImageIcon size={16} />,
-        onClick: (e) => { e.stopPropagation(); setViewingQuestionId(id); },
-      },
-      {
-        key: "edit",
-        label: "Edit",
-        icon: <EditIcon size={16} />,
-        onClick: (e) => { e.stopPropagation(); const qd = data.find(d => d.id === id) || null; setEditingQuestion(qd); },
-      },
-      {
-        key: "toggle",
-        label: togglingId === id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        onClick: (e) => { e.stopPropagation(); handleToggleStatus(id); },
-        disabled: togglingId === id,
-      },
-      // Delete action removed per request
-    ];
-
-    return (
-      <div className="relative flex justify-center items-center h-full px-2">
-        <ActionMenu
-          button={<MoreVertical size={20} />}
-          items={items}
-          buttonClassName={"h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center"}
-          menuClassName={"bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"}
-        />
-      </div>
-    );
+  const handleAddSuccess = async () => {
+    setIsAddModalOpen(false);
+    setCurrentPage(1);
+    await fetchData();
   };
 
   return (
@@ -260,16 +235,27 @@ export function ImageMCQClient({
             Image-Based MCQs
           </>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[600px]"
-        bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -298,22 +284,29 @@ export function ImageMCQClient({
       >
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden",
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
             isFilterOpen && "border-r border-border",
           )}
         >
-              {/* header removed: question type is forced and no UI is needed */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+            </div>
+          )}
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
                     <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
                   )}
                   {visibleColumns.includes("image") && (
-                    <TableHead className="w-[120px] text-center">Image</TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Image
+                    </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
                     <TableHead>Question</TableHead>
@@ -321,90 +314,56 @@ export function ImageMCQClient({
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
                   )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("createdBy") && (
                     <TableHead>Created By</TableHead>
                   )}
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">Action</TableHead>
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center">
-                      <Typography variant="body5" className="text-muted-foreground">Loading questions...</Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : data.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={visibleColumns.length + 1}
+                      className="py-8 text-center text-muted-foreground"
+                    >
                       No questions found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((row) => (
-                    <TableRow key={row.id}>
-                      {visibleColumns.includes("srNo") && (
-                        <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + (data.indexOf(row) + 1)}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("image") && (
-                        <TableCell className="text-center">
-                          {row.image_url ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!row.image_url) return;
-                                // Ensure absolute URL so browser can load images served by the API server
-                                const base = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000").replace(/\/$/, "");
-                                const full = /^(https?:)?\//.test(row.image_url)
-                                  ? row.image_url.startsWith("http")
-                                    ? row.image_url
-                                    : `${base}${row.image_url}`
-                                  : row.image_url;
-                                setLightboxUrl(full);
-                              }}
-                              className="inline-flex items-center gap-2 px-2 py-1 rounded hover:bg-muted/10"
-                              title="Open image"
-                            >
-                              <ImageIcon size={18} />
-                              <span className="sr-only">Open image</span>
-                            </button>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("question") && (
-                        <TableCell>{row.question_text}</TableCell>
-                      )}
-                      {visibleColumns.includes("subject") && (
-                        <TableCell>
-                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
-                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-                            <Typography variant="body5" weight="medium" className="text-brand-primary">
-                              {typeof row.subject === "string" ? row.subject : row.subject?.name ?? "N/A"}
-                            </Typography>
-                          </div>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("createdBy") && (
-                        <TableCell>{"System"}</TableCell>
-                      )}
-                      {visibleColumns.includes("createdDate") && (
-                        <TableCell>{row.created_at ? new Date(row.created_at).toLocaleDateString() : "N/A"}</TableCell>
-                      )}
-                      {visibleColumns.includes("actions") && (
-                        <TableCell className="text-center">
-                          <RowActions id={row.id} />
-                        </TableCell>
-                      )}
-                    </TableRow>
+                  data.map((row, index) => (
+                    <ImageMCQRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
+                      onImageClick={setLightboxUrl}
+                    />
                   ))
                 )}
               </TableBody>
@@ -425,88 +384,47 @@ export function ImageMCQClient({
           />
         </div>
 
-        <InlineDrawer
+        <ImageMCQFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Questions
-              </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Question type is forced to IMAGE_MULTIPLE_CHOICE for this page; no UI filter. */}
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Subject
-              </Typography>
-              <SelectDropdown
-                placeholder="All Subjects"
-                options={[
-                  { id: "all", label: "All Subjects" },
-                  ...subjects.map((s) => ({ id: s.code ?? s.id, label: s.name })),
-                ]}
-                value={subjectFilter || "all"}
-                onChange={(val) => {
-                  setSubjectFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={() => {
-                  setSearchQuery("");
-                  setSubjectFilter("all");
-                  setCurrentPage(1);
-                }}
-                className="font-bold w-full"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          subjectFilter={subjectFilter}
+          onSubjectFilterChange={(val) => {
+            setSubjectFilter(val as string);
+            setCurrentPage(1);
+          }}
+          subjects={subjects}
+          examLevelFilter={examLevelFilter}
+          onExamLevelFilterChange={(val) => {
+            setExamLevelFilter(val as string);
+            setCurrentPage(1);
+          }}
+          examLevels={examLevels}
+          marksFilter={marksFilter}
+          onMarksFilterChange={(val) => {
+            setMarksFilter(val as string);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusFilterChange={(val) => {
+            setStatusFilter(val as string);
+            setCurrentPage(1);
+          }}
+          onReset={() => {
+            setSearchQuery("");
+            setSubjectFilter("all");
+            setExamLevelFilter("all");
+            setMarksFilter("all");
+            setStatusFilter("all");
+            setCurrentPage(1);
+          }}
+        />
       </MainCard>
 
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        questionType={FORCED_QUESTION_TYPE}
         onSuccess={handleAddSuccess}
       />
       {editingQuestion && (
@@ -515,37 +433,23 @@ export function ImageMCQClient({
           questionData={editingQuestion}
           onClose={() => setEditingQuestion(null)}
           onSuccess={async () => {
-            // Try to refresh the updated question in-place to reflect changes immediately
-            try {
-              const updated = await questionsApi.getQuestion(editingQuestion.id);
-              setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-              setToastMessage("Question updated successfully.");
-            } catch (err) {
-              console.error("Failed to fetch updated question after save:", err);
-              // fallback to full refresh
-              await fetchData();
-            } finally {
-              setEditingQuestion(null);
-            }
+            await fetchData();
+            setEditingQuestion(null);
           }}
-        />
-      )}
-
-      {viewingQuestionId && (
-        <ViewImageQuestionModal
-          isOpen={true}
-          onClose={() => setViewingQuestionId(null)}
-          questionId={viewingQuestionId}
         />
       )}
 
       {/* Image lightbox: open when a row's image icon is clicked */}
       {lightboxUrl && (
-        <ImageLightbox
-          url={lightboxUrl}
-          onClose={() => setLightboxUrl(null)}
-        />
+        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
+      />
     </PageContainer>
   );
 }

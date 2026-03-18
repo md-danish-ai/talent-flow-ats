@@ -15,6 +15,7 @@ import { questionsApi, type QuestionCreate } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Plus, MessageSquareText, HelpCircle, Loader2, Sparkles, PenTool } from "lucide-react";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 
 // Mock fallbacks to ensure UI works even if DB is empty
 const MOCK_SUBJECTS = [
@@ -63,20 +64,21 @@ export const AddQuestionForm = ({
     const fetchClassifications = async () => {
       try {
         setIsLoadingClassifications(true);
-        const res = await api.get<any>("/classifications/get?limit=100");
-        const dataArr = res?.data?.data || res?.data || (Array.isArray(res) ? res : []);
+        const [subjectsRes, typesRes, levelsRes] = await Promise.all([
+          classificationsApi.getClassifications({ type: "subject_type", is_active: true, limit: 100 }),
+          classificationsApi.getClassifications({ type: "question_type", is_active: true, limit: 100 }),
+          classificationsApi.getClassifications({ type: "exam_level", is_active: true, limit: 100 }),
+        ]);
 
-        if (Array.isArray(dataArr) && dataArr.length > 0) {
-          const fetchedSubjects = dataArr.filter((c: any) => c.type === "subject_type").map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
-          const fetchedTypes = dataArr.filter((c: any) => c.type === "question_type").map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
-          const fetchedLevels = dataArr.filter((c: any) => c.type === "exam_level").map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
+        const fetchedSubjects = (subjectsRes.data || []).map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
+        const fetchedTypes = (typesRes.data || []).map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
+        const fetchedLevels = (levelsRes.data || []).map((c: any) => ({ id: String(c.id), label: c.name, code: c.code }));
 
-          setClassifications({
-            subjects: fetchedSubjects.length > 0 ? fetchedSubjects : classifications.subjects,
-            types: fetchedTypes.length > 0 ? fetchedTypes : classifications.types,
-            levels: fetchedLevels.length > 0 ? fetchedLevels : classifications.levels,
-          });
-        }
+        setClassifications({
+          subjects: fetchedSubjects.length > 0 ? fetchedSubjects : classifications.subjects,
+          types: fetchedTypes.length > 0 ? fetchedTypes : classifications.types,
+          levels: fetchedLevels.length > 0 ? fetchedLevels : classifications.levels,
+        });
       } catch (error) {
         console.error("Failed to fetch classifications, using mocks:", error);
       } finally {
@@ -142,14 +144,16 @@ export const AddQuestionForm = ({
             },
           };
 
+          let mode: "created" | "updated";
           if (questionId) {
             await questionsApi.updateQuestion(questionId, payload as any);
-            if (onSuccess) onSuccess("updated");
+            mode = "updated";
           } else {
             await questionsApi.createQuestion(payload);
-            if (onSuccess) onSuccess("created");
+            mode = "created";
           }
           setServerMessage({ type: "success", text: `Question ${questionId ? 'updated' : 'added'} successfully!` });
+          if (onSuccess) onSuccess(mode);
         }
         if (!questionId) form.reset();
       } catch (error: any) {
@@ -207,35 +211,24 @@ export const AddQuestionForm = ({
             </Typography>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 bg-background p-1.5 rounded-xl border-border/40 border shadow-sm">
-          <button
-            onClick={() => { setIsAIMode(false); setServerMessage(null); form.setFieldValue("source", "Manual"); }}
-            className={cn(
-              "px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200",
-              !isAIMode ? "bg-brand-primary text-white shadow-md scale-[1.02]" : "text-muted-foreground hover:bg-muted/50"
-            )}
-          >
-            Manual
-          </button>
-          <button
-            onClick={() => { setIsAIMode(true); setServerMessage(null); form.setFieldValue("source", "AI"); }}
-            className={cn(
-              "px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 flex items-center gap-2",
-              isAIMode ? "bg-brand-primary text-white shadow-md scale-[1.02]" : "text-muted-foreground hover:bg-muted/50"
-            )}
-          >
-            <Sparkles size={14} />
-            AI Mode
-          </button>
-        </div>
+        
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setIsAIMode(!isAIMode);
+            setServerMessage(null);
+          }}
+          className="rounded-xl border-border/60 hover:bg-muted font-bold text-xs px-4"
+        >
+          {isAIMode ? "SWITCH TO MANUAL" : "TRY AI GENERATOR"}
+        </Button>
       </div>
 
       {serverMessage && (
         <Alert 
-          variant={serverMessage.type}
+          variant={serverMessage.type === "success" ? "success" : "error"}
           description={serverMessage.text}
-          onClose={() => setServerMessage(null)}
-          className="animate-in fade-in slide-in-from-top-2"
+          className="rounded-2xl border-none"
         />
       )}
 
@@ -247,132 +240,27 @@ export const AddQuestionForm = ({
         }}
         className="space-y-8"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <form.Field
-            name="question_type_id"
-            children={(field) => (
-              <div className="space-y-2">
-                <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                  Question Type
-                </Typography>
-                <SelectDropdown
-                  placeholder={isLoadingClassifications ? "Loading..." : "Select Type"}
-                  value={String(field.state.value)}
-                  onChange={(val) => field.handleChange(val)}
-                  options={classifications.types}
-                  className="h-12 bg-muted/10 w-full transition-all border-border/40 hover:border-brand-primary/40 focus:border-brand-primary"
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
-                )}
-              </div>
-            )}
-          />
-
-          <form.Field
-            name="subject_type_id"
-            children={(field) => (
-              <div className="space-y-2">
-                <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                  Subject
-                </Typography>
-                <SelectDropdown
-                  placeholder={isLoadingClassifications ? "Loading..." : "Select Subject"}
-                  value={String(field.state.value)}
-                  onChange={(val) => field.handleChange(val)}
-                  options={classifications.subjects}
-                  className="h-12 bg-muted/10 w-full transition-all border-border/40 hover:border-brand-primary/40 focus:border-brand-primary"
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
-                )}
-              </div>
-            )}
-          />
-
-          <form.Field
-            name="exam_level_id"
-            children={(field) => (
-              <div className="space-y-2">
-                <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                  Exam Level
-                </Typography>
-                <SelectDropdown
-                  placeholder={isLoadingClassifications ? "Loading..." : "Select Level"}
-                  value={String(field.state.value)}
-                  onChange={(val) => field.handleChange(val)}
-                  options={classifications.levels}
-                  className="h-12 bg-muted/10 w-full transition-all border-border/40 hover:border-brand-primary/40 focus:border-brand-primary"
-                  error={field.state.meta.errors.length > 0}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
-                )}
-              </div>
-            )}
-          />
-        </div>
-
-        {isAIMode ? (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-            <form.Field
-              name="number_of_questions"
-              children={(field) => (
-                <div className="space-y-3 p-5 rounded-2xl bg-muted/10 border border-border/30">
-                  <div className="flex items-center justify-between">
-                    <Typography variant="body5" weight="bold" className="text-sm">Number of Questions</Typography>
-                    <span className="text-xs font-black text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded-md">
-                      {field.state.value || 1}
-                    </span>
-                  </div>
-                  <Input
-                    type="range"
-                    min={1}
-                    max={10}
-                    value={field.state.value || 1}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => field.handleChange(Number(e.target.value))}
-                    className="h-2 bg-muted cursor-pointer accent-brand-primary"
-                  />
-                  <p className="text-[10px] text-muted-foreground font-medium italic">
-                    AI can generate up to 10 questions at a time.
-                  </p>
-                </div>
-              )}
-            />
-
-            <form.Field
-              name="additional_context"
-              children={(field) => (
-                <div className="space-y-2">
-                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                    Context or Specific Topics (Optional)
-                  </Typography>
-                  <Textarea
-                    placeholder="e.g. Focus on 'Loops' and 'Conditionals' in Javascript..."
-                    value={field.state.value || ""}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="min-h-[140px] bg-muted/10 border-border/40 resize-none rounded-2xl p-4 focus:ring-brand-primary/20"
-                  />
-                </div>
-              )}
-            />
+        {/* Core Classifications Section */}
+        <div className="p-6 rounded-3xl bg-muted/10 border border-border/40 shadow-sm space-y-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+              <HelpCircle size={18} />
+            </div>
+            <Typography variant="body3" weight="bold">Basic Metadata</Typography>
           </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <form.Field
-              name="question_text"
+              name="subject_type_id"
               children={(field) => (
                 <div className="space-y-2">
-                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                    Question Text
-                  </Typography>
-                  <Textarea
-                    placeholder="Enter your question here..."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="min-h-[150px] bg-muted/10 border-border/40 resize-none rounded-2xl p-4 focus:ring-brand-primary/20"
+                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Subject</Typography>
+                  <SelectDropdown
+                    placeholder="Select Subject"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={classifications.subjects}
+                    className="h-12 bg-white dark:bg-muted/20 border-border/40 rounded-xl"
                   />
                   {field.state.meta.errors.length > 0 && (
                     <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
@@ -381,40 +269,132 @@ export const AddQuestionForm = ({
               )}
             />
 
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-5 bg-brand-primary rounded-full" />
-                  <Typography variant="body3" weight="bold">Answer Options</Typography>
+            <form.Field
+              name="question_type_id"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Category</Typography>
+                  <SelectDropdown
+                    placeholder="Select Type"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={classifications.types}
+                    className="h-12 bg-white dark:bg-muted/20 border-border/40 rounded-xl"
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
+                  )}
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addOption}
-                  disabled={form.getFieldValue("options").length >= 6}
-                  className="rounded-xl border-border/60 hover:border-brand-primary hover:bg-brand-primary/5"
-                >
-                  <Plus size={16} className="mr-1.5" /> Add Options
-                </Button>
-              </div>
+              )}
+            />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form.Field
+              name="exam_level_id"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Level</Typography>
+                  <SelectDropdown
+                    placeholder="Select Level"
+                    value={String(field.state.value)}
+                    onChange={(val) => field.handleChange(val as string)}
+                    options={classifications.levels}
+                    className="h-12 bg-white dark:bg-muted/20 border-border/40 rounded-xl"
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+        </div>
+
+        {isAIMode ? (
+          /* AI Mode Fields */
+          <div className="p-6 rounded-3xl bg-brand-primary/[0.03] border border-brand-primary/20 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="md:col-span-1">
+                <form.Field
+                  name="number_of_questions"
+                  children={(field) => (
+                    <div className="space-y-2">
+                      <Typography variant="body5" weight="semibold" className="text-brand-primary/80 uppercase tracking-widest ml-1">Quantity</Typography>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(Number(e.target.value))}
+                        className="h-12 bg-white dark:bg-muted/20 border-brand-primary/20 rounded-xl focus-visible:ring-brand-primary/20 font-bold"
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <form.Field
+                  name="additional_context"
+                  children={(field) => (
+                    <div className="space-y-2">
+                      <Typography variant="body5" weight="semibold" className="text-brand-primary/80 uppercase tracking-widest ml-1">Prompt Context (Optional)</Typography>
+                      <Input
+                        placeholder="e.g. Focus on Python decorators and async/await..."
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-12 bg-white dark:bg-muted/20 border-brand-primary/20 rounded-xl focus-visible:ring-brand-primary/20"
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Manual Mode Fields */
+          <div className="space-y-8">
+            <div className="p-6 rounded-3xl bg-white dark:bg-muted/5 border border-border/40 shadow-sm space-y-6">
+              <form.Field
+                name="question_text"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Question Content</Typography>
+                    <Textarea 
+                      placeholder="Type your question prompt here..."
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="min-h-[120px] bg-muted/5 border-border/30 resize-none rounded-2xl p-4 focus:ring-brand-primary/20"
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
+                    )}
+                  </div>
+                )}
+              />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Options</Typography>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addOption}
+                    className="h-8 rounded-lg text-[10px] font-black tracking-tighter"
+                  >
+                    + ADD OPTION
+                  </Button>
+                </div>
+
                 <form.Field
                   name="options"
-                  mode="array"
                   children={(field) => 
                     field.state.value.map((opt: any, index: number) => (
-                      <div key={index} className="relative group overflow-hidden border border-border/40 rounded-2xl bg-muted/5 hover:border-brand-primary/30 transition-all duration-300">
-                        <div className="flex items-center justify-between p-3 border-b border-border/30 bg-muted/10">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-primary text-xs font-black text-white shadow-sm">
-                            {opt.option_label}
-                          </span>
-                          <div className="flex items-center gap-3">
-                            <label className="flex items-center gap-1.5 cursor-pointer group/label">
-                              <span className="text-[10px] font-black uppercase text-muted-foreground group-hover/label:text-brand-primary transition-colors">
-                                {opt.is_correct ? "Correct" : "Mark Correct"}
-                              </span>
+                      <div key={index} className="group relative bg-muted/5 border border-border/30 rounded-2xl overflow-hidden transition-all hover:border-brand-primary/30">
+                        <div className="flex items-center justify-between px-4 py-2 bg-muted/10 border-b border-border/20">
+                          <span className="text-xs font-black text-brand-primary italic">Option {opt.option_label}</span>
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer group/label">
+                              <span className="text-[10px] font-bold text-muted-foreground group-hover/label:text-brand-primary transition-colors">CORRECT?</span>
                               <input
                                 type="checkbox"
                                 checked={opt.is_correct}
@@ -429,14 +409,14 @@ export const AddQuestionForm = ({
                               />
                             </label>
                             {field.state.value.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => removeOption(index)}
-                                className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-                              >
-                                <Plus size={16} className="rotate-45" />
-                              </button>
-                            )}
+                                <button
+                                  type="button"
+                                  onClick={() => removeOption(index)}
+                                  className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                                >
+                                  <Plus size={16} className="rotate-45" />
+                                </button>
+                              )}
                           </div>
                         </div>
                         <div className="p-4">
@@ -456,59 +436,50 @@ export const AddQuestionForm = ({
                   }
                 />
               </div>
-              {form.state.fieldMeta.options?.errors && form.state.fieldMeta.options.errors.length > 0 && (
-                <p className="text-[10px] font-bold text-destructive ml-2 mt-2 italic">
-                  * {getErrorMessage(form.state.fieldMeta.options.errors[0])}
-                </p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-4 border-t border-border/30">
-              <div className="md:col-span-3">
-                <form.Field
-                  name="explanation"
-                  children={(field) => (
-                    <div className="space-y-2">
-                      <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                        Answer Explanation
-                      </Typography>
-                      <Textarea
-                        placeholder="Explain why the selected option correct?..."
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        className="min-h-[100px] bg-muted/10 border-border/40 resize-none rounded-2xl p-4 focus:ring-brand-primary/20"
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
-                      )}
-                    </div>
-                  )}
-                />
-              </div>
-              <div className="md:col-span-1">
-                <form.Field
-                  name="marks"
-                  children={(field) => (
-                    <div className="space-y-2">
-                      <Typography variant="body5" weight="semibold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">
-                        Marks
-                      </Typography>
-                      <div className="p-4 rounded-2xl bg-muted/10 border border-border/40 flex items-center gap-3">
-                        <Input
-                          type="number"
-                          min={1}
-                          max={50}
+                <div className="md:col-span-3">
+                  <form.Field
+                    name="explanation"
+                    children={(field) => (
+                      <div className="space-y-2">
+                        <Typography variant="body5" weight="bold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Answer Explanation</Typography>
+                        <Textarea
+                          placeholder="Explain why the selected option is correct?..."
                           value={field.state.value}
-                          onChange={(e) => field.handleChange(Number(e.target.value))}
-                          className="h-10 bg-transparent border-none focus-visible:ring-0 text-center font-black text-lg p-0"
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          className="min-h-[100px] bg-muted/10 border-border/40 resize-none rounded-2xl p-4 focus:ring-brand-primary/20"
                         />
-                        <div className="h-8 w-px bg-border/40" />
-                        <span className="text-[10px] font-black uppercase text-muted-foreground/60 leading-tight">Points</span>
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-[10px] font-bold text-destructive ml-1">{getErrorMessage(field.state.meta.errors[0])}</p>
+                        )}
                       </div>
-                    </div>
-                  )}
-                />
-              </div>
+                    )}
+                  />
+                </div>
+                <div className="md:col-span-1">
+                  <form.Field
+                    name="marks"
+                    children={(field) => (
+                      <div className="space-y-2">
+                        <Typography variant="body5" weight="bold" className="text-muted-foreground/80 uppercase tracking-widest ml-1">Marks</Typography>
+                        <div className="p-4 rounded-2xl bg-muted/10 border border-border/40 flex items-center gap-3">
+                          <Input
+                            type="number"
+                            min={1}
+                            max={50}
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(Number(e.target.value))}
+                            className="h-10 bg-transparent border-none focus-visible:ring-0 text-center font-black text-lg p-0"
+                          />
+                          <div className="h-8 w-px bg-border/40" />
+                          <span className="text-[10px] font-black uppercase text-muted-foreground/60 leading-tight">Points</span>
+                        </div>
+                      </div>
+                    )}
+                  />
+                </div>
             </div>
           </div>
         )}

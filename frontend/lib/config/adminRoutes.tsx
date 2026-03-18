@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LayoutDashboard,
   HelpCircle,
@@ -6,7 +5,7 @@ import {
   BarChart3,
   Settings,
   Package,
-  Users,
+  Building2,
 } from "lucide-react";
 
 export interface NavItem {
@@ -20,8 +19,8 @@ export interface NavSection {
   title: string;
   icon: React.ReactNode;
   type: NavSectionType;
-  href?: string; // Used when type is "item"
-  items: NavItem[]; // Used when type is "collapsible"
+  href?: string;
+  items: NavItem[];
 }
 
 export const ADMIN_ROUTES: NavSection[] = [
@@ -42,55 +41,62 @@ export const ADMIN_ROUTES: NavSection[] = [
       { label: "Subjective Questions", href: "/admin/questions/subjective" },
       { label: "Image Subjective", href: "/admin/questions/image-subjective" },
       { label: "Passage Content", href: "/admin/questions/passage" },
+      { label: "Typing Test", href: "/admin/questions/typing-test" },
+      { label: "Lead Generation", href: "/admin/questions/lead-generation" },
+      {
+        label: "Company Contact Details",
+        href: "/admin/questions/contact-details",
+      },
     ],
   },
   {
-    title: "Papers",
+    title: "Papers Setup",
     icon: <FileText className="w-5 h-5" />,
     type: "collapsible",
     items: [
       { label: "Paper Setup", href: "/admin/paper/setup" },
-      { label: "Company Contact", href: "/admin/paper/contact-details" },
-      { label: "Lead Generation", href: "/admin/paper/lead-generation" },
-      { label: "Typing Test", href: "/admin/paper/typing-test" },
-      { label: "Reset User", href: "/admin/paper/reset-user" },
       { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
+      { label: "Reset User Status", href: "/admin/paper/reset-user" },
     ],
   },
   {
     title: "Results",
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
-    items: [{ label: "View All Results", href: "/admin/results" }],
+    items: [
+      { label: "All Statistics", href: "/admin/results" },
+      { label: "Individual Results", href: "/admin/results/user-results" },
+    ],
   },
   {
     title: "Management",
-    icon: <Users className="w-5 h-5" />,
+    icon: <Building2 className="w-5 h-5" />,
     type: "collapsible",
     items: [
       { label: "Admins", href: "/admin/management/admins" },
       { label: "Users", href: "/admin/management/users" },
-      { label: "Add Subject & Level", href: "/admin/management/subject-level" },
+      { label: "Departments", href: "/admin/management/department" },
+      { label: "Subjects & Levels", href: "/admin/management/subject-level" },
     ],
   },
   {
-    title: "Settings",
+    title: "System Config",
     icon: <Settings className="w-5 h-5" />,
     type: "collapsible",
     items: [
-      { label: "Allow Authenticated Users", href: "/admin/settings/auth" },
-      { label: "Subject Management", href: "/admin/settings/add-subject" },
+      { label: "Auth Rules", href: "/admin/settings/auth" },
+      { label: "Notification Center", href: "/admin/notifications" },
     ],
   },
   ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
     ? [
-      {
-        title: "Packages",
-        icon: <Package className="w-5 h-5" />,
-        type: "item" as NavSectionType,
-        href: "/admin/packages",
-        items: [],
-      },
-    ]
+        {
+          title: "Packages",
+          icon: <Package className="w-5 h-5" />,
+          type: "item" as NavSectionType,
+          href: "/admin/packages",
+          items: [],
+        },
+      ]
     : []),
 ];

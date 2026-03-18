@@ -14,30 +14,18 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  Plus,
-  Edit,
-  Eye,
-  MoreVertical,
-  Loader2,
-  Filter,
-  Search,
-  RotateCcw,
-  ListChecks,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import ActionMenu, { ActionItem } from "@components/ui-elements/ActionMenu";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
+import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
-import { ViewQuestionModal } from "./components/ViewQuestionModal";
+import { toast } from "@lib/toast";
 import { EditQuestionModal } from "./components/EditQuestionModal";
 import { AddQuestionModal } from "./components/AddQuestionModal";
+import { ImageSubjectiveFilters } from "./components/ImageSubjectiveFilters";
+import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
+import ImageLightbox from "../image-mcq/components/ImageLightbox";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 export function ImageSubjectiveClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -48,31 +36,52 @@ export function ImageSubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [subjectFilter, setSubjectFilter] = useState<string | number | undefined>(undefined);
+  const [subjectFilter, setSubjectFilter] = useState<
+    string | number | undefined
+  >("all");
+  const [examLevelFilter, setExamLevelFilter] = useState<
+    string | number | undefined
+  >("all");
+  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
+    "all",
+  );
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
   // Column visibility
   const allColumns = [
-    { id: "srNo", label: "Sr. No." },
-    { id: "question", label: "Question" },
+    { id: "srNo", label: "Sr. No.", pinned: true },
+    { id: "image", label: "Image" },
+    { id: "question", label: "Question", pinned: true },
     { id: "subject", label: "Subject" },
+    { id: "examLevel", label: "Exam Level" },
+    { id: "marks", label: "Marks" },
     { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Action" },
+    { id: "status", label: "Status" },
+    { id: "actions", label: "Action", pinned: true },
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
+    "image",
     "question",
     "subject",
-    "createdDate",
+    "examLevel",
+    "marks",
     "actions",
-  ]);
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -94,9 +103,24 @@ export function ImageSubjectiveClient() {
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
-        question_type: "IMAGE_SUBJECTIVE",
+        question_type: QUESTION_TYPES.IMAGE_SUBJECTIVE,
         search: debouncedSearch,
-        subject: subjectFilter !== "all" ? (subjectFilter as string) : undefined,
+        subject:
+          subjectFilter && subjectFilter !== "all"
+            ? (subjectFilter as string)
+            : undefined,
+        exam_level:
+          examLevelFilter && examLevelFilter !== "all"
+            ? (examLevelFilter as string)
+            : undefined,
+        marks:
+          marksFilter && marksFilter !== "all"
+            ? Number(marksFilter)
+            : undefined,
+        is_active:
+          statusFilter && statusFilter !== "all"
+            ? statusFilter === "true"
+            : undefined,
       });
 
       setData(response.data || []);
@@ -108,85 +132,56 @@ export function ImageSubjectiveClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch, subjectFilter]);
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearch,
+    subjectFilter,
+    examLevelFilter,
+    marksFilter,
+    statusFilter,
+  ]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchClassifications = async () => {
       try {
-        const response = await classificationsApi.getClassifications({ type: "subject", limit: 100 });
-        setSubjects(response.data || []);
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            is_active: true,
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            is_active: true,
+            limit: 100,
+          }),
+        ]);
+        setSubjects(subjectsRes.data || []);
+        setExamLevels(examLevelsRes.data || []);
       } catch (error) {
-        console.error("Failed to fetch subjects:", error);
+        console.error("Failed to fetch classifications:", error);
       }
     };
-    if (subjects.length === 0) {
-      fetchSubjects();
-    }
-  }, [subjects.length]);
+    fetchClassifications();
+  }, []);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
       await fetchData();
+      toast.success("Status updated successfully");
     } catch (error) {
       console.error("Failed to toggle question status:", error);
+      toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const RowActions = ({ row }: { row: Question }) => {
-    const isActive = row.is_active !== false;
-    const items: ActionItem[] = [
-      {
-        key: "view",
-        label: "View Details",
-        icon: <Eye size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          setViewingQuestion(row);
-        },
-      },
-      {
-        key: "edit",
-        label: "Edit Question",
-        icon: <Edit size={16} />,
-        onClick: (e) => {
-          e.stopPropagation();
-          setEditingQuestion(row);
-        },
-      },
-      {
-        key: "toggle",
-        label: togglingId === row.id ? "Updating..." : isActive ? "Deactivate" : "Activate",
-        icon: togglingId === row.id ? <Loader2 size={16} className="animate-spin" /> : isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />,
-        className: isActive ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10" : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
-        onClick: (e) => {
-          e.stopPropagation();
-          handleToggleStatus(row.id);
-        },
-        disabled: togglingId === row.id,
-      },
-    ];
-
-    return (
-      <div className="relative flex justify-center items-center h-full px-2">
-        <ActionMenu
-          button={<MoreVertical size={20} />}
-          items={items}
-          buttonClassName={cn(
-            "h-9 w-9 rounded-full transition-all duration-300 flex items-center justify-center",
-            "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-          menuClassName="w-48 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-border rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
-        />
-      </div>
-    );
   };
 
   return (
@@ -200,16 +195,27 @@ export function ImageSubjectiveClient() {
             Image Subjective Questions
           </>
         }
-        className="mb-6 flex-1 flex flex-col min-h-[600px]"
-        bodyClassName="p-0 flex flex-row items-stretch flex-1"
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -238,7 +244,7 @@ export function ImageSubjectiveClient() {
       >
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden relative",
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
             isFilterOpen && "border-r border-border",
           )}
         >
@@ -247,12 +253,20 @@ export function ImageSubjectiveClient() {
               <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
             </div>
           )}
-          <div className="flex-1 overflow-x-auto w-full min-h-0">
+          <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
                   {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("image") && (
+                    <TableHead className="w-[80px] text-center">
+                      Image
+                    </TableHead>
                   )}
                   {visibleColumns.includes("question") && (
                     <TableHead>Question</TableHead>
@@ -260,11 +274,26 @@ export function ImageSubjectiveClient() {
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
                   )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("createdDate") && (
                     <TableHead>Created Date</TableHead>
                   )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
                   {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">Action</TableHead>
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -272,48 +301,28 @@ export function ImageSubjectiveClient() {
               <TableBody>
                 {data.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="py-8 text-center text-muted-foreground">
-                      No image subjective questions found. Click &quot;Add Question&quot; to create one.
+                    <TableCell
+                      colSpan={visibleColumns.length + 1}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No image subjective questions found. Click &quot;Add
+                      Question&quot; to create one.
                     </TableCell>
                   </TableRow>
                 ) : (
                   data.map((row, index) => (
-                    <TableRow key={row.id} className="hover:bg-muted/20 transition-colors">
-                      {visibleColumns.includes("srNo") && (
-                        <TableCell className="font-medium text-center text-muted-foreground">
-                          {(currentPage - 1) * pageSize + index + 1}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("question") && (
-                        <TableCell className="max-w-[400px]">
-                          <Typography variant="body4" weight="semibold" className="line-clamp-2">
-                            {row.question_text}
-                          </Typography>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("subject") && (
-                        <TableCell>
-                          <div className="px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/10 inline-flex items-center gap-1.5 w-fit">
-                            <div className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-                            <Typography variant="body5" weight="medium" className="text-brand-primary">
-                              {row.subject?.name || "No Subject"}
-                            </Typography>
-                          </div>
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("createdDate") && (
-                        <TableCell className="text-muted-foreground">
-                          {row.created_at
-                            ? new Date(row.created_at).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                      )}
-                      {visibleColumns.includes("actions") && (
-                        <TableCell className="text-center">
-                          <RowActions row={row} />
-                        </TableCell>
-                      )}
-                    </TableRow>
+                    <ImageSubjectiveRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
+                      onImageClick={setLightboxUrl}
+                    />
                   ))
                 )}
               </TableBody>
@@ -334,80 +343,42 @@ export function ImageSubjectiveClient() {
           />
         </div>
 
-        <InlineDrawer
+        <ImageSubjectiveFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Questions
-              </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by keyword..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                By Subject
-              </Typography>
-              <SelectDropdown
-                placeholder="All Subjects"
-                options={[
-                  { id: "all", label: "All Subjects" },
-                  ...(subjects.map(s => ({ id: s.code, label: s.name })) || [])
-                ]}
-                value={subjectFilter || "all"}
-                onChange={(val) => {
-                  setSubjectFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="bottom"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={() => {
-                  setSearchQuery("");
-                  setSubjectFilter("all");
-                  setCurrentPage(1);
-                }}
-                className="font-bold w-full"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          subjectFilter={subjectFilter}
+          onSubjectFilterChange={(val) => {
+            setSubjectFilter(val);
+            setCurrentPage(1);
+          }}
+          subjects={subjects}
+          examLevelFilter={examLevelFilter}
+          onExamLevelFilterChange={(val) => {
+            setExamLevelFilter(val);
+            setCurrentPage(1);
+          }}
+          examLevels={examLevels}
+          marksFilter={marksFilter}
+          onMarksFilterChange={(val) => {
+            setMarksFilter(val);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusFilterChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}
+          onReset={() => {
+            setSearchQuery("");
+            setSubjectFilter("all");
+            setExamLevelFilter("all");
+            setMarksFilter("all");
+            setStatusFilter("all");
+            setCurrentPage(1);
+          }}
+        />
       </MainCard>
 
       {/* Modals */}
@@ -426,13 +397,17 @@ export function ImageSubjectiveClient() {
         />
       )}
 
-      {viewingQuestion && (
-        <ViewQuestionModal
-          questionId={viewingQuestion.id}
-          isOpen={true}
-          onClose={() => setViewingQuestion(null)}
-        />
+      {/* Lightbox for image preview */}
+      {lightboxUrl && (
+        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.IMAGE_SUBJECTIVE}
+      />
     </PageContainer>
   );
 }

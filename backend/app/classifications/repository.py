@@ -13,7 +13,7 @@ def get_all(
     sort_by: str = "sort_order",
     order: str = "asc",
     limit: int = 10,
-    offset: int = 0
+    offset: int = 0,
 ):
     db_session = SessionLocal()
     try:
@@ -24,14 +24,13 @@ def get_all(
             query = query.filter(Classification.is_active == is_active)
         if search:
             query = query.filter(
-                (Classification.name.ilike(f"%{search}%")) |
-                (Classification.code.ilike(f"%{search}%"))
+                (Classification.name.ilike(f"%{search}%"))
+                | (Classification.code.ilike(f"%{search}%"))
             )
 
         total_records = query.count()
 
-        sort_column = getattr(Classification, sort_by,
-                              Classification.sort_order)
+        sort_column = getattr(Classification, sort_by, Classification.sort_order)
         if order == "desc":
             query = query.order_by(Classification.type, sort_column.desc())
         else:
@@ -50,7 +49,7 @@ def get_all(
                 "sort_order": classification.sort_order,
                 "is_active": classification.is_active,
                 "created_at": classification.created_at,
-                "updated_at": classification.updated_at
+                "updated_at": classification.updated_at,
             }
             for classification in results
         ]
@@ -62,8 +61,11 @@ def get_all(
 def get_by_id(classification_id: int):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(
-            Classification.id == classification_id).first()
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.id == classification_id)
+            .first()
+        )
         if not classification:
             return None
         return {
@@ -75,7 +77,7 @@ def get_by_id(classification_id: int):
             "sort_order": classification.sort_order,
             "is_active": classification.is_active,
             "created_at": classification.created_at,
-            "updated_at": classification.updated_at
+            "updated_at": classification.updated_at,
         }
     finally:
         db_session.close()
@@ -84,10 +86,11 @@ def get_by_id(classification_id: int):
 def get_by_code_and_type(code: str, type_: str):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(
-            Classification.code == code.upper(),
-            Classification.type == type_
-        ).first()
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.code == code.upper(), Classification.type == type_)
+            .first()
+        )
         if not classification:
             return None
         return {
@@ -99,7 +102,27 @@ def get_by_code_and_type(code: str, type_: str):
             "sort_order": classification.sort_order,
             "is_active": classification.is_active,
             "created_at": classification.created_at,
-            "updated_at": classification.updated_at
+            "updated_at": classification.updated_at,
+        }
+    finally:
+        db_session.close()
+
+
+def get_by_code(code: str):
+    db_session = SessionLocal()
+    try:
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.code == code.upper())
+            .first()
+        )
+        if not classification:
+            return None
+        return {
+            "id": classification.id,
+            "code": classification.code,
+            "type": classification.type,
+            "name": classification.name,
         }
     finally:
         db_session.close()
@@ -108,8 +131,11 @@ def get_by_code_and_type(code: str, type_: str):
 def update(classification_id: int, data):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(
-            Classification.id == classification_id).first()
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.id == classification_id)
+            .first()
+        )
         if not classification:
             return None
 
@@ -130,7 +156,7 @@ def update(classification_id: int, data):
                 db_session=db_session,
                 classification_type=classification_type,
                 old_code=old_code,
-                new_code=new_code
+                new_code=new_code,
             )
         # ----------------------------------------------------
 
@@ -145,7 +171,7 @@ def update(classification_id: int, data):
             "sort_order": classification.sort_order,
             "is_active": classification.is_active,
             "created_at": classification.created_at,
-            "updated_at": classification.updated_at
+            "updated_at": classification.updated_at,
         }
     except Exception as exception:
         db_session.rollback()
@@ -154,7 +180,9 @@ def update(classification_id: int, data):
         db_session.close()
 
 
-def _cascade_code_update(db_session, classification_type: str, old_code: str, new_code: str):
+def _cascade_code_update(
+    db_session, classification_type: str, old_code: str, new_code: str
+):
     """
     Propagate a classification code rename to all tables that store code values
     as denormalized string references.
@@ -168,48 +196,19 @@ def _cascade_code_update(db_session, classification_type: str, old_code: str, ne
     papers feature is complete; cascade it when the type is 'subject'.
     """
     if classification_type == "question_type":
-        db_session.query(Question).filter(
-            Question.question_type == old_code
-        ).update({"question_type": new_code}, synchronize_session=False)
+        db_session.query(Question).filter(Question.question_type == old_code).update(
+            {"question_type": new_code}, synchronize_session=False
+        )
 
     elif classification_type == "subject":
-        db_session.query(Question).filter(
-            Question.subject_type == old_code
-        ).update({"subject_type": new_code}, synchronize_session=False)
-
-        # papers.subject_id stores subject codes as a JSONB array e.g. ["GRAMMAR", "MATH"].
-        # Replace the specific old element with the new one, preserving other elements.
-        db_session.execute(
-            __import__("sqlalchemy").text(
-                """
-                UPDATE papers
-                SET subject_id = (
-                    SELECT jsonb_agg(
-                        CASE WHEN elem::text = :old_code_quoted
-                             THEN :new_code::jsonb
-                             ELSE elem
-                        END
-                    )
-                    FROM jsonb_array_elements(subject_id) AS elem
-                )
-                WHERE subject_id @> CAST(:old_code_array AS jsonb)
-                """
-            ),
-            {
-                "old_code_quoted": f'"{old_code}"',
-                "new_code": f'"{new_code}"',
-                "old_code_array": f'["{old_code}"]'
-            }
+        db_session.query(Question).filter(Question.subject_type == old_code).update(
+            {"subject_type": new_code}, synchronize_session=False
         )
 
     elif classification_type == "exam_level":
-        db_session.query(Question).filter(
-            Question.exam_level == old_code
-        ).update({"exam_level": new_code}, synchronize_session=False)
-
-        db_session.query(Paper).filter(
-            Paper.level == old_code
-        ).update({"level": new_code}, synchronize_session=False)
+        db_session.query(Question).filter(Question.exam_level == old_code).update(
+            {"exam_level": new_code}, synchronize_session=False
+        )
 
 
 def check_dependencies(classification_id: int) -> dict:
@@ -220,8 +219,11 @@ def check_dependencies(classification_id: int) -> dict:
     """
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(
-            Classification.id == classification_id).first()
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.id == classification_id)
+            .first()
+        )
         if not classification:
             return {}
 
@@ -230,39 +232,50 @@ def check_dependencies(classification_id: int) -> dict:
         deps = {}
 
         if classification_type == "question_type":
-            count = db_session.query(Question).filter(
-                Question.question_type == code).count()
+            count = (
+                db_session.query(Question)
+                .filter(Question.question_type == code)
+                .count()
+            )
             if count:
                 deps["questions.question_type"] = count
 
         elif classification_type == "subject":
-            count = db_session.query(Question).filter(
-                Question.subject_type == code).count()
+            count = (
+                db_session.query(Question).filter(Question.subject_type == code).count()
+            )
             if count:
                 deps["questions.subject_type"] = count
 
-            # papers.subject_id stores subject codes as a JSONB array.
-            # Use the @> containment operator to find rows that include the code.
-            paper_count = db_session.execute(
-                __import__("sqlalchemy").text(
-                    "SELECT COUNT(*) FROM papers "
-                    "WHERE subject_id @> CAST(:code_array AS jsonb)"
-                ),
-                {"code_array": f'["{code}"]'}
-            ).scalar() or 0
+            # papers.subject_ids_data stores subjects as a JSONB array of objects e.g. [{"subject_id": 1}, ...].
+            # Use @> containment to find rows including this subject ID.
+            paper_count = (
+                db_session.execute(
+                    __import__("sqlalchemy").text(
+                        "SELECT COUNT(*) FROM papers "
+                        "WHERE subject_ids_data @> CAST(:id_obj_array AS jsonb)"
+                    ),
+                    {"id_obj_array": f'[{{"subject_id": {classification.id}}}]'},
+                ).scalar()
+                or 0
+            )
             if paper_count:
-                deps["papers.subject_id"] = paper_count
+                deps["papers.subject_config"] = paper_count
 
         elif classification_type == "exam_level":
-            q_count = db_session.query(Question).filter(
-                Question.exam_level == code).count()
+            q_count = (
+                db_session.query(Question).filter(Question.exam_level == code).count()
+            )
             if q_count:
                 deps["questions.exam_level"] = q_count
 
-            p_count = db_session.query(Paper).filter(
-                Paper.level == code).count()
+            p_count = (
+                db_session.query(Paper)
+                .filter(Paper.test_level_id == classification.id)
+                .count()
+            )
             if p_count:
-                deps["papers.level"] = p_count
+                deps["papers.test_level"] = p_count
 
         return deps
     finally:
@@ -272,8 +285,11 @@ def check_dependencies(classification_id: int) -> dict:
 def delete(classification_id: int):
     db_session = SessionLocal()
     try:
-        classification = db_session.query(Classification).filter(
-            Classification.id == classification_id).first()
+        classification = (
+            db_session.query(Classification)
+            .filter(Classification.id == classification_id)
+            .first()
+        )
         if classification:
             db_session.delete(classification)
             db_session.commit()
@@ -288,10 +304,27 @@ def delete(classification_id: int):
 def count_by_name_and_type(name: str, type_: str):
     db_session = SessionLocal()
     try:
-        return db_session.query(Classification).filter(
-            Classification.name == name,
-            Classification.type == type_
-        ).count()
+        return (
+            db_session.query(Classification)
+            .filter(Classification.name == name, Classification.type == type_)
+            .count()
+        )
+    finally:
+        db_session.close()
+
+
+def count_by_name_and_type_exclude_id(name: str, type_: str, exclude_id: int):
+    db_session = SessionLocal()
+    try:
+        return (
+            db_session.query(Classification)
+            .filter(
+                Classification.name == name,
+                Classification.type == type_,
+                Classification.id != exclude_id,
+            )
+            .count()
+        )
     finally:
         db_session.close()
 
@@ -299,7 +332,11 @@ def count_by_name_and_type(name: str, type_: str):
 def count_by_type(type_: str):
     db_session = SessionLocal()
     try:
-        return db_session.query(Classification).filter(Classification.type == type_).count()
+        return (
+            db_session.query(Classification)
+            .filter(Classification.type == type_)
+            .count()
+        )
     finally:
         db_session.close()
 
@@ -313,7 +350,7 @@ def create(data, code: str):
             name=data.name,
             extra_metadata=getattr(data, "metadata", None),
             sort_order=getattr(data, "sort_order", 0),
-            is_active=getattr(data, "is_active", True)
+            is_active=getattr(data, "is_active", True),
         )
         db_session.add(new_classification)
         db_session.commit()
@@ -327,7 +364,7 @@ def create(data, code: str):
             "sort_order": new_classification.sort_order,
             "is_active": new_classification.is_active,
             "created_at": new_classification.created_at,
-            "updated_at": new_classification.updated_at
+            "updated_at": new_classification.updated_at,
         }
     except Exception as exception:
         db_session.rollback()

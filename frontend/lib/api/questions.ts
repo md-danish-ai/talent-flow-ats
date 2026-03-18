@@ -28,7 +28,7 @@ export interface Question {
   passage?: string | null;
   marks: number;
   is_active: boolean;
-  options: QuestionOption[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer?: QuestionAnswer;
   question_type?: ClassificationRef | null;
   subject?: ClassificationRef | null;
@@ -57,32 +57,22 @@ export interface QuestionCreate {
   passage?: string | null;
   marks: number;
   is_active?: boolean;
-  options: OptionCreate[];
+  options: QuestionOption[] | Record<string, unknown> | null;
   answer: AnswerCreate;
 }
 
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sort_by?: string;
-  order?: "asc" | "desc";
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    total_records: number;
-    total_pages: number;
-    current_page: number;
-    per_page: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}
+import { type PaginatedResponse, type PaginationParams } from "./types";
 
 export const questionsApi = {
-  getQuestions: async (params?: PaginationParams & { question_type?: string, subject?: string, exam_level?: string, is_active?: boolean }) => {
+  getQuestions: async (
+    params?: PaginationParams & {
+      question_type?: string;
+      subject?: string;
+      exam_level?: string;
+      is_active?: boolean;
+      marks?: number;
+    },
+  ) => {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -98,14 +88,25 @@ export const questionsApi = {
   getQuestion: async (id: number) => {
     return api.get<Question>(`/questions/get/${id}`);
   },
+  getQuestionsByIds: async (ids: number[]) => {
+    return api.post<Question[]>(
+      "/questions/get-by-ids",
+      { ids },
+      { silentSuccess: true },
+    );
+  },
   createQuestion: async (data: QuestionCreate) => {
     return api.post("/questions/create", data);
   },
   updateQuestion: async (id: number, data: Partial<QuestionCreate>) => {
-    return api.patch(`/questions/update/${id}`, data);
+    return api.put(`/questions/update/${id}`, data);
   },
   toggleQuestionStatus: async (id: number) => {
-    return api.patch<{ message: string; is_active: boolean }>(`/questions/toggle/${id}`);
+    return api.put<{ message: string; is_active: boolean }>(
+      `/questions/update-status/${id}`,
+      undefined,
+      { silentSuccess: true },
+    );
   },
   deleteQuestion: async (id: number) => {
     // Backend exposes DELETE /questions/{question_id}
@@ -115,7 +116,8 @@ export const questionsApi = {
     const formData = new FormData();
     formData.append("image", file);
 
-    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+    const BASE_URL =
+      process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
     const getCookie = (name: string) => {
       if (typeof document === "undefined") return undefined;
@@ -127,7 +129,13 @@ export const questionsApi = {
 
     let token = getCookie("auth_token");
     if (token) {
-      token = token.replace(/^["%22]+|["%22]+$/g, "");
+      // Fix: properly strip only quote characters
+      token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+      try {
+        token = decodeURIComponent(token);
+      } catch {
+        /* keep raw */
+      }
     }
 
     const headers: Record<string, string> = {};

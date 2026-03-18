@@ -36,7 +36,8 @@ services:
       DB_NAME: talent_flow_ats
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-Pass2020NothingSpecial}
-    command: sh /backend/scripts/run_migrations.sh
+    entrypoint: ["sh", "/backend/scripts/run_migrations.sh"]
+    command: ["upgrade", "head"]
 
   db:
     container_name: talent-flow-postgres

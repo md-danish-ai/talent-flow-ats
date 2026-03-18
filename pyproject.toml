@@ -1,0 +1,2 @@
+[tool.ruff]
+exclude = ["backend/seeds", "backend/venv", "frontend/node_modules", ".git", "__pycache__"]

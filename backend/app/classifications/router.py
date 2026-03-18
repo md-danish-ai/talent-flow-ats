@@ -4,19 +4,23 @@ from app.classifications.schemas import ClassificationCreate, ClassificationUpda
 from app.classifications.service import ClassificationService
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, get_current_user
-from app.utils.pagination import PaginationParams, get_pagination_params, create_paginated_response
+from app.utils.pagination import (
+    PaginationParams,
+    get_pagination_params,
+    create_paginated_response,
+)
 
 router = APIRouter(
     prefix="/classifications",
     tags=["Classifications"],
-    dependencies=[Depends(require_roles(["admin"]))]
+    dependencies=[Depends(require_roles(["admin"]))],
 )
 service = ClassificationService()
 
 
 @router.get("/get")
 def get_all(
-    type:      Optional[str] = None,
+    type: Optional[str] = None,
     is_active: Optional[bool] = None,
     pagination: PaginationParams = Depends(get_pagination_params),
 ):
@@ -28,7 +32,7 @@ def get_all(
         sort_by=pagination.sort_by,
         order=pagination.order,
         limit=pagination.limit,
-        offset=offset
+        offset=offset,
     )
     paginated_data = create_paginated_response(data, total_records, pagination)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)

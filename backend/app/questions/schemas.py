@@ -6,49 +6,51 @@ from typing import List, Optional, Any
 
 class OptionCreate(BaseModel):
     option_label: str
-    option_text:  str
-    is_correct:   bool
+    option_text: str
+    is_correct: bool
 
 
 class OptionUpdate(BaseModel):
     option_label: str
-    option_text:  str
-    is_correct:   bool
+    option_text: str
+    is_correct: bool
 
 
 class AnswerCreate(BaseModel):
-    answer_text:  Optional[str] = None
-    explanation:  Optional[str] = None
-
+    answer_text: Optional[str] = None
+    explanation: Optional[str] = None
 
 
 class AnswerUpdate(BaseModel):
-    answer_text:  Optional[str] = None
-    explanation:  Optional[str] = None
+    answer_text: Optional[str] = None
+    explanation: Optional[str] = None
 
 
 class QuestionCreate(BaseModel):
     question_type: str
-    subject:       str
-    exam_level:    str
+    subject: str
+    exam_level: str
     question_text: str
-    image_url:     Optional[str] = None
-    passage:       Optional[str] = None
-    marks:         int
-    is_active:     bool = True
-    options:       List[OptionCreate]
-    answer:        Optional[AnswerCreate] = None # Keep for legacy compatibility if needed
-
+    image_url: Optional[str] = None
+    passage: Optional[str] = None
+    marks: int
+    is_active: bool = True
+    options: Optional[List[OptionCreate]] = None
+    answer: Optional[AnswerCreate] = None
 
 
 class QuestionUpdate(BaseModel):
     question_type: Optional[str] = None
-    subject:       Optional[str] = None
-    exam_level:    Optional[str] = None
+    subject: Optional[str] = None
+    exam_level: Optional[str] = None
     question_text: Optional[str] = None
-    image_url:     Optional[str] = None
-    passage:       Optional[str] = None
-    marks:         Optional[int] = None
-    is_active:     Optional[bool] = None
-    options:       Optional[List[OptionUpdate]] = None
-    answer:        Optional[AnswerUpdate] = None
+    image_url: Optional[str] = None
+    passage: Optional[str] = None
+    marks: Optional[int] = None
+    is_active: Optional[bool] = None
+    options: Optional[Any] = None
+    answer: Optional[AnswerUpdate] = None
+
+
+class QuestionIds(BaseModel):
+    ids: List[int]

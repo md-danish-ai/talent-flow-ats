@@ -42,10 +42,9 @@ export const AddQuestionModal = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Add New Passage Question"
+        className="max-w-5xl"
       >
-        <div className="py-4">
-          <AddPassageQuestionForm onSuccess={handleSuccess} />
-        </div>
+        <AddPassageQuestionForm onSuccess={handleSuccess} />
       </Modal>
 
       {/* Toast Notification */}
@@ -59,7 +58,10 @@ export const AddQuestionModal = ({
             >
               Success
             </Typography>
-            <Typography variant="body4" className="text-foreground/90 font-medium">
+            <Typography
+              variant="body4"
+              className="text-foreground/90 font-medium"
+            >
               {toast.message}
             </Typography>
           </div>

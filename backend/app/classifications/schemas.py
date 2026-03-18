@@ -17,8 +17,7 @@ class ClassificationCreate(BaseModel):
     @validator("type")
     def validate_type(cls, field_value):
         if field_value not in ["question_type", "subject", "exam_level"]:
-            raise ValueError(
-                "type must be one of: question_type, subject, exam_level")
+            raise ValueError("type must be one of: question_type, subject, exam_level")
         return field_value
 
     @validator("code", always=True)
@@ -32,12 +31,12 @@ class ClassificationCreate(BaseModel):
 
 
 class ClassificationUpdate(BaseModel):
-    name:       Optional[str] = None
-    metadata:   Optional[dict] = None
+    name: Optional[str] = None
+    metadata: Optional[dict] = None
     sort_order: Optional[int] = None
-    is_active:  Optional[bool] = None
-    type:       Optional[str] = None
-    code:       Optional[str] = None
+    is_active: Optional[bool] = None
+    type: Optional[str] = None
+    code: Optional[str] = None
 
     @validator("type")
     def validate_type(cls, field_value):
@@ -56,12 +55,12 @@ class ClassificationUpdate(BaseModel):
 
 
 class ClassificationResponse(BaseModel):
-    id:         int
-    code:       str
-    type:       str
-    name:       str
-    metadata:   Optional[dict] = None
-    is_active:  bool
+    id: int
+    code: str
+    type: str
+    name: str
+    metadata: Optional[dict] = None
+    is_active: bool
     sort_order: int
 
     class Config:

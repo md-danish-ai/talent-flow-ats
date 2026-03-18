@@ -3,8 +3,7 @@
 import React, { forwardRef } from "react";
 import { cn } from "@lib/utils";
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -32,7 +31,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             endIcon && "pr-[42px]",
             error &&
               "!border-red-500 ring-1 !ring-red-500/20 focus:!border-red-500 focus:!ring-red-500/20 hover:!border-red-500",
-            className
+            className,
           )}
           {...props}
         />
@@ -44,7 +43,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Textarea.displayName = "Textarea";

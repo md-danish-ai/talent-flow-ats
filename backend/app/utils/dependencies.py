@@ -13,7 +13,6 @@ def authenticate_user(request: Request) -> int:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     token = auth_header.split(" ")[1]
@@ -39,15 +38,19 @@ def authenticate_user(request: Request) -> int:
 
 # --- Dependencies (FastAPI Native Approach) ---
 
+
 def require_roles(allowed_roles: List[str]):
     """Dependency factory to ensure a user has specific roles."""
+
     def dependency(request: Request):
         authenticate_user(request)
         _check_role(request, allowed_roles)
+
     return dependency
 
 
 # --- Internal Helpers ---
+
 
 def _check_role(request: Request, allowed_roles: List[str]):
     """Check if the user has one of the allowed roles."""
@@ -55,5 +58,5 @@ def _check_role(request: Request, allowed_roles: List[str]):
     if user_role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Role '{user_role}' not authorized. Required: {allowed_roles}"
+            detail=f"Role '{user_role}' not authorized. Required: {allowed_roles}",
         )

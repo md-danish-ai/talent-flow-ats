@@ -11,21 +11,43 @@ from app.questions.router import router as questions_router
 from app.answer.router import router as answer_router
 from app.classifications.router import router as classifications_router
 from app.ai_questions.router import router as ai_questions_router
+from app.interview_attempts.router import router as interview_attempts_router
+from app.duplicates.router import router as duplicates_router
+from app.departments.router import router as departments_router
+from app.papers.router import router as papers_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
 app = FastAPI(title="Talent Flow ATS")
 
+# ──────────────────────────────────────────────────────────────────────────────
+# 1. CORS CONFIGURATION (Should be added early)
+# ──────────────────────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────
-#  Global Exception Handlers
-# ─────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 2. STATIC FILES & STORAGE
+# ──────────────────────────────────────────────────────────────────────────────
+
+if not os.path.exists(settings.UPLOAD_DIR):
+    os.makedirs(settings.UPLOAD_DIR)
+
+app.mount("/images", StaticFiles(directory=settings.UPLOAD_DIR), name="images")
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 3. GLOBAL EXCEPTION HANDLERS
+# ──────────────────────────────────────────────────────────────────────────────
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """
-    Catch all HTTPExceptions and return a standardized JSON response.
-    """
     return api_response(
         status_code=exc.status_code,
         message=str(exc.detail),
@@ -34,45 +56,29 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Catch all validation errors and return a standardized JSON response.
-    """
     return api_response(
         status_code=StatusCode.UNPROCESSABLE_ENTITY,
         message=ResponseMessage.VALIDATION_ERROR,
-        errors=exc.errors()
+        errors=exc.errors(),
     )
 
 
-# middleware-name: log_requests
-# middleware-desc: this middleware is used for logging incoming requests and their origins.
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    origin = request.headers.get("origin")
-    print(
-        f"Incoming request: {request.method} {request.url} | Origin: {origin}")
-    response = await call_next(request)
-    return response
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    print(f"CRITICAL ERROR: {str(exc)}")
+    import traceback
+
+    traceback.print_exc()
+    return api_response(
+        status_code=StatusCode.INTERNAL_SERVER_ERROR,
+        message=ResponseMessage.INTERNAL_ERROR,
+        errors=str(exc),
+    )
 
 
-# Set up CORS
-origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-]
-
-# middleware-name: CORSMiddleware
-# middleware-desc: this middleware is used for handling Cross-Origin Resource Sharing (CORS) to allow requests from specified origins.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+# ──────────────────────────────────────────────────────────────────────────────
+# 4. API ROUTES
+# ──────────────────────────────────────────────────────────────────────────────
 
 
 @app.get("/")
@@ -81,20 +87,16 @@ def health_check():
 
 
 # Routers
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(user_details_router, prefix="/user-details", tags=["User Details"])
-app.include_router(questions_router, prefix="/questions", tags=["Questions"])
-app.include_router(ai_questions_router, prefix="/ai_questions", tags=["AI Questions"])
-app.include_router(answer_router, prefix="/answers", tags=["Answers"])
-app.include_router(classifications_router, prefix="/classifications", tags=["Classifications"])
-
-
-# Images
-if not os.path.exists(settings.UPLOAD_DIR):
-    os.makedirs(settings.UPLOAD_DIR)
-
-app.mount("/images", StaticFiles(directory=settings.UPLOAD_DIR), name="images")
-
+app.include_router(auth_router)
+app.include_router(user_details_router)
+app.include_router(questions_router)
+app.include_router(ai_questions_router)
+app.include_router(answer_router)
+app.include_router(classifications_router)
+app.include_router(interview_attempts_router)
+app.include_router(duplicates_router)
+app.include_router(departments_router)
+app.include_router(papers_router)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

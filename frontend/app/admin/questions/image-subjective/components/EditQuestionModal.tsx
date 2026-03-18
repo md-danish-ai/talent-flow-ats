@@ -26,11 +26,11 @@ export const EditQuestionModal: React.FC<EditImageQuestionModalProps> = ({
     subject:
       typeof questionData.subject === "string"
         ? questionData.subject
-        : questionData.subject?.code ?? "",
+        : (questionData.subject?.code ?? ""),
     examLevel:
       typeof questionData.exam_level === "string"
         ? questionData.exam_level
-        : questionData.exam_level?.code ?? "",
+        : (questionData.exam_level?.code ?? ""),
     marks: questionData.marks || 1,
     questionImageUrl: questionData.image_url || "",
     questionText: questionData.question_text || "",
@@ -43,14 +43,9 @@ export const EditQuestionModal: React.FC<EditImageQuestionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Image Subjective Question"
-      className="max-w-4xl"
+      className="max-w-5xl"
     >
       <AddImageSubjectiveQuestionForm
-        questionType={
-          typeof questionData.question_type === "string"
-            ? questionData.question_type
-            : questionData.question_type?.code ?? "IMAGE_SUBJECTIVE"
-        }
         questionId={questionData.id}
         initialData={initialValues}
         onSuccess={() => {

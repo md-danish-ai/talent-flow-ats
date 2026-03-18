@@ -1,1 +1,1 @@
-from .models import Paper # noqa: F401
+from .models import Paper  # noqa: F401

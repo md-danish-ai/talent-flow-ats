@@ -13,19 +13,16 @@ class QuestionService:
     async def create_question(self, payload, user_id: int):
         try:
             # Validate Codes
-            self._validate_classification_code(
-                payload.question_type, "question_type")
-            self._validate_classification_code(
-                payload.subject, "subject_type")
-            self._validate_classification_code(
-                payload.exam_level, "exam_level")
+            self._validate_classification_code(payload.question_type, "question_type")
+            self._validate_classification_code(payload.subject, "subject_type")
+            self._validate_classification_code(payload.exam_level, "exam_level")
 
             return repository.create_question(
                 payload,
                 payload.question_type,
                 payload.subject,
                 payload.exam_level,
-                user_id
+                user_id,
             )
         except HTTPException:
             raise
@@ -37,14 +34,15 @@ class QuestionService:
     async def get_questions(
         self,
         question_type: str = None,
-        subject:       str = None,
-        exam_level:    str = None,
-        is_active:     bool = None,
-        search:        str = None,
-        sort_by:       str = "created_at",
-        order:         str = "desc",
-        limit:         int = 10,
-        offset:        int = 0
+        subject: str = None,
+        exam_level: str = None,
+        is_active: bool = None,
+        marks: int = None,
+        search: str = None,
+        sort_by: str = "created_at",
+        order: str = "desc",
+        limit: int = 10,
+        offset: int = 0,
     ):
         try:
             return repository.get_questions(
@@ -52,11 +50,12 @@ class QuestionService:
                 subject=subject,
                 exam_level=exam_level,
                 is_active=is_active,
+                marks=marks,
                 search=search,
                 sort_by=sort_by,
                 order=order,
                 limit=limit,
-                offset=offset
+                offset=offset,
             )
         except Exception as exception:
             raise HTTPException(
@@ -68,33 +67,42 @@ class QuestionService:
             result = repository.get_question_by_id(question_id)
             if not result:
                 raise HTTPException(
-                    status_code=StatusCode.NOT_FOUND, detail="Question not found")
+                    status_code=StatusCode.NOT_FOUND, detail="Question not found"
+                )
             return result
         except HTTPException:
             raise
         except Exception as e:
             raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e))
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+            )
+
+    async def get_questions_by_ids(self, question_ids: list[int]):
+        try:
+            return repository.get_questions_by_ids(question_ids)
+        except Exception as e:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e)
+            )
 
     async def update_question(self, question_id: int, payload, current_user: int):
         try:
             # Validate Codes (only if provided)
             if payload.question_type:
                 self._validate_classification_code(
-                    payload.question_type, "question_type")
+                    payload.question_type, "question_type"
+                )
             if payload.subject:
-                self._validate_classification_code(
-                    payload.subject, "subject_type")
+                self._validate_classification_code(payload.subject, "subject_type")
             if payload.exam_level:
-                self._validate_classification_code(
-                    payload.exam_level, "exam_level")
+                self._validate_classification_code(payload.exam_level, "exam_level")
 
             return repository.update_question(
                 question_id,
                 payload,
                 payload.question_type,
                 payload.subject,
-                payload.exam_level
+                payload.exam_level,
             )
         except HTTPException:
             raise
@@ -111,7 +119,7 @@ class QuestionService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
-    async def toggle_question_status(self, question_id: int):
+    async def update_question_status(self, question_id: int):
         try:
             return repository.toggle_question_status(question_id)
         except Exception as exception:

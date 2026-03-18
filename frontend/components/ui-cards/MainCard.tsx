@@ -25,7 +25,7 @@ export const MainCard: React.FC<MainCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
+        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors",
         className,
       )}
     >

@@ -38,17 +38,7 @@ export function ThemeToggle() {
       <div className="relative flex items-center justify-center w-full h-full">
         <AnimatePresence mode="wait" initial={false}>
           {theme === "dark" ? (
-            <motion.div
-              key="moon"
-              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="absolute flex items-center justify-center"
-            >
-              <Moon size={18} />
-            </motion.div>
-          ) : (
+            // Dark mode mein Sun dikhao — click karo to go light
             <motion.div
               key="sun"
               initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
@@ -58,6 +48,18 @@ export function ThemeToggle() {
               className="absolute flex items-center justify-center"
             >
               <Sun size={18} />
+            </motion.div>
+          ) : (
+            // Light mode mein Moon dikhao — click karo to go dark
+            <motion.div
+              key="moon"
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="absolute flex items-center justify-center"
+            >
+              <Moon size={18} />
             </motion.div>
           )}
         </AnimatePresence>

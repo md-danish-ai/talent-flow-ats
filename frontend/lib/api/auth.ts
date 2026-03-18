@@ -83,13 +83,47 @@ export interface UserListResponse {
   is_active: boolean;
 }
 
-// GET /auth/get-all-users?role={role} - Fetch users by role (e.g., admin, user)
+// GET /auth/get-all-users?role={role}&date={date} - Fetch users by role (e.g., admin, user)
 export async function getUsersByRole(
   role: string,
-  options?: Pick<ApiRequestOptions, "cookies">,
+  options?: Pick<ApiRequestOptions, "cookies"> & { date?: string },
 ): Promise<UserListResponse[]> {
+  const queryParams = new URLSearchParams({ role });
+  if (options?.date) {
+    queryParams.append("date", options.date);
+  }
+
+  // Remove date from options so it doesn't get passed to api.get as config if not needed
+  const apiOptions = options ? { ...options } : undefined;
+  if (apiOptions && 'date' in apiOptions) {
+    delete (apiOptions as { date?: string }).date;
+  }
+
   return api.get<UserListResponse[]>(
-    `/auth/get-all-users?role=${role}`,
+    `/auth/get-all-users?${queryParams.toString()}`,
+    apiOptions,
+  );
+}
+
+// PUT /auth/toggle-status/{user_id} - Toggle user's active status
+export async function toggleUserStatus(
+  userId: number,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ id: number; is_active: boolean }> {
+  return api.put<{ id: number; is_active: boolean }>(
+    `/auth/toggle-status/${userId}`,
+    {},
+    options,
+  );
+}
+
+// DELETE /auth/delete/{user_id} - Delete a user
+export async function deleteUser(
+  userId: number,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ id: number; message: string }> {
+  return api.delete<{ id: number; message: string }>(
+    `/auth/delete/${userId}`,
     options,
   );
 }

@@ -79,10 +79,10 @@ export const RECENT_ACTIVITIES = [
     avatar: "AS",
   },
   {
-    user: "Rahul Kumar",
+    user: "Mohammed Danish",
     action: "added a new",
     target: "Physics Exam",
     time: "1 day ago",
-    avatar: "RK",
+    avatar: "MD",
   },
 ];

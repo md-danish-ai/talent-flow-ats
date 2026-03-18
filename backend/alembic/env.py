@@ -13,6 +13,9 @@ from app.answer import models as answer_models  # noqa: F401
 from app.classifications import models as classification_models  # noqa: F401
 from app.user_details import models as user_detail_models  # noqa: F401
 from app.papers import models as paper_models  # noqa: F401
+from app.interview_attempts import models as interview_attempt_models  # noqa: F401
+from app.duplicates import models as duplicate_models  # noqa: F401
+from app.departments import models as department_models  # noqa: F401
 
 # ---------------------------------------------------------
 # Alembic Config object (reads alembic.ini)
@@ -116,4 +119,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-    
