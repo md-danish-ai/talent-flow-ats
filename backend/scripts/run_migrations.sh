@@ -36,31 +36,42 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
+if [ -x "venv/bin/python" ]; then
+    ALEMBIC_PYTHON="venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+    ALEMBIC_PYTHON="python3"
+else
+    echo "❌ Python 3 not found. Please install Python or create backend/venv."
+    exit 1
+fi
+
+echo "🐍 Using Python: $ALEMBIC_PYTHON"
+
 case "$ACTION" in
 
     upgrade)
         echo "⬆️ Running upgrade..."
-        alembic upgrade $REVISION
+        "$ALEMBIC_PYTHON" -m alembic upgrade "$REVISION"
         ;;
 
     downgrade)
         echo "⬇️ Running downgrade..."
-        alembic downgrade $REVISION
+        "$ALEMBIC_PYTHON" -m alembic downgrade "$REVISION"
         ;;
 
     current)
         echo "📌 Current migration revision:"
-        alembic current
+        "$ALEMBIC_PYTHON" -m alembic current
         ;;
 
     history)
         echo "📜 Migration history:"
-        alembic history
+        "$ALEMBIC_PYTHON" -m alembic history
         ;;
 
     heads)
         echo "🔝 Current heads:"
-        alembic heads
+        "$ALEMBIC_PYTHON" -m alembic heads
         ;;
 
     help)
