@@ -80,6 +80,8 @@ export interface UserListResponse {
   mobile: string;
   email: string | null;
   role: string;
+  testlevel?: string;
+  testlevel_id?: number | string;
   is_active: boolean;
 }
 

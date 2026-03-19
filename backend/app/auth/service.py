@@ -6,6 +6,13 @@ from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
 from app.users.models import User
 
+# Mapping for string levels to classification IDs
+LEVEL_MAPPING = {
+    "fresher": 9,
+    "QA": 10,
+    "team-lead": 11
+}
+
 
 def signup_user(data):
     db_session = SessionLocal()
@@ -173,6 +180,8 @@ def get_user_by_id(user_id):
             "mobile": user_obj.mobile,
             "email": user_obj.email,
             "role": user_obj.role,
+            "testlevel": user_obj.testlevel,
+            "testlevel_id": LEVEL_MAPPING.get(user_obj.testlevel),
             "created_at": user_obj.created_at,
         }
 
@@ -224,6 +233,8 @@ def get_users_by_role(role: str, date: str = None):
                 "mobile": user.mobile,
                 "email": user.email,
                 "role": user.role,
+                "testlevel": user.testlevel,
+                "testlevel_id": LEVEL_MAPPING.get(user.testlevel),
                 "is_active": user.is_active,
             }
             for user in results
