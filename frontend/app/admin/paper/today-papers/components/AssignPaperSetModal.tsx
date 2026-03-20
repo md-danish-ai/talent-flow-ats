@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
@@ -25,10 +25,8 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   onSuccess,
   user,
 }) => {
-  const userLevel = user.testlevel || (user as any).testLevel || (user as any).test_level;
+  const userLevel = user.testlevel;
   const testLevelId = user.test_level_id?.toString() || user.testlevel_id?.toString();
-  
-  const effectiveLevelId = testLevelId;
 
   const [papers, setPapers] = useState<PaperSetup[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -38,8 +36,42 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const fetchDepartments = useCallback(async () => {
+    try {
+      const response = await departmentsApi.getDepartments({ is_active: true, limit: 100 });
+      const deptList = response.data || [];
+      setDepartments(deptList);
+    } catch (error) {
+      console.error("Failed to fetch departments:", error);
+      toast.error("Failed to fetch departments");
+    }
+  }, []);
+
+  const fetchPapers = useCallback(async () => {
+    if (!selectedDepartment) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await papersApi.getPapers({ 
+        is_active: true, 
+        limit: 100,
+        department_id: selectedDepartment,
+        test_level_id: testLevelId,
+      });
+      
+      const papersList = response.data || [];
+      setPapers(papersList);
+    } catch (error) {
+      console.error("Failed to fetch papers:", error);
+      toast.error("Failed to fetch paper sets");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedDepartment, testLevelId]);
+
   useEffect(() => {
     if (isOpen) {
+      console.log("Modal opened for user:", user.id, "Assignment:", user.assignment);
       setIsInitialized(false);
       fetchDepartments();
       
@@ -59,42 +91,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       }
       
       // Mark as initialized after a short delay to allow states to settle
-      setTimeout(() => setIsInitialized(true), 100);
+      const timer = setTimeout(() => setIsInitialized(true), 100);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, user.id, user.assignment]);
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await departmentsApi.getDepartments({ is_active: true, limit: 100 });
-      const deptList = (response as any).data?.data || response.data || [];
-      setDepartments(deptList);
-    } catch (error) {
-      console.error("Failed to fetch departments:", error);
-      toast.error("Failed to fetch departments");
-    }
-  };
-
-  const fetchPapers = async () => {
-    if (!selectedDepartment) return;
-    
-    setIsLoading(true);
-    try {
-      const response = await papersApi.getPapers({ 
-        is_active: true, 
-        limit: 100,
-        department_id: selectedDepartment,
-        test_level_id: effectiveLevelId,
-      });
-      
-      const papersList = (response as any).data?.data || response.data || [];
-      setPapers(papersList);
-    } catch (error) {
-      console.error("Failed to fetch papers:", error);
-      toast.error("Failed to fetch paper sets");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [isOpen, user.id, user.assignment, fetchDepartments]);
 
   // Fetch papers when department changes
   useEffect(() => {
@@ -104,7 +104,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       setPapers([]);
       setSelectedPaper("");
     }
-  }, [isOpen, selectedDepartment, testLevelId, isInitialized]);
+  }, [isOpen, selectedDepartment, testLevelId, isInitialized, fetchPapers]);
 
   const handleAssign = async () => {
     if (!selectedPaper) {
@@ -116,7 +116,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      if (!effectiveLevelId) {
+      if (!testLevelId) {
         toast.error("Could not determine candidate's test level ID");
         return;
       }
@@ -125,7 +125,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
         user_id: user.id,
         paper_id: parseInt(selectedPaper),
         department_id: parseInt(selectedDepartment),
-        test_level_id: parseInt(effectiveLevelId),
+        test_level_id: parseInt(testLevelId),
         assigned_date: today,
       });
 

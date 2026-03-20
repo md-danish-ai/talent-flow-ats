@@ -9,13 +9,12 @@ from sqlalchemy.orm import Session
 
 from app.classifications.models import Classification
 from app.paper_assignments.models import PaperAssignment
-from datetime import date as date_type
 
 def _get_level_mapping(db: Session) -> dict[str, int]:
     """Helper to get a dictionary of classification name/code mapping to IDs."""
     classifications = (
         db.query(Classification)
-        .filter(Classification.type == "exam_level", Classification.is_active == True)
+        .filter(Classification.type == "exam_level", Classification.is_active)
         .all()
     )
     mapping = {}

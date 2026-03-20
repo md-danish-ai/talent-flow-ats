@@ -1,11 +1,9 @@
-from datetime import date
-
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database.db import SessionLocal
 from app.utils.dependencies import authenticate_user, require_roles
-from app.utils.status_codes import ResponseMessage, StatusCode, api_response
+from app.utils.status_codes import StatusCode, api_response
 
 from . import repository, schemas
 

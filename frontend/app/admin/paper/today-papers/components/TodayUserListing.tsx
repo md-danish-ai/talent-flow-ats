@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { ClipboardCheck, EditIcon, Users } from "lucide-react";
+import { ClipboardCheck, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -107,11 +107,10 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                               setIsModalOpen(true);
                             }}
                             title={row.assignment?.is_attempted ? "Attempted" : "Assign Paper Set"}
-                            className={`h-8 w-8 ${
-                              row.assignment?.is_attempted 
-                              ? "text-green-600 cursor-not-allowed opacity-70" 
-                              : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                            }`}
+                            className={`h-8 w-8 ${row.assignment?.is_attempted
+                                ? "text-green-600 cursor-not-allowed opacity-70"
+                                : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                              }`}
                           >
                             <ClipboardCheck size={16} />
                           </Button>
