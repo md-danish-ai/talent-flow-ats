@@ -82,7 +82,15 @@ export interface UserListResponse {
   role: string;
   testlevel?: string;
   testlevel_id?: number | string;
+  test_level_id?: number | string;
   is_active: boolean;
+  assignment?: {
+    is_assigned: boolean;
+    paper_id: number | null;
+    department_id: number | null;
+    test_level_id: number | null;
+    is_attempted: boolean;
+  } | null;
 }
 
 // GET /auth/get-all-users?role={role}&date={date} - Fetch users by role (e.g., admin, user)

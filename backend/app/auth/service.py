@@ -5,13 +5,27 @@ from app.auth.utils import hash_password, verify_password, generate_jwt
 from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
 from app.users.models import User
+from sqlalchemy.orm import Session
 
-# Mapping for string levels to classification IDs
-LEVEL_MAPPING = {
-    "fresher": 9,
-    "QA": 10,
-    "team-lead": 11
-}
+from app.classifications.models import Classification
+from app.paper_assignments.models import PaperAssignment
+from datetime import date as date_type
+
+def _get_level_mapping(db: Session) -> dict[str, int]:
+    """Helper to get a dictionary of classification name/code mapping to IDs."""
+    classifications = (
+        db.query(Classification)
+        .filter(Classification.type == "exam_level", Classification.is_active == True)
+        .all()
+    )
+    mapping = {}
+    for c in classifications:
+        mapping[c.code] = c.id
+        mapping[c.name] = c.id
+        # Also handle uppercase variations for robustness
+        mapping[c.code.upper()] = c.id
+        mapping[c.name.upper()] = c.id
+    return mapping
 
 
 def signup_user(data):
@@ -174,6 +188,7 @@ def get_user_by_id(user_id):
         if not user_obj:
             return None
 
+        level_mapping = _get_level_mapping(db_session)
         user = {
             "id": user_obj.id,
             "username": user_obj.username,
@@ -181,7 +196,8 @@ def get_user_by_id(user_id):
             "email": user_obj.email,
             "role": user_obj.role,
             "testlevel": user_obj.testlevel,
-            "testlevel_id": LEVEL_MAPPING.get(user_obj.testlevel),
+            "testlevel_id": level_mapping.get(user_obj.testlevel),
+            "test_level_id": level_mapping.get(user_obj.testlevel),
             "created_at": user_obj.created_at,
         }
 
@@ -220,12 +236,26 @@ def get_users_by_role(role: str, date: str = None):
     try:
         from sqlalchemy import func
 
-        query = db_session.query(User).filter(User.role == role)
-
+        from datetime import date as dt_date
+        target_date = dt_date.fromisoformat(date) if date else dt_date.today()
+        
+        # Subquery or Join for assignments on target_date
+        results = (
+            db_session.query(User, PaperAssignment)
+            .outerjoin(
+                PaperAssignment, 
+                (User.id == PaperAssignment.user_id) & 
+                (PaperAssignment.assigned_date == target_date)
+            )
+            .filter(User.role == role)
+        )
+        
         if date:
-            query = query.filter(func.date(User.created_at) == date)
-
-        results = query.order_by(User.id.desc()).all()
+            results = results.filter(func.date(User.created_at) == date)
+            
+        results = results.order_by(User.id.desc()).all()
+        
+        level_mapping = _get_level_mapping(db_session)
         return [
             {
                 "id": user.id,
@@ -234,10 +264,18 @@ def get_users_by_role(role: str, date: str = None):
                 "email": user.email,
                 "role": user.role,
                 "testlevel": user.testlevel,
-                "testlevel_id": LEVEL_MAPPING.get(user.testlevel),
+                "testlevel_id": level_mapping.get(user.testlevel),
+                "test_level_id": level_mapping.get(user.testlevel),
                 "is_active": user.is_active,
+                "assignment": {
+                    "is_assigned": assignment is not None,
+                    "paper_id": assignment.paper_id if assignment else None,
+                    "department_id": assignment.department_id if assignment else None,
+                    "test_level_id": assignment.test_level_id if assignment else None,
+                    "is_attempted": assignment.is_attempted if assignment else False
+                } if assignment else None
             }
-            for user in results
+            for user, assignment in results
         ]
     except Exception:
         raise HTTPException(

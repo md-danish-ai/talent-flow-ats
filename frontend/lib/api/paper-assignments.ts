@@ -4,6 +4,8 @@ import type { ApiRequestOptions } from "./client";
 export interface PaperAssignmentPayload {
   user_id: number;
   paper_id: number;
+  department_id: number;
+  test_level_id: number;
   assigned_date: string;
 }
 
@@ -28,24 +30,6 @@ export const paperAssignmentsApi = {
     api.post<PaperAssignmentResponse>(
       "/paper-assignments/assign",
       payload,
-      options,
-    ),
-
-  getAssignmentsByDate: (
-    assignedDate: string,
-    options?: Pick<ApiRequestOptions, "cookies">,
-  ) =>
-    api.get<PaperAssignmentResponse[]>(
-      `/paper-assignments/by-date?assigned_date=${encodeURIComponent(assignedDate)}`,
-      options,
-    ),
-
-  getMyAssignedPaper: (
-    assignedDate: string,
-    options?: Pick<ApiRequestOptions, "cookies">,
-  ) =>
-    api.get<PaperAssignmentResponse>(
-      `/paper-assignments/my-paper?assigned_date=${encodeURIComponent(assignedDate)}`,
       options,
     ),
 };
