@@ -26,11 +26,17 @@ def get_db():
 @router.get("/get")
 def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
+    department_id: int = None,
+    test_level_id: int = None,
     db: Session = Depends(get_db),
 ):
     offset = (pagination.page - 1) * pagination.limit
     papers, total_records = repository.get_papers(
-        db, skip=offset, limit=pagination.limit
+        db, 
+        skip=offset, 
+        limit=pagination.limit,
+        department_id=department_id,
+        test_level_id=test_level_id
     )
 
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization

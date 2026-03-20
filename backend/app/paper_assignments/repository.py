@@ -77,6 +77,8 @@ def assign_paper_to_user(
 
     if existing_assignment:
         existing_assignment.paper_id = payload.paper_id
+        existing_assignment.department_id = payload.department_id
+        existing_assignment.test_level_id = payload.test_level_id
         existing_assignment.assigned_by = assigned_by
         db.commit()
         db.refresh(existing_assignment)
@@ -87,6 +89,8 @@ def assign_paper_to_user(
     assignment = PaperAssignment(
         user_id=payload.user_id,
         paper_id=payload.paper_id,
+        department_id=payload.department_id,
+        test_level_id=payload.test_level_id,
         assigned_date=payload.assigned_date,
         assigned_by=assigned_by,
     )
@@ -97,15 +101,6 @@ def assign_paper_to_user(
         db, user_id=payload.user_id, assigned_date=payload.assigned_date
     )
 
-
-def get_assignments_by_date(db: Session, assigned_date: date) -> list[PaperAssignment]:
-    results = (
-        _build_assignment_query(db)
-        .filter(PaperAssignment.assigned_date == assigned_date)
-        .order_by(PaperAssignment.id.desc())
-        .all()
-    )
-    return [_hydrate_assignment_result(result) for result in results]
 
 
 def get_assignment_by_user_and_date(

@@ -7,7 +7,13 @@ from app.departments.models import Department
 from app.classifications.models import Classification
 
 
-def get_papers(db: Session, skip: int = 0, limit: int = 100) -> tuple[List[Paper], int]:
+def get_papers(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    department_id: Optional[int] = None,
+    test_level_id: Optional[int] = None,
+) -> tuple[List[Paper], int]:
     query = (
         db.query(
             Paper,
@@ -18,6 +24,11 @@ def get_papers(db: Session, skip: int = 0, limit: int = 100) -> tuple[List[Paper
         .outerjoin(Department, Paper.department_id == Department.id)
         .outerjoin(Classification, Paper.test_level_id == Classification.id)
     )
+
+    if department_id:
+        query = query.filter(Paper.department_id == department_id)
+    if test_level_id:
+        query = query.filter(Paper.test_level_id == test_level_id)
 
     total_records = query.count()
     results = query.offset(skip).limit(limit).all()

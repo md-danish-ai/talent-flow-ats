@@ -58,6 +58,8 @@ export const papersApi = {
       limit?: number;
       search?: string;
       is_active?: boolean;
+      department_id?: string | number;
+      test_level_id?: string;
     },
     options?: ApiRequestOptions,
   ) => {

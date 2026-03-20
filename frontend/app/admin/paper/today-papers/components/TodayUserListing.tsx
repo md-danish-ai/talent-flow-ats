@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,10 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users } from "lucide-react";
+import { ClipboardCheck, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { Button } from "@/components/ui-elements/Button";
+import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
+import { useRouter } from "next/navigation";
 
 interface TodayUserListingProps {
   initialData?: UserListResponse[];
@@ -22,6 +25,9 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const totalItems = initialData.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -67,6 +73,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                   <TableHead>Name</TableHead>
                   <TableHead>Mobile</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -86,6 +93,29 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                       <TableCell>{row.username || "-"}</TableCell>
                       <TableCell>{row.mobile}</TableCell>
                       <TableCell>{row.email || "-"}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost"
+                            color={row.assignment?.is_attempted ? "success" : "primary"}
+                            size="icon"
+                            animate="scale"
+                            disabled={row.assignment?.is_attempted}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedUser(row);
+                              setIsModalOpen(true);
+                            }}
+                            title={row.assignment?.is_attempted ? "Attempted" : "Assign Paper Set"}
+                            className={`h-8 w-8 ${row.assignment?.is_attempted
+                                ? "text-green-600 cursor-not-allowed opacity-70"
+                                : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                              }`}
+                          >
+                            <ClipboardCheck size={16} />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -104,6 +134,18 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
           />
         )}
       </MainCard>
+
+      {selectedUser && (
+        <AssignPaperSetModal
+          isOpen={isModalOpen}
+          user={selectedUser}
+          onSuccess={() => router.refresh()}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
     </>
   );
 }
