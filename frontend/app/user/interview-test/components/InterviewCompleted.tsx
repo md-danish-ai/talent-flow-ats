@@ -12,7 +12,6 @@ interface InterviewCompletedProps {
   notAttemptedCount: number;
   completionReason: "manual" | "time_over" | null;
   overallExamDurationMinutes: number;
-  onReset: () => void;
 }
 
 export function InterviewCompleted({
@@ -22,7 +21,6 @@ export function InterviewCompleted({
   notAttemptedCount,
   completionReason,
   overallExamDurationMinutes,
-  onReset,
 }: InterviewCompletedProps) {
   return (
     <MainCard
@@ -78,9 +76,6 @@ export function InterviewCompleted({
             Back to Dashboard
           </Button>
         </Link>
-        <Button color="primary" onClick={onReset} className="w-full sm:w-auto">
-          Restart Demo
-        </Button>
       </div>
     </MainCard>
   );
