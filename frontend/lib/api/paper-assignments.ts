@@ -22,6 +22,46 @@ export interface PaperAssignmentResponse {
   updated_at: string;
 }
 
+export interface InterviewPaperQuestionResponse {
+  id: number;
+  type: string;
+  question_text: string;
+  image_url?: string | null;
+  passage?: string | null;
+  marks?: number | null;
+  options: string[];
+}
+
+export interface InterviewPaperSectionResponse {
+  id: string;
+  code: string;
+  title: string;
+  duration_minutes: number;
+  total_marks: number;
+  question_count: number;
+  questions: InterviewPaperQuestionResponse[];
+}
+
+export interface InterviewPaperMetaResponse {
+  id: number;
+  paper_name: string;
+  description?: string | null;
+  total_time?: string | null;
+  total_marks?: number | null;
+  grade?: string | null;
+  department_name?: string | null;
+  test_level_name?: string | null;
+}
+
+export interface AssignedInterviewPaperResponse {
+  assignment_id: number;
+  assigned_date: string;
+  paper: InterviewPaperMetaResponse;
+  total_questions: number;
+  overall_duration_minutes: number;
+  sections: InterviewPaperSectionResponse[];
+}
+
 export const paperAssignmentsApi = {
   assignPaperToUser: (
     payload: PaperAssignmentPayload,
@@ -30,6 +70,17 @@ export const paperAssignmentsApi = {
     api.post<PaperAssignmentResponse>(
       "/paper-assignments/assign",
       payload,
+      options,
+    ),
+
+  getMyInterviewPaper: (
+    assignedDate?: string,
+    options?: Pick<ApiRequestOptions, "cookies">,
+  ) =>
+    api.get<AssignedInterviewPaperResponse>(
+      assignedDate
+        ? `/paper-assignments/my-interview-paper?assigned_date=${encodeURIComponent(assignedDate)}`
+        : "/paper-assignments/my-interview-paper",
       options,
     ),
 };
