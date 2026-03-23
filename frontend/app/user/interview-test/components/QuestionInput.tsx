@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Radio } from "@components/ui-elements/Radio";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
+import { getFullImageUrl } from "@lib/utils/url";
 import type { InterviewQuestion } from "../types";
 
 interface QuestionInputProps {
@@ -49,7 +50,7 @@ export function QuestionInput({
             Reference Image
           </Typography>
           <Image
-            src={question.imageUrl}
+            src={getFullImageUrl(question.imageUrl)}
             alt="Question reference"
             width={320}
             height={180}

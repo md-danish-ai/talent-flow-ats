@@ -1,41 +1,43 @@
 import { z } from "zod";
 
 export const mcqOptionSchema = z.object({
-  id: z.string(),
-  label: z.string(),
-  content: z.string().min(1, "Option content is required"),
-  isCorrect: z.boolean(),
+  option_label: z.string(),
+  option_text: z.string().min(1, "Option content is required"),
+  is_correct: z.boolean(),
 });
 
 export const mcqSchema = z.object({
-  subject: z.string().min(1, "Subject is required"),
-  examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(10),
-  questionText: z.string().min(10, "Question must be at least 10 characters"),
+  question_type_id: z.coerce.number().min(1, "Question type is required"),
+  subject_type_id: z.coerce.number().min(1, "Subject is required"),
+  exam_level_id: z.coerce.number().min(1, "Exam level is required"),
+  question_text: z.string().min(10, "Question must be at least 10 characters"),
   options: z
     .array(mcqOptionSchema)
     .min(2, "At least two options are required")
-    .refine((options) => options.some((opt) => opt.isCorrect), {
+    .refine((options) => options.some((opt) => opt.is_correct), {
       message: "One option must be marked as correct",
     }),
   explanation: z.string().optional().or(z.literal("")),
+  source: z.string().default("Manual"),
+  marks: z.coerce.number().min(1).max(50).default(1),
 });
 
 // Image MCQ Specific Validations
 export const imageMCQSchema = z.object({
-  subject: z.string().min(1, "Subject is required"),
-  examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
-  questionText: z.string().min(10, "Question must be at least 10 characters"),
-  questionImageUrl: z.string().min(1, "Question image is required"),
-  // Note: Add image fields here later if required (e.g., questionImage: z.any())
+  question_type_id: z.coerce.number().min(1, "Question type is required"),
+  subject_type_id: z.coerce.number().min(1, "Subject is required"),
+  exam_level_id: z.coerce.number().min(1, "Exam level is required"),
+  question_text: z.string().min(10, "Question must be at least 10 characters"),
+  image_url: z.string().min(1, "Question image is required"),
   options: z
     .array(mcqOptionSchema)
     .min(2, "At least two options are required")
-    .refine((options) => options.some((opt) => opt.isCorrect), {
+    .refine((options) => options.some((opt) => opt.is_correct), {
       message: "One option must be marked as correct",
     }),
   explanation: z.string().optional().or(z.literal("")),
+  source: z.string().default("Manual"),
+  marks: z.coerce.number().min(1).max(50).default(1),
 });
 
 // Subjective Specific Validations

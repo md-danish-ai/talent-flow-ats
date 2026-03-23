@@ -3,7 +3,7 @@ from typing import Optional
 from app.classifications.schemas import ClassificationCreate, ClassificationUpdate
 from app.classifications.service import ClassificationService
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
-from app.utils.dependencies import require_roles
+from app.utils.dependencies import require_roles, get_current_user
 from app.utils.pagination import (
     PaginationParams,
     get_pagination_params,
@@ -46,8 +46,8 @@ def get_by_id(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
-@router.post("/")
-def create(payload: ClassificationCreate):
+@router.post("/create")
+def create(payload: ClassificationCreate, current_user: int = Depends(get_current_user)):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 

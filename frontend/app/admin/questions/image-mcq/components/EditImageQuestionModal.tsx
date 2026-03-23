@@ -22,26 +22,19 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
   if (!questionData) return null;
 
   // Map backend data to form values
-  const initialValues: ImageMCQFormValues = {
-    // Use the canonical subject classification (not subject_type) so updates
-    // send a valid subject code that the backend can resolve.
-    subject:
-      typeof questionData.subject === "string"
-        ? questionData.subject
-        : (questionData.subject?.code ?? ""),
-    examLevel:
-      typeof questionData.exam_level === "string"
-        ? questionData.exam_level
-        : (questionData.exam_level?.code ?? ""),
+  // We use 0 as fallback IDs because the AddImageQuestionForm useEffect 
+  // will handle the actual classification mapping/fetching.
+  const initialValues: Partial<ImageMCQFormValues> = {
+    subject_type_id: questionData.subject?.id || 0,
+    exam_level_id: questionData.exam_level?.id || 0,
     marks: questionData.marks || 1,
-    questionImageUrl: questionData.image_url || "",
-    questionText: questionData.question_text || "",
+    image_url: questionData.image_url || "",
+    question_text: questionData.question_text || "",
     explanation: questionData.answer?.explanation || "",
-    options: ((questionData.options as QuestionOption[]) || []).map((opt: QuestionOption, index: number) => ({
-      id: opt.option_label || String.fromCharCode(65 + index),
-      label: opt.option_label || String.fromCharCode(65 + index),
-      content: opt.option_text || "",
-      isCorrect: !!opt.is_correct,
+    options: ((questionData.options as QuestionOption[]) || []).map((opt: QuestionOption) => ({
+      option_label: opt.option_label,
+      option_text: opt.option_text,
+      is_correct: opt.is_correct,
     })),
   };
 
@@ -54,7 +47,7 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
     >
       <AddImageQuestionForm
         questionId={questionData.id}
-        initialData={initialValues}
+        initialData={initialValues as ImageMCQFormValues}
         onSuccess={() => {
           onClose();
           onSuccess();

@@ -10,7 +10,7 @@ router = APIRouter(
 answer_service = AnswerService()
 
 
-@router.post("/")
+@router.post("")
 async def create_answer(
     payload: schemas.AnswerCreate, current_user: int = Depends(authenticate_user)
 ):

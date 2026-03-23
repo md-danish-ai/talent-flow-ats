@@ -1,34 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "@tanstack/react-form";
-import {
-  imageMCQSchema,
-  type ImageMCQFormValues,
-} from "@lib/validations/question";
+import { imageMCQSchema } from "@lib/validations/question";
 import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
 import { Button } from "@components/ui-elements/Button";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { OptionInput } from "@components/ui-elements/OptionInput";
 import { cn, getErrorMessage } from "@lib/utils";
-import {
-  Plus,
-  MessageSquareText,
-  HelpCircle,
-  Loader2,
-  Upload,
-  FileImage,
-  X,
-} from "lucide-react";
+import { Plus, MessageSquareText, HelpCircle, Loader2, Upload, FileImage, X } from "lucide-react";
 import Image from "next/image";
 import { toast } from "@lib/toast";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+
+// Mock fallbacks
+const MOCK_SUBJECTS = [
+  { id: 1, label: "Industry Awareness", code: "IA" },
+  { id: 2, label: "Comprehension", code: "COMP" },
+];
+
+const MOCK_LEVELS = [
+  { id: 7, label: "Entry Level", code: "ENTRY" },
+  { id: 8, label: "Intermediate", code: "INTERMEDIATE" },
+];
+
+interface FormValues {
+  question_type_id: number;
+  subject_type_id: number;
+  exam_level_id: number;
+  marks?: number;
+  image_url: string;
+  question_text: string;
+  explanation?: string;
+  source?: string;
+  options: {
+    option_label: string;
+    option_text: string;
+    is_correct: boolean;
+  }[];
+}
 
 export const AddImageQuestionForm = ({
   questionId,
@@ -36,42 +49,43 @@ export const AddImageQuestionForm = ({
   onSuccess,
 }: {
   questionId?: number;
-  initialData?: ImageMCQFormValues;
+  initialData?: FormValues;
   onSuccess?: () => void;
 }) => {
-  const [subjects, setSubjects] = React.useState<Classification[]>([]);
-  const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
-  const [isUploading, setIsUploading] = React.useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [classifications, setClassifications] = useState<{
+    subjects: { id: string | number; label: string; code: string }[];
+    levels: { id: string | number; label: string; code: string }[];
+  }>({ 
+    subjects: MOCK_SUBJECTS.map(s => ({ ...s, id: String(s.id) })), 
+    levels: MOCK_LEVELS.map(l => ({ ...l, id: String(l.id) })) 
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getCanonicalImageUrl = (url?: string | null) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
+    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
     if (!base) return url;
     return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchClassifications = async () => {
       try {
-        const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({
-            type: "subject",
-            is_active: true,
-            limit: 100,
-          }),
-          classificationsApi.getClassifications({
-            type: "exam_level",
-            is_active: true,
-            limit: 100,
-          }),
+        const [subjectsRes, levelsRes] = await Promise.all([
+          classificationsApi.getClassifications({ type: "subject_type", is_active: true, limit: 100 }),
+          classificationsApi.getClassifications({ type: "exam_level", is_active: true, limit: 100 }),
         ]);
-        setSubjects(subjectsRes.data || []);
-        setExamLevels(examLevelsRes.data || []);
+
+        const fetchedSubjects = (subjectsRes.data || []).map((c: { id: number; name: string; code: string }) => ({ id: String(c.id), label: c.name, code: c.code }));
+        const fetchedLevels = (levelsRes.data || []).map((c: { id: number; name: string; code: string }) => ({ id: String(c.id), label: c.name, code: c.code }));
+
+        setClassifications(prev => ({
+          subjects: fetchedSubjects.length > 0 ? fetchedSubjects : prev.subjects,
+          levels: fetchedLevels.length > 0 ? fetchedLevels : prev.levels,
+        }));
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
       }
@@ -80,60 +94,59 @@ export const AddImageQuestionForm = ({
   }, []);
 
   const form = useForm({
-    defaultValues:
-      initialData ||
-      ({
-        subject: "",
-        examLevel: "",
-        marks: 1,
-        questionImageUrl: "",
-        questionText: "",
-        explanation: "",
-        options: [
-          { id: "A", label: "A", content: "", isCorrect: false },
-          { id: "B", label: "B", content: "", isCorrect: false },
-          { id: "C", label: "C", content: "", isCorrect: false },
-          { id: "D", label: "D", content: "", isCorrect: false },
-        ],
-      } as ImageMCQFormValues),
+    defaultValues: (initialData as FormValues) || {
+      question_type_id: 1, 
+      subject_type_id: 0,
+      exam_level_id: 0,
+      marks: 1,
+      image_url: "",
+      question_text: "",
+      explanation: "",
+      source: "Manual",
+      options: [
+        { option_label: "A", option_text: "", is_correct: false },
+        { option_label: "B", option_text: "", is_correct: false },
+        { option_label: "C", option_text: "", is_correct: false },
+        { option_label: "D", option_text: "", is_correct: false },
+      ],
+    },
     validators: {
       onChange: imageMCQSchema,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value }: { value: FormValues }) => {
       try {
-        const payload: Partial<QuestionCreate> = {
+        const subject = classifications.subjects.find(s => String(s.id) === String(value.subject_type_id))?.code || "";
+        const exam_level = classifications.levels.find(l => String(l.id) === String(value.exam_level_id))?.code || "";
+
+        const payload: QuestionCreate = {
           question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
-          subject: value.subject,
-          exam_level: value.examLevel,
-          image_url: value.questionImageUrl,
-          question_text: value.questionText,
-          marks: value.marks,
-          is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
+          subject,
+          exam_level,
+          image_url: value.image_url,
+          question_text: value.question_text,
+          marks: value.marks || 1,
+          is_active: true,
           options: value.options.map((o) => ({
-            option_label: o.label,
-            option_text: o.content,
-            is_correct: o.isCorrect,
+            option_label: o.option_label,
+            option_text: o.option_text,
+            is_correct: o.is_correct,
           })),
           answer: {
             explanation: value.explanation,
-            answer_text:
-              value.options
-                .filter((o) => o.isCorrect)
-                .map((o) => o.label)
-                .join(", ") || "A",
           },
         };
 
         if (questionId) {
           await questionsApi.updateQuestion(questionId, payload);
         } else {
-          await questionsApi.createQuestion(payload as QuestionCreate);
+          await questionsApi.createQuestion(payload);
           form.reset();
         }
 
         if (onSuccess) onSuccess();
-      } catch (error) {
-        console.error("Failed to create question:", error);
+      } catch (error: unknown) {
+        console.error("Failed to process question:", error);
+        toast.error(getErrorMessage(error));
       }
     },
   });
@@ -145,11 +158,11 @@ export const AddImageQuestionForm = ({
     setIsUploading(true);
     try {
       const result = await questionsApi.uploadImage(file);
-      form.setFieldValue("questionImageUrl", result.image_url);
+      form.setFieldValue("image_url", result.image_url);
       toast.success("Image uploaded successfully");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Upload failed:", error);
-      toast.error("Image upload failed: " + (error as Error).message);
+      toast.error("Image upload failed: " + getErrorMessage(error));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -157,24 +170,23 @@ export const AddImageQuestionForm = ({
   };
 
   const addOption = () => {
-    const currentOptions = form.getFieldValue("options");
+    const currentOptions = form.getFieldValue("options") as FormValues["options"];
     if (currentOptions.length < 6) {
       const nextLabel = String.fromCharCode(65 + currentOptions.length);
       form.setFieldValue("options", [
         ...currentOptions,
-        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
+        { option_label: nextLabel, option_text: "", is_correct: false },
       ]);
     }
   };
 
   const removeOption = (index: number) => {
-    const currentOptions = form.getFieldValue("options");
+    const currentOptions = form.getFieldValue("options") as FormValues["options"];
     if (currentOptions.length > 2) {
       const filtered = currentOptions.filter((_, i) => i !== index);
       const remapped = filtered.map((opt, i) => ({
         ...opt,
-        id: String.fromCharCode(65 + i),
-        label: String.fromCharCode(65 + i),
+        option_label: String.fromCharCode(65 + i),
       }));
       form.setFieldValue("options", remapped);
     }
@@ -185,7 +197,7 @@ export const AddImageQuestionForm = ({
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        form.handleSubmit();
+        void form.handleSubmit();
       }}
       className="space-y-6 p-1"
     >
@@ -200,9 +212,8 @@ export const AddImageQuestionForm = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Image Section */}
           <div className="lg:col-span-5 space-y-4">
-            <form.Field name="questionImageUrl">
+            <form.Field name="image_url">
               {(field) => (
                 <>
                   <Typography
@@ -224,9 +235,7 @@ export const AddImageQuestionForm = ({
                       <div className="flex flex-col gap-2">
                         <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30">
                           <Image
-                            src={
-                              getCanonicalImageUrl(field.state.value) as string
-                            }
+                            src={getCanonicalImageUrl(field.state.value as string) as string}
                             alt="Preview"
                             fill
                             className="object-contain"
@@ -246,10 +255,7 @@ export const AddImageQuestionForm = ({
                         <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
                           <FileImage size={14} />
                           <span className="truncate flex-1">
-                            {field.state.value
-                              .split("/")
-                              .pop()
-                              ?.replace(/^[0-9a-f]{32}_/, "")}
+                            {(field.state.value as string).split("/").pop()?.replace(/^[0-9a-f]{32}_/, "")}
                           </span>
                         </div>
                       </div>
@@ -265,15 +271,9 @@ export const AddImageQuestionForm = ({
                       >
                         <div className="p-3 rounded-full bg-background border border-border group-hover:border-brand-primary/50 transition-all shadow-sm">
                           {isUploading ? (
-                            <Loader2
-                              size={24}
-                              className="animate-spin text-brand-primary"
-                            />
+                            <Loader2 size={24} className="animate-spin text-brand-primary" />
                           ) : (
-                            <Upload
-                              size={24}
-                              className="text-muted-foreground group-hover:text-brand-primary"
-                            />
+                            <Upload size={24} className="text-muted-foreground group-hover:text-brand-primary" />
                           )}
                         </div>
                         <div className="text-center">
@@ -295,10 +295,7 @@ export const AddImageQuestionForm = ({
                     )}
                   </div>
                   {field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="text-red-500 mt-1.5 ml-1 font-medium"
-                    >
+                    <Typography variant="body5" className="text-red-500 mt-1.5 ml-1 font-medium">
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -307,35 +304,24 @@ export const AddImageQuestionForm = ({
             </form.Field>
           </div>
 
-          {/* Right Column: Metadata & Text Section */}
           <div className="lg:col-span-7 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <form.Field name="subject">
+              <form.Field name="subject_type_id">
                 {(field) => (
                   <div className="space-y-2">
-                    <Typography
-                      variant="body5"
-                      weight="semibold"
-                      className="block text-muted-foreground uppercase tracking-wider"
-                    >
+                    <Typography variant="body5" weight="semibold" className="block text-muted-foreground uppercase tracking-wider">
                       Subject
                     </Typography>
                     <SelectDropdown
                       placeholder="Select Subject"
-                      value={field.state.value}
-                      onChange={(val) => field.handleChange(val as string)}
-                      options={[
-                        { id: "", label: "Select Subject" },
-                        ...subjects.map((s) => ({ id: s.code, label: s.name })),
-                      ]}
+                      value={(field.state.value as number) > 0 ? String(field.state.value) : ""}
+                      onChange={(val) => field.handleChange(Number(val))}
+                      options={classifications.subjects}
                       className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                       error={field.state.meta.errors.length > 0}
                     />
                     {field.state.meta.errors.length > 0 && (
-                      <Typography
-                        variant="body5"
-                        className="text-red-500 mt-1 ml-1 font-medium"
-                      >
+                      <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                         {getErrorMessage(field.state.meta.errors[0])}
                       </Typography>
                     )}
@@ -343,32 +329,22 @@ export const AddImageQuestionForm = ({
                 )}
               </form.Field>
 
-              <form.Field name="examLevel">
+              <form.Field name="exam_level_id">
                 {(field) => (
                   <div className="space-y-2">
-                    <Typography
-                      variant="body5"
-                      weight="semibold"
-                      className="block text-muted-foreground uppercase tracking-wider"
-                    >
+                    <Typography variant="body5" weight="semibold" className="block text-muted-foreground uppercase tracking-wider">
                       Exam Level
                     </Typography>
                     <SelectDropdown
                       placeholder="Select Level"
-                      value={field.state.value}
-                      onChange={(val) => field.handleChange(val as string)}
-                      options={examLevels.map((e) => ({
-                        id: e.code,
-                        label: e.name,
-                      }))}
+                      value={(field.state.value as number) > 0 ? String(field.state.value) : ""}
+                      onChange={(val) => field.handleChange(Number(val))}
+                      options={classifications.levels}
                       className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                       error={field.state.meta.errors.length > 0}
                     />
                     {field.state.meta.errors.length > 0 && (
-                      <Typography
-                        variant="body5"
-                        className="text-red-500 mt-1 ml-1 font-medium"
-                      >
+                      <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                         {getErrorMessage(field.state.meta.errors[0])}
                       </Typography>
                     )}
@@ -380,16 +356,12 @@ export const AddImageQuestionForm = ({
                 <form.Field name="marks">
                   {(field) => (
                     <div className="space-y-2">
-                      <Typography
-                        variant="body5"
-                        weight="semibold"
-                        className="block text-muted-foreground uppercase tracking-wider"
-                      >
+                      <Typography variant="body5" weight="semibold" className="block text-muted-foreground uppercase tracking-wider">
                         Marks
                       </Typography>
                       <SelectDropdown
                         placeholder="Select Marks"
-                        value={String(field.state.value)}
+                        value={String(field.state.value || 1)}
                         onChange={(val) => field.handleChange(Number(val))}
                         options={Array.from({ length: 10 }, (_, i) => ({
                           id: String(i + 1),
@@ -399,10 +371,7 @@ export const AddImageQuestionForm = ({
                         error={field.state.meta.errors.length > 0}
                       />
                       {field.state.meta.errors.length > 0 && (
-                        <Typography
-                          variant="body5"
-                          className="text-red-500 mt-1 ml-1 font-medium"
-                        >
+                        <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                           {getErrorMessage(field.state.meta.errors[0])}
                         </Typography>
                       )}
@@ -412,29 +381,22 @@ export const AddImageQuestionForm = ({
               </div>
             </div>
 
-            <form.Field name="questionText">
+            <form.Field name="question_text">
               {(field) => (
                 <div className="space-y-2">
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="block text-muted-foreground uppercase tracking-wider"
-                  >
+                  <Typography variant="body5" weight="semibold" className="block text-muted-foreground uppercase tracking-wider">
                     Question Text
                   </Typography>
                   <Textarea
                     placeholder="Enter the main question here..."
-                    value={field.state.value}
+                    value={field.state.value as string}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     error={field.state.meta.errors.length > 0}
                     className="h-28 bg-muted/20 transition-colors border-border/60 hover:border-border"
                   />
                   {field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="text-red-500 mt-1 ml-1 font-medium"
-                    >
+                    <Typography variant="body5" className="text-red-500 mt-1 ml-1 font-medium">
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
@@ -471,45 +433,37 @@ export const AddImageQuestionForm = ({
           {(field) => (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                {field.state.value.map((opt, index) => (
-                  <form.Field key={opt.id} name={`options[${index}].content`}>
+                {(field.state.value as FormValues["options"]).map((opt, index) => (
+                  <form.Field key={index} name={`options[${index}].option_text`}>
                     {(subField) => (
                       <div className="relative group flex flex-col gap-1">
                         <OptionInput
-                          prefixLabel={opt.label}
-                          isCorrect={opt.isCorrect}
-                          placeholder={`Type option ${opt.label} content...`}
-                          value={opt.content}
+                          prefixLabel={opt.option_label}
+                          isCorrect={opt.is_correct}
+                          placeholder={`Type option ${opt.option_label} content...`}
+                          value={opt.option_text}
                           onChange={(e) => {
-                            const newOptions = [...field.state.value];
+                            const newOptions = [...(field.state.value as FormValues["options"])];
                             newOptions[index] = {
                               ...opt,
-                              content: e.target.value,
+                              option_text: e.target.value,
                             };
                             field.handleChange(newOptions);
                           }}
                           onBlur={subField.handleBlur}
-                          error={
-                            subField.state.meta.errors.length > 0 ||
-                            field.state.meta.errors.length > 0
-                          }
+                          error={subField.state.meta.errors.length > 0 || field.state.meta.errors.length > 0}
                           onMarkCorrect={() => {
-                            const newOptions = field.state.value.map(
-                              (o, i) => ({
-                                ...o,
-                                isCorrect: i === index ? !o.isCorrect : false,
-                              }),
-                            );
+                            const newOptions = (field.state.value as FormValues["options"]).map((o, i) => ({
+                              ...o,
+                              is_correct: i === index ? !o.is_correct : false,
+                            }));
                             field.handleChange(newOptions);
                           }}
                           onRemove={() => removeOption(index)}
-                          showRemove={field.state.value.length > 2}
+                          showRemove={(field.state.value as FormValues["options"]).length > 2}
                         />
                         {subField.state.meta.errors.length > 0 && (
-                          <Typography
-                            variant="body5"
-                            className="text-red-500 font-medium ml-1"
-                          >
+                          <Typography variant="body5" className="text-red-500 font-medium ml-1">
                             {getErrorMessage(subField.state.meta.errors[0])}
                           </Typography>
                         )}
@@ -519,10 +473,7 @@ export const AddImageQuestionForm = ({
                 ))}
               </div>
               {field.state.meta.errors.length > 0 && (
-                <Typography
-                  variant="body5"
-                  className="text-red-500 font-medium ml-1 mt-1"
-                >
+                <Typography variant="body5" className="text-red-500 font-medium ml-1 mt-1">
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -545,17 +496,14 @@ export const AddImageQuestionForm = ({
               </div>
               <Textarea
                 placeholder="Explain why the correct option is the right answer..."
-                value={field.state.value}
+                value={field.state.value as string}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
                 error={field.state.meta.errors.length > 0}
                 className="bg-muted/20"
               />
               {field.state.meta.errors.length > 0 && (
-                <Typography
-                  variant="body5"
-                  className="text-red-500 font-medium ml-1 mt-1"
-                >
+                <Typography variant="body5" className="text-red-500 font-medium ml-1 mt-1">
                   {getErrorMessage(field.state.meta.errors[0])}
                 </Typography>
               )}
@@ -565,9 +513,7 @@ export const AddImageQuestionForm = ({
       </div>
 
       <div className="bg-card flex justify-end">
-        <form.Subscribe
-          selector={(state) => [state.isSubmitting, state.canSubmit]}
-        >
+        <form.Subscribe selector={(state) => [state.isSubmitting, state.canSubmit]}>
           {([isSubmitting, canSubmit]) => (
             <Button
               type="submit"

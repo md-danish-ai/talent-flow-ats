@@ -35,8 +35,8 @@ class QuestionCreate(BaseModel):
     passage: Optional[str] = None
     marks: int
     is_active: bool = True
-    options: Optional[Any] = None
-    answer: AnswerCreate
+    options: Optional[List[OptionCreate]] = None
+    answer: Optional[AnswerCreate] = None
 
 
 class QuestionUpdate(BaseModel):
