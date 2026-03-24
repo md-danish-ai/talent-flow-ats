@@ -80,7 +80,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                 {!Array.isArray(paginatedUsers) ||
                   paginatedUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
@@ -108,8 +108,8 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                             }}
                             title={row.assignment?.is_attempted ? "Attempted" : "Assign Paper Set"}
                             className={`h-8 w-8 ${row.assignment?.is_attempted
-                                ? "text-green-600 cursor-not-allowed opacity-70"
-                                : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                              ? "text-green-600 cursor-not-allowed opacity-70"
+                              : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
                               }`}
                           >
                             <ClipboardCheck size={16} />
