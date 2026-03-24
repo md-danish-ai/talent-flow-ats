@@ -74,13 +74,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       }
 
       // 2. Fetch question details for mapping
-      const questionsData = await questionsApi.getQuestionsByIds(allQuestionIds);
+      const questionsList = await questionsApi.getQuestionsByIds(allQuestionIds);
       const questionIdToSubjectMap = new Map<number, number>();
       
-      // @ts-ignore - response might be wrapped in .data depending on version
-      const questionsList = Array.isArray(questionsData) ? questionsData : (questionsData as any).data || [];
-      
-      questionsList.forEach((q: any) => {
+      questionsList.forEach((q) => {
         if (q.id && q.subject?.id) {
           questionIdToSubjectMap.set(q.id, q.subject.id);
         }
