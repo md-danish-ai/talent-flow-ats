@@ -8,6 +8,7 @@ import { Select } from "@components/ui-elements/Select";
 import { UserListResponse } from "@lib/api/auth";
 import { papersApi, PaperSetup } from "@lib/api/papers";
 import { departmentsApi, Department } from "@lib/api/departments";
+import { questionsApi } from "@lib/api/questions";
 import { paperAssignmentsApi } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
 import { Loader2, User, Phone, Mail, BookOpen, Layers, Briefcase } from "lucide-react";
@@ -59,10 +60,58 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
         test_level_id: testLevelId,
       });
       
-      const papersList = response.data || [];
-      setPapers(papersList);
+      const papersList = (response.data || []) as PaperSetup[];
+      
+      // Filter papers that meet the "Total Selected Questions" condition
+      // 1. Collect all unique question IDs from all papers to fetch their subject info
+      const allQuestionIds = Array.from(new Set(
+        papersList.flatMap(p => p.question_id || [])
+      ));
+
+      if (allQuestionIds.length === 0) {
+        setPapers([]);
+        return;
+      }
+
+      // 2. Fetch question details for mapping
+      const questionsList = await questionsApi.getQuestionsByIds(allQuestionIds);
+      const questionIdToSubjectMap = new Map<number, number>();
+      
+      questionsList.forEach((q) => {
+        if (q.id && q.subject?.id) {
+          questionIdToSubjectMap.set(q.id, q.subject.id);
+        }
+      });
+
+      // 3. Filter the papersList
+      const readyPapers = papersList.filter(paper => {
+        // Must be active
+        if (!paper.is_active) return false;
+
+        const subjects = paper.subject_ids_data || [];
+        const selectedSubjects = subjects.filter(s => s.is_selected);
+        
+        // A valid paper must have at least one selected subject
+        if (selectedSubjects.length === 0) return false;
+
+        // ALL selected subjects must have their required question count met
+        return selectedSubjects.every(subjectConfig => {
+          const requiredCount = subjectConfig.question_count;
+          const assignedIds = paper.question_id || [];
+          
+          // Count questions in this paper that belong to this subject
+          const actualCount = assignedIds.filter(id => 
+            questionIdToSubjectMap.get(id) === subjectConfig.subject_id
+          ).length;
+
+          // Condition: actual count must match the required count (Green status)
+          return actualCount === requiredCount && requiredCount > 0;
+        });
+      });
+
+      setPapers(readyPapers);
     } catch (error) {
-      console.error("Failed to fetch papers:", error);
+      console.error("Failed to fetch/filter papers:", error);
       toast.error("Failed to fetch paper sets");
     } finally {
       setIsLoading(false);
