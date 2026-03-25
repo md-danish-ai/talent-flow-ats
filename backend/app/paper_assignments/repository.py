@@ -70,8 +70,10 @@ def _extract_question_ids(question_payload: Any) -> list[int]:
 
 def _resolve_question_type(question: dict) -> str:
     type_code = ((question.get("question_type") or {}).get("code") or "").upper()
-    if type_code == "IMAGE_MULTIPLE_CHOICE":
+    if type_code in {"IMAGE_MULTIPLE_CHOICE", "IMAGE_MCQ"}:
         return "IMAGE_MCQ"
+    if type_code in {"IMAGE_SUBJECTIVE", "IMAGE_DESCRIPTIVE", "IMAGE_WRITTEN"}:
+        return "IMAGE_SUBJECTIVE"
     if type_code in {"PASSAGE_MULTIPLE_CHOICE", "PASSAGE_MCQ"}:
         return "PASSAGE_MCQ"
     if type_code == "SUBJECTIVE":
@@ -85,10 +87,14 @@ def _resolve_question_type(question: dict) -> str:
     if type_code == "CONTACT_DETAILS":
         return "CONTACT_DETAILS"
 
+    # Fallback heuristics
     if question.get("passage"):
         return "PASSAGE_MCQ"
     if question.get("image_url"):
-        return "IMAGE_MCQ"
+        # If it has image but NO options, it's likely an image-based subjective
+        if question.get("options"):
+            return "IMAGE_MCQ"
+        return "IMAGE_SUBJECTIVE"
     if question.get("options"):
         return "MCQ"
     return "SUBJECTIVE"

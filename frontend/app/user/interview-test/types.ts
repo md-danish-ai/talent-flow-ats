@@ -2,6 +2,7 @@ export type QuestionType =
   | "MCQ"
   | "IMAGE_MCQ"
   | "SUBJECTIVE"
+  | "IMAGE_SUBJECTIVE"
   | "PASSAGE_MCQ"
   | "TYPING_TEST"
   | "LEAD_GENERATION"
@@ -17,6 +18,7 @@ export interface InterviewQuestion {
   options?: string[];
   passage?: string;
   imageUrl?: string;
+  image_url?: string;
 }
 
 export interface InterviewSection {
