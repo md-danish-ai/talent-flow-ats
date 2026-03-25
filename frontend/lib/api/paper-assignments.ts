@@ -26,6 +26,8 @@ export interface InterviewPaperQuestionResponse {
   id: number;
   type: string;
   question_text: string;
+  subject_name?: string | null;
+  type_name?: string | null;
   image_url?: string | null;
   passage?: string | null;
   marks?: number | null;

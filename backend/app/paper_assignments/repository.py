@@ -78,6 +78,13 @@ def _resolve_question_type(question: dict) -> str:
         return "SUBJECTIVE"
     if type_code == "MULTIPLE_CHOICE":
         return "MCQ"
+    if type_code == "TYPING_TEST":
+        return "TYPING_TEST"
+    if type_code == "LEAD_GENERATION":
+        return "LEAD_GENERATION"
+    if type_code == "CONTACT_DETAILS":
+        return "CONTACT_DETAILS"
+
     if question.get("passage"):
         return "PASSAGE_MCQ"
     if question.get("image_url"):
@@ -291,6 +298,8 @@ def get_my_interview_paper(
                 "id": question["id"],
                 "type": _resolve_question_type(question),
                 "question_text": question["question_text"],
+                "subject_name": question.get("subject", {}).get("name") if question.get("subject") else None,
+                "type_name": question.get("question_type", {}).get("name") if question.get("question_type") else None,
                 "image_url": question.get("image_url"),
                 "passage": question.get("passage"),
                 "marks": question.get("marks"),
