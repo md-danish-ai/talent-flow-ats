@@ -1,9 +1,9 @@
 export type QuestionType =
-  | "MCQ"
-  | "IMAGE_MCQ"
+  | "MULTIPLE_CHOICE"
+  | "IMAGE_MULTIPLE_CHOICE"
   | "SUBJECTIVE"
   | "IMAGE_SUBJECTIVE"
-  | "PASSAGE_MCQ"
+  | "PASSAGE_CONTENT"
   | "TYPING_TEST"
   | "LEAD_GENERATION"
   | "CONTACT_DETAILS";
@@ -19,6 +19,9 @@ export interface InterviewQuestion {
   passage?: string;
   imageUrl?: string;
   image_url?: string;
+  marks?: number;
+  testLevel?: string;
+  explanation?: string;
 }
 
 export interface InterviewSection {

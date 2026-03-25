@@ -71,15 +71,15 @@ def _extract_question_ids(question_payload: Any) -> list[int]:
 def _resolve_question_type(question: dict) -> str:
     type_code = ((question.get("question_type") or {}).get("code") or "").upper()
     if type_code in {"IMAGE_MULTIPLE_CHOICE", "IMAGE_MCQ"}:
-        return "IMAGE_MCQ"
+        return "IMAGE_MULTIPLE_CHOICE"
     if type_code in {"IMAGE_SUBJECTIVE", "IMAGE_DESCRIPTIVE", "IMAGE_WRITTEN"}:
         return "IMAGE_SUBJECTIVE"
-    if type_code in {"PASSAGE_MULTIPLE_CHOICE", "PASSAGE_MCQ"}:
-        return "PASSAGE_MCQ"
+    if type_code in {"PASSAGE_CONTENT", "PASSAGE_ANALYSIS"}:
+        return "PASSAGE_CONTENT"
     if type_code == "SUBJECTIVE":
         return "SUBJECTIVE"
     if type_code == "MULTIPLE_CHOICE":
-        return "MCQ"
+        return "MULTIPLE_CHOICE"
     if type_code == "TYPING_TEST":
         return "TYPING_TEST"
     if type_code == "LEAD_GENERATION":
@@ -89,14 +89,14 @@ def _resolve_question_type(question: dict) -> str:
 
     # Fallback heuristics
     if question.get("passage"):
-        return "PASSAGE_MCQ"
+        return "PASSAGE_CONTENT"
     if question.get("image_url"):
         # If it has image but NO options, it's likely an image-based subjective
         if question.get("options"):
-            return "IMAGE_MCQ"
+            return "IMAGE_MULTIPLE_CHOICE"
         return "IMAGE_SUBJECTIVE"
     if question.get("options"):
-        return "MCQ"
+        return "MULTIPLE_CHOICE"
     return "SUBJECTIVE"
 
 
