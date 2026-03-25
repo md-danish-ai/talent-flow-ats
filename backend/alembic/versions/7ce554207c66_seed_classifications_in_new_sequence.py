@@ -3,7 +3,7 @@
 Revision ID: 7ce554207c66
 Revises: dba95901fa50
 Create Date: 2026-03-17 11:59:48.471531
-Created By: unknown
+Created By: md-danish-ai
 
 """
 
@@ -58,14 +58,8 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Company Contact Details Test",
-        "code": "COMPANY_CONTACT_DETAILS_TEST",
-        "metadata": {"description": "Testing accuracy in finding contact information."},
-    },
-    {
-        "type": "subject",
-        "name": "Company Details",
-        "code": "COMPANY_DETAILS",
+        "name": "Company Contact Details",
+        "code": "COMPANY_CONTACT_DETAILS",
         "metadata": {
             "description": "Knowledge regarding company structure and history."
         },
@@ -172,7 +166,8 @@ def upgrade() -> None:
 
     try:
         op.create_unique_constraint(
-            "classifications_type_code_key", "classifications", ["type", "code"]
+            "classifications_type_code_key", "classifications", [
+                "type", "code"]
         )
     except Exception:
         pass
@@ -224,12 +219,14 @@ def upgrade() -> None:
     for dept_data in DEPARTMENTS:
         name = dept_data["name"]
         res = conn.execute(
-            sa.text("SELECT id FROM departments WHERE name = :name"), {"name": name}
+            sa.text("SELECT id FROM departments WHERE name = :name"), {
+                "name": name}
         ).fetchone()
 
         if res:
             conn.execute(
-                sa.text("UPDATE departments SET is_active = true WHERE name = :name"),
+                sa.text(
+                    "UPDATE departments SET is_active = true WHERE name = :name"),
                 {"name": name},
             )
         else:

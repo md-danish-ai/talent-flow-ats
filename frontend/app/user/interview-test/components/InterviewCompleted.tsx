@@ -69,7 +69,8 @@ export function InterviewCompleted({
         <Link href="/user/dashboard">
           <Button
             variant="outline"
-            color="default"
+            color="primary"
+            animate="scale"
             startIcon={<ArrowLeft size={16} />}
             className="w-full sm:w-auto"
           >

@@ -101,7 +101,7 @@ export function SelectDropdown({
     };
   }, [isOpen]);
 
-  const selectedOption = options.find((opt) => opt.id === value);
+  const selectedOption = options.find((opt) => String(opt.id) === String(value));
 
   const menuNode = (
     <AnimatePresence>
@@ -146,7 +146,7 @@ export function SelectDropdown({
                   }}
                   className={cn(
                     "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
-                    value === option.id
+                    String(value) === String(option.id)
                       ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
                       : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
                   )}
@@ -159,7 +159,7 @@ export function SelectDropdown({
                   >
                     {option.label}
                   </Typography>
-                  {value === option.id && (
+                  {String(value) === String(option.id) && (
                     <Check className="h-4 w-4 flex-shrink-0" />
                   )}
                 </Button>

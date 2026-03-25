@@ -200,21 +200,29 @@ def seed():
 
     db.commit()
 
-    # Disable all other classifications for these types NOT in the allowed list
-    print("\n🔒 Disabling unauthorized records...")
+    # ── Hard DELETE stale entries not in the allowed list ──────────────────
+    # This permanently removes old migration-seeded codes that are no longer
+    # part of the official classification list (e.g. COMPANY_CONTACT_DETAILS_TEST,
+    # COMPANY_DETAILS) so they don't appear as disabled ghost rows.
+    print("\n🗑️  Removing stale (unauthorized) classification records...")
     for type_ in set(i["type"] for i in CLASSIFICATIONS):
         allowed_codes_for_type = [
             i["code"] for i in CLASSIFICATIONS if i["type"] == type_
         ]
-        disabled_count = (
+        stale_records = (
             db.query(Classification)
             .filter(
                 Classification.type == type_,
                 ~Classification.code.in_(allowed_codes_for_type),
             )
-            .update({"is_active": False}, synchronize_session=False)
+            .all()
         )
-        print(f"🚫 Disabled {disabled_count} other records for type: {type_}")
+        for record in stale_records:
+            db.delete(record)
+            print(f"  🗑️  Deleted [{record.type}] {record.code} — \"{record.name}\"")
+
+        if not stale_records:
+            print(f"  ✅ No stale records for type: {type_}")
 
     db.commit()
     print("\n✨ Database successfully synced with the final authorized list.")

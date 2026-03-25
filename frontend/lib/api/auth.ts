@@ -87,8 +87,11 @@ export interface UserListResponse {
   assignment?: {
     is_assigned: boolean;
     paper_id: number | null;
+    paper_name?: string | null;
     department_id: number | null;
+    department_name?: string | null;
     test_level_id: number | null;
+    test_level_name?: string | null;
     is_attempted: boolean;
   } | null;
 }

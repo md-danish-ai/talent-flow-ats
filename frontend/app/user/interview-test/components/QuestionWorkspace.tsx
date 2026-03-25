@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ArrowLeft, ArrowRight, Clock3 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
@@ -25,7 +26,7 @@ interface QuestionWorkspaceProps {
   onSaveAndNext: () => void;
 }
 
-export function QuestionWorkspace({
+export const QuestionWorkspace = memo(function QuestionWorkspace({
   message,
   onCloseMessage,
   sectionIndex,
@@ -120,7 +121,8 @@ export function QuestionWorkspace({
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <Button
           variant="outline"
-          color="default"
+          color="primary"
+          animate="scale"
           onClick={onPrevious}
           disabled={questionIndex === 0}
           startIcon={<ArrowLeft size={16} />}
@@ -132,6 +134,7 @@ export function QuestionWorkspace({
         <Button
           onClick={onSaveAndNext}
           color="primary"
+          animate="scale"
           endIcon={<ArrowRight size={16} />}
           className="w-full sm:w-auto"
         >
@@ -144,4 +147,4 @@ export function QuestionWorkspace({
       </div>
     </MainCard>
   );
-}
+});

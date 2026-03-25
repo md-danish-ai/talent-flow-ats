@@ -76,6 +76,16 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
 
   // Fetch Questions
   const fetchQuestions = useCallback(async () => {
+    // Safety guard: subjectCode empty hone par saari questions fetch karne se rok
+    if (!subjectCode) {
+      console.warn(
+        "[AddContentModal] subjectCode is empty — skipping fetch to avoid showing all questions.",
+      );
+      setQuestions([]);
+      setTotalRecords(0);
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       const res = await questionsApi.getQuestions({
@@ -359,6 +369,26 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 Loading Question Library...
               </Typography>
             </div>
+          ) : !subjectCode ? (
+            <div className="h-[300px] flex flex-col items-center justify-center text-center p-8">
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                <Search size={24} className="text-red-400" />
+              </div>
+              <Typography
+                variant="h4"
+                weight="bold"
+                className="text-red-600 dark:text-red-400 text-sm"
+              >
+                Subject Configuration Error
+              </Typography>
+              <Typography
+                variant="body5"
+                className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]"
+              >
+                This subject&apos;s code could not be resolved. Please re-seed
+                the classifications database.
+              </Typography>
+            </div>
           ) : questions.length === 0 ? (
             <div className="h-[300px] flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
@@ -375,7 +405,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 variant="body5"
                 className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]"
               >
-                Try adjusting your filters or check if questions exist.
+                Try adjusting your filters or check if questions exist for this
+                subject.
               </Typography>
             </div>
           ) : (
@@ -383,11 +414,11 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Sr.</TableHead>
-                    <TableHead>Question Details</TableHead>
-                    <TableHead className="w-[180px]">Type</TableHead>
-                    <TableHead>Marks</TableHead>
-                    <TableHead>
+                    <TableHead className="text-center w-20 pl-6">Sr.</TableHead>
+                    <TableHead className="pl-4">Question Details</TableHead>
+                    <TableHead className="text-center w-[180px]">Question Type</TableHead>
+                    <TableHead className="text-center w-24">Marks</TableHead>
+                    <TableHead className="pr-6">
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-[10px] opacity-70">ALL</span>
                         <Checkbox
@@ -410,12 +441,12 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                       key={q.id}
                       className="group border-b border-border/40 hover:bg-brand-primary/[0.02] dark:hover:bg-brand-primary/[0.04] transition-colors min-h-16"
                     >
-                      <TableCell className="text-center text-slate-400 font-black text-[11px] pl-6">
+                      <TableCell className="text-center text-slate-400 font-black text-[11px] pl-6 w-20">
                         {((currentPage - 1) * pageSize + index + 1)
                           .toString()
                           .padStart(2, "0")}
                       </TableCell>
-                      <TableCell className="py-6">
+                      <TableCell className="py-6 pl-4">
                         <Typography
                           variant="body4"
                           weight="bold"
@@ -424,21 +455,21 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                           {q.question_text}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center w-[180px]">
                         <Badge
                           variant="outline"
                           shape="square"
                           color="primary"
-                          className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
+                          className="font-black text-[9px] px-3 py-1 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
                         >
                           {q.question_type?.name || "N/A"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center w-24">
                         <Typography
                           variant="body4"
                           weight="black"
-                          className="text-brand-primary text-xs"
+                          className="text-brand-primary text-[13px]"
                         >
                           {q.marks}
                         </Typography>

@@ -148,6 +148,8 @@ export function InterviewTestClient() {
               id: question.id,
               type: question.type as InterviewQuestion["type"],
               questionText: question.question_text,
+              subjectName: question.subject_name ?? undefined,
+              typeName: question.type_name ?? undefined,
               description: undefined,
               passage: question.passage || undefined,
               imageUrl: question.image_url || undefined,
@@ -271,29 +273,33 @@ export function InterviewTestClient() {
     return () => clearInterval(timer);
   }, [handleOverallTimeOver, hasStarted, isCompleted]);
 
-  const setCurrentAnswer = (value: string) => {
-    if (!currentQuestion) return;
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+  const setCurrentAnswer = useCallback(
+    (value: string) => {
+      if (!currentQuestion) return;
+      setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
 
-    const isChoiceQuestion =
-      currentQuestion.type === "MCQ" ||
-      currentQuestion.type === "IMAGE_MCQ" ||
-      currentQuestion.type === "PASSAGE_MCQ";
+      const isChoiceQuestion =
+        currentQuestion.type === "MULTIPLE_CHOICE" ||
+        currentQuestion.type === "IMAGE_MULTIPLE_CHOICE" ||
+        currentQuestion.type === "CONTACT_DETAILS" ||
+        currentQuestion.type === "LEAD_GENERATION";
 
-    if (isChoiceQuestion) {
-      void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
-        setMessage("Answer selected locally, but failed to sync with server.");
-      });
-    }
-  };
+      if (isChoiceQuestion) {
+        void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
+          setMessage("Answer selected locally, but failed to sync with server.");
+        });
+      }
+    },
+    [currentQuestion, persistAnswerToBackend],
+  );
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (questionIndex === 0) return;
     setQuestionIndex((prev) => prev - 1);
     setMessage(null);
-  };
+  }, [questionIndex]);
 
-  const handleSaveAndNext = async () => {
+  const handleSaveAndNext = useCallback(async () => {
     if (!currentQuestion) return;
     setMessage(null);
 
@@ -325,7 +331,16 @@ export function InterviewTestClient() {
     }
 
     lockAndMoveToNextSection(sectionIndex);
-  };
+  }, [
+    currentAnswer,
+    currentQuestion,
+    persistAnswerToBackend,
+    isLastQuestionInSection,
+    isLastSection,
+    attemptId,
+    lockAndMoveToNextSection,
+    sectionIndex,
+  ]);
 
   const handleConfirmSectionChange = () => {
     setIsSectionChangeConfirmOpen(false);
