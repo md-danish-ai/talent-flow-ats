@@ -1,20 +1,18 @@
 import { memo } from "react";
-import { ArrowLeft, ArrowRight, Clock3 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 import { QuestionInput } from "./QuestionInput";
 import type { InterviewQuestion, InterviewSection, TimerZone } from "../types";
 
 interface QuestionWorkspaceProps {
   message: string | null;
   onCloseMessage: () => void;
-  sectionIndex: number;
-  totalSections: number;
   currentSection: InterviewSection;
   questionIndex: number;
-  progressPercent: number;
   timerZone: TimerZone;
   remainingTimeText: string;
   currentQuestion: InterviewQuestion;
@@ -29,11 +27,8 @@ interface QuestionWorkspaceProps {
 export const QuestionWorkspace = memo(function QuestionWorkspace({
   message,
   onCloseMessage,
-  sectionIndex,
-  totalSections,
   currentSection,
   questionIndex,
-  progressPercent,
   timerZone,
   remainingTimeText,
   currentQuestion,
@@ -46,19 +41,15 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
 }: QuestionWorkspaceProps) {
   return (
     <MainCard
-      title={
-        <div className="flex items-center gap-2">
-          <span>Question Workspace</span>
-        </div>
-      }
+      title="Question Workspace"
       action={
         <Badge variant="outline" color="primary" className="whitespace-nowrap">
-          <span className="sm:hidden">
+          <Typography variant="span" className="sm:hidden">
             Q {questionIndex + 1}/{currentSection.questions.length}
-          </span>
-          <span className="hidden sm:inline">
+          </Typography>
+          <Typography variant="span" className="hidden sm:inline">
             Question {questionIndex + 1}/{currentSection.questions.length}
-          </span>
+          </Typography>
         </Badge>
       }
       bodyClassName="space-y-4"
@@ -66,41 +57,6 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
       {message && (
         <Alert variant="info" description={message} onClose={onCloseMessage} />
       )}
-
-      <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" color="secondary">
-            Section {sectionIndex + 1}/{totalSections}
-          </Badge>
-          <Badge variant="outline" color="primary">
-            {currentSection.title}
-          </Badge>
-          <Badge variant="outline" color="default">
-            Progress {progressPercent}%
-          </Badge>
-          <Badge
-            variant="outline"
-            color={
-              timerZone === "danger"
-                ? "error"
-                : timerZone === "warn"
-                  ? "warning"
-                  : "success"
-            }
-            icon={<Clock3 size={12} />}
-            className="font-mono"
-          >
-            {remainingTimeText}
-          </Badge>
-        </div>
-
-        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-brand-primary transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
 
       {timerZone === "danger" && (
         <Alert
@@ -110,13 +66,33 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         />
       )}
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <QuestionInput
-          question={currentQuestion}
-          currentAnswer={currentAnswer}
-          onChangeAnswer={onAnswerChange}
-        />
+      <div className="flex items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1.5 rounded-full bg-brand-primary" />
+          <div>
+            <Typography variant="h4" className="text-foreground font-bold">
+              {currentQuestion.typeName || (
+                (currentQuestion.type === "MULTIPLE_CHOICE" || currentQuestion.type === "IMAGE_MULTIPLE_CHOICE") 
+                ? "Multiple Choice" : "Analytical Response"
+              )}
+            </Typography>
+            <Typography variant="body5" className="text-muted-foreground uppercase tracking-widest font-medium">
+              Mode: {currentQuestion.type.replace(/_/g, " ")}
+            </Typography>
+          </div>
+        </div>
+        {currentQuestion.subjectName && (
+          <Badge variant="outline" color="secondary" className="px-3 py-1 text-xs font-bold uppercase tracking-wider">
+            {currentQuestion.subjectName}
+          </Badge>
+        )}
       </div>
+
+      <QuestionInput
+        question={currentQuestion}
+        currentAnswer={currentAnswer}
+        onChangeAnswer={onAnswerChange}
+      />
 
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <Button

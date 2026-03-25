@@ -9,6 +9,7 @@ import {
 import { formatTime } from "./utils";
 import { InterviewOverview } from "./components/InterviewOverview";
 import { InterviewCompleted } from "./components/InterviewCompleted";
+import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
@@ -278,13 +279,14 @@ export function InterviewTestClient() {
       if (!currentQuestion) return;
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
 
-      const isChoiceQuestion =
+      const isAutoSaveType =
         currentQuestion.type === "MULTIPLE_CHOICE" ||
         currentQuestion.type === "IMAGE_MULTIPLE_CHOICE" ||
         currentQuestion.type === "CONTACT_DETAILS" ||
-        currentQuestion.type === "LEAD_GENERATION";
+        currentQuestion.type === "LEAD_GENERATION" ||
+        currentQuestion.type === "TYPING_TEST";
 
-      if (isChoiceQuestion) {
+      if (isAutoSaveType) {
         void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
           setMessage("Answer selected locally, but failed to sync with server.");
         });
@@ -424,11 +426,8 @@ export function InterviewTestClient() {
           <QuestionWorkspace
             message={message}
             onCloseMessage={() => setMessage(null)}
-            sectionIndex={sectionIndex}
-            totalSections={totalSections}
             currentSection={currentSection}
             questionIndex={questionIndex}
-            progressPercent={progressPercent}
             timerZone={timerZone}
             remainingTimeText={formatTime(examRemainingSeconds)}
             currentQuestion={currentQuestion}
@@ -443,12 +442,18 @@ export function InterviewTestClient() {
 
         <div className="xl:col-span-4 2xl:col-span-3 min-w-0">
           <div className="xl:sticky xl:top-4 space-y-4">
+            <InterviewProgressCard
+              sectionIndex={sectionIndex}
+              totalSections={totalSections}
+              currentSection={currentSection}
+              progressPercent={progressPercent}
+              timerZone={timerZone}
+              remainingTimeText={formatTime(examRemainingSeconds)}
+            />
             <InterviewStatusCard
               sections={sections}
               sectionIndex={sectionIndex}
               lockedSections={lockedSections}
-              timerZone={timerZone}
-              remainingTimeText={formatTime(examRemainingSeconds)}
               answeredCount={answeredCount}
               notAttemptedCount={notAttemptedCount}
             />

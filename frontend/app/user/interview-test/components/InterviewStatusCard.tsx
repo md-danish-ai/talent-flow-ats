@@ -3,14 +3,12 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
-import type { InterviewSection, TimerZone } from "../types";
+import type { InterviewSection } from "../types";
 
 interface InterviewStatusCardProps {
   sections: InterviewSection[];
   sectionIndex: number;
   lockedSections: boolean[];
-  timerZone: TimerZone;
-  remainingTimeText: string;
   answeredCount: number;
   notAttemptedCount: number;
 }
@@ -19,8 +17,6 @@ export function InterviewStatusCard({
   sections,
   sectionIndex,
   lockedSections,
-  timerZone,
-  remainingTimeText,
   answeredCount,
   notAttemptedCount,
 }: InterviewStatusCardProps) {
@@ -28,22 +24,6 @@ export function InterviewStatusCard({
     <MainCard
       title="Interview Status"
       bodyClassName="space-y-4"
-      action={
-        <Badge
-          variant="outline"
-          color={
-            timerZone === "danger"
-              ? "error"
-              : timerZone === "warn"
-                ? "warning"
-                : "success"
-          }
-          icon={<Clock3 size={14} />}
-          className="font-mono"
-        >
-          {remainingTimeText}
-        </Badge>
-      }
     >
       <Alert
         variant="warning"
@@ -51,7 +31,7 @@ export function InterviewStatusCard({
         showIcon={false}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {sections.map((section, index) => {
           const isCurrent = index === sectionIndex;
           const isLocked = lockedSections[index];
@@ -59,42 +39,58 @@ export function InterviewStatusCard({
           return (
             <div
               key={section.id}
-              className={`rounded-lg border px-3 py-3 ${
+              className={`group flex flex-col gap-2 rounded-xl border p-3 transition-all duration-300 ${
                 isCurrent
-                  ? "border-brand-primary bg-brand-primary/10"
+                  ? "border-brand-primary bg-brand-primary/10 shadow-sm"
                   : isLocked
-                    ? "border-emerald-500/40 bg-emerald-500/10"
-                    : "border-border bg-muted/10"
+                    ? "border-emerald-500/30 bg-emerald-500/5 opacity-80"
+                    : "border-border bg-muted/5 opacity-60"
               }`}
             >
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <Typography
-                  variant="body4"
-                  className={`break-words ${
-                    isCurrent ? "text-brand-primary" : "text-foreground"
-                  }`}
-                >
-                  {section.title}
-                </Typography>
-                {isCurrent && <Badge color="primary">Active</Badge>}
-                {isLocked && (
-                  <Badge
-                    variant="outline"
-                    color="success"
-                    icon={<CheckCircle2 size={12} />}
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <Typography
+                    variant="body4"
+                    weight={isCurrent ? "bold" : "semibold"}
+                    className={isCurrent ? "text-brand-primary" : "text-foreground"}
                   >
-                    Locked
-                  </Badge>
-                )}
-                {!isCurrent && !isLocked && (
-                  <Badge
-                    variant="outline"
-                    color="default"
-                    icon={<Lock size={12} />}
-                  >
-                    Pending
-                  </Badge>
-                )}
+                    {section.title}
+                  </Typography>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/20 px-1.5 py-0.5 rounded border border-border/50">
+                      <Clock3 size={10} />
+                      <span>{section.durationMinutes} Mins Allotted</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1.5">
+                  {isCurrent && (
+                    <Badge color="primary" className="animate-pulse shadow-brand-200">
+                      ACTIVE
+                    </Badge>
+                  )}
+                  {isLocked && (
+                    <Badge
+                      variant="outline"
+                      color="success"
+                      icon={<CheckCircle2 size={12} />}
+                      className="bg-emerald-50"
+                    >
+                      LOCKED
+                    </Badge>
+                  )}
+                  {!isCurrent && !isLocked && (
+                    <Badge
+                      variant="outline"
+                      color="default"
+                      icon={<Lock size={12} />}
+                      className="bg-background"
+                    >
+                      PENDING
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           );
