@@ -148,6 +148,8 @@ export function InterviewTestClient() {
               id: question.id,
               type: question.type as InterviewQuestion["type"],
               questionText: question.question_text,
+              subjectName: question.subject_name ?? undefined,
+              typeName: question.type_name ?? undefined,
               description: undefined,
               passage: question.passage || undefined,
               imageUrl: question.image_url || undefined,
@@ -278,7 +280,9 @@ export function InterviewTestClient() {
     const isChoiceQuestion =
       currentQuestion.type === "MCQ" ||
       currentQuestion.type === "IMAGE_MCQ" ||
-      currentQuestion.type === "PASSAGE_MCQ";
+      currentQuestion.type === "PASSAGE_MCQ" ||
+      currentQuestion.type === "CONTACT_DETAILS" ||
+      currentQuestion.type === "LEAD_GENERATION";
 
     if (isChoiceQuestion) {
       void persistAnswerToBackend(currentQuestion.id, value).catch(() => {

@@ -38,6 +38,8 @@ class InterviewPaperQuestionResponse(BaseModel):
     id: int
     type: str
     question_text: str
+    subject_name: str | None = None
+    type_name: str | None = None
     image_url: str | None = None
     passage: str | None = None
     marks: int | None = None
