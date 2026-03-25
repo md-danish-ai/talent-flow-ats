@@ -40,7 +40,9 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   onBack,
 }) => {
   const [paper, setPaper] = useState<PaperSetup | null>(null);
-  const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [allClassifications, setAllClassifications] = useState<
+    Classification[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSubjectId, setExpandedSubjectId] = useState<number | null>(
     null,
@@ -77,15 +79,14 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [paperData, subjectsData] = await Promise.all([
+        const [paperData, classificationsData] = await Promise.all([
           papersApi.getPaperById(paperId),
           classificationsApi.getClassifications({
-            type: "subject",
             limit: 100,
           }),
         ]);
         setPaper(paperData);
-        setSubjects(subjectsData.data);
+        setAllClassifications(classificationsData.data);
       } catch (error) {
         console.error("Failed to fetch details:", error);
         toast.error("Failed to load paper details");
@@ -106,7 +107,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   }, [paper?.question_id]);
 
   const getSubjectNameAndCode = (subjectId: number) => {
-    const subject = subjects.find((s) => s.id === subjectId);
+    const subject = allClassifications.find((s) => s.id === subjectId);
     return subject
       ? { name: subject.name, code: subject.code }
       : { name: `Subject ${subjectId}`, code: "" };

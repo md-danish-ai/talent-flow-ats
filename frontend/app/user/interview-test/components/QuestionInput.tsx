@@ -1,8 +1,18 @@
-import Image from "next/image";
 import { Radio } from "@components/ui-elements/Radio";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import type { InterviewQuestion } from "../types";
+
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+
+/** Converts a relative `/images/...` path from the backend into a full URL. */
+function resolveImageUrl(url: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `${BACKEND_BASE_URL}${url}`;
+}
 
 interface QuestionInputProps {
   question: InterviewQuestion;
@@ -48,15 +58,15 @@ export function QuestionInput({
           <Typography variant="body5" className="mb-2">
             Reference Image
           </Typography>
-          <Image
-            src={question.imageUrl}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={resolveImageUrl(question.imageUrl)}
             alt="Question reference"
-            width={320}
-            height={180}
             className="w-full max-w-[320px] h-auto rounded-lg border border-border object-contain bg-white"
           />
         </div>
       )}
+
 
       <Typography variant="body2" className="text-foreground font-semibold">
         {question.questionText}

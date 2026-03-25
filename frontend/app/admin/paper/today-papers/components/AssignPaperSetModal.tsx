@@ -4,14 +4,22 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
-import { Select } from "@components/ui-elements/Select";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { UserListResponse } from "@lib/api/auth";
 import { papersApi, PaperSetup } from "@lib/api/papers";
 import { departmentsApi, Department } from "@lib/api/departments";
 import { questionsApi } from "@lib/api/questions";
 import { paperAssignmentsApi } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
-import { Loader2, User, Phone, Mail, BookOpen, Layers, Briefcase } from "lucide-react";
+import {
+  Loader2,
+  User,
+  Phone,
+  Mail,
+  BookOpen,
+  Layers,
+  Briefcase,
+} from "lucide-react";
 
 interface AssignPaperModalProps {
   isOpen: boolean;
@@ -27,7 +35,8 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   user,
 }) => {
   const userLevel = user.testlevel;
-  const testLevelId = user.test_level_id?.toString() || user.testlevel_id?.toString();
+  const testLevelId =
+    user.test_level_id?.toString() || user.testlevel_id?.toString();
 
   const [papers, setPapers] = useState<PaperSetup[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -39,7 +48,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
   const fetchDepartments = useCallback(async () => {
     try {
-      const response = await departmentsApi.getDepartments({ is_active: true, limit: 100 });
+      const response = await departmentsApi.getDepartments({
+        is_active: true,
+        limit: 100,
+      });
       const deptList = response.data || [];
       setDepartments(deptList);
     } catch (error) {
@@ -50,23 +62,23 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
   const fetchPapers = useCallback(async () => {
     if (!selectedDepartment) return;
-    
+
     setIsLoading(true);
     try {
-      const response = await papersApi.getPapers({ 
-        is_active: true, 
+      const response = await papersApi.getPapers({
+        is_active: true,
         limit: 100,
         department_id: selectedDepartment,
         test_level_id: testLevelId,
       });
-      
+
       const papersList = (response.data || []) as PaperSetup[];
-      
+
       // Filter papers that meet the "Total Selected Questions" condition
       // 1. Collect all unique question IDs from all papers to fetch their subject info
-      const allQuestionIds = Array.from(new Set(
-        papersList.flatMap(p => p.question_id || [])
-      ));
+      const allQuestionIds = Array.from(
+        new Set(papersList.flatMap((p) => p.question_id || [])),
+      );
 
       if (allQuestionIds.length === 0) {
         setPapers([]);
@@ -74,9 +86,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       }
 
       // 2. Fetch question details for mapping
-      const questionsList = await questionsApi.getQuestionsByIds(allQuestionIds);
+      const questionsList =
+        await questionsApi.getQuestionsByIds(allQuestionIds);
       const questionIdToSubjectMap = new Map<number, number>();
-      
+
       questionsList.forEach((q) => {
         if (q.id && q.subject?.id) {
           questionIdToSubjectMap.set(q.id, q.subject.id);
@@ -84,24 +97,24 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       });
 
       // 3. Filter the papersList
-      const readyPapers = papersList.filter(paper => {
+      const readyPapers = papersList.filter((paper) => {
         // Must be active
         if (!paper.is_active) return false;
 
         const subjects = paper.subject_ids_data || [];
-        const selectedSubjects = subjects.filter(s => s.is_selected);
-        
+        const selectedSubjects = subjects.filter((s) => s.is_selected);
+
         // A valid paper must have at least one selected subject
         if (selectedSubjects.length === 0) return false;
 
         // ALL selected subjects must have their required question count met
-        return selectedSubjects.every(subjectConfig => {
+        return selectedSubjects.every((subjectConfig) => {
           const requiredCount = subjectConfig.question_count;
           const assignedIds = paper.question_id || [];
-          
+
           // Count questions in this paper that belong to this subject
-          const actualCount = assignedIds.filter(id => 
-            questionIdToSubjectMap.get(id) === subjectConfig.subject_id
+          const actualCount = assignedIds.filter(
+            (id) => questionIdToSubjectMap.get(id) === subjectConfig.subject_id,
           ).length;
 
           // Condition: actual count must match the required count (Green status)
@@ -120,10 +133,15 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      console.log("Modal opened for user:", user.id, "Assignment:", user.assignment);
+      console.log(
+        "Modal opened for user:",
+        user.id,
+        "Assignment:",
+        user.assignment,
+      );
       setIsInitialized(false);
       fetchDepartments();
-      
+
       // Pre-fill if assignment already exists (Edit Mode)
       if (user.assignment?.is_assigned) {
         if (user.assignment.department_id) {
@@ -138,7 +156,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
         setSelectedPaper("");
         setPapers([]);
       }
-      
+
       // Mark as initialized after a short delay to allow states to settle
       const timer = setTimeout(() => setIsInitialized(true), 100);
       return () => clearTimeout(timer);
@@ -163,8 +181,8 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      
+      const today = new Date().toISOString().split("T")[0];
+
       if (!testLevelId) {
         toast.error("Could not determine candidate's test level ID");
         return;
@@ -192,7 +210,11 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={user.assignment?.is_assigned ? "Edit Paper Assignment" : "Assign Paper Set"}
+      title={
+        user.assignment?.is_assigned
+          ? "Edit Paper Assignment"
+          : "Assign Paper Set"
+      }
       className="max-w-md"
     >
       <div className="space-y-6">
@@ -216,7 +238,11 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
             </div>
             {userLevel && (
               <div className="px-2.5 py-1 rounded-lg bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                <Typography variant="body4" weight="bold" className="uppercase tracking-wider text-[10px]">
+                <Typography
+                  variant="body4"
+                  weight="bold"
+                  className="uppercase tracking-wider text-[10px]"
+                >
                   {userLevel}
                 </Typography>
               </div>
@@ -226,12 +252,16 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
           <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border/50">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Phone size={14} />
-              <Typography variant="body4" className="text-xs">{user.mobile}</Typography>
+              <Typography variant="body4" className="text-xs">
+                {user.mobile}
+              </Typography>
             </div>
             {user.email && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail size={14} />
-                <Typography variant="body4" className="truncate text-xs">{user.email}</Typography>
+                <Typography variant="body4" className="truncate text-xs">
+                  {user.email}
+                </Typography>
               </div>
             )}
           </div>
@@ -239,69 +269,79 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
         <div className="space-y-5">
           <div className="space-y-2">
-            <Typography variant="body4" weight="medium" className="flex items-center gap-2 text-foreground/80">
-              <Layers size={16} className="text-brand-primary" /> Select Department
+            <Typography
+              variant="body4"
+              weight="medium"
+              className="flex items-center gap-2 text-foreground/80"
+            >
+              <Layers size={16} className="text-brand-primary" /> Select
+              Department
             </Typography>
-            <Select
+            <SelectDropdown
+              placeholder="Choose Department"
+              options={departments.map((dept) => ({
+                id: dept.id,
+                label: dept.name,
+              }))}
               value={selectedDepartment}
-              onChange={(e) => {
-                setSelectedDepartment(e.target.value);
+              onChange={(val) => {
+                setSelectedDepartment(val.toString());
                 setSelectedPaper(""); // Clear paper when dept changes manually
               }}
               disabled={isSubmitting}
-              className="w-full"
-            >
-              <option value="">Choose Department</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </Select>
+            />
           </div>
 
           <div className="space-y-2 border-t border-border/50 pt-5">
             <div className="flex items-center justify-between">
-              <Typography variant="body4" weight="medium" className="flex items-center gap-2 text-foreground/80">
-                <BookOpen size={16} className="text-brand-primary" /> Select Paper Set
+              <Typography
+                variant="body4"
+                weight="medium"
+                className="flex items-center gap-2 text-foreground/80"
+              >
+                <BookOpen size={16} className="text-brand-primary" /> Select
+                Paper Set
               </Typography>
             </div>
-            
-            <Select
+
+            <SelectDropdown
+              placeholder={
+                !selectedDepartment
+                  ? "Select a department first"
+                  : "Choose a paper set..."
+              }
+              options={papers.map((paper) => ({
+                id: paper.id,
+                label: `${paper.paper_name} (${paper.total_marks} Marks)`,
+              }))}
               value={selectedPaper}
-              onChange={(e) => setSelectedPaper(e.target.value)}
+              onChange={(val) => setSelectedPaper(val.toString())}
               disabled={isLoading || isSubmitting || !selectedDepartment}
-              className="w-full"
-            >
-              {!selectedDepartment ? (
-                <option value="">Select a department first</option>
-              ) : (
-                <>
-                  <option value="">Choose a paper set...</option>
-                  {papers.map((paper) => (
-                    <option key={paper.id} value={paper.id}>
-                      {paper.paper_name} ({paper.total_marks} Marks)
-                    </option>
-                  ))}
-                  {papers.length === 0 && !isLoading && (
-                    <option value="" disabled>No results for this Dept + Level</option>
-                  )}
-                </>
-              )}
-            </Select>
-            
+            />
+
             {isLoading && (
               <div className="flex items-center gap-2 text-muted-foreground text-xs pl-1">
                 <Loader2 size={12} className="animate-spin" />
                 Fetching matches...
               </div>
             )}
+
+            {papers.length === 0 && selectedDepartment && !isLoading && (
+              <Typography
+                variant="body5"
+                className="text-amber-600 dark:text-amber-400 pl-1 mt-1 font-medium"
+              >
+                No matching paper sets found for this Dept + Level
+              </Typography>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-3 pt-4">
           <Button
-            variant="ghost"
+            variant="outline"
+            color="primary"
+            animate="scale"
             className="flex-1"
             onClick={onClose}
             disabled={isSubmitting}
@@ -310,7 +350,9 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
           </Button>
           <Button
             variant="primary"
-            className="flex-1 font-bold"
+            color="primary"
+            animate="scale"
+            className="flex-1"
             onClick={handleAssign}
             disabled={!selectedPaper || isLoading || isSubmitting}
           >
@@ -319,8 +361,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
                 <Loader2 size={16} className="animate-spin mr-2" />
                 Processing...
               </>
+            ) : user.assignment?.is_assigned ? (
+              "Update Assignment"
             ) : (
-              user.assignment?.is_assigned ? "Update Assignment" : "Assign Paper"
+              "Assign Paper"
             )}
           </Button>
         </div>
