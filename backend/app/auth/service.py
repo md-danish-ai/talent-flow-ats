@@ -238,14 +238,21 @@ def get_users_by_role(role: str, date: str = None):
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()
         
+        from app.papers.models import Paper
+        from app.departments.models import Department
+        from app.classifications.models import Classification as Cls
+
         # Subquery or Join for assignments on target_date
         results = (
-            db_session.query(User, PaperAssignment)
+            db_session.query(User, PaperAssignment, Paper.paper_name, Department.name, Cls.name)
             .outerjoin(
                 PaperAssignment, 
                 (User.id == PaperAssignment.user_id) & 
                 (PaperAssignment.assigned_date == target_date)
             )
+            .outerjoin(Paper, PaperAssignment.paper_id == Paper.id)
+            .outerjoin(Department, PaperAssignment.department_id == Department.id)
+            .outerjoin(Cls, PaperAssignment.test_level_id == Cls.id)
             .filter(User.role == role)
         )
         
@@ -269,12 +276,15 @@ def get_users_by_role(role: str, date: str = None):
                 "assignment": {
                     "is_assigned": assignment is not None,
                     "paper_id": assignment.paper_id if assignment else None,
+                    "paper_name": paper_name if assignment else None,
                     "department_id": assignment.department_id if assignment else None,
+                    "department_name": dept_name if assignment else None,
                     "test_level_id": assignment.test_level_id if assignment else None,
+                    "test_level_name": level_name if assignment else None,
                     "is_attempted": assignment.is_attempted if assignment else False
                 } if assignment else None
             }
-            for user, assignment in results
+            for user, assignment, paper_name, dept_name, level_name in results
         ]
     except Exception:
         raise HTTPException(

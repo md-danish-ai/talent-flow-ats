@@ -16,6 +16,7 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@/components/ui-elements/Button";
 import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
 import { useRouter } from "next/navigation";
+import { Badge } from "@components/ui-elements/Badge";
 
 interface TodayUserListingProps {
   initialData?: UserListResponse[];
@@ -25,7 +26,9 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -70,17 +73,18 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                   <TableHead className="w-[80px] text-center">
                     Sr. No.
                   </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead>User Details</TableHead>
+                  <TableHead>Contact Info</TableHead>
+                  <TableHead>Dept / Level</TableHead>
+                  <TableHead>Assigned Paper</TableHead>
+                  <TableHead className="text-center">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {!Array.isArray(paginatedUsers) ||
-                  paginatedUsers.length === 0 ? (
+                paginatedUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
@@ -90,14 +94,76 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                       <TableCell className="font-medium text-center">
                         {(currentPage - 1) * pageSize + idx + 1}
                       </TableCell>
-                      <TableCell>{row.username || "-"}</TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell>{row.email || "-"}</TableCell>
+                      <TableCell className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
+                        {row.username || "-"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                            <span className="opacity-70">📱</span>
+                            <span className="font-semibold">{row.mobile}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                            <span className="opacity-70">✉️</span>
+                            <span>{row.email || "-"}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2">
+                            {row.assignment?.department_name ? (
+                              <Badge
+                                color="secondary"
+                                className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-[10px] px-2 py-0"
+                              >
+                                {row.assignment.department_name}
+                              </Badge>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 italic">
+                                No Dept
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className="border-slate-200 text-slate-600 dark:text-slate-400 text-[9px] px-2 py-0 uppercase"
+                            >
+                              {row.assignment?.test_level_name ||
+                                row.testlevel ||
+                                "N/A"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {row.assignment?.paper_name ? (
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-brand-primary">
+                              {row.assignment.paper_name}
+                            </span>
+                            {row.assignment.is_attempted && (
+                              <span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">
+                                ✓ Completed
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400 italic font-medium">
+                            Not Assigned
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           <Button
                             variant="ghost"
-                            color={row.assignment?.is_attempted ? "success" : "primary"}
+                            color={
+                              row.assignment?.is_attempted
+                                ? "success"
+                                : "primary"
+                            }
                             size="icon"
                             animate="scale"
                             disabled={row.assignment?.is_attempted}
@@ -106,11 +172,16 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                               setSelectedUser(row);
                               setIsModalOpen(true);
                             }}
-                            title={row.assignment?.is_attempted ? "Attempted" : "Assign Paper Set"}
-                            className={`h-8 w-8 ${row.assignment?.is_attempted
-                              ? "text-green-600 cursor-not-allowed opacity-70"
-                              : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                              }`}
+                            title={
+                              row.assignment?.is_attempted
+                                ? "Attempted"
+                                : "Assign Paper Set"
+                            }
+                            className={`h-8 w-8 ${
+                              row.assignment?.is_attempted
+                                ? "text-green-600 cursor-not-allowed opacity-70"
+                                : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                            }`}
                           >
                             <ClipboardCheck size={16} />
                           </Button>

@@ -29,12 +29,14 @@ async function getTypesData() {
       subjectTypes: subjectsResponse.data.map((item: Classification) => ({
         id: item.id,
         name: item.name,
+        code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
       })),
       levelTypes: levelsResponse.data.map((item: Classification) => ({
         id: item.id,
         name: item.name,
+        code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
       })),
