@@ -37,14 +37,17 @@ export function SectionChangeModal({
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-1">
           <Button
             variant="outline"
-            color="default"
+            color="primary"
+            animate="scale"
             onClick={onClose}
             className="w-full sm:w-auto"
           >
             Review Section
           </Button>
           <Button
-            color="warning"
+            color="primary"
+            animate="scale"
+            variant="primary"
             onClick={onConfirm}
             className="w-full sm:w-auto"
           >

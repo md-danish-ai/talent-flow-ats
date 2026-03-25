@@ -128,6 +128,7 @@ export function InterviewOverview({
           <Button
             size="lg"
             color="primary"
+            animate="scale"
             startIcon={<PlayCircle size={18} />}
             onClick={onStart}
             className="w-full sm:w-auto"
@@ -138,7 +139,8 @@ export function InterviewOverview({
             <Button
               size="lg"
               variant="outline"
-              color="default"
+              color="primary"
+              animate="scale"
               startIcon={<ArrowLeft size={16} />}
               className="w-full sm:w-auto"
             >

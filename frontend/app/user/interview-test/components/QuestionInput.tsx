@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+"use client";
+import { useEffect, useState, memo } from "react";
 import {
   Building2,
   Globe,
@@ -6,24 +7,132 @@ import {
   MapPin,
   Phone,
   User,
+  Keyboard,
 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
+import { Modal } from "@components/ui-elements/Modal";
+import { ZoomIn } from "lucide-react";
+import Image from "next/image";
 import type { InterviewQuestion } from "../types";
 
 const BACKEND_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
-/** Converts a relative `/images/...` path from the backend into a full URL. */
-function resolveImageUrl(url: string): string {
+function resolveImageUrl(url: string | null | undefined): string {
+  if (!url) return "";
+
+  // If already a full URL, we check if it's pointing to localhost/127.0.0.1
+  // If it is, we replace it with the current BACKEND_BASE_URL because
+  // 'localhost' won't work on other devices over the network.
   if (url.startsWith("http://") || url.startsWith("https://")) {
+    const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+    if (!isLocal) return url;
+    
+    // Extract path after the hostname (specifically for /images/...)
+    const imagePath = url.split("/images/")[1];
+    if (imagePath) {
+      const base = BACKEND_BASE_URL.replace(/\/$/, "");
+      return `${base}/images/${imagePath}`;
+    }
     return url;
   }
-  return `${BACKEND_BASE_URL}${url}`;
+
+  const base = BACKEND_BASE_URL.replace(/\/$/, "");
+  if (url.includes("/images/")) {
+    const path = url.startsWith("/") ? url : `/${url}`;
+    return `${base}${path}`;
+  }
+  
+  // Default fallback for relative filenames
+  return `${base}/images/${url.startsWith("/") ? url.slice(1) : url}`;
 }
+
+const QuestionImage = memo(function QuestionImage({
+  imageUrl,
+  image_url,
+}: {
+  imageUrl?: string;
+  image_url?: string;
+}) {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [hasImageError, setHasImageError] = useState(false);
+
+  const effectiveUrl = imageUrl || image_url;
+  if (!effectiveUrl) return null;
+
+  return (
+    <div className="rounded-2xl border-2 border-border bg-muted/20 p-5 sm:p-6 overflow-hidden group/img-block shadow-lg shadow-brand-primary/5">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1 rounded bg-brand-primary/10 text-brand-primary">
+          <Globe size={14} className="animate-pulse" />
+        </div>
+        <Typography
+          variant="body5"
+          className="text-muted-foreground uppercase tracking-widest font-black text-[10px]"
+        >
+          Question Reference Image
+        </Typography>
+      </div>
+      <div
+        className="relative group/canvas overflow-hidden rounded-xl border border-border bg-white p-2 flex justify-center cursor-zoom-in group-hover/img-block:border-brand-primary/30 transition-colors"
+        onClick={() => setIsPreviewOpen(true)}
+      >
+        {hasImageError ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center bg-red-50 dark:bg-red-950/20 rounded-xl text-red-500 w-full min-h-[200px]">
+            <Globe size={32} className="mb-3 opacity-20" />
+            <Typography variant="body4" className="font-bold">
+              Image Unavailable
+            </Typography>
+            <Typography variant="body5" className="mt-1 opacity-70 italic">
+              {resolveImageUrl(effectiveUrl)}
+            </Typography>
+          </div>
+        ) : (
+          <>
+            <div className="absolute inset-0 z-20 bg-brand-primary/0 group-hover/canvas:bg-brand-primary/5 transition-colors flex items-center justify-center opacity-0 group-hover/canvas:opacity-100">
+              <div className="bg-white/90 p-2 rounded-full shadow-lg transform scale-90 group-hover/canvas:scale-100 transition-all">
+                <ZoomIn className="w-5 h-5 text-brand-primary" />
+              </div>
+            </div>
+            <Image
+              src={resolveImageUrl(effectiveUrl)}
+              alt="Question context"
+              width={800}
+              height={450}
+              unoptimized
+              loading="eager"
+              className="w-full max-w-[800px] h-auto rounded-lg object-contain transition-all duration-500 group-hover/canvas:scale-[1.01]"
+              onError={() => setHasImageError(true)}
+            />
+          </>
+        )}
+      </div>
+
+      <Modal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title="Question Reference Image"
+        className="max-w-6xl"
+        closeOnOutsideClick
+      >
+        <div className="relative w-full overflow-hidden rounded-lg bg-white p-4">
+          <Image
+            src={resolveImageUrl(effectiveUrl)}
+            alt="Fullscreen context"
+            width={1200}
+            height={800}
+            unoptimized
+            className="w-full h-auto max-h-[75vh] object-contain"
+          />
+        </div>
+      </Modal>
+    </div>
+  );
+});
 
 interface QuestionInputProps {
   question: InterviewQuestion;
@@ -31,7 +140,7 @@ interface QuestionInputProps {
   onChangeAnswer: (value: string) => void;
 }
 
-export function QuestionInput({
+function QuestionInputComponent({
   question,
   currentAnswer,
   onChangeAnswer,
@@ -200,28 +309,66 @@ export function QuestionInput({
 
   const renderTypingTest = () => {
     return (
-      <div className="space-y-4 pt-2">
-        <div className="rounded-xl border-2 border-dashed border-border bg-muted/30 p-5 select-none">
-          <Typography
-            variant="body3"
-            className="text-muted-foreground leading-loose italic"
-          >
-            &quot;{question.questionText}&quot;
-          </Typography>
+      <div className="space-y-6 pt-2">
+        {/* Title Bar */}
+        <div className="flex items-center gap-4 group">
+          <div className="bg-brand-primary/10 p-3 rounded-2xl border border-brand-primary/20 group-hover:bg-brand-primary/20 transition-all">
+            <Keyboard className="w-5 h-5 text-brand-primary" />
+          </div>
+          <div className="space-y-0.5">
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase tracking-[0.15em] font-black leading-none"
+            >
+              Typing Exercise
+            </Typography>
+            <Typography variant="h3" className="text-foreground font-bold tracking-tight">
+              {question.questionText}
+            </Typography>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Typography
-            variant="body4"
-            className="font-semibold text-muted-foreground px-1"
-          >
-            Type the above text here:
-          </Typography>
+
+        {/* Typing Source Card */}
+        <div className="relative group/source">
+          <div className="absolute -inset-1.5 bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-primary/5 rounded-[1.5rem] blur-sm opacity-70 group-hover/source:opacity-100 transition-opacity" />
+          <div className="relative rounded-2xl border border-border bg-card/80 backdrop-blur-md p-7 sm:p-8 select-none overflow-hidden shadow-2xl shadow-brand-primary/5">
+            <div className="absolute -top-10 -right-4 p-3 opacity-5 group-hover/source:opacity-10 transition-opacity pointer-events-none">
+              <Typography className="font-serif text-[180px] leading-none">&quot;</Typography>
+            </div>
+            <Typography
+              variant="body2"
+              className="text-foreground/90 leading-[2] font-mono text-lg whitespace-pre-wrap relative z-10 antialiased tracking-wide"
+            >
+              {question.passage}
+            </Typography>
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2">
+              <Typography
+                variant="body4"
+                className="font-bold text-brand-primary uppercase tracking-widest text-[11px]"
+              >
+                Start Typing Below
+              </Typography>
+              <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-4 w-[1px] bg-border" />
+              <Typography variant="body5" className="font-mono text-[11px]">
+                {currentAnswer.length} characters typed
+              </Typography>
+            </div>
+          </div>
           <Textarea
             rows={10}
-            placeholder="Start typing here..."
+            placeholder="Focus and start typing here..."
             value={currentAnswer}
             onChange={(event) => onChangeAnswer(event.target.value)}
-            className="rounded-xl font-mono text-base leading-relaxed tracking-wide bg-card border-2 border-border focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all p-4"
+            className="rounded-2xl font-mono text-lg leading-relaxed bg-muted/10 border-2 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10 transition-all p-6 shadow-inner"
           />
         </div>
       </div>
@@ -250,7 +397,7 @@ export function QuestionInput({
         </Typography>
       )}
 
-      {question.passage && (
+      {question.passage && question.type !== "TYPING_TEST" && (
         <div className="rounded-lg border border-border bg-muted/20 p-3 sm:p-4 max-h-56 sm:max-h-60 overflow-y-auto">
           <Typography variant="body4" className="text-foreground mb-1">
             Passage
@@ -261,19 +408,11 @@ export function QuestionInput({
         </div>
       )}
 
-      {question.imageUrl && (
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <Typography variant="body5" className="mb-2">
-            Reference Image
-          </Typography>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={resolveImageUrl(question.imageUrl)}
-            alt="Question reference"
-            className="w-full max-w-[320px] h-auto rounded-lg border border-border object-contain bg-white"
-          />
-        </div>
-      )}
+      <QuestionImage 
+        key={question.id}
+        imageUrl={question.imageUrl} 
+        image_url={question.image_url} 
+      />
 
       {isFormType ? (
         <div className="rounded-xl border border-border bg-brand-primary/5 p-4 flex items-center gap-4">
@@ -351,3 +490,5 @@ export function QuestionInput({
     </div>
   );
 }
+
+export const QuestionInput = memo(QuestionInputComponent);
