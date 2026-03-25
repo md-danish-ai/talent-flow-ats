@@ -279,9 +279,8 @@ export function InterviewTestClient() {
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
 
       const isChoiceQuestion =
-        currentQuestion.type === "MCQ" ||
-        currentQuestion.type === "IMAGE_MCQ" ||
-        currentQuestion.type === "PASSAGE_MCQ" ||
+        currentQuestion.type === "MULTIPLE_CHOICE" ||
+        currentQuestion.type === "IMAGE_MULTIPLE_CHOICE" ||
         currentQuestion.type === "CONTACT_DETAILS" ||
         currentQuestion.type === "LEAD_GENERATION";
 
