@@ -3,12 +3,13 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
-import type { InterviewSection } from "../types";
+import type { InterviewSection, TimerZone } from "../types";
 
 interface InterviewStatusCardProps {
   sections: InterviewSection[];
   sectionIndex: number;
   lockedSections: boolean[];
+  timerZone: TimerZone;
   answeredCount: number;
   notAttemptedCount: number;
 }
@@ -17,6 +18,7 @@ export function InterviewStatusCard({
   sections,
   sectionIndex,
   lockedSections,
+  timerZone,
   answeredCount,
   notAttemptedCount,
 }: InterviewStatusCardProps) {
@@ -41,7 +43,11 @@ export function InterviewStatusCard({
               key={section.id}
               className={`group flex flex-col gap-2 rounded-xl border p-3 transition-all duration-300 ${
                 isCurrent
-                  ? "border-brand-primary bg-brand-primary/10 shadow-sm"
+                  ? timerZone === "danger"
+                    ? "border-red-500 bg-red-500/10 shadow-sm animate-[pulse_0.8s_infinite]"
+                    : timerZone === "warn"
+                      ? "border-yellow-500 bg-yellow-500/10 shadow-sm animate-pulse"
+                      : "border-brand-primary bg-brand-primary/10 shadow-sm"
                   : isLocked
                     ? "border-emerald-500/30 bg-emerald-500/5 opacity-80"
                     : "border-border bg-muted/5 opacity-60"
@@ -52,7 +58,15 @@ export function InterviewStatusCard({
                   <Typography
                     variant="body4"
                     weight={isCurrent ? "bold" : "semibold"}
-                    className={isCurrent ? "text-brand-primary" : "text-foreground"}
+                    className={
+                      isCurrent
+                        ? timerZone === "danger"
+                          ? "text-red-600"
+                          : timerZone === "warn"
+                            ? "text-yellow-600"
+                            : "text-brand-primary"
+                        : "text-foreground"
+                    }
                   >
                     {section.title}
                   </Typography>

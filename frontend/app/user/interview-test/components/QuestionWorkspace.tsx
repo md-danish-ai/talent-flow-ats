@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
@@ -58,12 +59,22 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         <Alert variant="info" description={message} onClose={onCloseMessage} />
       )}
 
-      {timerZone === "danger" && (
-        <Alert
-          variant="error"
-          title="Time Warning"
-          description={`You have ${remainingTimeText} left in the interview. Please answer quickly, otherwise remaining unanswered questions will be auto-submitted as not attempted.`}
-        />
+      {timerZone !== "safe" && (
+        <motion.div
+          animate={{ scale: [1, timerZone === "danger" ? 1.02 : 1.01, 1] }}
+          transition={{ duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity }}
+          className={`rounded-lg ${
+            timerZone === "danger" 
+              ? "ring-4 ring-red-500/30 animate-pulse" 
+              : "ring-2 ring-yellow-500/20"
+          }`}
+        >
+          <Alert
+            variant={timerZone === "danger" ? "error" : "warning"}
+            title={timerZone === "danger" ? "Critical Time Warning" : "Time Warning"}
+            description={`You have ${remainingTimeText} remaining for this section (${currentSection.title}). Please answer quickly before the section auto-locks.`}
+          />
+        </motion.div>
       )}
 
       <div className="flex items-center justify-between gap-4 pb-2">
