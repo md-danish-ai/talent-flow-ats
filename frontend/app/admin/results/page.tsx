@@ -34,7 +34,7 @@ export default function ResultsPage() {
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [subjectiveMarks, setSubjectiveMarks] = useState<{ [questionId: number]: number | string }>({});
   const [savingMarks, setSavingMarks] = useState(false);
-  
+
   // Temporary State for Checkboxes
   const [forwardStatuses, setForwardStatuses] = useState<Record<number, boolean>>({});
   const [arcCrmStatuses, setArcCrmStatuses] = useState<Record<number, boolean>>({});
@@ -55,7 +55,7 @@ export default function ResultsPage() {
 
         const detailsRes = await Promise.all(detailsPromises);
         const newDetailsMap: Record<number, AdminUserResultDetail> = {};
-        
+
         detailsRes.forEach((detail, idx) => {
           if (detail) {
             newDetailsMap[attemptedUsers[idx].user_id] = detail;
@@ -75,7 +75,7 @@ export default function ResultsPage() {
   const handleOpenResult = (userId: number) => {
     const detail = userDetailsMap[userId];
     if (!detail) return;
-    
+
     setSelectedUserDetail(detail);
     const initialMarks: { [key: number]: number | string } = {};
     detail.answers.forEach((ans) => {
@@ -87,36 +87,36 @@ export default function ResultsPage() {
 
   const handleSaveMarks = async () => {
     if (!selectedUserDetail) return;
-    
+
     setSavingMarks(true);
     try {
       // 1. Convert marks state to array format expected by the API
       const marksPayload = Object.entries(subjectiveMarks)
         .map(([qId, marks]) => ({
-           question_id: Number(qId),
-           marks: Number(marks) || 0
+          question_id: Number(qId),
+          marks: Number(marks) || 0
         }));
 
       // 2. Dispatch the update to the backend
       const res = (await resultsApi.updateSubjectiveMarks(selectedUserDetail.attempt.attempt_id, marksPayload)) as { data?: { total_marks_obtained?: number } };
-      
+
       const newTotalMarks = res.data?.total_marks_obtained;
 
       // 3. Update local state explicitly mapping to the answers and attempt total score
       setUserDetailsMap(prev => {
         const currentDetail = prev[selectedUserDetail.user.id];
         if (!currentDetail) return prev;
-        
+
         const updatedAnswers = currentDetail.answers.map(ans => ({
           ...ans,
-          manual_marks: subjectiveMarks[ans.question_id] !== undefined 
-             ? Number(subjectiveMarks[ans.question_id]) 
-             : ans.manual_marks,
-          marks_obtained: subjectiveMarks[ans.question_id] !== undefined 
-             ? Number(subjectiveMarks[ans.question_id]) 
-             : ans.marks_obtained,
+          manual_marks: subjectiveMarks[ans.question_id] !== undefined
+            ? Number(subjectiveMarks[ans.question_id])
+            : ans.manual_marks,
+          marks_obtained: subjectiveMarks[ans.question_id] !== undefined
+            ? Number(subjectiveMarks[ans.question_id])
+            : ans.marks_obtained,
         }));
-        
+
         return {
           ...prev,
           [selectedUserDetail.user.id]: {
@@ -129,7 +129,7 @@ export default function ResultsPage() {
           }
         };
       });
-      
+
       setIsResultModalOpen(false);
     } catch (err) {
       console.error("Failed to save subjective marks", err);
@@ -140,9 +140,9 @@ export default function ResultsPage() {
   };
 
   const getSubjectAnswersList = (detail: AdminUserResultDetail) => {
-    return detail.answers.filter(ans => 
-         ans.question_type.toLowerCase() !== "mcq" &&
-         ans.question_type.toLowerCase() !== "objective"
+    return detail.answers.filter(ans =>
+      ans.question_type.toLowerCase() !== "mcq" &&
+      ans.question_type.toLowerCase() !== "objective"
     );
   };
 
@@ -212,7 +212,7 @@ export default function ResultsPage() {
             <TableBody>
               {usersList.map((user, index) => {
                 const detail = userDetailsMap[user.user_id];
-                
+
                 // Group subjects dynamically for the accordion UI
                 const subjectsMap = new Map<string, number>();
                 if (detail) {
@@ -244,8 +244,8 @@ export default function ResultsPage() {
                 );
 
                 return (
-                  <TableCollapsibleRow 
-                    key={user.user_id} 
+                  <TableCollapsibleRow
+                    key={user.user_id}
                     colSpan={9}
                     expandedContent={expandedUI}
                   >
@@ -253,9 +253,9 @@ export default function ResultsPage() {
                     <TableCell className="font-semibold text-brand-primary whitespace-nowrap">{user.username}</TableCell>
                     <TableCell className="text-muted-foreground">{user.mobile}</TableCell>
                     <TableCell className="text-center font-bold text-brand-secondary text-lg">
-                       {detail ? detail.summary.total_marks_obtained.toFixed(2) : user.latest_attempt?.obtained_marks?.toFixed(2) || "0.00"}
+                      {detail ? detail.summary.total_marks_obtained.toFixed(2) : user.latest_attempt?.obtained_marks?.toFixed(2) || "0.00"}
                     </TableCell>
-                    
+
                     <TableCell className="text-center" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" color="primary" size="icon-sm" className="opacity-70 hover:opacity-100">
                         <Printer size={16} />
@@ -263,19 +263,19 @@ export default function ResultsPage() {
                     </TableCell>
                     <TableCell className="text-center" onClick={e => e.stopPropagation()}>
                       <div className="flex justify-center">
-                        <Checkbox 
-                          checked={!!forwardStatuses[user.user_id]} 
+                        <Checkbox
+                          checked={!!forwardStatuses[user.user_id]}
                           onChange={(e) => {
                             e.stopPropagation();
-                            setForwardStatuses(prev => ({...prev, [user.user_id]: !prev[user.user_id]}));
-                          }} 
+                            setForwardStatuses(prev => ({ ...prev, [user.user_id]: !prev[user.user_id] }));
+                          }}
                         />
                       </div>
                     </TableCell>
                     <TableCell className="text-center" onClick={e => e.stopPropagation()}>
-                      <Button 
-                        variant="action" 
-                        size="sm" 
+                      <Button
+                        variant="action"
+                        size="sm"
                         className="h-8 text-xs font-bold w-20 shadow-none border border-brand-primary/20"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -287,12 +287,12 @@ export default function ResultsPage() {
                     </TableCell>
                     <TableCell className="text-center" onClick={e => e.stopPropagation()}>
                       <div className="flex justify-center">
-                        <Checkbox 
-                          checked={!!arcCrmStatuses[user.user_id]} 
+                        <Checkbox
+                          checked={!!arcCrmStatuses[user.user_id]}
                           onChange={(e) => {
                             e.stopPropagation();
-                            setArcCrmStatuses(prev => ({...prev, [user.user_id]: !prev[user.user_id]}));
-                          }} 
+                            setArcCrmStatuses(prev => ({ ...prev, [user.user_id]: !prev[user.user_id] }));
+                          }}
                         />
                       </div>
                     </TableCell>
@@ -305,8 +305,8 @@ export default function ResultsPage() {
       </div>
 
       {selectedUserDetail && (
-        <Modal 
-          isOpen={isResultModalOpen} 
+        <Modal
+          isOpen={isResultModalOpen}
           onClose={() => setIsResultModalOpen(false)}
           title={`Candidate Result: ${selectedUserDetail.user.username}`}
           closeOnOutsideClick={true}
@@ -326,7 +326,7 @@ export default function ResultsPage() {
                 <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-border shadow-sm">
                   <Typography variant="body5" className="text-muted-foreground uppercase tracking-wider mb-1 text-[10px]">Attempt Count</Typography>
                   <Typography variant="h6" weight="bold">
-                     {selectedUserDetail.attempt.attempted_count} / {selectedUserDetail.attempt.total_questions}
+                    {selectedUserDetail.attempt.attempted_count} / {selectedUserDetail.attempt.total_questions}
                   </Typography>
                 </div>
                 <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-border shadow-sm">
@@ -340,7 +340,7 @@ export default function ResultsPage() {
               <Typography variant="h6" className="border-b border-border pb-2">
                 Subjective Questions (Manual Marking)
               </Typography>
-              
+
               {getSubjectAnswersList(selectedUserDetail).length > 0 ? (
                 getSubjectAnswersList(selectedUserDetail).map((ans, idx) => (
                   <div key={ans.question_id} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-border flex flex-col gap-3 transition-colors hover:bg-slate-100/50">
