@@ -9,6 +9,7 @@ import {
 import { formatTime } from "./utils";
 import { InterviewOverview } from "./components/InterviewOverview";
 import { InterviewCompleted } from "./components/InterviewCompleted";
+import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
@@ -55,14 +56,15 @@ export function InterviewTestClient() {
   const [examRemainingSeconds, setExamRemainingSeconds] = useState(
     OVERALL_EXAM_DURATION_MINUTES * 60,
   );
+  const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
+  const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] = useState(0);
 
   const hasHandledOverallTimeoutRef = useRef(false);
+  const hasHandledSectionTimeoutRef = useRef(false);
   const latestAnswersRef = useRef<Record<number, string>>({});
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [finalSummary, setFinalSummary] =
     useState<AttemptSummaryResponse | null>(null);
-
-  const overallExamTotalSeconds = overallExamDurationMinutes * 60;
 
   const currentSection = sections[sectionIndex] ?? sections[0];
   const currentQuestion =
@@ -101,16 +103,16 @@ export function InterviewTestClient() {
     totalQuestions > 0 ? Math.round((completedSteps / totalQuestions) * 100) : 0,
   );
 
-  const overallExamSpentRatio =
-    overallExamTotalSeconds > 0
-      ? (overallExamTotalSeconds - examRemainingSeconds) /
-        overallExamTotalSeconds
+  const sectionSpentRatio =
+    currentSectionTotalSeconds > 0
+      ? (currentSectionTotalSeconds - sectionRemainingSeconds) /
+      currentSectionTotalSeconds
       : 0;
 
   const timerZone: "safe" | "warn" | "danger" =
-    overallExamSpentRatio >= 0.8
+    sectionSpentRatio >= 0.75
       ? "danger"
-      : overallExamSpentRatio >= 0.6
+      : sectionSpentRatio >= 0.5
         ? "warn"
         : "safe";
 
@@ -210,6 +212,15 @@ export function InterviewTestClient() {
   );
 
   useEffect(() => {
+    if (currentSection) {
+      const seconds = currentSection.durationMinutes * 60;
+      setSectionRemainingSeconds(seconds);
+      setCurrentSectionTotalSeconds(seconds);
+      hasHandledSectionTimeoutRef.current = false;
+    }
+  }, [sectionIndex, currentSection]);
+
+  useEffect(() => {
     latestAnswersRef.current = answers;
   }, [answers]);
 
@@ -258,6 +269,7 @@ export function InterviewTestClient() {
     if (!hasStarted || isCompleted) return;
 
     const timer = setInterval(() => {
+      // 1. Overall Exam Timer
       setExamRemainingSeconds((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
@@ -268,23 +280,49 @@ export function InterviewTestClient() {
         }
         return prev - 1;
       });
+
+      // 2. Section Timer
+      setSectionRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          if (!hasHandledSectionTimeoutRef.current) {
+            hasHandledSectionTimeoutRef.current = true;
+            // Auto lock and move next if time is up for section
+            setTimeout(() => {
+              lockAndMoveToNextSection(
+                sectionIndex,
+                `Time is up for ${currentSection.title}. Section auto-locked.`,
+              );
+            }, 0);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [handleOverallTimeOver, hasStarted, isCompleted]);
+  }, [
+    handleOverallTimeOver,
+    lockAndMoveToNextSection,
+    hasStarted,
+    isCompleted,
+    sectionIndex,
+    currentSection,
+  ]);
 
   const setCurrentAnswer = useCallback(
     (value: string) => {
       if (!currentQuestion) return;
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
 
-      const isChoiceQuestion =
+      const isAutoSaveType =
         currentQuestion.type === "MULTIPLE_CHOICE" ||
         currentQuestion.type === "IMAGE_MULTIPLE_CHOICE" ||
         currentQuestion.type === "CONTACT_DETAILS" ||
-        currentQuestion.type === "LEAD_GENERATION";
+        currentQuestion.type === "LEAD_GENERATION" ||
+        currentQuestion.type === "TYPING_TEST";
 
-      if (isChoiceQuestion) {
+      if (isAutoSaveType) {
         void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
           setMessage("Answer selected locally, but failed to sync with server.");
         });
@@ -424,13 +462,10 @@ export function InterviewTestClient() {
           <QuestionWorkspace
             message={message}
             onCloseMessage={() => setMessage(null)}
-            sectionIndex={sectionIndex}
-            totalSections={totalSections}
             currentSection={currentSection}
             questionIndex={questionIndex}
-            progressPercent={progressPercent}
             timerZone={timerZone}
-            remainingTimeText={formatTime(examRemainingSeconds)}
+            remainingTimeText={formatTime(sectionRemainingSeconds)}
             currentQuestion={currentQuestion}
             currentAnswer={currentAnswer}
             isLastQuestionInSection={isLastQuestionInSection}
@@ -443,12 +478,18 @@ export function InterviewTestClient() {
 
         <div className="xl:col-span-4 2xl:col-span-3 min-w-0">
           <div className="xl:sticky xl:top-4 space-y-4">
-            <InterviewStatusCard
+            <InterviewProgressCard
+              sectionIndex={sectionIndex}
+              totalSections={totalSections}
+              currentSection={currentSection}
+              progressPercent={progressPercent}
+              timerZone={timerZone}
+              remainingTimeText={formatTime(sectionRemainingSeconds)}
+            /><InterviewStatusCard
               sections={sections}
               sectionIndex={sectionIndex}
               lockedSections={lockedSections}
               timerZone={timerZone}
-              remainingTimeText={formatTime(examRemainingSeconds)}
               answeredCount={answeredCount}
               notAttemptedCount={notAttemptedCount}
             />
