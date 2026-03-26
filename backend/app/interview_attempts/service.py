@@ -124,3 +124,15 @@ class InterviewAttemptService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR,
                 detail=str(exception),
             )
+
+    async def save_manual_marks(self, attempt_id: int, marks: list[dict]):
+        try:
+            repo = repository.InterviewAttemptRepository()
+            return repo.save_manual_marks(attempt_id, marks)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )

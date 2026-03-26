@@ -17,6 +17,15 @@ class SubmitAttemptRequest(BaseModel):
     completion_reason: Literal["manual", "time_over"] = "manual"
 
 
+class ManualMarkItem(BaseModel):
+    question_id: int
+    marks: float
+
+
+class SaveManualMarksRequest(BaseModel):
+    marks: list[ManualMarkItem]
+
+
 class AttemptSummaryResponse(BaseModel):
     attempt_id: int
     paper_id: int

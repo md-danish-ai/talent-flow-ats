@@ -571,6 +571,9 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     incorrect_count += 1
                 marks_obtained = float(question.marks or 0) if is_correct else 0.0
 
+            if answer_row.manual_marks is not None:
+                marks_obtained = float(answer_row.manual_marks)
+
             total_marks_obtained += marks_obtained
 
             detailed_answers.append(
@@ -588,6 +591,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "correct_answer": correct_answer_text or None,
                     "status": status,
                     "marks_obtained": marks_obtained,
+                    "manual_marks": float(answer_row.manual_marks) if answer_row.manual_marks is not None else None,
                     "is_attempted": answer_row.is_attempted,
                     "is_auto_saved": answer_row.is_auto_saved,
                     "saved_at": answer_row.saved_at,
@@ -626,3 +630,53 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         }
     finally:
         db_session.close()
+
+
+class InterviewAttemptRepository:
+    def __init__(self):
+        pass
+
+    def save_manual_marks(self, attempt_id: int, marks: list[dict]) -> dict:
+        db_session = SessionLocal()
+        try:
+            attempt = db_session.query(InterviewAttempt).filter(InterviewAttempt.id == attempt_id).first()
+            if not attempt:
+                raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Interview attempt not found")
+            
+            question_marks_map = {m["question_id"]: m["marks"] for m in marks}
+            answers = db_session.query(InterviewAttemptAnswer).filter(InterviewAttemptAnswer.attempt_id == attempt_id).all()
+            
+            for ans in answers:
+                if ans.question_id in question_marks_map:
+                    ans.manual_marks = question_marks_map[ans.question_id]
+            
+            db_session.flush()
+
+            # Recalculate attempt score
+            answer_rows = (
+                db_session.query(InterviewAttemptAnswer, Question, QuestionAnswer)
+                .join(Question, Question.id == InterviewAttemptAnswer.question_id)
+                .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
+                .filter(InterviewAttemptAnswer.attempt_id == attempt.id)
+                .all()
+            )
+            
+            total_score = 0.0
+            for ans_row, question, correct_answer in answer_rows:
+                if ans_row.manual_marks is not None:
+                    total_score += float(ans_row.manual_marks)
+                elif ans_row.is_attempted and correct_answer and correct_answer.answer_text and correct_answer.answer_text.strip():
+                    if _is_answer_correct(user_answer=(ans_row.answer_text or "").strip(), correct_answer=correct_answer.answer_text):
+                        total_score += float(question.marks or 0)
+            
+            attempt.obtained_marks = total_score
+            db_session.commit()
+            return {
+                "message": "Marks saved successfully",
+                "total_marks_obtained": total_score
+            }
+        except Exception as e:
+            db_session.rollback()
+            raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=str(e))
+        finally:
+            db_session.close()

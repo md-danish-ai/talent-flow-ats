@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
-from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest
+from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, SaveManualMarksRequest
 from .service import InterviewAttemptService
 
 router = APIRouter(
@@ -103,3 +103,16 @@ async def get_admin_user_attempts(
 ):
     data = await service.get_admin_user_attempts(user_id=user_id)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.post(
+    "/admin/attempts/{attempt_id}/marks",
+    summary="Save manual subjective marks for candidate attempt",
+)
+async def save_manual_marks(
+    attempt_id: int,
+    request: SaveManualMarksRequest,
+):
+    marks_list = [m.model_dump() if hasattr(m, "model_dump") else m.dict() for m in request.marks]
+    data = await service.save_manual_marks(attempt_id=attempt_id, marks=marks_list)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)

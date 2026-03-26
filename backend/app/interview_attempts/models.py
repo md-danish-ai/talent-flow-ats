@@ -79,6 +79,7 @@ class InterviewAttemptAnswer(Base):
     answer_text = Column(Text, nullable=True)
     is_attempted = Column(Boolean, nullable=False, server_default="false")
     is_auto_saved = Column(Boolean, nullable=False, server_default="false")
+    manual_marks = Column(Numeric(10, 2), nullable=True)
 
     saved_at = Column(
         TIMESTAMP,

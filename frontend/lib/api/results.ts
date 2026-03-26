@@ -34,6 +34,7 @@ export interface AdminUserResultAnswer {
   correct_answer?: string | null;
   status: "correct" | "incorrect" | "not_attempted";
   marks_obtained: number;
+  manual_marks?: number | null;
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
@@ -110,6 +111,13 @@ export const resultsApi = {
   getUserAttempts: async (userId: number) => {
     return api.get<AdminUserAttemptsResponse>(
       `/interview-attempts/admin/users/${userId}/attempts`,
+    );
+  },
+
+  updateSubjectiveMarks: async (attemptId: number, marks: Array<{ question_id: number; marks: number }>) => {
+    return api.post(
+      `/interview-attempts/admin/attempts/${attemptId}/marks`,
+      { marks }
     );
   },
 };
