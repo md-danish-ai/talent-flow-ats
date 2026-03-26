@@ -1,5 +1,15 @@
 import { api } from "./index";
 
+export interface AttemptSavedResponse {
+  question_id: number;
+  section_code: string;
+  section_name: string;
+  answer_text?: string | null;
+  is_attempted: boolean;
+  is_auto_saved: boolean;
+  saved_at: string;
+}
+
 export interface StartAttemptResponse {
   attempt_id: number;
   paper_id: number;
@@ -7,12 +17,16 @@ export interface StartAttemptResponse {
   status: string;
   total_questions: number;
   started_at: string;
+  is_resumed: boolean;
   paper_question_ids: number[];
+  saved_responses: AttemptSavedResponse[];
 }
 
 export interface SaveAttemptAnswerResponse {
   attempt_id: number;
   question_id: number;
+  section_code: string;
+  section_name: string;
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
