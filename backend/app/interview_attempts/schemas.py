@@ -41,6 +41,16 @@ class AttemptSummaryResponse(BaseModel):
     is_auto_submitted: bool
 
 
+class AttemptSavedResponse(BaseModel):
+    question_id: int
+    section_code: str
+    section_name: str
+    answer_text: Optional[str]
+    is_attempted: bool
+    is_auto_saved: bool
+    saved_at: datetime
+
+
 class AttemptStartResponse(BaseModel):
     attempt_id: int
     paper_id: int
@@ -48,12 +58,16 @@ class AttemptStartResponse(BaseModel):
     status: str
     total_questions: int
     started_at: datetime
+    is_resumed: bool
     paper_question_ids: list[int]
+    saved_responses: list[AttemptSavedResponse]
 
 
 class SaveAnswerResponse(BaseModel):
     attempt_id: int
     question_id: int
+    section_code: str
+    section_name: str
     is_attempted: bool
     is_auto_saved: bool
     saved_at: datetime

@@ -23,6 +23,56 @@ import {
 } from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
+const isAutoSaveQuestionType = (type: InterviewQuestion["type"]) =>
+  type === "MULTIPLE_CHOICE" ||
+  type === "IMAGE_MULTIPLE_CHOICE" ||
+  type === "CONTACT_DETAILS" ||
+  type === "LEAD_GENERATION" ||
+  type === "TYPING_TEST";
+
+const buildSavedAnswersMap = (
+  savedResponses: {
+    question_id: number;
+    answer_text?: string | null;
+    is_attempted: boolean;
+  }[],
+) =>
+  savedResponses.reduce<Record<number, string>>((accumulator, response) => {
+    if (response.is_attempted && response.answer_text?.trim()) {
+      accumulator[response.question_id] = response.answer_text;
+    }
+    return accumulator;
+  }, {});
+
+const getResumePosition = (
+  sections: InterviewSection[],
+  answers: Record<number, string>,
+) => {
+  for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
+    const questionIndex = sections[sectionIndex]?.questions.findIndex(
+      (question) => !(answers[question.id] || "").trim(),
+    );
+    if (questionIndex !== undefined && questionIndex >= 0) {
+      return { sectionIndex, questionIndex };
+    }
+  }
+
+  if (sections.length === 0) {
+    return { sectionIndex: 0, questionIndex: 0 };
+  }
+
+  const lastSectionIndex = sections.length - 1;
+  const lastQuestionIndex = Math.max(
+    (sections[lastSectionIndex]?.questions.length ?? 1) - 1,
+    0,
+  );
+
+  return {
+    sectionIndex: lastSectionIndex,
+    questionIndex: lastQuestionIndex,
+  };
+};
+
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const [loadedSections, setLoadedSections] =
@@ -53,7 +103,7 @@ export function InterviewTestClient() {
     useState(false);
   const [lockedSections, setLockedSections] =
     useState<boolean[]>(emptyLockedSections);
-  const [examRemainingSeconds, setExamRemainingSeconds] = useState(
+  const [, setExamRemainingSeconds] = useState(
     OVERALL_EXAM_DURATION_MINUTES * 60,
   );
   const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
@@ -118,7 +168,7 @@ export function InterviewTestClient() {
 
   const isLastQuestionInSection =
     questionIndex === currentSection.questions.length - 1;
-  const isLastSection = sectionIndex === DUMMY_SECTIONS.length - 1;
+  const isLastSection = sectionIndex === sections.length - 1;
 
   const persistAnswerToBackend = useCallback(
     async (
@@ -265,6 +315,42 @@ export function InterviewTestClient() {
     void submitOnTimeout();
   }, [allLockedSections, allQuestions, attemptId, persistAnswerToBackend]);
 
+  const handleSectionTimeOver = useCallback(() => {
+    if (hasHandledSectionTimeoutRef.current) return;
+    hasHandledSectionTimeoutRef.current = true;
+
+    const advanceSection = async () => {
+      const snapshot = latestAnswersRef.current;
+      if (attemptId && currentQuestion) {
+        try {
+          await persistAnswerToBackend(
+            currentQuestion.id,
+            snapshot[currentQuestion.id] ?? "",
+            true,
+          );
+        } catch {
+          setMessage(
+            "Current answer was kept locally, but syncing before section lock failed.",
+          );
+        }
+      }
+
+      lockAndMoveToNextSection(
+        sectionIndex,
+        `Time is up for ${currentSection.title}. Section auto-locked.`,
+      );
+    };
+
+    void advanceSection();
+  }, [
+    attemptId,
+    currentQuestion,
+    currentSection,
+    lockAndMoveToNextSection,
+    persistAnswerToBackend,
+    sectionIndex,
+  ]);
+
   useEffect(() => {
     if (!hasStarted || isCompleted) return;
 
@@ -284,16 +370,9 @@ export function InterviewTestClient() {
       // 2. Section Timer
       setSectionRemainingSeconds((prev) => {
         if (prev <= 1) {
-          if (!hasHandledSectionTimeoutRef.current) {
-            hasHandledSectionTimeoutRef.current = true;
-            // Auto lock and move next if time is up for section
-            setTimeout(() => {
-              lockAndMoveToNextSection(
-                sectionIndex,
-                `Time is up for ${currentSection.title}. Section auto-locked.`,
-              );
-            }, 0);
-          }
+          setTimeout(() => {
+            handleSectionTimeOver();
+          }, 0);
           return 0;
         }
         return prev - 1;
@@ -303,11 +382,9 @@ export function InterviewTestClient() {
     return () => clearInterval(timer);
   }, [
     handleOverallTimeOver,
-    lockAndMoveToNextSection,
+    handleSectionTimeOver,
     hasStarted,
     isCompleted,
-    sectionIndex,
-    currentSection,
   ]);
 
   const setCurrentAnswer = useCallback(
@@ -315,14 +392,7 @@ export function InterviewTestClient() {
       if (!currentQuestion) return;
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
 
-      const isAutoSaveType =
-        currentQuestion.type === "MULTIPLE_CHOICE" ||
-        currentQuestion.type === "IMAGE_MULTIPLE_CHOICE" ||
-        currentQuestion.type === "CONTACT_DETAILS" ||
-        currentQuestion.type === "LEAD_GENERATION" ||
-        currentQuestion.type === "TYPING_TEST";
-
-      if (isAutoSaveType) {
+      if (isAutoSaveQuestionType(currentQuestion.type)) {
         void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
           setMessage("Answer selected locally, but failed to sync with server.");
         });
@@ -399,14 +469,20 @@ export function InterviewTestClient() {
       const startResponse = await interviewAttemptsApi.startAttempt(
         assignedPaper.paper.id,
       );
+      const restoredAnswers = buildSavedAnswersMap(startResponse.saved_responses);
+      const resumePosition = getResumePosition(loadedSections, restoredAnswers);
 
       setAttemptId(startResponse.attempt_id);
       setSections(loadedSections);
       setLockedSections(loadedSections.map(() => false));
-      setSectionIndex(0);
-      setQuestionIndex(0);
-      setAnswers({});
-      setMessage(null);
+      setSectionIndex(startResponse.is_resumed ? resumePosition.sectionIndex : 0);
+      setQuestionIndex(startResponse.is_resumed ? resumePosition.questionIndex : 0);
+      setAnswers(restoredAnswers);
+      setMessage(
+        startResponse.is_resumed
+          ? "Resumed your in-progress interview with saved responses."
+          : null,
+      );
       setHasStarted(true);
     } catch {
       setStartError(
