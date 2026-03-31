@@ -734,7 +734,7 @@ class InterviewAttemptRepository:
                 raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Interview attempt not found")
             
             question_marks_map = {m["question_id"]: m["marks"] for m in marks}
-            answers = db_session.query(InterviewAttemptAnswer).filter(InterviewAttemptAnswer.attempt_id == attempt_id).all()
+            answers = db_session.query(InterviewAttemptResponse).filter(InterviewAttemptResponse.attempt_id == attempt_id).all()
             
             for ans in answers:
                 if ans.question_id in question_marks_map:
@@ -744,10 +744,10 @@ class InterviewAttemptRepository:
 
             # Recalculate attempt score
             answer_rows = (
-                db_session.query(InterviewAttemptAnswer, Question, QuestionAnswer)
-                .join(Question, Question.id == InterviewAttemptAnswer.question_id)
+                db_session.query(InterviewAttemptResponse, Question, QuestionAnswer)
+                .join(Question, Question.id == InterviewAttemptResponse.question_id)
                 .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
-                .filter(InterviewAttemptAnswer.attempt_id == attempt.id)
+                .filter(InterviewAttemptResponse.attempt_id == attempt.id)
                 .all()
             )
             
