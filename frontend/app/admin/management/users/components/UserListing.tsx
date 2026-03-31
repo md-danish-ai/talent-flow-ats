@@ -9,8 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users } from "lucide-react";
+import { Users, Eye, Pencil } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
+import Link from "next/link";
+import { Button } from "@components/ui-elements/Button";
 import {
   getUsersByRole,
   UserListResponse,
@@ -85,18 +87,19 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                   <TableHead>Mobile</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : !Array.isArray(users) || users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
@@ -124,6 +127,37 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                           >
                             {row.is_active ? "Activate" : "Deactivate"}
                           </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/admin/management/users/view-details/${row.id}`}
+                            passHref
+                          >
+                            <Button
+                              variant="secondary"
+                              color="primary"
+                              size="icon-sm"
+                              animate="scale"
+                              title="View"
+                            >
+                              <Eye size={16} />
+                            </Button>
+                          </Link>
+                          <Link
+                            href={`/admin/management/users/update-details/${row.id}`}
+                            passHref
+                          >
+                            <Button
+                              variant="primary"
+                              size="icon-sm"
+                              animate="scale"
+                              title="Edit"
+                            >
+                              <Pencil size={16} />
+                            </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>
