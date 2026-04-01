@@ -62,11 +62,9 @@ export const ADMIN_ROUTES: NavSection[] = [
   {
     title: "Results",
     icon: <BarChart3 className="w-5 h-5" />,
-    type: "collapsible",
-    items: [
-      { label: "All Statistics", href: "/admin/results" },
-      { label: "Individual Results", href: "/admin/results/user-results" },
-    ],
+    type: "item",
+    href: "/admin/results",
+    items: [],
   },
   {
     title: "Management",

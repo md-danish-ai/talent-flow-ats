@@ -11,6 +11,11 @@ try {
 }
 
 const nextConfig: NextConfig = {
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -32,7 +37,10 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     authInterrupts: true,
+    // cacheComponents: true,
   },
+
+  poweredByHeader: false,
 };
 
 export default nextConfig;
