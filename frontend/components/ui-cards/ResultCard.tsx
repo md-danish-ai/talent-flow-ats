@@ -4,7 +4,7 @@ import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, CheckCircle2, Activity, Clock, AlertTriangle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 interface Metric {
@@ -57,13 +57,14 @@ export const ResultCard = ({
     switch (s?.toLowerCase()) {
       case "submitted":
       case "auto_submitted":
-        return "bg-brand-primary";
+        return "bg-brand-success shadow-[0_0_10px_rgba(76,175,80,0.3)]";
       case "started":
-        return "bg-amber-500";
+        return "bg-brand-secondary shadow-[0_0_10px_rgba(33,150,243,0.3)]";
+      case "not_started":
+        return "bg-brand-warning shadow-[0_0_10px_rgba(255,152,0,0.3)]";
       case "expired":
-        return "bg-rose-500";
       case "system_error":
-        return "bg-rose-600";
+        return "bg-brand-error shadow-[0_0_10px_rgba(244,67,54,0.3)]";
       default:
         return "bg-border";
     }
@@ -74,7 +75,7 @@ export const ResultCard = ({
       {/* Left Side Status Pillar */}
       <div
         className={`absolute inset-y-0 left-0 w-1.5 transition-colors duration-300 ${getPillarColor(
-          status
+          status,
         )}`}
       />
 
@@ -108,11 +109,43 @@ export const ResultCard = ({
         </div>
 
         {/* Status Badge */}
-        {statusBadge && (
-          <div className="flex flex-col items-end gap-1">
-            {statusBadge}
-          </div>
-        )}
+        <div className="flex flex-col items-end gap-1">
+          {statusBadge ||
+            (status && (
+              <Badge
+                variant="outline"
+                shape="square"
+                color={
+                  status.toLowerCase() === "submitted" ||
+                  status.toLowerCase() === "auto_submitted"
+                    ? "success"
+                    : status.toLowerCase() === "started"
+                      ? "secondary"
+                      : status.toLowerCase() === "not_started"
+                        ? "warning"
+                        : status.toLowerCase() === "expired" ||
+                            status.toLowerCase() === "system_error"
+                          ? "error"
+                          : "default"
+                }
+                icon={
+                  status.toLowerCase() === "submitted" ||
+                  status.toLowerCase() === "auto_submitted" ? (
+                    <CheckCircle2 size={12} />
+                  ) : status.toLowerCase() === "started" ? (
+                    <Activity size={12} />
+                  ) : status.toLowerCase() === "not_started" ? (
+                    <Clock size={12} />
+                  ) : (
+                    <AlertCircle size={12} />
+                  )
+                }
+                className="px-3 py-0.5 uppercase"
+              >
+                {status.replace("_", " ")}
+              </Badge>
+            ))}
+        </div>
       </div>
 
       {/* Center Section: Special Metadata Row (if any, e.g. Timestamps) */}
