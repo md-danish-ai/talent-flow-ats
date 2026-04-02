@@ -8,6 +8,7 @@ export default async function UserDashboard() {
   const cookieStore = await cookies();
 
   let isDetailsComplete = false;
+  let isInterviewSubmitted = false;
 
   if (user) {
     const cookieString = cookieStore
@@ -20,14 +21,21 @@ export default async function UserDashboard() {
       const details = await getUserDetailsById(user.id, {
         cookies: cookieString,
       });
-      if (details && details.is_submitted) {
-        isDetailsComplete = true;
+      if (details) {
+        isDetailsComplete = details.is_submitted || false;
+        isInterviewSubmitted = details.is_interview_submitted || false;
       }
     } catch (detailsError) {
       console.warn("Recruitment details not found for user:", detailsError);
-      // If not found, isDetailsComplete remains false
+      // If not found, flags remain false
     }
   }
 
-  return <DashboardClient user={user} isDetailsComplete={isDetailsComplete} />;
+  return (
+    <DashboardClient
+      user={user}
+      isDetailsComplete={isDetailsComplete}
+      isInterviewSubmitted={isInterviewSubmitted}
+    />
+  );
 }

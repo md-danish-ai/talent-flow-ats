@@ -71,6 +71,7 @@ class OtherDetailsSchema(BaseModel):
 
 class UserDetailsSchema(BaseModel):
     is_submitted: bool = False
+    is_interview_submitted: bool = False
     personalDetails: PersonalDetailsSchema
     familyDetails: List[FamilyDetailSchema]
     sourceOfInformation: SourceOfInformationSchema

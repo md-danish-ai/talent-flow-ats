@@ -14,6 +14,7 @@ from app.questions.models import Question
 from app.answer.models import QuestionAnswer
 from app.users.models import User
 from app.utils.status_codes import StatusCode
+from app.user_details.models import UserDetail
 from .models import InterviewAttempt, InterviewAttemptResponse
 
 
@@ -428,6 +429,11 @@ def finalize_attempt(
         attempt.completion_reason = completion_reason
         attempt.is_auto_submitted = is_auto_submitted
         attempt.submitted_at = datetime.utcnow()
+
+        # Update UserDetail flag
+        user_detail = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        if user_detail:
+            user_detail.is_interview_submitted = True
 
         db_session.commit()
         db_session.refresh(attempt)

@@ -70,6 +70,7 @@ export interface OtherDetails {
 
 export interface UserDetails {
   is_submitted: boolean;
+  is_interview_submitted: boolean;
   username?: string;
   personalDetails: PersonalDetails;
   familyDetails: FamilyDetail[];

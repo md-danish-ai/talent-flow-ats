@@ -4,7 +4,13 @@ import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import { LucideIcon, CheckCircle2, Activity, Clock, AlertTriangle, AlertCircle } from "lucide-react";
+import {
+  LucideIcon,
+  CheckCircle2,
+  Activity,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import Link from "next/link";
 
 interface Metric {
@@ -64,7 +70,7 @@ export const ResultCard = ({
         return "bg-brand-warning shadow-[0_0_10px_rgba(255,152,0,0.3)]";
       case "expired":
       case "system_error":
-        return "bg-brand-error shadow-[0_0_10px_rgba(244,67,54,0.3)]";
+        return "bg-red-800 shadow-[0_0_10px_rgba(153,27,27,0.4)]";
       default:
         return "bg-border";
     }

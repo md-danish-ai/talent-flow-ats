@@ -210,6 +210,7 @@ def get_user_by_id(user_id):
             )
             if details:
                 user["is_submitted"] = details.is_submitted
+                user["is_interview_submitted"] = details.is_interview_submitted
                 user["recruitment_details"] = {
                     "personalDetails": details.personal_details,
                     "familyDetails": details.family_details,
@@ -220,9 +221,11 @@ def get_user_by_id(user_id):
                 }
             else:
                 user["is_submitted"] = False
+                user["is_interview_submitted"] = False
                 user["recruitment_details"] = None
         else:
             user["is_submitted"] = False
+            user["is_interview_submitted"] = False
             user["recruitment_details"] = None
 
         return user

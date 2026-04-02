@@ -54,7 +54,7 @@ class InterviewAttempt(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "status IN ('started', 'submitted', 'auto_submitted', 'expired')",
+            "status IN ('started', 'submitted', 'auto_submitted', 'expired', 'system_error')",
             name="chk_interview_attempts_status",
         ),
         CheckConstraint(
