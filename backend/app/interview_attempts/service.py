@@ -124,3 +124,25 @@ class InterviewAttemptService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR,
                 detail=str(exception),
             )
+
+    async def reset_user_today_attempt(self, user_id: int):
+        try:
+            return repository.reset_user_today_attempt(user_id=user_id)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
+
+    async def reset_user_details(self, user_id: int):
+        try:
+            return repository.reset_user_details(user_id=user_id)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )

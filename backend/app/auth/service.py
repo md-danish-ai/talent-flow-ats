@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 
 from app.classifications.models import Classification
 from app.paper_assignments.models import PaperAssignment
+from app.interview_attempts.models import InterviewAttempt
+from app.user_details.models import UserDetail
 
 def _get_level_mapping(db: Session) -> dict[str, int]:
     """Helper to get a dictionary of classification name/code mapping to IDs."""
@@ -247,7 +249,15 @@ def get_users_by_role(role: str, date: str = None):
 
         # Subquery or Join for assignments on target_date
         results = (
-            db_session.query(User, PaperAssignment, Paper.paper_name, Department.name, Cls.name)
+            db_session.query(
+                User, 
+                PaperAssignment, 
+                Paper.paper_name, 
+                Department.name, 
+                Cls.name, 
+                InterviewAttempt.id,
+                UserDetail.is_submitted
+            )
             .outerjoin(
                 PaperAssignment, 
                 (User.id == PaperAssignment.user_id) & 
@@ -256,6 +266,12 @@ def get_users_by_role(role: str, date: str = None):
             .outerjoin(Paper, PaperAssignment.paper_id == Paper.id)
             .outerjoin(Department, PaperAssignment.department_id == Department.id)
             .outerjoin(Cls, PaperAssignment.test_level_id == Cls.id)
+            .outerjoin(
+                InterviewAttempt,
+                (User.id == InterviewAttempt.user_id) &
+                (func.date(InterviewAttempt.created_at) == target_date)
+            )
+            .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
         )
         
@@ -276,6 +292,7 @@ def get_users_by_role(role: str, date: str = None):
                 "testlevel_id": level_mapping.get(user.testlevel),
                 "test_level_id": level_mapping.get(user.testlevel),
                 "is_active": user.is_active,
+                "is_details_submitted": is_details_submitted if is_details_submitted is not None else False,
                 "assignment": {
                     "is_assigned": assignment is not None,
                     "paper_id": assignment.paper_id if assignment else None,
@@ -284,10 +301,11 @@ def get_users_by_role(role: str, date: str = None):
                     "department_name": dept_name if assignment else None,
                     "test_level_id": assignment.test_level_id if assignment else None,
                     "test_level_name": level_name if assignment else None,
-                    "is_attempted": assignment.is_attempted if assignment else False
+                    "is_attempted": assignment.is_attempted if assignment else False,
+                    "has_started": attempt_id is not None
                 } if assignment else None
             }
-            for user, assignment, paper_name, dept_name, level_name in results
+            for user, assignment, paper_name, dept_name, level_name, attempt_id, is_details_submitted in results
         ]
     except Exception:
         raise HTTPException(

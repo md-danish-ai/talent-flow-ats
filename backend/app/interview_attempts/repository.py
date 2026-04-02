@@ -10,6 +10,7 @@ from sqlalchemy import desc
 from app.classifications.models import Classification
 from app.database.db import SessionLocal
 from app.papers.models import Paper
+from app.paper_assignments.models import PaperAssignment
 from app.questions.models import Question
 from app.answer.models import QuestionAnswer
 from app.users.models import User
@@ -434,6 +435,19 @@ def finalize_attempt(
         user_detail = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = True
+            
+        # Update PaperAssignment status
+        today = datetime.utcnow().date()
+        assignment = (
+            db_session.query(PaperAssignment)
+            .filter(
+                PaperAssignment.user_id == user_id,
+                PaperAssignment.assigned_date == today
+            )
+            .first()
+        )
+        if assignment:
+            assignment.is_attempted = True
 
         db_session.commit()
         db_session.refresh(attempt)
@@ -720,5 +734,84 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             },
             "answers": detailed_answers,
         }
+    finally:
+        db_session.close()
+
+
+def reset_user_today_attempt(user_id: int) -> dict:
+    db_session = SessionLocal()
+    try:
+        # Find latest attempt created today (UTC)
+        today_start = datetime.utcnow().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        attempt = (
+            db_session.query(InterviewAttempt)
+            .filter(
+                InterviewAttempt.user_id == user_id,
+                InterviewAttempt.created_at >= today_start,
+            )
+            .order_by(desc(InterviewAttempt.id))
+            .first()
+        )
+
+        if attempt:
+            # Delete responses first (cascade might handle it but let's be explicit)
+            db_session.query(InterviewAttemptResponse).filter(
+                InterviewAttemptResponse.attempt_id == attempt.id
+            ).delete()
+            # Delete the attempt
+            db_session.delete(attempt)
+
+        # Reset UserDetail flag
+        user_detail = (
+            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        )
+        if user_detail:
+            user_detail.is_interview_submitted = False
+            
+        # Reset PaperAssignment status
+        today = datetime.utcnow().date()
+        assignment = (
+            db_session.query(PaperAssignment)
+            .filter(
+                PaperAssignment.user_id == user_id,
+                PaperAssignment.assigned_date == today
+            )
+            .first()
+        )
+        if assignment:
+            assignment.is_attempted = False
+
+        db_session.commit()
+        return {
+            "message": "User interview status has been reset and today's attempt removed."
+        }
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
+    finally:
+        db_session.close()
+
+
+def reset_user_details(user_id: int) -> dict:
+    db_session = SessionLocal()
+    try:
+        user_detail = (
+            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        )
+        if user_detail:
+            user_detail.is_submitted = False
+            db_session.commit()
+            return {"message": "User details submission status reset successfully."}
+        else:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User details not found."
+            )
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
     finally:
         db_session.close()

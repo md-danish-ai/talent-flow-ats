@@ -166,7 +166,6 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                             }
                             size="icon"
                             animate="scale"
-                            disabled={row.assignment?.is_attempted}
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedUser(row);
