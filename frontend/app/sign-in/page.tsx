@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
+import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { SignInForm } from "@features/authforms/SignInForm";
 
 export default function LoginPage() {
@@ -35,17 +36,20 @@ export default function LoginPage() {
 
       <div className="relative z-10 flex w-full flex-col lg:flex-row items-center justify-center lg:justify-start min-h-screen">
         <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-10 lg:py-0">
-          <div className="relative z-10 mx-auto w-[92%] sm:w-full max-w-[440px] rounded-[0.5rem] bg-white dark:bg-card p-7 sm:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
-            <div className="mb-6">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/logo.svg"
-                  alt="Arcgate Logo"
-                  width={292}
-                  height={54}
-                  className="h-[40px] w-auto"
-                />
+            <div className="relative z-10 mx-auto w-[92%] sm:w-full max-w-[440px] rounded-[0.5rem] bg-white dark:bg-card p-7 sm:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] lg:ml-12 lg:mr-[-60px] opacity-0 animate-card-entry">
+              <div className="absolute right-6 top-6 z-20">
+                <ThemeToggle />
               </div>
+              <div className="mb-6">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="/logo.svg"
+                    alt="Arcgate Logo"
+                    width={292}
+                    height={54}
+                    className="h-[40px] w-auto"
+                  />
+                </div>
               <Typography
                 variant="body3"
                 italic

@@ -148,13 +148,14 @@ export function SelectDropdown({
                     "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
                     String(value) === String(option.id)
                       ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
-                      : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
+                      : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
                   )}
                 >
                   <Typography
                     variant="body4"
                     weight="semibold"
                     as="span"
+                    color="inherit"
                     className="flex-1 text-left leading-tight pr-4"
                   >
                     {option.label}
@@ -183,7 +184,7 @@ export function SelectDropdown({
         disabled={disabled}
         className={cn(
           "flex w-full items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
-          "border-border",
+          "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
@@ -198,14 +199,14 @@ export function SelectDropdown({
             as="span"
             className={cn(
               "truncate transition-colors",
-              selectedOption ? "text-foreground" : "text-muted-foreground/40",
+              selectedOption ? "text-foreground" : "text-muted-foreground/60 dark:text-white/40",
             )}
           >
             {selectedOption ? selectedOption.label : placeholder}
           </Typography>
           <ChevronDown
             className={cn(
-              "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
+              "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
               isOpen && "rotate-180 text-brand-primary",
             )}
           />

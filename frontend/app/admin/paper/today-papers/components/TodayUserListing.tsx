@@ -99,11 +99,11 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                          <div className="flex items-center gap-1.5 text-xs text-foreground/70">
                             <span className="opacity-70">📱</span>
                             <span className="font-semibold">{row.mobile}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                             <span className="opacity-70">✉️</span>
                             <span>{row.email || "-"}</span>
                           </div>
@@ -120,7 +120,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                                 {row.assignment.department_name}
                               </Badge>
                             ) : (
-                              <span className="text-[10px] text-slate-400 italic">
+                              <span className="text-[10px] text-muted-foreground/60 italic">
                                 No Dept
                               </span>
                             )}
@@ -128,7 +128,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className="border-slate-200 text-slate-600 dark:text-slate-400 text-[9px] px-2 py-0 uppercase"
+                              className="border-border text-muted-foreground text-[9px] px-2 py-0 uppercase"
                             >
                               {row.assignment?.test_level_name ||
                                 row.testlevel ||
@@ -150,7 +150,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                             )}
                           </div>
                         ) : (
-                          <span className="text-sm text-slate-400 italic font-medium">
+                          <span className="text-sm text-muted-foreground/60 italic font-medium">
                             Not Assigned
                           </span>
                         )}

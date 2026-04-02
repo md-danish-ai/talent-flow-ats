@@ -44,7 +44,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   return (
     <TableRow className="group/row border-b border-border transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
       {isVisible("sr_no") && (
-        <TableCell className="text-center font-bold text-[#b8c1cc]">
+        <TableCell className="text-center font-bold text-muted-foreground/60">
           {((currentPage - 1) * pageSize + index + 1)
             .toString()
             .padStart(2, "0")}
@@ -59,7 +59,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <Typography
               variant="body3"
               weight="bold"
-              className="text-slate-600 dark:text-slate-300"
+              className="text-foreground/80"
             >
               {row.paper_name}
             </Typography>
@@ -92,13 +92,13 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("description") && (
         <TableCell className="max-w-[180px]">
-          <Typography variant="body5" className="text-slate-400 truncate">
+          <Typography variant="body5" className="text-muted-foreground truncate">
             {row.description || "No description"}
           </Typography>
         </TableCell>
       )}
       {isVisible("timing") && (
-        <TableCell className="font-bold text-slate-600 dark:text-slate-400">
+        <TableCell className="font-bold text-foreground/70">
           {row.total_time}
         </TableCell>
       )}
@@ -130,7 +130,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
+              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
               onClick={() => onViewDetails(row.id!)}
               title="View Details"
             >
@@ -139,7 +139,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
+              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
               title="Settings"
             >
               <Settings size={16} />
@@ -147,7 +147,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
+              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
               title="Grading"
             >
               <GraduationCap size={16} />
