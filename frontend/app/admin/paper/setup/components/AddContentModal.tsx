@@ -416,7 +416,9 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                   <TableRow>
                     <TableHead className="text-center w-20 pl-6">Sr.</TableHead>
                     <TableHead className="pl-4">Question Details</TableHead>
-                    <TableHead className="text-center w-[180px]">Question Type</TableHead>
+                    <TableHead className="text-center w-[180px]">
+                      Question Type
+                    </TableHead>
                     <TableHead className="text-center w-24">Marks</TableHead>
                     <TableHead className="pr-6">
                       <div className="flex flex-col items-center gap-1">

@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import {
-  DUMMY_SECTIONS,
-  OVERALL_EXAM_DURATION_MINUTES,
-} from "./data";
+import { DUMMY_SECTIONS, OVERALL_EXAM_DURATION_MINUTES } from "./data";
 import { formatTime } from "./utils";
 import { InterviewOverview } from "./components/InterviewOverview";
 import { InterviewCompleted } from "./components/InterviewCompleted";
@@ -48,7 +45,11 @@ const getResumePosition = (
   sections: InterviewSection[],
   answers: Record<number, string>,
 ) => {
-  for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
+  for (
+    let sectionIndex = 0;
+    sectionIndex < sections.length;
+    sectionIndex += 1
+  ) {
     const questionIndex = sections[sectionIndex]?.questions.findIndex(
       (question) => !(answers[question.id] || "").trim(),
     );
@@ -107,7 +108,8 @@ export function InterviewTestClient() {
     OVERALL_EXAM_DURATION_MINUTES * 60,
   );
   const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
-  const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] = useState(0);
+  const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] =
+    useState(0);
 
   const hasHandledOverallTimeoutRef = useRef(false);
   const hasHandledSectionTimeoutRef = useRef(false);
@@ -119,7 +121,9 @@ export function InterviewTestClient() {
   const currentSection = sections[sectionIndex] ?? sections[0];
   const currentQuestion =
     currentSection?.questions[questionIndex] ?? currentSection?.questions[0];
-  const currentAnswer = currentQuestion ? answers[currentQuestion.id] || "" : "";
+  const currentAnswer = currentQuestion
+    ? answers[currentQuestion.id] || ""
+    : "";
 
   const totalQuestions = useMemo(
     () =>
@@ -150,7 +154,9 @@ export function InterviewTestClient() {
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
   const progressPercent = Math.min(
     100,
-    totalQuestions > 0 ? Math.round((completedSteps / totalQuestions) * 100) : 0,
+    totalQuestions > 0
+      ? Math.round((completedSteps / totalQuestions) * 100)
+      : 0,
   );
 
   const sectionSpentRatio =
@@ -354,6 +360,26 @@ export function InterviewTestClient() {
   useEffect(() => {
     if (!hasStarted || isCompleted) return;
 
+    // 1. Prevent refresh/close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue =
+        "Are you sure you want to leave? Your interview progress may be lost.";
+      return e.returnValue;
+    };
+
+    // 2. Prevent back button
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, "", window.location.href);
+      setMessage(
+        "Navigation is disabled during the assessment. Please stay on this page to complete your mission.",
+      );
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
     const timer = setInterval(() => {
       // 1. Overall Exam Timer
       setExamRemainingSeconds((prev) => {
@@ -379,13 +405,12 @@ export function InterviewTestClient() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [
-    handleOverallTimeOver,
-    handleSectionTimeOver,
-    hasStarted,
-    isCompleted,
-  ]);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [handleOverallTimeOver, handleSectionTimeOver, hasStarted, isCompleted]);
 
   const setCurrentAnswer = useCallback(
     (value: string) => {
@@ -394,7 +419,9 @@ export function InterviewTestClient() {
 
       if (isAutoSaveQuestionType(currentQuestion.type)) {
         void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
-          setMessage("Answer selected locally, but failed to sync with server.");
+          setMessage(
+            "Answer selected locally, but failed to sync with server.",
+          );
         });
       }
     },
@@ -469,14 +496,20 @@ export function InterviewTestClient() {
       const startResponse = await interviewAttemptsApi.startAttempt(
         assignedPaper.paper.id,
       );
-      const restoredAnswers = buildSavedAnswersMap(startResponse.saved_responses);
+      const restoredAnswers = buildSavedAnswersMap(
+        startResponse.saved_responses,
+      );
       const resumePosition = getResumePosition(loadedSections, restoredAnswers);
 
       setAttemptId(startResponse.attempt_id);
       setSections(loadedSections);
       setLockedSections(loadedSections.map(() => false));
-      setSectionIndex(startResponse.is_resumed ? resumePosition.sectionIndex : 0);
-      setQuestionIndex(startResponse.is_resumed ? resumePosition.questionIndex : 0);
+      setSectionIndex(
+        startResponse.is_resumed ? resumePosition.sectionIndex : 0,
+      );
+      setQuestionIndex(
+        startResponse.is_resumed ? resumePosition.questionIndex : 0,
+      );
       setAnswers(restoredAnswers);
       setMessage(
         startResponse.is_resumed
@@ -561,7 +594,8 @@ export function InterviewTestClient() {
               progressPercent={progressPercent}
               timerZone={timerZone}
               remainingTimeText={formatTime(sectionRemainingSeconds)}
-            /><InterviewStatusCard
+            />
+            <InterviewStatusCard
               sections={sections}
               sectionIndex={sectionIndex}
               lockedSections={lockedSections}

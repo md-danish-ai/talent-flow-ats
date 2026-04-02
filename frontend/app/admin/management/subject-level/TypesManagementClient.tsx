@@ -343,7 +343,9 @@ export function TypesManagementClient({
                             {item.code}
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-xs italic">—</span>
+                          <span className="text-muted-foreground text-xs italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     )}

@@ -85,7 +85,10 @@ function QuestionInputComponent({
     <div key={question.id} className="space-y-6 pt-2">
       {/* Description */}
       {question.description && (
-        <Typography variant="body3" className="text-muted-foreground italic bg-muted/5 p-3 rounded-lg border-l-4 border-brand-primary/20">
+        <Typography
+          variant="body3"
+          className="text-muted-foreground italic bg-muted/5 p-3 rounded-lg border-l-4 border-brand-primary/20"
+        >
           {question.description}
         </Typography>
       )}
@@ -95,12 +98,22 @@ function QuestionInputComponent({
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
           <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/40" />
-            <Typography variant="body5" weight="black" className="uppercase tracking-widest mr-1">
+            <Typography
+              variant="body5"
+              weight="black"
+              className="uppercase tracking-widest mr-1"
+            >
               Reference Passage
             </Typography>
           </div>
           <div className="p-5 italic font-medium leading-relaxed text-foreground/80 max-h-60 overflow-y-auto scrollbar-thin">
-            <Typography variant="body2" color="text-foreground/80" italic weight="medium" className="leading-relaxed">
+            <Typography
+              variant="body2"
+              color="text-foreground/80"
+              italic
+              weight="medium"
+              className="leading-relaxed"
+            >
               &quot;{question.passage}&quot;
             </Typography>
           </div>
@@ -117,12 +130,21 @@ function QuestionInputComponent({
       <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
         <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
           <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
-          <Typography variant="body5" weight="black" className="uppercase tracking-widest mr-1">
+          <Typography
+            variant="body5"
+            weight="black"
+            className="uppercase tracking-widest mr-1"
+          >
             Question Text
           </Typography>
         </div>
         <div className="p-5">
-          <Typography variant="body2" weight="semibold" color="text-foreground" className="leading-relaxed tracking-tight">
+          <Typography
+            variant="body2"
+            weight="semibold"
+            color="text-foreground"
+            className="leading-relaxed tracking-tight"
+          >
             {question.questionText}
           </Typography>
         </div>

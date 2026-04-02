@@ -101,7 +101,9 @@ export function SelectDropdown({
     };
   }, [isOpen]);
 
-  const selectedOption = options.find((opt) => String(opt.id) === String(value));
+  const selectedOption = options.find(
+    (opt) => String(opt.id) === String(value),
+  );
 
   const menuNode = (
     <AnimatePresence>
@@ -189,7 +191,8 @@ export function SelectDropdown({
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
             "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
-          disabled && "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
+          disabled &&
+            "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
         <div className="flex w-full items-center justify-between gap-2">
@@ -199,7 +202,9 @@ export function SelectDropdown({
             as="span"
             className={cn(
               "truncate transition-colors",
-              selectedOption ? "text-foreground" : "text-muted-foreground/60 dark:text-white/40",
+              selectedOption
+                ? "text-foreground"
+                : "text-muted-foreground/60 dark:text-white/40",
             )}
           >
             {selectedOption ? selectedOption.label : placeholder}

@@ -92,7 +92,10 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("description") && (
         <TableCell className="max-w-[180px]">
-          <Typography variant="body5" className="text-muted-foreground truncate">
+          <Typography
+            variant="body5"
+            className="text-muted-foreground truncate"
+          >
             {row.description || "No description"}
           </Typography>
         </TableCell>

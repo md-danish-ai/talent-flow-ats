@@ -210,7 +210,7 @@ export function DashboardClient({
                     : "Status: Restricted. Supplemental data required to authorize assessment phase."}
                 </Typography>
 
-                {isInterviewSubmitted && (
+                {isDetailsComplete && (
                   <Link
                     href="/user/profile"
                     className="w-full relative z-10 mb-10"

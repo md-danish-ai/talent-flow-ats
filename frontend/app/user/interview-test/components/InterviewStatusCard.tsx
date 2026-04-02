@@ -23,14 +23,22 @@ export function InterviewStatusCard({
   notAttemptedCount,
 }: InterviewStatusCardProps) {
   return (
-    <MainCard
-      title="Interview Status"
-      bodyClassName="space-y-4"
-    >
+    <MainCard title="Interview Status" bodyClassName="space-y-4">
       <Alert
         variant="warning"
-        description="Section lock is mandatory. Once section is completed, you cannot go back."
-        showIcon={false}
+        className="bg-amber-500/10 border-amber-500/20"
+        description={
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-[11px] uppercase tracking-wider">
+              Mandatory Locking Policy
+            </span>
+            <span className="text-[12px] opacity-90">
+              Completed sections are permanently locked. You cannot revisit
+              them.
+            </span>
+          </div>
+        }
+        showIcon={true}
       />
 
       <div className="space-y-3">
@@ -80,7 +88,10 @@ export function InterviewStatusCard({
 
                 <div className="flex flex-col items-end gap-1.5">
                   {isCurrent && (
-                    <Badge color="primary" className="animate-pulse shadow-brand-200">
+                    <Badge
+                      color="primary"
+                      className="animate-pulse shadow-brand-200"
+                    >
                       ACTIVE
                     </Badge>
                   )}

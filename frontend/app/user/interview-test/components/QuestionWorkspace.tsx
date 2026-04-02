@@ -62,16 +62,21 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
       {timerZone !== "safe" && (
         <motion.div
           animate={{ scale: [1, timerZone === "danger" ? 1.02 : 1.01, 1] }}
-          transition={{ duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity }}
+          transition={{
+            duration: timerZone === "danger" ? 0.5 : 1.2,
+            repeat: Infinity,
+          }}
           className={`rounded-lg ${
-            timerZone === "danger" 
-              ? "ring-4 ring-red-500/30 animate-pulse" 
+            timerZone === "danger"
+              ? "ring-4 ring-red-500/30 animate-pulse"
               : "ring-2 ring-yellow-500/20"
           }`}
         >
           <Alert
             variant={timerZone === "danger" ? "error" : "warning"}
-            title={timerZone === "danger" ? "Critical Time Warning" : "Time Warning"}
+            title={
+              timerZone === "danger" ? "Critical Time Warning" : "Time Warning"
+            }
             description={`You have ${remainingTimeText} remaining for this section (${currentSection.title}). Please answer quickly before the section auto-locks.`}
           />
         </motion.div>
@@ -82,18 +87,26 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
           <div className="h-8 w-1.5 rounded-full bg-brand-primary" />
           <div>
             <Typography variant="h4" className="text-foreground font-bold">
-              {currentQuestion.typeName || (
-                (currentQuestion.type === "MULTIPLE_CHOICE" || currentQuestion.type === "IMAGE_MULTIPLE_CHOICE") 
-                ? "Multiple Choice" : "Analytical Response"
-              )}
+              {currentQuestion.typeName ||
+                (currentQuestion.type === "MULTIPLE_CHOICE" ||
+                currentQuestion.type === "IMAGE_MULTIPLE_CHOICE"
+                  ? "Multiple Choice"
+                  : "Analytical Response")}
             </Typography>
-            <Typography variant="body5" className="text-muted-foreground uppercase tracking-widest font-medium">
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase tracking-widest font-medium"
+            >
               Mode: {currentQuestion.type.replace(/_/g, " ")}
             </Typography>
           </div>
         </div>
         {currentQuestion.subjectName && (
-          <Badge variant="outline" color="secondary" className="px-3 py-1 text-xs font-bold uppercase tracking-wider">
+          <Badge
+            variant="outline"
+            color="secondary"
+            className="px-3 py-1 text-xs font-bold uppercase tracking-wider"
+          >
             {currentQuestion.subjectName}
           </Badge>
         )}

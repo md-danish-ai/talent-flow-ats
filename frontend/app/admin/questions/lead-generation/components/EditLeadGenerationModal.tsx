@@ -24,8 +24,12 @@ export default function EditLeadGenerationModal({
     examLevel: question.exam_level?.code || "",
     marks: question.marks,
     questionText: question.question_text,
-    companyName: String((question.options as Record<string, unknown>)?.companyName || ""),
-    website: String((question.options as Record<string, unknown>)?.website || ""),
+    companyName: String(
+      (question.options as Record<string, unknown>)?.companyName || "",
+    ),
+    website: String(
+      (question.options as Record<string, unknown>)?.website || "",
+    ),
     name: String((question.options as Record<string, unknown>)?.name || ""),
     title: String((question.options as Record<string, unknown>)?.title || ""),
     email: String((question.options as Record<string, unknown>)?.email || ""),

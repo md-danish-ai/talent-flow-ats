@@ -19,9 +19,7 @@ export default async function UserLayout({
           {/* <Sidebar /> */}
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0 bg-layout-bg transition-colors rounded-tl-xl lg:rounded-tl-2xl">
-            <div className="mx-auto w-full min-h-full">
-              {children}
-            </div>
+            <div className="mx-auto w-full min-h-full">{children}</div>
           </main>
         </div>
       </div>

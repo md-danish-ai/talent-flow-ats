@@ -24,23 +24,42 @@ export function SectionChangeModal({
       <div className="space-y-4">
         <Alert
           variant="warning"
-          description="You can't jump back to this section again."
+          className="border-amber-500/30 bg-amber-500/5"
+          description={
+            <div className="flex flex-col gap-1">
+              <span className="font-semibold">Important Notice</span>
+              <span>
+                You cannot return to this section once you proceed. This section
+                will be permanently locked.
+              </span>
+            </div>
+          }
         />
-        <Typography variant="body2" className="text-foreground">
-          Please review all questions and answers of this section before moving
-          to the next section. If you are sure, click on{" "}
+        <Typography
+          variant="body2"
+          className="text-foreground/80 leading-relaxed"
+        >
+          Please review all your answers in the current section. For security
+          and integrity, moving to the next section will
+          <span className="text-amber-500 font-medium">
+            {" "}
+            disable access to all previous questions.
+          </span>
+        </Typography>
+        <Typography variant="body2" className="text-foreground/80">
+          If you are absolutely sure, click on{" "}
           <span className="font-semibold text-brand-primary">
             Change Section
-          </span>
-          .
+          </span>{" "}
+          to continue.
         </Typography>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-1">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4">
           <Button
             variant="outline"
             color="primary"
             animate="scale"
             onClick={onClose}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto border-foreground/10 hover:bg-foreground/5"
           >
             Review Section
           </Button>

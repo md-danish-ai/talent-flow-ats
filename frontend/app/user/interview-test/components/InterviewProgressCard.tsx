@@ -15,7 +15,13 @@ interface InterviewProgressCardProps {
   remainingTimeText: string;
 }
 
-const RollingDigit = ({ value, colorClass }: { value: string; colorClass: string }) => {
+const RollingDigit = ({
+  value,
+  colorClass,
+}: {
+  value: string;
+  colorClass: string;
+}) => {
   return (
     <div className="relative h-12 w-7 sm:h-16 sm:w-10 flex items-center justify-center overflow-hidden">
       <AnimatePresence mode="popLayout">
@@ -49,11 +55,11 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
   const s1 = seconds?.[0] || "0";
   const s2 = seconds?.[1] || "0";
 
-  const colorClass = 
-    timerZone === "danger" 
-      ? "text-red-500" 
-      : timerZone === "warn" 
-        ? "text-yellow-500" 
+  const colorClass =
+    timerZone === "danger"
+      ? "text-red-500"
+      : timerZone === "warn"
+        ? "text-yellow-500"
         : "text-emerald-500";
 
   return (
@@ -78,9 +84,21 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
           </Typography>
 
           <div className="flex items-center justify-center gap-1.5 w-full">
-            <motion.div 
-              animate={timerZone !== "safe" ? { scale: [1, 1.05, 1], opacity: [1, 0.6, 1] } : {}}
-              transition={timerZone !== "safe" ? { duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity, ease: "easeInOut" } : {}}
+            <motion.div
+              animate={
+                timerZone !== "safe"
+                  ? { scale: [1, 1.05, 1], opacity: [1, 0.6, 1] }
+                  : {}
+              }
+              transition={
+                timerZone !== "safe"
+                  ? {
+                      duration: timerZone === "danger" ? 0.5 : 1.2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }
+                  : {}
+              }
               className="flex shrink-0"
             >
               <RollingDigit value={m1} colorClass={colorClass} />
@@ -88,8 +106,20 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
             </motion.div>
 
             <motion.div
-              animate={timerZone !== "safe" ? { scale: [1, 1.1, 1], opacity: [1, 0.3, 1] } : {}}
-              transition={timerZone !== "safe" ? { duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity, ease: "easeInOut" } : {}}
+              animate={
+                timerZone !== "safe"
+                  ? { scale: [1, 1.1, 1], opacity: [1, 0.3, 1] }
+                  : {}
+              }
+              transition={
+                timerZone !== "safe"
+                  ? {
+                      duration: timerZone === "danger" ? 0.5 : 1.2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }
+                  : {}
+              }
             >
               <Typography
                 variant="h2"
@@ -100,9 +130,21 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
               </Typography>
             </motion.div>
 
-            <motion.div 
-              animate={timerZone !== "safe" ? { scale: [1, 1.05, 1], opacity: [1, 0.6, 1] } : {}}
-              transition={timerZone !== "safe" ? { duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity, ease: "easeInOut" } : {}}
+            <motion.div
+              animate={
+                timerZone !== "safe"
+                  ? { scale: [1, 1.05, 1], opacity: [1, 0.6, 1] }
+                  : {}
+              }
+              transition={
+                timerZone !== "safe"
+                  ? {
+                      duration: timerZone === "danger" ? 0.5 : 1.2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }
+                  : {}
+              }
               className="flex shrink-0"
             >
               <RollingDigit value={s1} colorClass={colorClass} />
@@ -129,7 +171,10 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
         {timerZone !== "safe" && (
           <motion.div
             animate={{ opacity: [0, timerZone === "danger" ? 0.6 : 0.3, 0] }}
-            transition={{ duration: timerZone === "danger" ? 0.5 : 1.2, repeat: Infinity }}
+            transition={{
+              duration: timerZone === "danger" ? 0.5 : 1.2,
+              repeat: Infinity,
+            }}
             className={`absolute inset-0 border-4 rounded-3xl pointer-events-none ${
               timerZone === "danger" ? "border-red-500" : "border-yellow-500"
             }`}

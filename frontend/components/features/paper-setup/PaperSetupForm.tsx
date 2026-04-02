@@ -365,11 +365,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
 
         <div className="mt-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 px-1">
-            <Typography
-              variant="h4"
-              weight="bold"
-              className="text-foreground"
-            >
+            <Typography variant="h4" weight="bold" className="text-foreground">
               Set Required type of questions:
             </Typography>
             <div className="flex items-center gap-4">

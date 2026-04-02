@@ -67,7 +67,10 @@ export interface AssignedInterviewPaperResponse {
 export const paperAssignmentsApi = {
   assignPaperToUser: (
     payload: PaperAssignmentPayload,
-    options?: Pick<ApiRequestOptions, "cookies" | "silentSuccess" | "silentError">,
+    options?: Pick<
+      ApiRequestOptions,
+      "cookies" | "silentSuccess" | "silentError"
+    >,
   ) =>
     api.post<PaperAssignmentResponse>(
       "/paper-assignments/assign",

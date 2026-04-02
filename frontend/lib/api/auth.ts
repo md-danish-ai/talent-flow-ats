@@ -108,7 +108,7 @@ export async function getUsersByRole(
 
   // Remove date from options so it doesn't get passed to api.get as config if not needed
   const apiOptions = options ? { ...options } : undefined;
-  if (apiOptions && 'date' in apiOptions) {
+  if (apiOptions && "date" in apiOptions) {
     delete (apiOptions as { date?: string }).date;
   }
 

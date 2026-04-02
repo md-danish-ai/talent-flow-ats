@@ -13,7 +13,13 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { Filter, Plus, Image as ImageIcon, Loader2, Upload } from "lucide-react";
+import {
+  Filter,
+  Plus,
+  Image as ImageIcon,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
