@@ -43,7 +43,10 @@ export const ADMIN_ROUTES: NavSection[] = [
       { label: "Passage Content", href: "/admin/questions/passage" },
       { label: "Typing Test", href: "/admin/questions/typing-test" },
       { label: "Lead Generation", href: "/admin/questions/lead-generation" },
-      { label: "Contact Details", href: "/admin/questions/contact-details" },
+      {
+        label: "Company Contact Details",
+        href: "/admin/questions/contact-details",
+      },
     ],
   },
   {
@@ -53,17 +56,15 @@ export const ADMIN_ROUTES: NavSection[] = [
     items: [
       { label: "Paper Setup", href: "/admin/paper/setup" },
       { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
-      { label: "Reset User Status", href: "/admin/paper/reset-user" },
+      { label: "Reset User Status", href: "/admin/paper/reset-status" },
     ],
   },
   {
     title: "Results",
     icon: <BarChart3 className="w-5 h-5" />,
-    type: "collapsible",
-    items: [
-      { label: "All Statistics", href: "/admin/results" },
-      { label: "Individual Results", href: "/admin/results/user-results" },
-    ],
+    type: "item",
+    href: "/admin/results",
+    items: [],
   },
   {
     title: "Management",

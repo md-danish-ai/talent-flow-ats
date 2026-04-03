@@ -14,7 +14,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
+import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -24,6 +24,7 @@ import EditContactDetailsModal from "./components/EditContactDetailsModal";
 import { AddContactDetailsModal } from "./components/AddContactDetailsModal";
 import { ContactDetailsFilters } from "./components/ContactDetailsFilters";
 import { ContactDetailsRow } from "./components/ContactDetailsRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 
 export function ContactDetailsClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -35,6 +36,7 @@ export function ContactDetailsClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,18 +59,26 @@ export function ContactDetailsClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "WebSiteURL", pinned: true },
+    { id: "websiteUrl", label: "WebSiteURL", pinned: true },
+    { id: "companyName", label: "CompanyName" },
+    { id: "streetAddress", label: "StreetAddress" },
+    { id: "city", label: "City" },
+    { id: "state", label: "State" },
+    { id: "zipCode", label: "ZipCode" },
+    { id: "companyPhoneNumber", label: "CompanyPhoneNumber" },
+    { id: "generalEmail", label: "GeneralEmail" },
+    { id: "facebookPage", label: "FacebookPage" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "question",
+    "websiteUrl",
+    "companyName",
     "subject",
     "examLevel",
     "marks",
@@ -186,7 +196,7 @@ export function ContactDetailsClient() {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
-            Contact Detailss
+            Company Contact Details
           </>
         }
         className="mb-6 flex flex-col"
@@ -200,6 +210,16 @@ export function ContactDetailsClient() {
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isBulkUploadOpen}
+              animate="scale"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
+            >
+              <Upload size={18} />
+            </Button>
             <Button
               variant="action"
               size="rounded-icon"
@@ -221,7 +241,7 @@ export function ContactDetailsClient() {
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
-              Add Contact Details
+              Add Company Contact Details
             </Button>
           </div>
         }
@@ -247,8 +267,32 @@ export function ContactDetailsClient() {
                       Sr. No.
                     </TableHead>
                   )}
-                  {visibleColumns.includes("question") && (
+                  {visibleColumns.includes("websiteUrl") && (
                     <TableHead>WebSiteURL</TableHead>
+                  )}
+                  {visibleColumns.includes("companyName") && (
+                    <TableHead>CompanyName</TableHead>
+                  )}
+                  {visibleColumns.includes("streetAddress") && (
+                    <TableHead>StreetAddress</TableHead>
+                  )}
+                  {visibleColumns.includes("city") && (
+                    <TableHead>City</TableHead>
+                  )}
+                  {visibleColumns.includes("state") && (
+                    <TableHead>State</TableHead>
+                  )}
+                  {visibleColumns.includes("zipCode") && (
+                    <TableHead>ZipCode</TableHead>
+                  )}
+                  {visibleColumns.includes("companyPhoneNumber") && (
+                    <TableHead>CompanyPhoneNumber</TableHead>
+                  )}
+                  {visibleColumns.includes("generalEmail") && (
+                    <TableHead>GeneralEmail</TableHead>
+                  )}
+                  {visibleColumns.includes("facebookPage") && (
+                    <TableHead>FacebookPage</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
@@ -285,7 +329,7 @@ export function ContactDetailsClient() {
                       className="py-8 text-center text-muted-foreground"
                     >
                       No contact details questions found. Click &quot;Add
-                      Contact Details&quot; to create one.
+                      Company Contact Details&quot; to create one.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -374,6 +418,13 @@ export function ContactDetailsClient() {
           onSuccess={fetchData}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchData}
+        questionType={QUESTION_TYPES.CONTACT_DETAILS}
+      />
     </PageContainer>
   );
 }

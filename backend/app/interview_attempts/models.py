@@ -54,7 +54,7 @@ class InterviewAttempt(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "status IN ('started', 'submitted', 'auto_submitted', 'expired')",
+            "status IN ('started', 'submitted', 'auto_submitted', 'expired', 'system_error')",
             name="chk_interview_attempts_status",
         ),
         CheckConstraint(
@@ -64,8 +64,8 @@ class InterviewAttempt(Base):
     )
 
 
-class InterviewAttemptAnswer(Base):
-    __tablename__ = "interview_attempt_answers"
+class InterviewAttemptResponse(Base):
+    __tablename__ = "interview_attempt_responses"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
@@ -74,6 +74,8 @@ class InterviewAttemptAnswer(Base):
         ForeignKey("interview_attempts.id", ondelete="CASCADE"),
         nullable=False,
     )
+    section_code = Column(String(100), nullable=False)
+    section_name = Column(String(255), nullable=False)
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
 
     answer_text = Column(Text, nullable=True)
@@ -102,6 +104,6 @@ class InterviewAttemptAnswer(Base):
         UniqueConstraint(
             "attempt_id",
             "question_id",
-            name="uq_interview_attempt_answers_attempt_question",
+            name="uq_interview_attempt_responses_attempt_question",
         ),
     )

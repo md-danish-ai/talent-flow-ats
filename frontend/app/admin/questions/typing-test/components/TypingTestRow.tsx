@@ -7,6 +7,8 @@ import { Button } from "@components/ui-elements/Button";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@lib/api/questions";
 
+import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
+
 interface TypingTestRowProps {
   row: Question;
   index: number;
@@ -33,16 +35,7 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
       key={row.id}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
-      expandedContent={
-        <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40">
-           <Typography variant="body3" weight="bold" className="mb-2">
-             Paragraph:
-           </Typography>
-           <Typography variant="body4" className="text-muted-foreground whitespace-pre-wrap">
-             {row.passage || "No paragraph content provided."}
-           </Typography>
-        </div>
-      }
+      expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
         <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">

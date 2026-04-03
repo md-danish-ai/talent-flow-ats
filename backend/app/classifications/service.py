@@ -14,9 +14,7 @@ class ClassificationService:
             )
 
         # 2. Check global duplicate code
-        code = (
-            data.code if data.code else data.name.upper()
-        ).upper().replace(" ", "_")
+        code = (data.code if data.code else data.name.upper()).upper().replace(" ", "_")
         existing_code = repository.get_by_code(code)
         if existing_code:
             raise HTTPException(

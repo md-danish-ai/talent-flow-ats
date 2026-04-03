@@ -51,7 +51,7 @@ export const ContactDetailsFilters: React.FC<ContactDetailsFiltersProps> = ({
             weight="bold"
             className="uppercase tracking-widest text-muted-foreground"
           >
-            Search Contact Detailss
+            Search Company Contact Details
           </Typography>
           <div className="relative group">
             <Search

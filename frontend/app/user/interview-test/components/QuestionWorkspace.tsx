@@ -1,19 +1,19 @@
-import { ArrowLeft, ArrowRight, Clock3 } from "lucide-react";
+import { memo } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 import { QuestionInput } from "./QuestionInput";
 import type { InterviewQuestion, InterviewSection, TimerZone } from "../types";
 
 interface QuestionWorkspaceProps {
   message: string | null;
   onCloseMessage: () => void;
-  sectionIndex: number;
-  totalSections: number;
   currentSection: InterviewSection;
   questionIndex: number;
-  progressPercent: number;
   timerZone: TimerZone;
   remainingTimeText: string;
   currentQuestion: InterviewQuestion;
@@ -25,14 +25,11 @@ interface QuestionWorkspaceProps {
   onSaveAndNext: () => void;
 }
 
-export function QuestionWorkspace({
+export const QuestionWorkspace = memo(function QuestionWorkspace({
   message,
   onCloseMessage,
-  sectionIndex,
-  totalSections,
   currentSection,
   questionIndex,
-  progressPercent,
   timerZone,
   remainingTimeText,
   currentQuestion,
@@ -45,19 +42,15 @@ export function QuestionWorkspace({
 }: QuestionWorkspaceProps) {
   return (
     <MainCard
-      title={
-        <div className="flex items-center gap-2">
-          <span>Question Workspace</span>
-        </div>
-      }
+      title="Question Workspace"
       action={
         <Badge variant="outline" color="primary" className="whitespace-nowrap">
-          <span className="sm:hidden">
+          <Typography variant="span" className="sm:hidden">
             Q {questionIndex + 1}/{currentSection.questions.length}
-          </span>
-          <span className="hidden sm:inline">
+          </Typography>
+          <Typography variant="span" className="hidden sm:inline">
             Question {questionIndex + 1}/{currentSection.questions.length}
-          </span>
+          </Typography>
         </Badge>
       }
       bodyClassName="space-y-4"
@@ -66,63 +59,72 @@ export function QuestionWorkspace({
         <Alert variant="info" description={message} onClose={onCloseMessage} />
       )}
 
-      <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" color="secondary">
-            Section {sectionIndex + 1}/{totalSections}
-          </Badge>
-          <Badge variant="outline" color="primary">
-            {currentSection.title}
-          </Badge>
-          <Badge variant="outline" color="default">
-            Progress {progressPercent}%
-          </Badge>
-          <Badge
-            variant="outline"
-            color={
-              timerZone === "danger"
-                ? "error"
-                : timerZone === "warn"
-                  ? "warning"
-                  : "success"
+      {timerZone !== "safe" && (
+        <motion.div
+          animate={{ scale: [1, timerZone === "danger" ? 1.02 : 1.01, 1] }}
+          transition={{
+            duration: timerZone === "danger" ? 0.5 : 1.2,
+            repeat: Infinity,
+          }}
+          className={`rounded-lg ${
+            timerZone === "danger"
+              ? "ring-4 ring-red-500/30 animate-pulse"
+              : "ring-2 ring-yellow-500/20"
+          }`}
+        >
+          <Alert
+            variant={timerZone === "danger" ? "error" : "warning"}
+            title={
+              timerZone === "danger" ? "Critical Time Warning" : "Time Warning"
             }
-            icon={<Clock3 size={12} />}
-            className="font-mono"
-          >
-            {remainingTimeText}
-          </Badge>
-        </div>
-
-        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-brand-primary transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
+            description={`You have ${remainingTimeText} remaining for this section (${currentSection.title}). Please answer quickly before the section auto-locks.`}
           />
-        </div>
-      </div>
-
-      {timerZone === "danger" && (
-        <Alert
-          variant="error"
-          title="Time Warning"
-          description={`You have ${remainingTimeText} left in the interview. Please answer quickly, otherwise remaining unanswered questions will be auto-submitted as not attempted.`}
-        />
+        </motion.div>
       )}
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <QuestionInput
-          question={currentQuestion}
-          currentAnswer={currentAnswer}
-          onChangeAnswer={onAnswerChange}
-        />
+      <div className="flex items-center justify-between gap-4 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1.5 rounded-full bg-brand-primary" />
+          <div>
+            <Typography variant="h4" className="text-foreground font-bold">
+              {currentQuestion.typeName ||
+                (currentQuestion.type === "MULTIPLE_CHOICE" ||
+                currentQuestion.type === "IMAGE_MULTIPLE_CHOICE"
+                  ? "Multiple Choice"
+                  : "Analytical Response")}
+            </Typography>
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase tracking-widest font-medium"
+            >
+              Mode: {currentQuestion.type.replace(/_/g, " ")}
+            </Typography>
+          </div>
+        </div>
+        {currentQuestion.subjectName && (
+          <Badge
+            variant="outline"
+            color="secondary"
+            className="px-3 py-1 text-xs font-bold uppercase tracking-wider"
+          >
+            {currentQuestion.subjectName}
+          </Badge>
+        )}
       </div>
+
+      <QuestionInput
+        question={currentQuestion}
+        currentAnswer={currentAnswer}
+        onChangeAnswer={onAnswerChange}
+      />
 
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <Button
           variant="outline"
-          color="default"
+          color="primary"
+          animate="scale"
           onClick={onPrevious}
-          disabled={questionIndex === 0}
+          disabled={questionIndex === 0 || currentQuestion.type === "TYPING_TEST"}
           startIcon={<ArrowLeft size={16} />}
           className="w-full sm:w-auto"
         >
@@ -132,6 +134,7 @@ export function QuestionWorkspace({
         <Button
           onClick={onSaveAndNext}
           color="primary"
+          animate="scale"
           endIcon={<ArrowRight size={16} />}
           className="w-full sm:w-auto"
         >
@@ -144,4 +147,4 @@ export function QuestionWorkspace({
       </div>
     </MainCard>
   );
-}
+});

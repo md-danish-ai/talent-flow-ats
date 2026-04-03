@@ -28,6 +28,7 @@ import { Pagination } from "@components/ui-elements/Pagination";
 interface BaseType {
   id: number;
   name: string;
+  code: string;
   description: string;
   is_active: boolean;
 }
@@ -84,6 +85,7 @@ export function TypesManagementClient({
       const formattedData = response.data.map((item: Classification) => ({
         id: item.id,
         name: item.name,
+        code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
       }));
@@ -156,6 +158,7 @@ export function TypesManagementClient({
         const updatedItem = {
           id: response.id,
           name: response.name,
+          code: response.code || "",
           description: (response.metadata?.description as string) || "",
           is_active: response.is_active,
         };
@@ -171,6 +174,7 @@ export function TypesManagementClient({
         const newItem = {
           id: response.id,
           name: response.name,
+          code: response.code || "",
           description: (response.metadata?.description as string) || "",
           is_active: response.is_active,
         };
@@ -300,8 +304,11 @@ export function TypesManagementClient({
               <TableRow>
                 <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
                 <TableHead>
-                  {activeTab === "subjects" ? "Name" : "Level Name"}
+                  {activeTab === "subjects" ? "Subject Name" : "Level Name"}
                 </TableHead>
+                {activeTab === "subjects" && (
+                  <TableHead>Subject Code</TableHead>
+                )}
                 <TableHead>Description</TableHead>
                 <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-center w-[100px]">Action</TableHead>
@@ -311,7 +318,7 @@ export function TypesManagementClient({
               {paginatedData.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={activeTab === "subjects" ? 6 : 5}
                     className="h-24 text-center text-muted-foreground"
                   >
                     No {activeTab} found.
@@ -324,6 +331,24 @@ export function TypesManagementClient({
                       {(currentPage - 1) * pageSize + idx + 1}
                     </TableCell>
                     <TableCell>{item.name}</TableCell>
+                    {activeTab === "subjects" && (
+                      <TableCell>
+                        {item.code ? (
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color="primary"
+                            className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest"
+                          >
+                            {item.code}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs italic">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell>{item.description}</TableCell>
                     <TableCell>
                       <div className="flex flex-col items-center justify-center gap-1">

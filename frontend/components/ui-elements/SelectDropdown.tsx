@@ -22,6 +22,7 @@ export interface SelectDropdownProps {
   className?: string;
   wrapperClassName?: string;
   error?: boolean;
+  disabled?: boolean;
 }
 
 export function SelectDropdown({
@@ -33,6 +34,7 @@ export function SelectDropdown({
   className,
   wrapperClassName,
   error = false,
+  disabled = false,
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -79,6 +81,7 @@ export function SelectDropdown({
   };
 
   const toggleDropdown = () => {
+    if (disabled) return;
     if (!mounted) setMounted(true);
     if (!isOpen) {
       updateCoords();
@@ -98,16 +101,14 @@ export function SelectDropdown({
     };
   }, [isOpen]);
 
-  const selectedOption = options.find((opt) => opt.id === value);
+  const selectedOption = options.find(
+    (opt) => String(opt.id) === String(value),
+  );
 
   const menuNode = (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: placement === "top" ? 4 : -4, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: placement === "top" ? 4 : -4, scale: 0.98 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+        <div
           style={{
             position: "absolute",
             top:
@@ -119,44 +120,56 @@ export function SelectDropdown({
             zIndex: 10000,
             transform: placement === "top" ? "translateY(-100%)" : "none",
           }}
-          className={cn(
-            "overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-2xl transition-colors",
-          )}
-          ref={dropdownRef}
         >
-          <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
-            {options.map((option) => (
-              <Button
-                key={option.id}
-                type="button"
-                variant="ghost"
-                color="default"
-                onClick={() => {
-                  onChange(option.id);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
-                  value === option.id
-                    ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
-                    : "text-muted-foreground hover:bg-brand-primary/5 hover:text-brand-primary transition-colors",
-                )}
-              >
-                <Typography
-                  variant="body4"
-                  weight="semibold"
-                  as="span"
-                  className="flex-1 text-left leading-tight pr-4"
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: placement === "top" ? 4 : -4,
+              scale: 0.98,
+            }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: placement === "top" ? 4 : -4, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className={cn(
+              "overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-2xl transition-colors",
+            )}
+            ref={dropdownRef}
+          >
+            <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
+              {options.map((option) => (
+                <Button
+                  key={option.id}
+                  type="button"
+                  variant="ghost"
+                  color="default"
+                  onClick={() => {
+                    onChange(option.id);
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
+                    String(value) === String(option.id)
+                      ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+                      : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
+                  )}
                 >
-                  {option.label}
-                </Typography>
-                {value === option.id && (
-                  <Check className="h-4 w-4 flex-shrink-0" />
-                )}
-              </Button>
-            ))}
-          </div>
-        </motion.div>
+                  <Typography
+                    variant="body4"
+                    weight="semibold"
+                    as="span"
+                    color="inherit"
+                    className="flex-1 text-left leading-tight pr-4"
+                  >
+                    {option.label}
+                  </Typography>
+                  {String(value) === String(option.id) && (
+                    <Check className="h-4 w-4 flex-shrink-0" />
+                  )}
+                </Button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -170,13 +183,16 @@ export function SelectDropdown({
         color="default"
         size="auto"
         onClick={toggleDropdown}
+        disabled={disabled}
         className={cn(
           "flex w-full items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
-          "border-border",
+          "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
             "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
+          disabled &&
+            "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
         <div className="flex w-full items-center justify-between gap-2">
@@ -186,14 +202,16 @@ export function SelectDropdown({
             as="span"
             className={cn(
               "truncate transition-colors",
-              selectedOption ? "text-foreground" : "text-muted-foreground/40",
+              selectedOption
+                ? "text-foreground"
+                : "text-muted-foreground/60 dark:text-white/40",
             )}
           >
             {selectedOption ? selectedOption.label : placeholder}
           </Typography>
           <ChevronDown
             className={cn(
-              "h-5 w-5 text-muted-foreground/40 flex-shrink-0 transition-transform",
+              "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
               isOpen && "rotate-180 text-brand-primary",
             )}
           />

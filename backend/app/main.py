@@ -14,6 +14,7 @@ from app.interview_attempts.router import router as interview_attempts_router
 from app.duplicates.router import router as duplicates_router
 from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
+from app.paper_assignments.router import router as paper_assignments_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -25,8 +26,8 @@ app = FastAPI(title="Talent Flow ATS")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -94,6 +95,7 @@ app.include_router(interview_attempts_router)
 app.include_router(duplicates_router)
 app.include_router(departments_router)
 app.include_router(papers_router)
+app.include_router(paper_assignments_router)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

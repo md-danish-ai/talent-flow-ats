@@ -1,0 +1,3 @@
+# Ruff configuration
+# Ignore linting for the seeds directory as requested
+exclude = ["seeds", "venv"]

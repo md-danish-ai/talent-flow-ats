@@ -1,8 +1,16 @@
-import Image from "next/image";
-import { Radio } from "@components/ui-elements/Radio";
-import { Textarea } from "@components/ui-elements/Textarea";
+"use client";
+import { memo } from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import type { InterviewQuestion } from "../types";
+import { QuestionImage } from "./QuestionTypes/QuestionImage";
+
+// Import Specialized Components
+import { MultipleChoiceView } from "./QuestionTypes/MultipleChoiceView";
+import { SubjectiveView } from "./QuestionTypes/SubjectiveView";
+import { PassageContentView } from "./QuestionTypes/PassageContentView";
+import { TypingTestView } from "./QuestionTypes/TypingTestView";
+import { LeadGenerationView } from "./QuestionTypes/LeadGenerationView";
+import { ContactDetailsView } from "./QuestionTypes/ContactDetailsView";
 
 interface QuestionInputProps {
   question: InterviewQuestion;
@@ -10,103 +18,154 @@ interface QuestionInputProps {
   onChangeAnswer: (value: string) => void;
 }
 
-export function QuestionInput({
+function QuestionInputComponent({
   question,
   currentAnswer,
   onChangeAnswer,
 }: QuestionInputProps) {
+  // 1. Passage Content Header Early Return
+  if (question.type === "PASSAGE_CONTENT") {
+    return (
+      <PassageContentView
+        key={question.id}
+        passage={question.passage || ""}
+        questionText={question.questionText}
+        currentAnswer={currentAnswer}
+        onChangeAnswer={onChangeAnswer}
+      />
+    );
+  }
+
+  // 2. Typing Test Header Early Return (Uses custom internally styled layout)
+  if (question.type === "TYPING_TEST") {
+    return (
+      <TypingTestView
+        key={question.id}
+        passage={question.passage || ""}
+        questionText={question.questionText}
+        currentAnswer={currentAnswer}
+        onChangeAnswer={onChangeAnswer}
+      />
+    );
+  }
+
+  // 3. Form Handling (Lead Gen / Contact Details)
+  if (question.type === "LEAD_GENERATION") {
+    return (
+      <div className="space-y-6">
+        <LeadGenerationView
+          key={question.id}
+          questionText={question.questionText}
+          currentAnswer={currentAnswer}
+          onChangeAnswer={onChangeAnswer}
+        />
+      </div>
+    );
+  }
+
+  if (question.type === "CONTACT_DETAILS") {
+    return (
+      <div className="space-y-6">
+        <ContactDetailsView
+          key={question.id}
+          questionText={question.questionText}
+          currentAnswer={currentAnswer}
+          onChangeAnswer={onChangeAnswer}
+        />
+      </div>
+    );
+  }
+
+  // 4. Default Standard Questions (MCQ / Subjective)
   const isChoiceType =
-    question.type === "MCQ" ||
-    question.type === "IMAGE_MCQ" ||
-    question.type === "PASSAGE_MCQ";
+    question.type === "MULTIPLE_CHOICE" ||
+    question.type === "IMAGE_MULTIPLE_CHOICE";
 
   return (
-    <div className="space-y-4">
-      <Typography variant="h3" className="text-foreground">
-        {question.type === "SUBJECTIVE"
-          ? "Subjective Question"
-          : "Multiple Choice Question"}
-      </Typography>
-
+    <div key={question.id} className="space-y-6 pt-2">
+      {/* Description */}
       {question.description && (
-        <Typography variant="body3">{question.description}</Typography>
+        <Typography
+          variant="body3"
+          className="text-muted-foreground italic bg-muted/5 p-3 rounded-lg border-l-4 border-brand-primary/20"
+        >
+          {question.description}
+        </Typography>
       )}
 
+      {/* Standard Passage (if applicable for standard questions) */}
       {question.passage && (
-        <div className="rounded-lg border border-border bg-muted/20 p-3 sm:p-4 max-h-56 sm:max-h-60 overflow-y-auto">
-          <Typography variant="body4" className="text-foreground">
-            Passage
-          </Typography>
-          <Typography variant="body3" className="mt-2 leading-relaxed">
-            {question.passage}
-          </Typography>
+        <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
+          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/40" />
+            <Typography
+              variant="body5"
+              weight="black"
+              className="uppercase tracking-widest mr-1"
+            >
+              Reference Passage
+            </Typography>
+          </div>
+          <div className="p-5 italic font-medium leading-relaxed text-foreground/80 max-h-60 overflow-y-auto scrollbar-thin">
+            <Typography
+              variant="body2"
+              color="text-foreground/80"
+              italic
+              weight="medium"
+              className="leading-relaxed"
+            >
+              &quot;{question.passage}&quot;
+            </Typography>
+          </div>
         </div>
       )}
 
-      {question.imageUrl && (
-        <div className="rounded-lg border border-border bg-muted/20 p-4">
-          <Typography variant="body5" className="mb-2">
-            Reference Image
+      {/* Media Content */}
+      <QuestionImage
+        imageUrl={question.imageUrl}
+        image_url={question.image_url}
+      />
+
+      {/* Question Text */}
+      <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
+        <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
+          <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
+          <Typography
+            variant="body5"
+            weight="black"
+            className="uppercase tracking-widest mr-1"
+          >
+            Question Text
           </Typography>
-          <Image
-            src={question.imageUrl}
-            alt="Question reference"
-            width={320}
-            height={180}
-            className="w-full max-w-[320px] h-auto rounded-lg border border-border object-contain bg-white"
-          />
         </div>
-      )}
+        <div className="p-5">
+          <Typography
+            variant="body2"
+            weight="semibold"
+            color="text-foreground"
+            className="leading-relaxed tracking-tight"
+          >
+            {question.questionText}
+          </Typography>
+        </div>
+      </div>
 
-      <Typography variant="body2" className="text-foreground font-semibold">
-        {question.questionText}
-      </Typography>
-
+      {/* Input Logic */}
       {isChoiceType ? (
-        <div className="space-y-3">
-          {(question.options || []).map((option, index) => {
-            const optionKey = String.fromCharCode(65 + index);
-            const savedValue = optionKey;
-            const displayValue = `${optionKey}. ${option}`;
-            const isChecked = currentAnswer === savedValue;
-
-            return (
-              <label
-                key={`${question.id}-${optionKey}`}
-                className={`group flex items-center gap-3 rounded-xl border px-4 py-3 transition-all ${
-                  isChecked
-                    ? "border-brand-primary bg-brand-primary/10 shadow-[0_6px_20px_rgba(249,99,49,0.14)]"
-                    : "border-border bg-card hover:border-brand-primary/40 hover:bg-brand-primary/5"
-                }`}
-              >
-                <Radio
-                  checked={isChecked}
-                  onChange={() => onChangeAnswer(savedValue)}
-                  name={`question-${question.id}`}
-                />
-                <Typography
-                  variant="body3"
-                  className={`transition-colors break-words ${
-                    isChecked
-                      ? "text-brand-primary font-semibold"
-                      : "text-foreground group-hover:text-brand-primary"
-                  }`}
-                >
-                  {displayValue}
-                </Typography>
-              </label>
-            );
-          })}
-        </div>
+        <MultipleChoiceView
+          questionId={question.id}
+          options={question.options || []}
+          currentAnswer={currentAnswer}
+          onChangeAnswer={onChangeAnswer}
+        />
       ) : (
-        <Textarea
-          rows={8}
-          placeholder="Write your answer here..."
-          value={currentAnswer}
-          onChange={(event) => onChangeAnswer(event.target.value)}
-          className="rounded-xl"
+        <SubjectiveView
+          currentAnswer={currentAnswer}
+          onChangeAnswer={onChangeAnswer}
         />
       )}
     </div>
   );
 }
+
+export const QuestionInput = memo(QuestionInputComponent);

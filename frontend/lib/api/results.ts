@@ -9,6 +9,12 @@ export interface AdminUserLatestAttempt {
   attempted_count: number;
   unattempted_count: number;
   obtained_marks?: number | null;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserResultListItem {
@@ -37,6 +43,12 @@ export interface AdminUserResultAnswer {
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserResultDetail {
@@ -80,6 +92,12 @@ export interface AdminUserAttemptHistoryItem {
   unattempted_count: number;
   obtained_marks?: number | null;
   is_auto_submitted: boolean;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserAttemptsResponse {
@@ -95,21 +113,37 @@ export interface AdminUserAttemptsResponse {
 export const resultsApi = {
   getUserResults: async (search?: string) => {
     const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return api.get<AdminUserResultListItem[]>(
-      `/interview-attempts/admin/users${query}`,
-    );
+    return api.get<AdminUserResultListItem[]>(`/admin/results${query}`);
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
     const query = attemptId ? `?attempt_id=${attemptId}` : "";
     return api.get<AdminUserResultDetail>(
-      `/interview-attempts/admin/users/${userId}/result${query}`,
+      `/admin/results/users/${userId}${query}`,
     );
   },
 
   getUserAttempts: async (userId: number) => {
     return api.get<AdminUserAttemptsResponse>(
-      `/interview-attempts/admin/users/${userId}/attempts`,
+      `/admin/results/users/${userId}/attempts`,
+    );
+  },
+
+  resetUserStatus: async (userId: number) => {
+    return api.post<{ message: string }>(
+      `/admin/results/users/${userId}/reset`,
+    );
+  },
+
+  resetUserDetails: async (userId: number) => {
+    return api.post<{ message: string }>(
+      `/admin/results/users/${userId}/reset-details`,
+    );
+  },
+
+  enableReInterview: async (userId: number) => {
+    return api.post<{ message: string; reinterview_date?: string }>(
+      `/admin/results/users/${userId}/enable-reinterview`,
     );
   },
 };

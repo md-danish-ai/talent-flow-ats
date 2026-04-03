@@ -11,10 +11,9 @@ from app.utils.pagination import (
 )
 
 router = APIRouter(
-    prefix="/papers",
-    tags=["Papers"],
-    dependencies=[Depends(authenticate_user)]
+    prefix="/papers", tags=["Papers"], dependencies=[Depends(authenticate_user)]
 )
+
 
 def get_db():
     db = SessionLocal()
@@ -27,18 +26,27 @@ def get_db():
 @router.get("/get")
 def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
+    department_id: int = None,
+    test_level_id: int = None,
     db: Session = Depends(get_db),
 ):
     offset = (pagination.page - 1) * pagination.limit
-    papers, total_records = repository.get_papers(db, skip=offset, limit=pagination.limit)
-    
+    papers, total_records = repository.get_papers(
+        db, 
+        skip=offset, 
+        limit=pagination.limit,
+        department_id=department_id,
+        test_level_id=test_level_id
+    )
+
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization
     paper_list = [
         schemas.PaperResponse.model_validate(paper).model_dump() for paper in papers
     ]
-    
+
     paginated_data = create_paginated_response(paper_list, total_records, pagination)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+
 
 @router.get("/get/{paper_id}")
 def read_paper(paper_id: int, db: Session = Depends(get_db)):
@@ -50,6 +58,7 @@ def read_paper(paper_id: int, db: Session = Depends(get_db)):
         ResponseMessage.FETCHED,
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
+
 
 @router.post("/create")
 def create_paper(
@@ -64,8 +73,11 @@ def create_paper(
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
+
 @router.put("/update/{paper_id}")
-def update_paper(paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)):
+def update_paper(
+    paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)
+):
     db_paper = repository.update_paper(db=db, paper_id=paper_id, paper_update=paper)
     if db_paper is None:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
@@ -74,6 +86,7 @@ def update_paper(paper_id: int, paper: schemas.PaperUpdate, db: Session = Depend
         ResponseMessage.UPDATED,
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
+
 
 @router.delete("/delete/{paper_id}")
 def delete_paper(paper_id: int, db: Session = Depends(get_db)):

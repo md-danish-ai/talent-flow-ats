@@ -1,5 +1,15 @@
 import { api } from "./index";
 
+export interface AttemptSavedResponse {
+  question_id: number;
+  section_code: string;
+  section_name: string;
+  answer_text?: string | null;
+  is_attempted: boolean;
+  is_auto_saved: boolean;
+  saved_at: string;
+}
+
 export interface StartAttemptResponse {
   attempt_id: number;
   paper_id: number;
@@ -7,12 +17,16 @@ export interface StartAttemptResponse {
   status: string;
   total_questions: number;
   started_at: string;
+  is_resumed: boolean;
   paper_question_ids: number[];
+  saved_responses: AttemptSavedResponse[];
 }
 
 export interface SaveAttemptAnswerResponse {
   attempt_id: number;
   question_id: number;
+  section_code: string;
+  section_name: string;
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
@@ -35,7 +49,7 @@ export interface AttemptSummaryResponse {
 
 export const interviewAttemptsApi = {
   startAttempt: (paperId: number) =>
-    api.post<StartAttemptResponse>("/interview-attempts/start", {
+    api.post<StartAttemptResponse>("/user/interview-attempts/start", {
       paper_id: paperId,
     }),
 
@@ -46,22 +60,26 @@ export const interviewAttemptsApi = {
     payload: { answer_text?: string | null; is_auto_saved?: boolean },
   ) =>
     api.put<SaveAttemptAnswerResponse>(
-      `/interview-attempts/${attemptId}/answers/${questionId}`,
+      `/user/interview-attempts/${attemptId}/answers/${questionId}`,
       payload,
       { silentSuccess: true, silentError: true },
     ),
 
   submitAttempt: (attemptId: number) =>
-    api.post<AttemptSummaryResponse>(`/interview-attempts/${attemptId}/submit`),
+    api.post<AttemptSummaryResponse>(
+      `/user/interview-attempts/${attemptId}/submit`,
+    ),
 
   // silentSuccess: triggered automatically by timer, not a user action
   autoSubmitAttempt: (attemptId: number) =>
     api.post<AttemptSummaryResponse>(
-      `/interview-attempts/${attemptId}/auto-submit`,
+      `/user/interview-attempts/${attemptId}/auto-submit`,
       undefined,
       { silentSuccess: true },
     ),
 
   getSummary: (attemptId: number) =>
-    api.get<AttemptSummaryResponse>(`/interview-attempts/${attemptId}/summary`),
+    api.get<AttemptSummaryResponse>(
+      `/user/interview-attempts/${attemptId}/summary`,
+    ),
 };
