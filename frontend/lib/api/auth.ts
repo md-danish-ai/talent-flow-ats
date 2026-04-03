@@ -84,6 +84,9 @@ export interface UserListResponse {
   testlevel_id?: number | string;
   test_level_id?: number | string;
   is_active: boolean;
+  is_reinterview?: boolean;
+  reinterview_date?: string | null;
+  user_type?: "new" | "returning";
   assignment?: {
     is_assigned: boolean;
     paper_id: number | null;
@@ -96,22 +99,28 @@ export interface UserListResponse {
     has_started: boolean;
   } | null;
   is_details_submitted: boolean;
+  is_interview_submitted: boolean;
 }
 
-// GET /auth/get-all-users?role={role}&date={date} - Fetch users by role (e.g., admin, user)
+// GET /auth/get-all-users?role={role}&date={date}&date_from={date_from}&date_to={date_to}
 export async function getUsersByRole(
   role: string,
-  options?: Pick<ApiRequestOptions, "cookies"> & { date?: string },
+  options?: Pick<ApiRequestOptions, "cookies"> & {
+    date?: string;
+    date_from?: string;
+    date_to?: string;
+  },
 ): Promise<UserListResponse[]> {
   const queryParams = new URLSearchParams({ role });
-  if (options?.date) {
-    queryParams.append("date", options.date);
-  }
+  if (options?.date) queryParams.append("date", options.date);
+  if (options?.date_from) queryParams.append("date_from", options.date_from);
+  if (options?.date_to) queryParams.append("date_to", options.date_to);
 
-  // Remove date from options so it doesn't get passed to api.get as config if not needed
   const apiOptions = options ? { ...options } : undefined;
-  if (apiOptions && "date" in apiOptions) {
+  if (apiOptions) {
     delete (apiOptions as { date?: string }).date;
+    delete (apiOptions as { date_from?: string }).date_from;
+    delete (apiOptions as { date_to?: string }).date_to;
   }
 
   return api.get<UserListResponse[]>(

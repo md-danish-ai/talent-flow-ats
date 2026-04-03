@@ -95,9 +95,7 @@ export interface AdminUserAttemptsResponse {
 export const resultsApi = {
   getUserResults: async (search?: string) => {
     const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return api.get<AdminUserResultListItem[]>(
-      `/admin/results${query}`,
-    );
+    return api.get<AdminUserResultListItem[]>(`/admin/results${query}`);
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
@@ -122,6 +120,12 @@ export const resultsApi = {
   resetUserDetails: async (userId: number) => {
     return api.post<{ message: string }>(
       `/admin/results/users/${userId}/reset-details`,
+    );
+  },
+
+  enableReInterview: async (userId: number) => {
+    return api.post<{ message: string; reinterview_date?: string }>(
+      `/admin/results/users/${userId}/enable-reinterview`,
     );
   },
 };

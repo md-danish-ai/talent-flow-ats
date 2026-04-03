@@ -14,15 +14,61 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@/components/ui-elements/Button";
-import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
-import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
+import { useRouter } from "next/navigation";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+
+import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
+import { DateRangeHeaderActions } from "./DateRangeHeaderActions";
+import { getUsersByRole } from "@lib/api/auth";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "@lib/toast";
 
 interface TodayUserListingProps {
   initialData?: UserListResponse[];
+  initialLabel?: string;
 }
 
-export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
+export function TodayUserListing({
+  initialData = [],
+  initialLabel = "Today",
+}: TodayUserListingProps) {
+  const searchParams = useSearchParams();
+  const [users, setUsers] = useState<UserListResponse[]>(initialData);
+  const [loading, setLoading] = useState(false);
+
+  // Sync with initialData whenever it changes (e.g. on URL change)
+  useEffect(() => {
+    setUsers(initialData);
+  }, [initialData]);
+
+  // Manual API refresh function
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      const role = "user";
+      const options = {
+        date:
+          searchParams.get("date") ||
+          (!searchParams.get("date_from")
+            ? new Date().toISOString().split("T")[0]
+            : undefined),
+        date_from: searchParams.get("date_from") || undefined,
+        date_to: searchParams.get("date_to") || undefined,
+      };
+
+      const refreshedData = await getUsersByRole(role, options);
+      setUsers(refreshedData);
+      toast.success("List Refreshed");
+    } catch (error) {
+      console.error("Refresh failed:", error);
+      toast.error("Refresh failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -32,7 +78,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  const totalItems = initialData.length;
+  const totalItems = users.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   // Handlers for pagination
@@ -46,7 +92,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
   };
 
   // Sliced data for current page
-  const paginatedUsers = initialData.slice(
+  const paginatedUsers = users.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
@@ -55,12 +101,26 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
     <>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <Users size={20} />
             </div>
-            Users List
-          </>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold tracking-tight">
+                CANDIDATES LIST
+              </span>
+              <span className="text-[10px] text-muted-foreground/60 font-medium">
+                papers scheduled and active for filtered range.
+              </span>
+            </div>
+          </div>
+        }
+        action={
+          <DateRangeHeaderActions
+            initialLabel={initialLabel}
+            onRefresh={handleRefresh}
+            isLoading={loading}
+          />
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-col w-full"
@@ -91,25 +151,58 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                 ) : (
                   paginatedUsers.map((row, idx) => (
                     <TableRow key={row.id}>
-                      <TableCell className="font-medium text-center">
+                      <TableCell className="font-medium text-center align-middle">
                         {(currentPage - 1) * pageSize + idx + 1}
                       </TableCell>
-                      <TableCell className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
-                        {row.username || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5 text-xs text-foreground/70">
-                            <span className="opacity-70">📱</span>
-                            <span className="font-semibold">{row.mobile}</span>
+                      <TableCell className="align-middle">
+                        <div className="flex flex-col justify-center">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">
+                              {row.username || "Unnamed Candidate"}
+                            </span>
+                            {row.is_reinterview ? (
+                              <Badge
+                                className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-violet-500/10 animate-pulse"
+                                variant="outline"
+                              >
+                                RETURNING
+                              </Badge>
+                            ) : (
+                              <Badge
+                                className="bg-green-500/10 text-green-600 border-green-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-green-500/10"
+                                variant="outline"
+                              >
+                                NEW
+                              </Badge>
+                            )}
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                            <span className="opacity-70">✉️</span>
-                            <span>{row.email || "-"}</span>
+                          <span className="text-[10px] text-muted-foreground/60 italic font-medium -mt-1 opacity-70">
+                            ID: #{row.id}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="align-middle">
+                        <div className="flex flex-col justify-center gap-0.5">
+                          <div className="flex items-center gap-1.5 text-xs text-foreground/70">
+                            <span className="opacity-70 group-hover:scale-110 transition-transform">
+                              📱
+                            </span>
+                            <span className="font-bold text-slate-700 dark:text-slate-300">
+                              {row.mobile}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
+                            <span className="opacity-70 group-hover:scale-110 transition-transform">
+                              ✉️
+                            </span>
+                            <span className="opacity-80 truncate max-w-[150px]">
+                              {row.email || "-"}
+                            </span>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+
+                      <TableCell className="align-middle">
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-2">
                             {row.assignment?.department_name ? (
@@ -137,7 +230,7 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-middle">
                         {row.assignment?.paper_name ? (
                           <div className="flex flex-col">
                             <span className="text-sm font-semibold text-brand-primary">
@@ -155,35 +248,42 @@ export function TodayUserListing({ initialData = [] }: TodayUserListingProps) {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button
-                            variant="ghost"
-                            color={
+                      <TableCell className="text-center align-middle p-0">
+                        <div className="flex items-center justify-center min-h-[70px]">
+                          <Tooltip
+                            content={
                               row.assignment?.is_attempted
-                                ? "success"
-                                : "primary"
+                                ? "Assessment Already Completed"
+                                : "Assign Fresh Paper Set"
                             }
-                            size="icon"
-                            animate="scale"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedUser(row);
-                              setIsModalOpen(true);
-                            }}
-                            title={
-                              row.assignment?.is_attempted
-                                ? "Attempted"
-                                : "Assign Paper Set"
-                            }
-                            className={`h-8 w-8 ${
-                              row.assignment?.is_attempted
-                                ? "text-green-600 cursor-not-allowed opacity-70"
-                                : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                            }`}
                           >
-                            <ClipboardCheck size={16} />
-                          </Button>
+                            <Button
+                              variant={
+                                row.assignment?.is_attempted
+                                  ? "ghost"
+                                  : "primary"
+                              }
+                              color={
+                                row.assignment?.is_attempted
+                                  ? "success"
+                                  : "primary"
+                              }
+                              size="icon"
+                              animate="scale"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(row);
+                                setIsModalOpen(true);
+                              }}
+                              className={`h-9 w-9 rounded-xl ${
+                                row.assignment?.is_attempted
+                                  ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed opacity-90 shadow-inner"
+                                  : "text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10"
+                              }`}
+                            >
+                              <ClipboardCheck size={18} />
+                            </Button>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     </TableRow>

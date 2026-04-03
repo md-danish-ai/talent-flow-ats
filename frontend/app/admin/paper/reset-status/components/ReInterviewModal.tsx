@@ -3,39 +3,40 @@
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { UserListResponse } from "@lib/api/auth";
-import { FileEdit, AlertTriangle } from "lucide-react";
+import { RotateCcw, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { resultsApi } from "@lib/api/results";
 import { toast } from "@lib/toast";
 
-interface ResetDetailsModalProps {
+interface ReInterviewModalProps {
   isOpen: boolean;
   user: UserListResponse | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function ResetDetailsModal({
+export function ReInterviewModal({
   isOpen,
   user,
   onClose,
   onSuccess,
-}: ResetDetailsModalProps) {
+}: ReInterviewModalProps) {
   const [loading, setLoading] = useState(false);
 
-  const handleReset = async () => {
+  const handleEnable = async () => {
     if (!user) return;
     try {
       setLoading(true);
-      await resultsApi.resetUserDetails(user.id);
+      setLoading(true);
+      await resultsApi.enableReInterview(user.id);
       toast.success(
-        `Application details reset for ${user.username}. They can now edit their form.`,
+        `Re-interview enabled for ${user.username}. They will now appear in Today's Paper list.`,
       );
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Reset failed:", error);
-      toast.error("Failed to reset application details.");
+      console.error("Enable re-interview failed:", error);
+      toast.error("Failed to enable re-interview.");
     } finally {
       setLoading(false);
     }
@@ -45,18 +46,18 @@ export function ResetDetailsModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Reset Candidate Details"
+      title="Enable Re-Interview"
       className="max-w-sm"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
-          <FileEdit
-            className="text-orange-600 dark:text-orange-400"
+        <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mb-4">
+          <RotateCcw
+            className="text-violet-600 dark:text-violet-400"
             size={32}
           />
         </div>
         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
-          Reset details for editing?
+          Enable Re-Interview?
         </h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
           This action will perform the following for{" "}
@@ -66,25 +67,36 @@ export function ResetDetailsModal({
           :
         </p>
 
-        <div className="w-full text-left space-y-2 mb-5 bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
+        <div className="w-full text-left space-y-2 mb-5 bg-violet-50 dark:bg-violet-900/20 rounded-xl p-4 border border-violet-200 dark:border-violet-800">
           <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
             <AlertTriangle
               size={14}
-              className="text-orange-500 mt-0.5 shrink-0"
+              className="text-violet-500 mt-0.5 shrink-0"
             />
             <span>
-              <strong>is_details_submitted → false:</strong> Candidate can edit
-              their personal/education details.
+              <strong>is_submitted → false:</strong> Candidate can update their
+              personal details again.
             </span>
           </div>
           <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
             <AlertTriangle
               size={14}
-              className="text-orange-500 mt-0.5 shrink-0"
+              className="text-violet-500 mt-0.5 shrink-0"
             />
             <span>
-              <strong>Re-submission required:</strong> Candidate must re-save
-              and submit their form to proceed.
+              <strong>is_interview_submitted → false:</strong> Candidate can
+              retake the interview session.
+            </span>
+          </div>
+          <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+            <AlertTriangle
+              size={14}
+              className="text-violet-500 mt-0.5 shrink-0"
+            />
+            <span>
+              <strong>Today&apos;s Papers:</strong> User will appear with a{" "}
+              <span className="font-bold text-violet-600">RETURNING</span> badge
+              today.
             </span>
           </div>
         </div>
@@ -94,13 +106,13 @@ export function ResetDetailsModal({
         <div className="flex flex-col gap-3 w-full">
           <Button
             variant="primary"
-            color="warning"
-            className="w-full flex items-center justify-center gap-2 py-6 bg-orange-600 hover:bg-orange-700 text-white"
-            onClick={handleReset}
+            color="secondary"
+            className="w-full flex items-center justify-center gap-2 py-6 bg-violet-600 hover:bg-violet-700 text-white"
+            onClick={handleEnable}
             disabled={loading}
           >
-            <FileEdit size={16} />
-            {loading ? "Processing..." : "Confirm & Enable Edit"}
+            <RotateCcw size={16} />
+            {loading ? "Processing..." : "Confirm & Enable Re-Interview"}
           </Button>
           <Button
             variant="ghost"

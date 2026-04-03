@@ -124,3 +124,15 @@ async def reset_user_details(
 ):
     data = await service.reset_user_details(user_id=user_id)
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+
+
+@router.post(
+    "/admin/results/users/{user_id}/enable-reinterview",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def enable_reinterview(
+    user_id: int,
+):
+    data = await service.reset_user_for_reinterview(user_id=user_id)
+    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+
