@@ -815,3 +815,43 @@ def reset_user_details(user_id: int) -> dict:
         raise exception
     finally:
         db_session.close()
+
+
+def reset_user_for_reinterview(user_id: int) -> dict:
+    """
+    Existing user ko dobara interview ke liye enable karta hai.
+    - is_submitted = False  (user form phir se fill kar sake)
+    - is_interview_submitted = False  (user interview phir de sake)
+    - is_reinterview = True  (flag: yeh returning user hai)
+    - reinterview_date = today  (Today's Papers me dikhega aaj)
+    """
+    from datetime import date as dt_date
+    db_session = SessionLocal()
+    try:
+        user_detail = (
+            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        )
+        if not user_detail:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User details not found. Cannot enable re-interview."
+            )
+
+        user_detail.is_submitted = False
+        user_detail.is_interview_submitted = False
+        user_detail.is_reinterview = True
+        user_detail.reinterview_date = dt_date.today()
+
+        db_session.commit()
+        return {
+            "message": "Re-interview enabled. User will appear in Today's Papers as RETURNING.",
+            "reinterview_date": str(dt_date.today()),
+        }
+    except HTTPException:
+        raise
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
+    finally:
+        db_session.close()
+

@@ -139,22 +139,22 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             >
               <Eye size={16} />
             </Button>
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
               title="Settings"
             >
               <Settings size={16} />
-            </Button>
-            <Button
+            </Button> */}
+            {/* <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
               title="Grading"
             >
               <GraduationCap size={16} />
-            </Button>
+            </Button> */}
             <Button
               variant="ghost"
               size="icon"

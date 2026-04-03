@@ -66,7 +66,9 @@ export const interviewAttemptsApi = {
     ),
 
   submitAttempt: (attemptId: number) =>
-    api.post<AttemptSummaryResponse>(`/user/interview-attempts/${attemptId}/submit`),
+    api.post<AttemptSummaryResponse>(
+      `/user/interview-attempts/${attemptId}/submit`,
+    ),
 
   // silentSuccess: triggered automatically by timer, not a user action
   autoSubmitAttempt: (attemptId: number) =>
@@ -77,5 +79,7 @@ export const interviewAttemptsApi = {
     ),
 
   getSummary: (attemptId: number) =>
-    api.get<AttemptSummaryResponse>(`/user/interview-attempts/${attemptId}/summary`),
+    api.get<AttemptSummaryResponse>(
+      `/user/interview-attempts/${attemptId}/summary`,
+    ),
 };

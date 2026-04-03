@@ -235,32 +235,38 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, date: str = None):
+def get_users_by_role(role: str, date: str = None, date_from: str = None, date_to: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func
+        from sqlalchemy import func, or_
 
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()
-        
+
+        # Date range support
+        range_from = dt_date.fromisoformat(date_from) if date_from else None
+        range_to = dt_date.fromisoformat(date_to) if date_to else None
+
         from app.papers.models import Paper
         from app.departments.models import Department
         from app.classifications.models import Classification as Cls
 
-        # Subquery or Join for assignments on target_date
         results = (
             db_session.query(
-                User, 
-                PaperAssignment, 
-                Paper.paper_name, 
-                Department.name, 
-                Cls.name, 
+                User,
+                PaperAssignment,
+                Paper.paper_name,
+                Department.name,
+                Cls.name,
                 InterviewAttempt.id,
-                UserDetail.is_submitted
+                UserDetail.is_submitted,
+                UserDetail.is_interview_submitted,
+                UserDetail.is_reinterview,
+                UserDetail.reinterview_date,
             )
             .outerjoin(
-                PaperAssignment, 
-                (User.id == PaperAssignment.user_id) & 
+                PaperAssignment,
+                (User.id == PaperAssignment.user_id) &
                 (PaperAssignment.assigned_date == target_date)
             )
             .outerjoin(Paper, PaperAssignment.paper_id == Paper.id)
@@ -274,12 +280,28 @@ def get_users_by_role(role: str, date: str = None):
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
         )
-        
-        if date:
-            results = results.filter(func.date(User.created_at) == date)
-            
+
+        # --- FILTERING LOGIC ---
+        if range_from and range_to:
+            # Date range mode: show users registered in range OR reinterview_date in range
+            results = results.filter(
+                or_(
+                    func.date(User.created_at).between(range_from, range_to),
+                    UserDetail.reinterview_date.between(range_from, range_to),
+                )
+            )
+        elif date:
+            # Single date mode (default: today):
+            # Show NEW users (registered today) OR RETURNING users (reinterview_date == today)
+            results = results.filter(
+                or_(
+                    func.date(User.created_at) == target_date,
+                    UserDetail.reinterview_date == target_date,
+                )
+            )
+
         results = results.order_by(User.id.desc()).all()
-        
+
         level_mapping = _get_level_mapping(db_session)
         return [
             {
@@ -293,6 +315,11 @@ def get_users_by_role(role: str, date: str = None):
                 "test_level_id": level_mapping.get(user.testlevel),
                 "is_active": user.is_active,
                 "is_details_submitted": is_details_submitted if is_details_submitted is not None else False,
+                "is_interview_submitted": is_interview_submitted if is_interview_submitted is not None else False,
+                "is_reinterview": is_reinterview if is_reinterview is not None else False,
+                "reinterview_date": reinterview_date.isoformat() if reinterview_date else None,
+                # user_type: "new" = aaj register hua, "returning" = pehle se hai, aaj reinterview
+                "user_type": "returning" if (is_reinterview and reinterview_date and reinterview_date == target_date) else "new",
                 "assignment": {
                     "is_assigned": assignment is not None,
                     "paper_id": assignment.paper_id if assignment else None,
@@ -305,8 +332,9 @@ def get_users_by_role(role: str, date: str = None):
                     "has_started": attempt_id is not None
                 } if assignment else None
             }
-            for user, assignment, paper_name, dept_name, level_name, attempt_id, is_details_submitted in results
+            for user, assignment, paper_name, dept_name, level_name, attempt_id, is_details_submitted, is_interview_submitted, is_reinterview, reinterview_date in results
         ]
+
     except Exception:
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
@@ -314,6 +342,9 @@ def get_users_by_role(role: str, date: str = None):
         )
     finally:
         db_session.close()
+
+
+
 
 
 def toggle_user_status(user_id: int):

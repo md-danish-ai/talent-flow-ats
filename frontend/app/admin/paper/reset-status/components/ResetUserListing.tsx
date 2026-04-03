@@ -10,52 +10,88 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { RefreshCw, Users, FileEdit } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Input } from "@components/ui-elements/Input";
 import { ResetConfirmModal } from "./ResetConfirmModal";
 import { ResetDetailsModal } from "./ResetDetailsModal";
+import { ReInterviewModal } from "./ReInterviewModal";
 import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Search, RotateCcw, SlidersHorizontal } from "lucide-react";
+import {
+  RefreshCw,
+  Search,
+  Settings2,
+  Trash2,
+  Users,
+  X,
+  FileEdit,
+  RotateCcw,
+} from "lucide-react";
+
 import { Typography } from "@components/ui-elements/Typography";
+import { getUsersByRole } from "@lib/api/auth";
+import { toast } from "@lib/toast";
+import { useEffect } from "react";
 
 interface ResetUserListingProps {
   initialData?: UserListResponse[];
 }
 
 export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [users, setUsers] = useState<UserListResponse[]>(initialData);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setUsers(initialData);
+  }, [initialData]);
+
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      const refreshedData = await getUsersByRole("user");
+      setUsers(refreshedData);
+      toast.success("List Refreshed");
+    } catch (error) {
+      console.error("Refresh failed:", error);
+      toast.error("Refresh failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
     null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  
+  const [isReInterviewModalOpen, setIsReInterviewModalOpen] = useState(false);
+
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const router = useRouter();
 
   // Filter logic
-  const filteredUsers = initialData.filter((user) => {
-    const searchMatch = 
+  const filteredUsers = users.filter((user) => {
+    const searchMatch =
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.mobile.includes(searchQuery) ||
-      (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase()));
+      (user.email &&
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const statusMatch = 
-      statusFilter === "all" || 
-      (statusFilter === "submitted" && user.assignment?.is_attempted) ||
-      (statusFilter === "inprogress" && !user.assignment?.is_attempted);
+    const statusMatch =
+      statusFilter === "all" ||
+      (statusFilter === "submitted" && user.is_interview_submitted) ||
+      (statusFilter === "inprogress" && !user.is_interview_submitted);
 
     return searchMatch && statusMatch;
   });
@@ -101,212 +137,238 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              title="Filter"
-            >
-              <SlidersHorizontal size={18} />
-            </Button>
-            <Button
-              variant="action"
-              size="rounded-icon"
-              animate="scale"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-              }}
-              title="Reset Filters"
-            >
-              <RotateCcw size={18} />
-            </Button>
+            <Tooltip content="Advanced Filters & Searching">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <Settings2 size={18} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Reload Candidate List">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={handleRefresh}
+                disabled={loading}
+              >
+                <RefreshCw
+                  size={18}
+                  className={loading ? "animate-spin" : ""}
+                />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
-        <div className={cn(
-          "flex-1 flex flex-col min-w-0",
-          isFilterOpen && "border-r border-border/50"
-        )}>
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
           <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
-                <TableRow>
-                  <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                    Candidate Profile
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                    Contact Info
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                    Status / Progress
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {!Array.isArray(paginatedUsers) ||
-                paginatedUsers.length === 0 ? (
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="h-48 text-center bg-muted/20"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                        <Users size={32} />
-                        <span className="text-sm font-medium italic">
-                          No candidates found for today&apos;s session.
-                        </span>
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Candidate Profile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Contact Info
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Status / Progress
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Action
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  paginatedUsers.map((row, idx) => (
-                    <TableRow
-                      key={row.id}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
-                    >
-                      <TableCell className="font-medium text-center text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
-                        {(currentPage - 1) * pageSize + idx + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">
-                            {row.username || "Unnamed Candidate"}
+                </TableHeader>
+                <TableBody>
+                  {!Array.isArray(paginatedUsers) ||
+                  paginatedUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="h-48 text-center bg-muted/20"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-2 opacity-50">
+                          <Users size={32} />
+                          <span className="text-sm font-medium italic">
+                            No candidates found for today&apos;s session.
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60 italic font-medium -mt-1 opacity-70">
-                            ID: #{row.id}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5 text-xs text-foreground/70">
-                            <span className="opacity-70 group-hover:scale-110 transition-transform">
-                              📱
-                            </span>
-                            <span className="font-bold text-slate-700 dark:text-slate-300">
-                              {row.mobile}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
-                            <span className="opacity-70 group-hover:scale-110 transition-transform">
-                              ✉️
-                            </span>
-                            <span className="opacity-80">
-                              {row.email || "-"}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                       {row.assignment?.is_attempted ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <Badge
-                              color="success"
-                              variant="outline"
-                              className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center"
-                            >
-                              ✓ Submitted
-                            </Badge>
-                            <span className="text-[9px] text-muted-foreground italic opacity-60">
-                              Interview process complete.
-                            </span>
-                          </div>
-                        ) : row.assignment?.has_started ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <Badge
-                              color="warning"
-                              variant="outline"
-                              className="text-orange-500 border-orange-500/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
-                            >
-                              In Progress
-                            </Badge>
-                            <span className="text-[9px] text-muted-foreground italic opacity-60">
-                              Interview session active.
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-1">
-                            <Badge
-                              variant="outline"
-                              className="text-slate-500 border-slate-500/30 dark:text-slate-400 dark:border-slate-400/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
-                            >
-                              Ready
-                            </Badge>
-                            <span className="text-[9px] text-muted-foreground italic opacity-60">
-                              Awaiting first login.
-                            </span>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button
-                            variant="primary"
-                            color="error"
-                            className="bg-red-50 text-red-600 hover:bg-red-100 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                            animate="scale"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedUser(row);
-                              setIsModalOpen(true);
-                            }}
-                            title="Reset Interview Attempt"
-                          >
-                            <RefreshCw
-                              size={14}
-                              className="group-hover:rotate-180 transition-transform duration-500"
-                            />
-                            Reset Status
-                          </Button>
-
-                          {row.is_details_submitted && (
-                            <Button
-                              variant="primary"
-                              color="warning"
-                              className="bg-orange-50 text-orange-600 hover:bg-orange-100 border-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                              animate="scale"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUser(row);
-                                setIsDetailsModalOpen(true);
-                              }}
-                              title="Enable user to edit their form"
-                            >
-                              <FileEdit size={14} />
-                              Reset Form
-                            </Button>
-                          )}
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    paginatedUsers.map((row, idx) => (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
+                      >
+                        <TableCell className="font-medium text-center align-middle">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          <div className="flex flex-col justify-center">
+                            <span className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">
+                              {row.username || "Unnamed Candidate"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60 italic font-medium -mt-1 opacity-70">
+                              ID: #{row.id}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          <div className="flex flex-col justify-center gap-0.5">
+                            <div className="flex items-center gap-1.5 text-xs text-foreground/70">
+                              <span className="opacity-70 group-hover:scale-110 transition-transform">
+                                📱
+                              </span>
+                              <span className="font-bold text-slate-700 dark:text-slate-300">
+                                {row.mobile}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
+                              <span className="opacity-70 group-hover:scale-110 transition-transform">
+                                ✉️
+                              </span>
+                              <span className="opacity-80">
+                                {row.email || "-"}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center p-0 align-middle">
+                          <div className="flex flex-col items-center justify-center min-h-[80px] py-3">
+                            {row.is_interview_submitted ||
+                            row.assignment?.is_attempted ? (
+                              <Badge
+                                color="success"
+                                variant="outline"
+                                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center"
+                              >
+                                ✓ Submitted
+                              </Badge>
+                            ) : row.assignment?.has_started ? (
+                              <Badge
+                                color="warning"
+                                variant="outline"
+                                className="text-orange-500 border-orange-500/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
+                              >
+                                In Progress
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-slate-500 border-slate-500/30 dark:text-slate-400 dark:border-slate-400/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
+                              >
+                                Ready
+                              </Badge>
+                            )}
+                            <span className="text-[9px] text-muted-foreground italic opacity-60 mt-1 uppercase tracking-tighter">
+                              {row.is_interview_submitted ||
+                              row.assignment?.is_attempted
+                                ? "Interview process complete."
+                                : row.assignment?.has_started
+                                  ? "Interview session active."
+                                  : row.is_details_submitted
+                                    ? "Form Submitted"
+                                    : "Awaiting first login."}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-center p-0 align-middle">
+                          <div className="flex items-center justify-center gap-1.5 min-h-[80px] py-3">
+                            {row.is_details_submitted && (
+                              <Tooltip content="Enable candidate to edit personal details">
+                                <Button
+                                  variant="primary"
+                                  color="warning"
+                                  className="bg-orange-50 text-orange-600 hover:bg-orange-100 border-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
+                                  animate="scale"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(row);
+                                    setIsDetailsModalOpen(true);
+                                  }}
+                                >
+                                  <FileEdit size={14} />
+                                  Reset Details
+                                </Button>
+                              </Tooltip>
+                            )}
+
+                            <Tooltip content="Delete current attempt and allow re-start">
+                              <Button
+                                variant="primary"
+                                color="error"
+                                className="bg-red-50 text-red-600 hover:bg-red-100 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
+                                animate="scale"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsModalOpen(true);
+                                }}
+                              >
+                                <RefreshCw
+                                  size={14}
+                                  className="group-hover:rotate-180 transition-transform duration-500"
+                                />
+                                Reset Current Interview
+                              </Button>
+                            </Tooltip>
+
+                            {row.is_reinterview !== true && (
+                              <Tooltip content="Assign a fresh session (Returning Candidate)">
+                                <Button
+                                  variant="primary"
+                                  color="secondary"
+                                  className="bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
+                                  animate="scale"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(row);
+                                    setIsReInterviewModalOpen(true);
+                                  }}
+                                >
+                                  <RotateCcw size={14} />
+                                  Re-Interview
+                                </Button>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
-        {totalItems > 0 && (
-          <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
-          </div>
-        )}
+          {totalItems > 0 && (
+            <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
+          )}
         </div>
 
         {/* Filter Drawer - Now Inside MainCard for Side-by-Side Layout */}
@@ -410,7 +472,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
               <RotateCcw size={14} />
               Reset All
             </Button>
-            
+
             <Button
               className="w-full h-11 font-bold uppercase tracking-widest text-[10px]"
               onClick={() => setIsFilterOpen(false)}
@@ -440,6 +502,18 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
           onSuccess={() => router.refresh()}
           onClose={() => {
             setIsDetailsModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+
+      {selectedUser && (
+        <ReInterviewModal
+          isOpen={isReInterviewModalOpen}
+          user={selectedUser}
+          onSuccess={() => router.refresh()}
+          onClose={() => {
+            setIsReInterviewModalOpen(false);
             setSelectedUser(null);
           }}
         />
