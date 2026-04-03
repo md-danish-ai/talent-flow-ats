@@ -2,13 +2,11 @@
 import { memo, useState, useMemo, useCallback } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
-import { ResultCard } from "@components/ui-cards/ResultCard";
 import {
   Zap,
   Target,
   AlertTriangle,
   Clock,
-  ShieldCheck,
   Trophy,
 } from "lucide-react";
 
@@ -117,14 +115,9 @@ export const TypingTestView = memo(function TypingTestView({
       };
 
       // Check for completion
-      if (val.length === passage.length) {
+      if (val.length >= passage.length) {
         setIsFinished(true);
         setEndTime(now);
-
-        console.log("Typing Test Completed!", {
-          ...currentStats,
-          raw_text: val,
-        });
       }
 
       // Store as JSON
@@ -166,89 +159,6 @@ export const TypingTestView = memo(function TypingTestView({
       );
     });
   }, [passage, typedText, isFinished]);
-
-  if (isFinished) {
-    return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-brand-primary/5 rounded-3xl border border-brand-primary/10 mb-2">
-          <div className="w-16 h-16 rounded-full bg-brand-primary/20 flex items-center justify-center mb-4 text-brand-primary animate-bounce">
-            <Trophy size={32} />
-          </div>
-          <Typography
-            variant="h3"
-            weight="black"
-            className="text-brand-primary uppercase tracking-tight"
-          >
-            Typing Test Completed
-          </Typography>
-          <Typography variant="body3" className="text-muted-foreground mt-2">
-            Great job! Here is how you performed in this challenge.
-          </Typography>
-        </div>
-
-        <ResultCard
-          title="Performance Analysis"
-          subtitle={
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1">
-                <ShieldCheck size={14} className="text-brand-success" />
-                Verified Test Result
-              </span>
-            </div>
-          }
-          status="submitted"
-          avatarContent={<Trophy size={32} />}
-          identityIcon={Zap}
-          actionHref="#"
-          actionLabel="Next Question"
-          actionIcon={Zap}
-          metrics={[
-            {
-              label: "Net Speed",
-              value: `${stats.wpm} WPM`,
-              icon: Zap,
-              color: "text-brand-primary",
-            },
-            {
-              label: "Accuracy",
-              value: `${stats.accuracy}%`,
-              icon: Target,
-              color:
-                stats.accuracy > 90 ? "text-brand-success" : "text-brand-warning",
-            },
-            {
-              label: "Total Errors",
-              value: stats.errors,
-              icon: AlertTriangle,
-              color: stats.errors === 0 ? "text-brand-success" : "text-rose-500",
-            },
-            {
-              label: "Time Taken",
-              value: `${stats.timeTaken}s`,
-              icon: Clock,
-              color: "text-brand-secondary",
-            },
-          ]}
-        />
-
-        <div className="p-6 rounded-2xl border border-border bg-muted/10">
-          <Typography
-            variant="body4"
-            weight="bold"
-            className="uppercase tracking-widest text-muted-foreground mb-4 block"
-          >
-            Typed Summary
-          </Typography>
-          <Typography
-            variant="body5"
-            className="font-mono text-muted-foreground leading-relaxed italic whitespace-pre-wrap"
-          >
-            {typedText}
-          </Typography>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 pt-2 text-foreground">
@@ -351,37 +261,69 @@ export const TypingTestView = memo(function TypingTestView({
       </div>
 
       {/* Input Area */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center justify-between px-2">
+      <div className="space-y-4 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 gap-2">
           <div className="flex items-center gap-2">
             <Typography
               variant="body4"
-              className="font-bold text-brand-primary uppercase tracking-widest text-[11px]"
+              className={`font-black uppercase tracking-widest text-[11px] ${isFinished ? "text-emerald-600" : "text-brand-primary"}`}
             >
-              Start Typing Below
+              {isFinished ? "✓ Typing Completed" : "Start Typing Below"}
             </Typography>
-            <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
+            {!isFinished && <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />}
           </div>
           <div className="flex items-center gap-3">
-            <div className="h-4 w-[1px] bg-border" />
             <Typography
               variant="body5"
-              className="font-mono text-[11px] text-muted-foreground"
+              className="font-mono text-[11px] text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md"
             >
               {typedText.length} / {passage.length} characters
             </Typography>
           </div>
         </div>
+
         <div className="relative group">
-          <div className="absolute inset-0 bg-brand-primary/5 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+          <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 transition-opacity ${isFinished ? "bg-emerald-500/10 group-focus-within:opacity-100" : "bg-brand-primary/5 group-focus-within:opacity-100"}`} />
           <Textarea
             rows={6}
-            placeholder="Focus and start typing here..."
+            placeholder={isFinished ? "Test completed. Please click 'Save & Next' to continue." : "Focus and start typing here..."}
             value={typedText}
             onChange={handleInputChange}
-            className="relative rounded-2xl font-mono text-lg leading-relaxed bg-muted/10 border-2 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10 transition-all p-6 shadow-inner"
+            disabled={isFinished}
+            className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${
+              isFinished 
+                ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-900/40 cursor-not-allowed" 
+                : "bg-muted/10 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10"
+            }`}
           />
         </div>
+
+        {/* Mandatory Note */}
+        <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-700">
+          <div className="mt-0.5 p-1 rounded-md bg-amber-500/10 text-amber-600">
+            <Clock size={14} />
+          </div>
+          <Typography variant="body5" className="text-amber-800/80 font-medium leading-relaxed italic">
+            <strong>Note:</strong> Type Complete Paragraph and Click on <span className="font-bold underline">&quot;Save &amp; Next&quot;</span>. You will not be able to come back on this section.
+          </Typography>
+        </div>
+
+        {/* Completion Success Message */}
+        {isFinished && (
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 animate-in zoom-in duration-500">
+            <div className="p-2 rounded-full bg-emerald-500/20">
+              <Trophy size={20} />
+            </div>
+            <div>
+              <Typography variant="body4" weight="black" className="uppercase tracking-wide leading-none">
+                Typing Finished Successfully!
+              </Typography>
+              <Typography variant="body5" className="mt-1 opacity-80">
+                Great job! Your performance data has been logged. Please click &quot;Save &amp; Next&quot; to proceed with the interview.
+              </Typography>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

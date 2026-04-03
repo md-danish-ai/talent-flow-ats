@@ -330,24 +330,22 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                               </Button>
                             </Tooltip>
 
-                            {row.is_reinterview !== true && (
-                              <Tooltip content="Assign a fresh session (Returning Candidate)">
-                                <Button
-                                  variant="primary"
-                                  color="secondary"
-                                  className="bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                                  animate="scale"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedUser(row);
-                                    setIsReInterviewModalOpen(true);
-                                  }}
-                                >
-                                  <RotateCcw size={14} />
-                                  Re-Interview
-                                </Button>
-                              </Tooltip>
-                            )}
+                            <Tooltip content="Assign a fresh session (Returning Candidate)">
+                              <Button
+                                variant="primary"
+                                color="secondary"
+                                className="bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
+                                animate="scale"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsReInterviewModalOpen(true);
+                                }}
+                              >
+                                <RotateCcw size={14} />
+                                Re-Interview
+                              </Button>
+                            </Tooltip>
                           </div>
                         </TableCell>
                       </TableRow>

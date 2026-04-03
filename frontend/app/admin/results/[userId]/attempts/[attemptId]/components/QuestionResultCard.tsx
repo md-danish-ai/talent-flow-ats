@@ -259,6 +259,7 @@ export const QuestionResultCard = ({
                     : "EXPECTED ANSWER"}
                 </Typography>
                 <Typography
+                  as="div"
                   variant="body4"
                   className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-xs"
                 >
@@ -312,6 +313,7 @@ export const QuestionResultCard = ({
                     : "CANDIDATE RESPONSE"}
                 </Typography>
                 <Typography
+                  as="div"
                   variant="body4"
                   className="font-mono leading-relaxed whitespace-pre-wrap select-all text-xs"
                 >
