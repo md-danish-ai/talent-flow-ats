@@ -397,92 +397,109 @@ export const QuestionResultCard = ({
 
         {/* Evaluation Sidebar Part */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="flex items-center gap-3">
-            <Typography
-              variant="body5"
-              className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
-            >
-              Evaluation
-            </Typography>
-            <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
-          </div>
+          {answer.question_type !== "MULTIPLE_CHOICE" &&
+            answer.question_type !== "IMAGE_MULTIPLE_CHOICE" && (
+              <>
+                <div className="flex items-center gap-3">
+                  <Typography
+                    variant="body5"
+                    className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
+                  >
+                    Evaluation
+                  </Typography>
+                  <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
+                </div>
 
-          <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
-            <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
-              <Typography
-                variant="body5"
-                className="font-black text-muted-foreground/60 uppercase tracking-widest"
-              >
-                SYSTEM SCORE
-              </Typography>
-              <div className="flex items-baseline gap-2">
-                <Typography
-                  variant="h2"
-                  className="font-black tracking-tighter"
-                >
-                  {answer.marks_obtained}
-                </Typography>
-                <Typography
-                  variant="h4"
-                  className="text-muted-foreground/40 font-black"
-                >
-                  / {answer.max_marks}
-                </Typography>
-              </div>
-              <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${(answer.marks_obtained / (answer.max_marks || 1)) * 100}%`,
-                  }}
-                  className={`h-full ${answer.status === "correct" ? "bg-emerald-500" : "bg-rose-500"}`}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Typography
-                  variant="body5"
-                  className="font-black text-muted-foreground/60 uppercase tracking-widest"
-                >
-                  MANUAL OVERRIDE
-                </Typography>
-                <PencilLine size={14} className="text-muted-foreground/40" />
-              </div>
-              <div className="space-y-3">
-                <Input
-                  type="number"
-                  max={answer.max_marks}
-                  value={manualMarksValue}
-                  onChange={(e) => onManualMarksChange(e.target.value)}
-                  startIcon={<PencilLine size={16} className="opacity-40" />}
-                  placeholder={`Score (0-${answer.max_marks})`}
-                  className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white shadow-inner"
-                />
-                <Button
-                  variant="outline"
-                  className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
-                  onClick={onManualMarksApply}
-                >
-                  Adjust Marks
-                </Button>
-
-                <AnimatePresence>
-                  {isManualMarksApplied && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
+                <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
+                  <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
+                    <Typography
+                      variant="body5"
+                      className="font-black text-muted-foreground/60 uppercase tracking-widest"
                     >
-                      <FileCheck2 size={12} />
-                      MARKS APPLIED: {manualMarksValue}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
+                      SYSTEM SCORE
+                    </Typography>
+                    <div className="flex items-baseline gap-2">
+                      <Typography
+                        variant="h2"
+                        className="font-black tracking-tighter"
+                      >
+                        {answer.marks_obtained}
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        className="text-muted-foreground/40 font-black"
+                      >
+                        / {answer.max_marks}
+                      </Typography>
+                    </div>
+                    <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${(answer.marks_obtained / (answer.max_marks || 1)) * 100}%`,
+                        }}
+                        className={`h-full ${answer.status === "correct" ? "bg-emerald-500" : "bg-rose-500"}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Typography
+                        variant="body5"
+                        className="font-black text-muted-foreground/60 uppercase tracking-widest"
+                      >
+                        MANUAL OVERRIDE
+                      </Typography>
+                      <PencilLine
+                        size={14}
+                        className="text-muted-foreground/40"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={answer.max_marks}
+                        value={manualMarksValue}
+                        onChange={(e) => onManualMarksChange(e.target.value)}
+                        placeholder={`Score (0-${answer.max_marks})`}
+                        className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white shadow-inner"
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
+                        onClick={onManualMarksApply}
+                      >
+                        Adjust Marks
+                      </Button>
+
+                      <AnimatePresence>
+                        {isManualMarksApplied && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
+                          >
+                            <FileCheck2 size={12} />
+                            MARKS APPLIED: {manualMarksValue}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <Typography
+                        variant="body5"
+                        className="text-center text-muted-foreground/40 italic"
+                      >
+                        Manual override will skip system calculations.
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
         </div>
       </div>
 
