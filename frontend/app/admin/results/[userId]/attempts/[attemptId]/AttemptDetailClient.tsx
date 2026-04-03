@@ -11,7 +11,6 @@ import {
   Target,
   Activity,
   User,
-  History,
   FileCheck2,
 } from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -383,33 +382,109 @@ export function AttemptDetailClient({
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
-                <div className="rounded-2xl border border-black/[0.03] bg-black/[0.02] p-5">
-                  <Typography
-                    variant="body5"
-                    className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
-                  >
-                    CANDIDATE RESPONSE
-                  </Typography>
-                  <Typography
-                    variant="body3"
-                    className="font-medium leading-relaxed"
-                  >
-                    {answer.user_answer || "No response recorded."}
-                  </Typography>
-                </div>
-                <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.03] p-5">
+              <div className="grid grid-cols-1 gap-6">
+                {answer.typing_stats && (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-1000">
+                    {[
+                      {
+                        label: "Speed",
+                        value: `${answer.typing_stats.wpm} WPM`,
+                        bg: "bg-brand-primary/5",
+                        color: "text-brand-primary",
+                      },
+                      {
+                        label: "Accuracy",
+                        value: `${answer.typing_stats.accuracy}%`,
+                        bg: "bg-emerald-500/5",
+                        color: "text-emerald-600",
+                      },
+                      {
+                        label: "Errors",
+                        value: answer.typing_stats.errors,
+                        bg: "bg-rose-500/5",
+                        color: "text-rose-600",
+                      },
+                      {
+                        label: "Duration",
+                        value: `${Math.round(answer.typing_stats.time_taken)}s`,
+                        bg: "bg-amber-500/5",
+                        color: "text-amber-600",
+                      },
+                    ].map((stat, i) => (
+                      <div
+                        key={i}
+                        className={`p-4 rounded-2xl border border-border/50 ${stat.bg} transition-all hover:scale-[1.05]`}
+                      >
+                        <Typography
+                          variant="body5"
+                          className="font-black text-muted-foreground/60 uppercase tracking-widest text-[9px] mb-1"
+                        >
+                          {stat.label}
+                        </Typography>
+                        <Typography
+                          variant="body3"
+                          className={`font-black ${stat.color} tracking-tight`}
+                        >
+                          {stat.value}
+                        </Typography>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500">
                   <Typography
                     variant="body5"
                     className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
                   >
-                    EXPECTED ANSWER
+                    {answer.question_type === "TYPING_TEST"
+                      ? "SOURCE PASSAGE"
+                      : "EXPECTED ANSWER"}
                   </Typography>
                   <Typography
-                    variant="body3"
-                    className="font-medium leading-relaxed"
+                    variant="body4"
+                    className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-xs"
                   >
-                    {answer.correct_answer || "N/A"}
+                    {answer.correct_answer || answer.passage || "N/A"}
+                  </Typography>
+                </div>
+                <div className="rounded-2xl border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <Typography
+                    variant="body5"
+                    className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
+                  >
+                    {answer.question_type === "TYPING_TEST"
+                      ? "TYPED TEXT (ERROR TRACKING)"
+                      : "CANDIDATE RESPONSE"}
+                  </Typography>
+                  <Typography
+                    variant="body4"
+                    className="font-mono leading-relaxed whitespace-pre-wrap select-all text-xs"
+                  >
+                    {answer.question_type === "TYPING_TEST" &&
+                    answer.user_answer &&
+                    (answer.correct_answer || answer.passage) ? (
+                      (answer.user_answer as string)
+                        .split("")
+                        .map((char, i) => {
+                          const source =
+                            answer.correct_answer || (answer.passage as string);
+                          const isCorrect = char === source[i];
+                          return (
+                            <span
+                              key={i}
+                              className={
+                                isCorrect
+                                  ? "text-foreground"
+                                  : "text-rose-600 bg-rose-500/10 font-black underline decoration-rose-500/50 underline-offset-[3px]"
+                              }
+                            >
+                              {char}
+                            </span>
+                          );
+                        })
+                    ) : (
+                      answer.user_answer || "No response recorded."
+                    )}
                   </Typography>
                 </div>
               </div>

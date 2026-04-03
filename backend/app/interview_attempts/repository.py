@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+import json
 import re
+import typing
 from typing import Any
 
 from fastapi import HTTPException
@@ -582,6 +584,29 @@ def get_admin_user_attempts(user_id: int) -> dict:
             .all()
         )
 
+        attempt_ids = [a.id for a in attempts]
+
+        # Fetch typing test stats for summary
+        typing_responses = (
+            db_session.query(InterviewAttemptResponse)
+            .join(Question, Question.id == InterviewAttemptResponse.question_id)
+            .filter(
+                InterviewAttemptResponse.attempt_id.in_(attempt_ids),
+                Question.question_type == "TYPING_TEST",
+                InterviewAttemptResponse.is_attempted.is_(True),
+            )
+            .all()
+        )
+        typing_stats_map = {}
+        for row in typing_responses:
+            if not row.answer_text or not row.answer_text.startswith("{"):
+                continue
+            try:
+                parsed = json.loads(row.answer_text)
+                typing_stats_map[row.attempt_id] = parsed.get("stats")
+            except:
+                continue
+
         return {
             "user": {
                 "id": user.id,
@@ -604,6 +629,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                     if attempt.obtained_marks is not None
                     else None,
                     "is_auto_submitted": attempt.is_auto_submitted,
+                    "typing_stats": typing_stats_map.get(attempt.id),
                 }
                 for attempt in attempts
             ],
@@ -681,6 +707,18 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
 
             total_marks_obtained += marks_obtained
 
+            # Enhanced parsing for special types like Typing Test
+            user_answer_display = answer_row.answer_text
+            typing_stats = None
+            
+            if question.question_type == "TYPING_TEST" and user_answer_text.startswith("{"):
+                try:
+                    parsed = json.loads(user_answer_text)
+                    user_answer_display = parsed.get("typed_text", user_answer_text)
+                    typing_stats = parsed.get("stats")
+                except:
+                    pass
+
             detailed_answers.append(
                 {
                     "question_id": question.id,
@@ -694,7 +732,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "image_url": question.image_url,
                     "options": question.options,
                     "max_marks": float(question.marks or 0),
-                    "user_answer": answer_row.answer_text,
+                    "user_answer": user_answer_display,
+                    "typing_stats": typing_stats,
                     "correct_answer": correct_answer_text or None,
                     "status": status,
                     "marks_obtained": marks_obtained,

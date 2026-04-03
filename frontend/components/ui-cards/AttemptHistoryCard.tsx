@@ -28,6 +28,12 @@ interface AttemptHistoryCardProps {
   unattemptedCount: number;
   userId: number | string;
   statusBadge: React.ReactNode;
+  typingStats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export const AttemptHistoryCard = ({
@@ -44,6 +50,7 @@ export const AttemptHistoryCard = ({
   unattemptedCount,
   userId,
   statusBadge,
+  typingStats,
 }: AttemptHistoryCardProps) => {
   // Calculate Duration
   const getDuration = () => {
@@ -187,6 +194,38 @@ export const AttemptHistoryCard = ({
           </div>
         </div>
       </div>
+
+      {/* Typing Stats Preview (if available) */}
+      {typingStats && (
+        <div className="flex flex-wrap items-center gap-4 px-4 py-2 bg-brand-primary/5 rounded-xl border border-brand-primary/10 -mt-2 animate-in fade-in slide-in-from-left-2 duration-700">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary opacity-60">
+              Typing Speed
+            </span>
+            <Typography variant="body4" className="font-black text-brand-primary">
+              {typingStats.wpm} WPM
+            </Typography>
+          </div>
+          <div className="h-3 w-px bg-brand-primary/20" />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 opacity-60">
+              Accuracy
+            </span>
+            <Typography variant="body4" className="font-black text-emerald-600">
+              {typingStats.accuracy}%
+            </Typography>
+          </div>
+          <div className="h-3 w-px bg-brand-primary/20" />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 opacity-60">
+              Time
+            </span>
+            <Typography variant="body4" className="font-black text-amber-600">
+              {Math.round(typingStats.time_taken)}s
+            </Typography>
+          </div>
+        </div>
+      )}
 
       {/* Performance Footer */}
       <div className="flex flex-wrap items-center justify-between rounded-xl bg-muted/30 p-4 ring-1 ring-border/50 gap-4">

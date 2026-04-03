@@ -9,6 +9,12 @@ export interface AdminUserLatestAttempt {
   attempted_count: number;
   unattempted_count: number;
   obtained_marks?: number | null;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserResultListItem {
@@ -37,6 +43,12 @@ export interface AdminUserResultAnswer {
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserResultDetail {
@@ -80,6 +92,12 @@ export interface AdminUserAttemptHistoryItem {
   unattempted_count: number;
   obtained_marks?: number | null;
   is_auto_submitted: boolean;
+  typing_stats?: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    time_taken: number;
+  } | null;
 }
 
 export interface AdminUserAttemptsResponse {
