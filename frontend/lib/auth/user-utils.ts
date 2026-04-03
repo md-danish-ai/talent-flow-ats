@@ -11,6 +11,7 @@ export interface CurrentUser {
   mobile?: string;
   created_at?: string;
   is_submitted: boolean;
+  is_interview_submitted: boolean;
   recruitment_details?: Record<string, unknown> | null;
 }
 

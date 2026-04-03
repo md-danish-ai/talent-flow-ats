@@ -93,7 +93,9 @@ export interface UserListResponse {
     test_level_id: number | null;
     test_level_name?: string | null;
     is_attempted: boolean;
+    has_started: boolean;
   } | null;
+  is_details_submitted: boolean;
 }
 
 // GET /auth/get-all-users?role={role}&date={date} - Fetch users by role (e.g., admin, user)
@@ -108,7 +110,7 @@ export async function getUsersByRole(
 
   // Remove date from options so it doesn't get passed to api.get as config if not needed
   const apiOptions = options ? { ...options } : undefined;
-  if (apiOptions && 'date' in apiOptions) {
+  if (apiOptions && "date" in apiOptions) {
     delete (apiOptions as { date?: string }).date;
   }
 

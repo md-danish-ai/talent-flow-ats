@@ -23,12 +23,21 @@ export const TypingTestView = memo(function TypingTestView({
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
           <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            <Typography variant="body5" weight="black" className="uppercase tracking-widest mr-1">
+            <Typography
+              variant="body5"
+              weight="black"
+              className="uppercase tracking-widest mr-1"
+            >
               Instructions
             </Typography>
           </div>
           <div className="p-5">
-            <Typography variant="body2" weight="semibold" color="text-foreground" className="leading-relaxed tracking-tight">
+            <Typography
+              variant="body2"
+              weight="semibold"
+              color="text-foreground"
+              className="leading-relaxed tracking-tight"
+            >
               {questionText}
             </Typography>
           </div>
@@ -38,12 +47,22 @@ export const TypingTestView = memo(function TypingTestView({
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
           <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-primary" />
-            <Typography variant="body5" weight="black" className="uppercase tracking-widest mr-1">
+            <Typography
+              variant="body5"
+              weight="black"
+              className="uppercase tracking-widest mr-1"
+            >
               Typing Source
             </Typography>
           </div>
           <div className="p-7">
-            <Typography variant="body2" color="text-foreground/90" weight="medium" italic className="font-mono leading-relaxed select-none antialiased tracking-wide whitespace-pre-wrap">
+            <Typography
+              variant="body2"
+              color="text-foreground/90"
+              weight="medium"
+              italic
+              className="font-mono leading-relaxed select-none antialiased tracking-wide whitespace-pre-wrap"
+            >
               {passage}
             </Typography>
           </div>

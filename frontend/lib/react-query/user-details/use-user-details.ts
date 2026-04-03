@@ -29,7 +29,10 @@ export function useUserDetails() {
         const apiError = error as ApiError;
         // If 404 or other error, return empty state if it's a new user
         if (apiError?.status === 404) {
-          return { is_submitted: false } as UserDetails;
+          return {
+            is_submitted: false,
+            is_interview_submitted: false,
+          } as UserDetails;
         }
         throw error;
       }

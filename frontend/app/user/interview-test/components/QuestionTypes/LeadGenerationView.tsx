@@ -15,13 +15,15 @@ export const LeadGenerationView = memo(function LeadGenerationView({
   currentAnswer,
   onChangeAnswer,
 }: LeadGenerationViewProps) {
-  const [fieldAnswers, setFieldAnswers] = useState<Record<string, string>>(() => {
-    try {
-      return currentAnswer ? JSON.parse(currentAnswer) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [fieldAnswers, setFieldAnswers] = useState<Record<string, string>>(
+    () => {
+      try {
+        return currentAnswer ? JSON.parse(currentAnswer) : {};
+      } catch {
+        return {};
+      }
+    },
+  );
 
   const handleFieldChange = (key: string, value: string) => {
     const updated = { ...fieldAnswers, [key]: value };
@@ -34,26 +36,54 @@ export const LeadGenerationView = memo(function LeadGenerationView({
       title: "Candidate Info",
       icon: <UserIcon className="w-4 h-4 text-brand-primary" />,
       fields: [
-        { key: "contact_name", label: "Full Name", placeholder: "e.g. John Doe" },
-        { key: "designation", label: "Current Role", placeholder: "e.g. Manager" },
+        {
+          key: "contact_name",
+          label: "Full Name",
+          placeholder: "e.g. John Doe",
+        },
+        {
+          key: "designation",
+          label: "Current Role",
+          placeholder: "e.g. Manager",
+        },
       ],
     },
     {
       title: "Professional Details",
       icon: <Building2 className="w-4 h-4 text-brand-primary" />,
       fields: [
-        { key: "company_name", label: "Company", placeholder: "e.g. Acme Corp" },
-        { key: "website", label: "Website", placeholder: "e.g. https://acme.com" },
-        { key: "linkedin_url", label: "LinkedIn URL", placeholder: "e.g. linkedin.com/johndoe" },
+        {
+          key: "company_name",
+          label: "Company",
+          placeholder: "e.g. Acme Corp",
+        },
+        {
+          key: "website",
+          label: "Website",
+          placeholder: "e.g. https://acme.com",
+        },
+        {
+          key: "linkedin_url",
+          label: "LinkedIn URL",
+          placeholder: "e.g. linkedin.com/johndoe",
+        },
       ],
     },
     {
       title: "Contact Details",
       icon: <Mail className="w-4 h-4 text-brand-primary" />,
       fields: [
-        { key: "email", label: "Work Email", placeholder: "e.g. john@acme.com" },
+        {
+          key: "email",
+          label: "Work Email",
+          placeholder: "e.g. john@acme.com",
+        },
         { key: "phone", label: "Phone", placeholder: "e.g. +1 123-456-7890" },
-        { key: "address", label: "Location", placeholder: "e.g. Bangalore, India" },
+        {
+          key: "address",
+          label: "Location",
+          placeholder: "e.g. Bangalore, India",
+        },
       ],
     },
   ];
@@ -86,12 +116,21 @@ export const LeadGenerationView = memo(function LeadGenerationView({
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
           <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
-            <Typography variant="body5" weight="black" className="uppercase tracking-widest mr-1">
+            <Typography
+              variant="body5"
+              weight="black"
+              className="uppercase tracking-widest mr-1"
+            >
               Target Source / URL
             </Typography>
           </div>
           <div className="p-5">
-            <Typography variant="body2" weight="semibold" color="text-foreground" className="leading-relaxed tracking-tight break-all">
+            <Typography
+              variant="body2"
+              weight="semibold"
+              color="text-foreground"
+              className="leading-relaxed tracking-tight break-all"
+            >
               {questionText}
             </Typography>
           </div>

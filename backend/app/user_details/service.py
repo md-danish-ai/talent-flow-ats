@@ -100,6 +100,7 @@ def get_user_details(user_id: int):
 
         return {
             "is_submitted": details.is_submitted,
+            "is_interview_submitted": details.is_interview_submitted,
             "username": user.username,
             "personalDetails": details.personal_details,
             "familyDetails": details.family_details,

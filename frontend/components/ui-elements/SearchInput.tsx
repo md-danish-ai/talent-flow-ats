@@ -6,11 +6,15 @@ import { cn } from "@lib/utils";
 interface SearchInputProps {
   className?: string;
   placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({
   className,
   placeholder = "Search anything...",
+  value,
+  onChange,
 }) => {
   return (
     <div
@@ -37,6 +41,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       <input
         type="text"
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         suppressHydrationWarning
         className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:bg-card focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm transition-all shadow-sm"
       />

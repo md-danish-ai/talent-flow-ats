@@ -365,11 +365,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
 
         <div className="mt-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 px-1">
-            <Typography
-              variant="h4"
-              weight="bold"
-              className="text-slate-800 dark:text-slate-200"
-            >
+            <Typography variant="h4" weight="bold" className="text-foreground">
               Set Required type of questions:
             </Typography>
             <div className="flex items-center gap-4">
@@ -377,7 +373,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                 <Typography
                   variant="body4"
                   weight="bold"
-                  className="text-slate-500 uppercase tracking-widest text-[11px]"
+                  className="text-muted-foreground uppercase tracking-widest text-[11px]"
                 >
                   Total Time :
                 </Typography>
@@ -394,7 +390,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                 <Typography
                   variant="body4"
                   weight="bold"
-                  className="text-slate-500 uppercase tracking-widest text-[11px]"
+                  className="text-muted-foreground uppercase tracking-widest text-[11px]"
                 >
                   Total Marks :
                 </Typography>
@@ -449,7 +445,7 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                           config.is_selected ? "bg-brand-primary/5" : ""
                         }
                       >
-                        <TableCell className="font-bold text-slate-700">
+                        <TableCell className="font-bold text-foreground/90">
                           {config.subject_name}
                         </TableCell>
                         <TableCell className="text-center">

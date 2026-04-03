@@ -25,6 +25,7 @@ class UserDetail(Base):
     other_details = Column(JSONB, nullable=True)
 
     is_submitted = Column(Boolean, server_default="false", nullable=False)
+    is_interview_submitted = Column(Boolean, server_default="false", nullable=False)
 
     updated_at = Column(
         TIMESTAMP,

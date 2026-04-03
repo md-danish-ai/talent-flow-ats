@@ -29,40 +29,40 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
       </div>
 
       <div className="space-y-3">
-      {(options || []).map((option, index) => {
-        const optionKey = String.fromCharCode(65 + index);
-        const savedValue = optionKey;
-        const displayValue = `${optionKey}. ${option}`;
-        const isChecked = currentAnswer === savedValue;
+        {(options || []).map((option, index) => {
+          const optionKey = String.fromCharCode(65 + index);
+          const savedValue = optionKey;
+          const displayValue = `${optionKey}. ${option}`;
+          const isChecked = currentAnswer === savedValue;
 
-        return (
-          <label
-            key={`${questionId}-${optionKey}`}
-            className={`group flex items-center gap-3 rounded-xl border px-4 py-3 transition-all cursor-pointer ${
-              isChecked
-                ? "border-brand-primary bg-brand-primary/10 shadow-[0_6px_20px_rgba(249,99,49,0.14)]"
-                : "border-border bg-card hover:border-brand-primary/40 hover:bg-brand-primary/5"
-            }`}
-          >
-            <Radio
-              checked={isChecked}
-              onChange={() => onChangeAnswer(savedValue)}
-              name={`question-${questionId}`}
-            />
-            <Typography
-              variant="body2"
-              className={`transition-colors break-words ${
+          return (
+            <label
+              key={`${questionId}-${optionKey}`}
+              className={`group flex items-center gap-3 rounded-xl border px-4 py-3 transition-all cursor-pointer ${
                 isChecked
-                  ? "text-brand-primary font-semibold"
-                  : "text-foreground group-hover:text-brand-primary"
+                  ? "border-brand-primary bg-brand-primary/10 shadow-[0_6px_20px_rgba(249,99,49,0.14)]"
+                  : "border-border bg-card hover:border-brand-primary/40 hover:bg-brand-primary/5"
               }`}
             >
-              {displayValue}
-            </Typography>
-          </label>
-        );
-      })}
+              <Radio
+                checked={isChecked}
+                onChange={() => onChangeAnswer(savedValue)}
+                name={`question-${questionId}`}
+              />
+              <Typography
+                variant="body2"
+                className={`transition-colors break-words ${
+                  isChecked
+                    ? "text-brand-primary font-semibold"
+                    : "text-foreground group-hover:text-brand-primary"
+                }`}
+              >
+                {displayValue}
+              </Typography>
+            </label>
+          );
+        })}
+      </div>
     </div>
-  </div>
-);
+  );
 });

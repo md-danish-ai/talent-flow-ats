@@ -255,16 +255,6 @@ export function UserResultsClient() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             {items.map((item) => {
               const latest = item.latest_attempt;
-              const statusColor = latest
-                ? latest.status === "started"
-                  ? "secondary"
-                  : latest.status === "submitted" ||
-                      latest.status === "auto_submitted"
-                    ? "success"
-                    : latest.status === "expired"
-                      ? "error"
-                      : "default"
-                : "default";
 
               return (
                 <ResultCard
@@ -272,18 +262,7 @@ export function UserResultsClient() {
                   title={item.username || "Anonymous Candidate"}
                   avatarContent={item.username?.[0]?.toUpperCase() || "A"}
                   identityIcon={User2}
-                  status={latest?.status}
-                  statusBadge={
-                    latest && (
-                      <Badge
-                        variant="outline"
-                        color={statusColor}
-                        className="px-3 py-0.5 font-black uppercase text-[9px] tracking-widest border-none bg-card/50"
-                      >
-                        {latest.status.replace("_", " ")}
-                      </Badge>
-                    )
-                  }
+                  status={latest?.status || "not_started"}
                   subtitle={
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
                       <div className="flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
@@ -297,30 +276,28 @@ export function UserResultsClient() {
                       </div>
                     </div>
                   }
-                  metrics={
-                    latest
-                      ? [
-                          {
-                            label: "Total Questions",
-                            value: latest.total_questions,
-                            icon: History,
-                            color: "text-brand-primary",
-                          },
-                          {
-                            label: "Completion",
-                            value: `${latest.attempted_count}/${latest.total_questions}`,
-                            icon: CheckCircle2,
-                            color: "text-emerald-500",
-                          },
-                          {
-                            label: "Missed",
-                            value: latest.unattempted_count,
-                            icon: CircleAlert,
-                            color: "text-rose-500",
-                          },
-                        ]
-                      : []
-                  }
+                  metrics={[
+                    {
+                      label: "Total Questions",
+                      value: latest?.total_questions || "N/A",
+                      icon: History,
+                      color: "text-brand-primary",
+                    },
+                    {
+                      label: "Completion",
+                      value: latest
+                        ? `${latest.attempted_count}/${latest.total_questions}`
+                        : "0/0",
+                      icon: CheckCircle2,
+                      color: "text-emerald-500",
+                    },
+                    {
+                      label: "Missed",
+                      value: latest?.unattempted_count || 0,
+                      icon: CircleAlert,
+                      color: "text-rose-500",
+                    },
+                  ]}
                   actionHref={`/admin/results/${item.user_id}`}
                   actionLabel="View Result"
                   actionIcon={ArrowRight}

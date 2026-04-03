@@ -51,63 +51,75 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             weight="semibold"
             className="truncate group-hover/row:text-brand-primary transition-colors"
           >
-            {((row.options as Record<string, unknown>)?.websiteUrl as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.websiteUrl as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("companyName") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.companyName as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.companyName as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("streetAddress") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.streetAddress as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.streetAddress as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("city") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.city as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.city as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("state") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.state as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.state as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("zipCode") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.zipCode as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.zipCode as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("companyPhoneNumber") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.companyPhoneNumber as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.companyPhoneNumber as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("generalEmail") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)?.generalEmail as React.ReactNode) || "N/A"}
+            {((row.options as Record<string, unknown>)
+              ?.generalEmail as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("facebookPage") && (
         <TableCell>
-          <Typography variant="body4" className="text-muted-foreground truncate max-w-[200px]">
-            {((row.options as Record<string, unknown>)?.facebookPage as React.ReactNode) || "N/A"}
+          <Typography
+            variant="body4"
+            className="text-muted-foreground truncate max-w-[200px]"
+          >
+            {((row.options as Record<string, unknown>)
+              ?.facebookPage as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}

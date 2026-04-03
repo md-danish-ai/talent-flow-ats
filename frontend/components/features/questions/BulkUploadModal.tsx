@@ -114,7 +114,10 @@ export function BulkUploadModal({
   };
 
   const subjectOptions = subjects.map((s) => ({ id: s.name, label: s.name }));
-  const examLevelOptions = examLevels.map((l) => ({ id: l.name, label: l.name }));
+  const examLevelOptions = examLevels.map((l) => ({
+    id: l.name,
+    label: l.name,
+  }));
   const marksOptions = [1, 2, 3, 4, 5, 10, 20].map((m) => ({
     id: m.toString(),
     label: `${m} Marks`,

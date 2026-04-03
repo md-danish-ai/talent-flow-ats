@@ -296,8 +296,8 @@ export function TypingTestClient() {
                       colSpan={visibleColumns.length + 1}
                       className="py-8 text-center text-muted-foreground"
                     >
-                      No typing tests found. Click &quot;Add
-                      Typing Test&quot; to create one.
+                      No typing tests found. Click &quot;Add Typing Test&quot;
+                      to create one.
                     </TableCell>
                   </TableRow>
                 ) : (
