@@ -132,6 +132,7 @@ export function UserForm({
       try {
         const formattedData: UserDetails = {
           is_submitted: true,
+          is_interview_submitted: existingDetails?.is_interview_submitted ?? false,
           personalDetails: {
             firstName: value.firstName,
             lastName: value.lastName,
