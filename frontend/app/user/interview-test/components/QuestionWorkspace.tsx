@@ -124,7 +124,7 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
           color="primary"
           animate="scale"
           onClick={onPrevious}
-          disabled={questionIndex === 0}
+          disabled={questionIndex === 0 || currentQuestion.type === "TYPING_TEST"}
           startIcon={<ArrowLeft size={16} />}
           className="w-full sm:w-auto"
         >

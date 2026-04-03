@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import json
 import re
 from typing import Any
 
@@ -31,7 +32,8 @@ def _extract_option_key(value: str) -> str | None:
     Extract leading option key from strings like:
     "A", "A.", "A: foo", "B) option text"
     """
-    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\):\-]?", value.strip(), flags=re.I)
+    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\):\-]?",
+                     value.strip(), flags=re.I)
     if not match:
         return None
     return match.group(1).lower()
@@ -192,7 +194,8 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
         )
 
         if existing_attempt:
-            saved_responses = _serialize_saved_responses(db_session, existing_attempt.id)
+            saved_responses = _serialize_saved_responses(
+                db_session, existing_attempt.id)
             return {
                 "attempt_id": existing_attempt.id,
                 "paper_id": existing_attempt.paper_id,
@@ -250,7 +253,8 @@ def save_answer(
     db_session = SessionLocal()
     try:
         attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
-        paper_question_ids = set(_get_attempt_paper_question_ids(db_session, attempt))
+        paper_question_ids = set(
+            _get_attempt_paper_question_ids(db_session, attempt))
 
         if attempt.status != "started":
             raise HTTPException(
@@ -258,7 +262,8 @@ def save_answer(
                 detail="Cannot save answer. Attempt is already submitted.",
             )
 
-        question = db_session.query(Question).filter(Question.id == question_id).first()
+        question = db_session.query(Question).filter(
+            Question.id == question_id).first()
         if not question:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
@@ -273,7 +278,8 @@ def save_answer(
 
         normalized_text = (answer_text or "").strip()
         is_attempted = bool(normalized_text)
-        section_code, section_name = _resolve_question_section(db_session, question)
+        section_code, section_name = _resolve_question_section(
+            db_session, question)
 
         attempt_response = (
             db_session.query(InterviewAttemptResponse)
@@ -319,7 +325,8 @@ def save_answer(
         )
 
         attempt.attempted_count = attempted_count
-        attempt.unattempted_count = max(attempt.total_questions - attempted_count, 0)
+        attempt.unattempted_count = max(
+            attempt.total_questions - attempted_count, 0)
 
         db_session.commit()
         db_session.refresh(attempt_response)
@@ -366,7 +373,8 @@ def _materialize_unanswered_rows(
         .all()
     }
 
-    missing_question_ids = [qid for qid in question_ids if qid not in answered_ids]
+    missing_question_ids = [
+        qid for qid in question_ids if qid not in answered_ids]
     now = datetime.utcnow()
 
     if missing_question_ids:
@@ -375,7 +383,8 @@ def _materialize_unanswered_rows(
             question = questions_by_id.get(qid)
             if not question:
                 continue
-            section_code, section_name = _resolve_question_section(db_session, question)
+            section_code, section_name = _resolve_question_section(
+                db_session, question)
             missing_rows.append(
                 InterviewAttemptResponse(
                     attempt_id=attempt.id,
@@ -425,17 +434,19 @@ def finalize_attempt(
         )
 
         attempt.attempted_count = attempted_count
-        attempt.unattempted_count = max(attempt.total_questions - attempted_count, 0)
+        attempt.unattempted_count = max(
+            attempt.total_questions - attempted_count, 0)
         attempt.status = status
         attempt.completion_reason = completion_reason
         attempt.is_auto_submitted = is_auto_submitted
         attempt.submitted_at = datetime.utcnow()
 
         # Update UserDetail flag
-        user_detail = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+        user_detail = db_session.query(UserDetail).filter(
+            UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = True
-            
+
         # Update PaperAssignment status
         today = datetime.utcnow().date()
         assignment = (
@@ -582,6 +593,29 @@ def get_admin_user_attempts(user_id: int) -> dict:
             .all()
         )
 
+        attempt_ids = [a.id for a in attempts]
+
+        # Fetch typing test stats for summary
+        typing_responses = (
+            db_session.query(InterviewAttemptResponse)
+            .join(Question, Question.id == InterviewAttemptResponse.question_id)
+            .filter(
+                InterviewAttemptResponse.attempt_id.in_(attempt_ids),
+                Question.question_type == "TYPING_TEST",
+                InterviewAttemptResponse.is_attempted.is_(True),
+            )
+            .all()
+        )
+        typing_stats_map = {}
+        for row in typing_responses:
+            if not row.answer_text or not row.answer_text.startswith("{"):
+                continue
+            try:
+                parsed = json.loads(row.answer_text)
+                typing_stats_map[row.attempt_id] = parsed.get("stats")
+            except Exception:
+                continue
+
         return {
             "user": {
                 "id": user.id,
@@ -604,6 +638,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                     if attempt.obtained_marks is not None
                     else None,
                     "is_auto_submitted": attempt.is_auto_submitted,
+                    "typing_stats": typing_stats_map.get(attempt.id),
                 }
                 for attempt in attempts
             ],
@@ -630,7 +665,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             InterviewAttempt.user_id == user_id
         )
         if attempt_id is not None:
-            attempt_query = attempt_query.filter(InterviewAttempt.id == attempt_id)
+            attempt_query = attempt_query.filter(
+                InterviewAttempt.id == attempt_id)
 
         attempt = attempt_query.order_by(desc(InterviewAttempt.id)).first()
         if not attempt:
@@ -640,7 +676,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             )
 
         answer_rows = (
-            db_session.query(InterviewAttemptResponse, Question, QuestionAnswer)
+            db_session.query(InterviewAttemptResponse,
+                             Question, QuestionAnswer)
             .join(Question, Question.id == InterviewAttemptResponse.question_id)
             .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
             .filter(InterviewAttemptResponse.attempt_id == attempt.id)
@@ -677,9 +714,23 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     correct_count += 1
                 else:
                     incorrect_count += 1
-                marks_obtained = float(question.marks or 0) if is_correct else 0.0
+                marks_obtained = float(
+                    question.marks or 0) if is_correct else 0.0
 
             total_marks_obtained += marks_obtained
+
+            # Enhanced parsing for special types like Typing Test
+            user_answer_display = answer_row.answer_text
+            typing_stats = None
+
+            if question.question_type == "TYPING_TEST" and user_answer_text.startswith("{"):
+                try:
+                    parsed = json.loads(user_answer_text)
+                    user_answer_display = parsed.get(
+                        "typed_text", user_answer_text)
+                    typing_stats = parsed.get("stats")
+                except Exception:
+                    pass
 
             detailed_answers.append(
                 {
@@ -694,7 +745,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "image_url": question.image_url,
                     "options": question.options,
                     "max_marks": float(question.marks or 0),
-                    "user_answer": answer_row.answer_text,
+                    "user_answer": user_answer_display,
+                    "typing_stats": typing_stats,
                     "correct_answer": correct_answer_text or None,
                     "status": status,
                     "marks_obtained": marks_obtained,
@@ -766,11 +818,12 @@ def reset_user_today_attempt(user_id: int) -> dict:
 
         # Reset UserDetail flag
         user_detail = (
-            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+            db_session.query(UserDetail).filter(
+                UserDetail.user_id == user_id).first()
         )
         if user_detail:
             user_detail.is_interview_submitted = False
-            
+
         # Reset PaperAssignment status
         today = datetime.utcnow().date()
         assignment = (
@@ -799,7 +852,8 @@ def reset_user_details(user_id: int) -> dict:
     db_session = SessionLocal()
     try:
         user_detail = (
-            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+            db_session.query(UserDetail).filter(
+                UserDetail.user_id == user_id).first()
         )
         if user_detail:
             user_detail.is_submitted = False
@@ -829,7 +883,8 @@ def reset_user_for_reinterview(user_id: int) -> dict:
     db_session = SessionLocal()
     try:
         user_detail = (
-            db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+            db_session.query(UserDetail).filter(
+                UserDetail.user_id == user_id).first()
         )
         if not user_detail:
             raise HTTPException(
@@ -854,4 +909,3 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         raise exception
     finally:
         db_session.close()
-

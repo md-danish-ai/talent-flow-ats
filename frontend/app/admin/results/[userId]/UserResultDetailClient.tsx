@@ -10,7 +10,6 @@ import {
   Phone,
   LayoutDashboard,
   Clock,
-  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
@@ -370,6 +369,7 @@ export function UserResultDetailClient({
                 attemptedCount={attempt.attempted_count}
                 totalQuestions={attempt.total_questions}
                 unattemptedCount={attempt.unattempted_count}
+                typingStats={attempt.typing_stats}
               />
             ))}
           </div>
