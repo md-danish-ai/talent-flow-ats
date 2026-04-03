@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import re
-import typing
 from typing import Any
 
 from fastapi import HTTPException
@@ -614,7 +613,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
             try:
                 parsed = json.loads(row.answer_text)
                 typing_stats_map[row.attempt_id] = parsed.get("stats")
-            except:
+            except Exception:
                 continue
 
         return {
@@ -730,7 +729,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     user_answer_display = parsed.get(
                         "typed_text", user_answer_text)
                     typing_stats = parsed.get("stats")
-                except:
+                except Exception:
                     pass
 
             detailed_answers.append(
