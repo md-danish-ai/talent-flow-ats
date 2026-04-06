@@ -360,6 +360,7 @@ export function UserResultDetailClient({
                 paperId={attempt.paper_id}
                 userId={userId}
                 index={index}
+                totalAttempts={totalAttempts}
                 status={attempt.status}
                 statusBadge={renderAttemptStatusBadge(attempt)}
                 isAutoSubmitted={attempt.is_auto_submitted}

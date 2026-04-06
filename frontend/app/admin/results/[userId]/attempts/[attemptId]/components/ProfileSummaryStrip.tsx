@@ -17,6 +17,17 @@ export const ProfileSummaryStrip = ({
   startedAt,
   submittedAt,
 }: ProfileSummaryStripProps) => {
+  const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
+  const formatDateTime = (d: string) =>
+    parseUTC(d).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-card to-brand-primary/5 p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
@@ -43,7 +54,7 @@ export const ProfileSummaryStrip = ({
               Started At
             </Typography>
             <Typography variant="body4" className="font-bold">
-              {new Date(startedAt).toLocaleString()}
+              {formatDateTime(startedAt)}
             </Typography>
           </div>
           <div>
@@ -54,7 +65,7 @@ export const ProfileSummaryStrip = ({
               Submitted At
             </Typography>
             <Typography variant="body4" className="font-bold">
-              {submittedAt ? new Date(submittedAt).toLocaleString() : "N/A"}
+              {submittedAt ? formatDateTime(submittedAt) : "N/A"}
             </Typography>
           </div>
         </div>

@@ -567,6 +567,10 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                 }
             )
 
+        results.sort(
+            key=lambda x: x["latest_attempt"]["attempt_id"] if x["latest_attempt"] else -1,
+            reverse=True
+        )
         return results
     finally:
         db_session.close()
