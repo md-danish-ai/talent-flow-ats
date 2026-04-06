@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
-from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest
+from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, ManualMarksRequest
 from .service import InterviewAttemptService
 
 router = APIRouter(
@@ -134,5 +134,24 @@ async def enable_reinterview(
     user_id: int,
 ):
     data = await service.reset_user_for_reinterview(user_id=user_id)
+    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+
+
+@router.post(
+    "/admin/results/users/{user_id}/attempts/{attempt_id}/responses/{question_id}/manual-marks",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def assign_manual_marks(
+    user_id: int,
+    attempt_id: int,
+    question_id: int,
+    payload: ManualMarksRequest,
+):
+    data = await service.assign_manual_marks(
+        user_id=user_id,
+        attempt_id=attempt_id,
+        question_id=question_id,
+        marks=payload.marks,
+    )
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 

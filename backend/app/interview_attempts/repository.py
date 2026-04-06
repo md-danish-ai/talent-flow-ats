@@ -710,18 +710,27 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 not_attempted_count += 1
                 marks_obtained = 0.0
             else:
-                if correct_answer_text.strip():
-                    is_correct = _is_answer_correct(
-                        user_answer=user_answer_text,
-                        correct_answer=correct_answer_text,
-                    )
-                status = "correct" if is_correct else "incorrect"
-                if is_correct:
-                    correct_count += 1
+                if answer_row.manual_marks is not None:
+                    marks_obtained = float(answer_row.manual_marks)
+                    is_correct = marks_obtained > 0
+                    status = "correct" if is_correct else "incorrect"
+                    if is_correct:
+                        correct_count += 1
+                    else:
+                        incorrect_count += 1
                 else:
-                    incorrect_count += 1
-                marks_obtained = float(
-                    question.marks or 0) if is_correct else 0.0
+                    if correct_answer_text.strip():
+                        is_correct = _is_answer_correct(
+                            user_answer=user_answer_text,
+                            correct_answer=correct_answer_text,
+                        )
+                    status = "correct" if is_correct else "incorrect"
+                    if is_correct:
+                        correct_count += 1
+                    else:
+                        incorrect_count += 1
+                    marks_obtained = float(
+                        question.marks or 0) if is_correct else 0.0
 
             total_marks_obtained += marks_obtained
 
@@ -756,6 +765,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "correct_answer": correct_answer_text or None,
                     "status": status,
                     "marks_obtained": marks_obtained,
+                    "manual_marks": float(answer_row.manual_marks) if answer_row.manual_marks is not None else None,
                     "is_attempted": answer_row.is_attempted,
                     "is_auto_saved": answer_row.is_auto_saved,
                     "saved_at": answer_row.saved_at,
@@ -915,3 +925,71 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         raise exception
     finally:
         db_session.close()
+
+
+def assign_manual_marks(user_id: int, attempt_id: int, question_id: int, marks: float) -> dict:
+    db_session = SessionLocal()
+    try:
+        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
+
+        answer_row = (
+            db_session.query(InterviewAttemptResponse)
+            .filter(
+                InterviewAttemptResponse.attempt_id == attempt_id,
+                InterviewAttemptResponse.question_id == question_id,
+            )
+            .first()
+        )
+        if not answer_row:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="Response not found",
+            )
+            
+        question = db_session.query(Question).filter(Question.id == question_id).first()
+        if not question:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Question not found")
+            
+        if question.question_type in ["MULTIPLE_CHOICE", "IMAGE_MULTIPLE_CHOICE"]:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST, 
+                detail="Cannot assign manual marks to auto-graded questions."
+            )
+            
+        max_marks = float(question.marks or 0)
+        if marks < 0 or marks > max_marks:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST, 
+                detail=f"Marks must be between 0 and {max_marks}"
+            )
+
+        answer_row.manual_marks = marks
+        db_session.commit()
+    except HTTPException:
+        raise
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
+    finally:
+        db_session.close()
+
+    result_details = get_admin_user_result_detail(user_id=user_id, attempt_id=attempt_id)
+    new_total = result_details["summary"]["total_marks_obtained"]
+
+    update_db = SessionLocal()
+    try:
+        attempt = update_db.query(InterviewAttempt).filter(InterviewAttempt.id == attempt_id).first()
+        if attempt:
+            attempt.obtained_marks = new_total
+            update_db.commit()
+    except Exception as exception:
+        update_db.rollback()
+        raise exception
+    finally:
+        update_db.close()
+
+    return {
+        "message": "Manual marks applied successfully",
+        "manual_marks": marks,
+        "new_total_marks": new_total,
+    }

@@ -73,13 +73,19 @@ export function AttemptDetailClient({
     if (!data) return;
 
     const initialMarks: Record<string, string> = {};
+    const initialApplied: Record<string, string> = {};
+    
     data.answers.forEach((answer, index) => {
-      initialMarks[`${answer.question_id}-${index}`] = String(
-        answer.marks_obtained ?? "",
-      );
+      const key = `${answer.question_id}-${index}`;
+      if (answer.manual_marks !== undefined && answer.manual_marks !== null) {
+        initialMarks[key] = String(answer.manual_marks);
+        initialApplied[key] = String(answer.manual_marks);
+      } else {
+        initialMarks[key] = String(answer.marks_obtained ?? "");
+      }
     });
     setManualMarks(initialMarks);
-    setManualMarksApplied({});
+    setManualMarksApplied(initialApplied);
   }, [data]);
 
   const statusColor =
@@ -89,11 +95,30 @@ export function AttemptDetailClient({
         ? "success"
         : "default";
 
-  const handleManualMarksApply = (key: string) => {
-    setManualMarksApplied((previous) => ({
-      ...previous,
-      [key]: manualMarks[key] ?? "",
-    }));
+  const handleManualMarksApply = async (questionId: number, index: number) => {
+    const key = `${questionId}-${index}`;
+    const value = manualMarks[key];
+    if (!value) return;
+
+    try {
+      await resultsApi.applyManualMarks(
+        userId,
+        attemptId,
+        questionId,
+        parseFloat(value)
+      );
+
+      setManualMarksApplied((previous) => ({
+        ...previous,
+        [key]: value,
+      }));
+
+      // Soft fetch to visually update aggregated counts and percentages immediately.
+      const result = await resultsApi.getUserResultDetail(userId, attemptId);
+      setData(result);
+    } catch (e) {
+      console.error("Failed to apply manual marks:", e);
+    }
   };
 
   const toggleSection = (section: "attempted" | "unattempted") => {
@@ -328,7 +353,8 @@ export function AttemptDetailClient({
                           }
                           onManualMarksApply={() =>
                             handleManualMarksApply(
-                              `${item.answer.question_id}-${item.index}`,
+                              item.answer.question_id,
+                              item.index,
                             )
                           }
                           getCanonicalImageUrl={getCanonicalImageUrl}
@@ -407,7 +433,8 @@ export function AttemptDetailClient({
                           }
                           onManualMarksApply={() =>
                             handleManualMarksApply(
-                              `${item.answer.question_id}-${item.index}`,
+                              item.answer.question_id,
+                              item.index,
                             )
                           }
                           getCanonicalImageUrl={getCanonicalImageUrl}

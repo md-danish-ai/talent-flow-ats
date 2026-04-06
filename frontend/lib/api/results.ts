@@ -40,6 +40,7 @@ export interface AdminUserResultAnswer {
   correct_answer?: string | null;
   status: "correct" | "incorrect" | "not_attempted";
   marks_obtained: number;
+  manual_marks?: number | null;
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
@@ -145,6 +146,22 @@ export const resultsApi = {
   enableReInterview: async (userId: number) => {
     return api.post<{ message: string; reinterview_date?: string }>(
       `/admin/results/users/${userId}/enable-reinterview`,
+    );
+  },
+
+  applyManualMarks: async (
+    userId: number,
+    attemptId: number,
+    questionId: number,
+    marks: number,
+  ) => {
+    return api.post<{
+      message: string;
+      manual_marks: number;
+      new_total_marks: number;
+    }>(
+      `/admin/results/users/${userId}/attempts/${attemptId}/responses/${questionId}/manual-marks`,
+      { marks },
     );
   },
 };

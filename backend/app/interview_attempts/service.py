@@ -157,3 +157,21 @@ class InterviewAttemptService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR,
                 detail=str(exception),
             )
+
+    async def assign_manual_marks(
+        self, user_id: int, attempt_id: int, question_id: int, marks: float
+    ):
+        try:
+            return repository.assign_manual_marks(
+                user_id=user_id,
+                attempt_id=attempt_id,
+                question_id=question_id,
+                marks=marks,
+            )
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
