@@ -87,9 +87,22 @@ class InterviewAttemptService:
                 detail=str(exception),
             )
 
-    async def get_admin_user_results(self, search: str | None = None):
+    async def get_admin_user_results(
+        self,
+        search: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        page: int = 1,
+        limit: int = 10,
+    ):
         try:
-            return repository.get_admin_user_results(search=search)
+            return repository.get_admin_user_results(
+                search=search,
+                start_date=start_date,
+                end_date=end_date,
+                page=page,
+                limit=limit,
+            )
         except HTTPException:
             raise
         except Exception as exception:

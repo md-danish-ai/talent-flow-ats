@@ -11,11 +11,10 @@ import {
   CircleAlert,
   TrendingUp,
   LayoutDashboard,
-  Filter,
-  RefreshCcw,
-  UserCheck,
   UserX,
   History,
+  UserCheck,
+  RefreshCcw,
 } from "lucide-react";
 
 import { ResultCard } from "@components/ui-cards/ResultCard";
@@ -25,11 +24,20 @@ import { Input } from "@components/ui-elements/Input";
 import { Badge } from "@components/ui-elements/Badge";
 import { Alert } from "@components/ui-elements/Alert";
 import { Button } from "@components/ui-elements/Button";
+import { Pagination } from "@components/ui-elements/Pagination";
+import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { resultsApi, type AdminUserResultListItem } from "@lib/api/results";
 
 export function UserResultsClient() {
   const [items, setItems] = useState<AdminUserResultListItem[]>([]);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,33 +46,44 @@ export function UserResultsClient() {
       try {
         if (!isRefresh) setLoading(true);
         setError(null);
-        const data = await resultsApi.getUserResults(search || undefined);
-        setItems(data);
+        const data = await resultsApi.getUserResults(
+          search || undefined,
+          page,
+          limit,
+          startDate || undefined,
+          endDate || undefined,
+        );
+        setItems(data.items);
+        setTotalItems(data.total);
+        setTotalPages(data.total_pages);
       } catch {
         setError("Failed to fetch user results. Please try again.");
       } finally {
         if (!isRefresh) setLoading(false);
       }
     },
-    [search],
+    [search, page, limit, startDate, endDate],
   );
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      void fetchItems();
-    }, 300);
+      setPage(1); // Reset to page 1 on new search/date
+    }, 500);
     return () => clearTimeout(timer);
+  }, [search, startDate, endDate]);
+
+  useEffect(() => {
+    void fetchItems();
   }, [fetchItems]);
 
   const stats = useMemo(() => {
-    const total = items.length;
     const attempted = items.filter((item) => item.attempts_count > 0).length;
-    const pending = total - attempted;
+    const pending = totalItems - attempted; // Approximated over the dataset visually, but accurately pending within the current view range.
 
     return [
       {
-        label: "Total Candidates",
-        value: total,
+        label: "Total Candidates (Filtered)",
+        value: totalItems,
         icon: <Users size={20} />,
         color: "text-brand-primary",
         bg: "bg-brand-primary/10",
@@ -78,7 +97,7 @@ export function UserResultsClient() {
         color: "text-emerald-600",
         bg: "bg-emerald-500/10",
         border: "border-emerald-500/20",
-        trend: `${total > 0 ? ((attempted / total) * 100).toFixed(0) : 0}% Engagement`,
+        trend: `${totalItems > 0 ? ((attempted / items.length || 0) * 100).toFixed(0) : 0}% Engagement (Page)`,
       },
       {
         label: "Pending Review",
@@ -90,7 +109,7 @@ export function UserResultsClient() {
         trend: "Awaiting first session",
       },
     ];
-  }, [items]);
+  }, [items, totalItems]);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-pulse">
@@ -226,21 +245,26 @@ export function UserResultsClient() {
           </div>
 
           <div className="flex items-center gap-2 pr-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-lg text-muted-foreground"
-            >
-              <Filter size={16} className="mr-2" />
-              Advanced Filters
-            </Button>
+            <DateRangePicker
+              onRangeChange={(range) => {
+                if (range) {
+                  setStartDate(range.from);
+                  setEndDate(range.to);
+                } else {
+                  setStartDate("");
+                  setEndDate("");
+                }
+              }}
+              initialLabel="All Time"
+            />
+            
             <div className="h-6 w-px bg-border/60 mx-1 hidden md:block" />
             <Badge
               variant="outline"
               color="default"
               className="font-black text-[10px]"
             >
-              {items.length} RESULTS
+              {totalItems} RESULTS
             </Badge>
           </div>
         </div>
@@ -305,6 +329,22 @@ export function UserResultsClient() {
               );
             })}
           </div>
+        )}
+
+        {/* Pagination UI */}
+        {!loading && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.max(1, totalPages)}
+            totalItems={totalItems}
+            pageSize={limit}
+            onPageChange={(p) => setPage(p)}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
+            className="mt-8 bg-transparent border-t border-border pt-6 px-0 pb-0"
+          />
         )}
       </div>
     </PageContainer>

@@ -73,8 +73,18 @@ async def get_attempt_summary(
 )
 async def get_admin_user_results(
     search: str | None = Query(default=None),
+    start_date: str | None = Query(default=None),
+    end_date: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=100),
 ):
-    data = await service.get_admin_user_results(search=search)
+    data = await service.get_admin_user_results(
+        search=search,
+        start_date=start_date,
+        end_date=end_date,
+        page=page,
+        limit=limit,
+    )
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 

@@ -26,6 +26,14 @@ export interface AdminUserResultListItem {
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 
+export interface PaginatedUserResults {
+  items: AdminUserResultListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 export interface AdminUserResultAnswer {
   question_id: number;
   question_type: string;
@@ -113,9 +121,21 @@ export interface AdminUserAttemptsResponse {
 }
 
 export const resultsApi = {
-  getUserResults: async (search?: string) => {
-    const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return api.get<AdminUserResultListItem[]>(`/admin/results${query}`);
+  getUserResults: async (
+    search?: string,
+    page: number = 1,
+    limit: number = 10,
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    params.append("page", String(page));
+    params.append("limit", String(limit));
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+
+    return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {

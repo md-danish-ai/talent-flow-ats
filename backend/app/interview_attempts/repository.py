@@ -515,7 +515,15 @@ def get_attempt_summary(attempt_id: int, user_id: int) -> dict:
         db_session.close()
 
 
-def get_admin_user_results(search: str | None = None) -> list[dict]:
+import math
+
+def get_admin_user_results(
+    search: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    page: int = 1,
+    limit: int = 10,
+) -> dict:
     db_session = SessionLocal()
     try:
         users_query = db_session.query(User).filter(User.role == "user")
@@ -527,7 +535,25 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                 | (User.email.ilike(pattern))
             )
 
-        users = users_query.order_by(User.id.desc()).all()
+        if start_date or end_date:
+            attempt_query = db_session.query(InterviewAttempt.user_id)
+            if start_date:
+                attempt_query = attempt_query.filter(InterviewAttempt.started_at >= f"{start_date} 00:00:00")
+            if end_date:
+                attempt_query = attempt_query.filter(InterviewAttempt.started_at <= f"{end_date} 23:59:59")
+            
+            users_query = users_query.filter(User.id.in_(attempt_query))
+
+        total_items = users_query.count()
+        total_pages = math.ceil(total_items / limit) if limit > 0 else 0
+
+        users = (
+            users_query.order_by(User.id.desc())
+            .limit(limit)
+            .offset((page - 1) * limit)
+            .all()
+        )
+        
         results: list[dict] = []
 
         for user in users:
@@ -567,11 +593,13 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                 }
             )
 
-        results.sort(
-            key=lambda x: x["latest_attempt"]["attempt_id"] if x["latest_attempt"] else -1,
-            reverse=True
-        )
-        return results
+        return {
+            "items": results,
+            "total": total_items,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages,
+        }
     finally:
         db_session.close()
 
