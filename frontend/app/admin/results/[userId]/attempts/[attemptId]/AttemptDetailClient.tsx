@@ -311,11 +311,14 @@ export function AttemptDetailClient({
                           answer={item.answer}
                           index={item.index}
                           manualMarksValue={
-                            manualMarks[`${item.answer.question_id}-${item.index}`] ?? ""
+                            manualMarks[
+                              `${item.answer.question_id}-${item.index}`
+                            ] ?? ""
                           }
                           isManualMarksApplied={
-                            manualMarksApplied[`${item.answer.question_id}-${item.index}`] !==
-                            undefined
+                            manualMarksApplied[
+                              `${item.answer.question_id}-${item.index}`
+                            ] !== undefined
                           }
                           onManualMarksChange={(val) =>
                             setManualMarks((p) => ({
@@ -324,7 +327,9 @@ export function AttemptDetailClient({
                             }))
                           }
                           onManualMarksApply={() =>
-                            handleManualMarksApply(`${item.answer.question_id}-${item.index}`)
+                            handleManualMarksApply(
+                              `${item.answer.question_id}-${item.index}`,
+                            )
                           }
                           getCanonicalImageUrl={getCanonicalImageUrl}
                           parseQuestionOptions={parseQuestionOptions}
@@ -385,11 +390,14 @@ export function AttemptDetailClient({
                           answer={item.answer}
                           index={item.index}
                           manualMarksValue={
-                            manualMarks[`${item.answer.question_id}-${item.index}`] ?? ""
+                            manualMarks[
+                              `${item.answer.question_id}-${item.index}`
+                            ] ?? ""
                           }
                           isManualMarksApplied={
-                            manualMarksApplied[`${item.answer.question_id}-${item.index}`] !==
-                            undefined
+                            manualMarksApplied[
+                              `${item.answer.question_id}-${item.index}`
+                            ] !== undefined
                           }
                           onManualMarksChange={(val) =>
                             setManualMarks((p) => ({
@@ -398,7 +406,9 @@ export function AttemptDetailClient({
                             }))
                           }
                           onManualMarksApply={() =>
-                            handleManualMarksApply(`${item.answer.question_id}-${item.index}`)
+                            handleManualMarksApply(
+                              `${item.answer.question_id}-${item.index}`,
+                            )
                           }
                           getCanonicalImageUrl={getCanonicalImageUrl}
                           parseQuestionOptions={parseQuestionOptions}

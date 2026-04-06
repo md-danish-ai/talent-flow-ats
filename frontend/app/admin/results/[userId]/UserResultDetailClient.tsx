@@ -358,6 +358,7 @@ export function UserResultDetailClient({
                 key={attempt.attempt_id}
                 attemptId={attempt.attempt_id}
                 paperId={attempt.paper_id}
+                paperName={attempt.paper_name}
                 userId={userId}
                 index={index}
                 totalAttempts={totalAttempts}

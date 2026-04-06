@@ -83,6 +83,7 @@ export interface AdminUserResultDetail {
 export interface AdminUserAttemptHistoryItem {
   attempt_id: number;
   paper_id: number;
+  paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
   started_at: string;

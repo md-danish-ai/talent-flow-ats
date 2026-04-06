@@ -17,6 +17,7 @@ import Link from "next/link";
 interface AttemptHistoryCardProps {
   attemptId: number;
   paperId: number;
+  paperName?: string;
   status: string;
   index: number;
   totalAttempts: number;
@@ -40,6 +41,7 @@ interface AttemptHistoryCardProps {
 export const AttemptHistoryCard = ({
   attemptId,
   paperId,
+  paperName,
   status,
   index,
   totalAttempts,
@@ -245,7 +247,7 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-brand-primary font-bold">
               <FileText size={14} />
-              <span>Paper #{paperId}</span>
+              <span>{paperName || `Paper #${paperId}`}</span>
             </div>
           </div>
           <div className="hidden sm:block h-8 w-px bg-border/60" />

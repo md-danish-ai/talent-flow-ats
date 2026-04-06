@@ -590,14 +590,15 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 detail=f"User {user_id} not found",
             )
 
-        attempts = (
-            db_session.query(InterviewAttempt)
+        attempts_with_papers = (
+            db_session.query(InterviewAttempt, Paper.paper_name)
+            .join(Paper, Paper.id == InterviewAttempt.paper_id)
             .filter(InterviewAttempt.user_id == user_id)
             .order_by(desc(InterviewAttempt.id))
             .all()
         )
 
-        attempt_ids = [a.id for a in attempts]
+        attempt_ids = [a[0].id for a in attempts_with_papers]
 
         # Fetch typing test stats for summary
         typing_responses = (
@@ -631,6 +632,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 {
                     "attempt_id": attempt.id,
                     "paper_id": attempt.paper_id,
+                    "paper_name": paper_name,
                     "status": attempt.status,
                     "completion_reason": attempt.completion_reason,
                     "started_at": attempt.started_at,
@@ -644,7 +646,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                     "is_auto_submitted": attempt.is_auto_submitted,
                     "typing_stats": typing_stats_map.get(attempt.id),
                 }
-                for attempt in attempts
+                for attempt, paper_name in attempts_with_papers
             ],
         }
     finally:
