@@ -2,6 +2,8 @@ import { api } from "./index";
 
 export interface AdminUserLatestAttempt {
   attempt_id: number;
+  paper_id?: number;
+  paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
   submitted_at?: string | null;
@@ -9,12 +11,19 @@ export interface AdminUserLatestAttempt {
   attempted_count: number;
   unattempted_count: number;
   obtained_marks?: number | null;
+  total_marks?: number;
   typing_stats?: {
     wpm: number;
     accuracy: number;
     errors: number;
     time_taken: number;
   } | null;
+  subject_results?: Array<{
+    section_name: string;
+    grade: string;
+    obtained: number;
+    max: number;
+  }>;
 }
 
 export interface AdminUserResultListItem {
@@ -23,6 +32,7 @@ export interface AdminUserResultListItem {
   mobile: string;
   email?: string | null;
   attempts_count: number;
+  is_reattempt?: boolean;
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 

@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import re
+import math
 from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from app.classifications.models import Classification
 from app.database.db import SessionLocal
@@ -515,7 +516,6 @@ def get_attempt_summary(attempt_id: int, user_id: int) -> dict:
         db_session.close()
 
 
-import math
 
 def get_admin_user_results(
     search: str | None = None,
@@ -557,17 +557,87 @@ def get_admin_user_results(
         results: list[dict] = []
 
         for user in users:
-            latest_attempt = (
-                db_session.query(InterviewAttempt)
+            # Latest attempt with paper and total_marks calculation
+            latest_attempt_info = (
+                db_session.query(InterviewAttempt, Paper.paper_name, Paper.grade_settings)
+                .join(Paper, Paper.id == InterviewAttempt.paper_id)
                 .filter(InterviewAttempt.user_id == user.id)
                 .order_by(desc(InterviewAttempt.id))
                 .first()
             )
+            
+            latest_attempt = latest_attempt_info[0] if latest_attempt_info else None
+            paper_name = latest_attempt_info[1] if latest_attempt_info else None
+            grade_settings = latest_attempt_info[2] if latest_attempt_info and latest_attempt_info[2] else []
+            
             attempts_count = (
                 db_session.query(InterviewAttempt)
                 .filter(InterviewAttempt.user_id == user.id)
                 .count()
             )
+
+            # Calculate total_marks and typing_stats for latest attempt
+            total_marks = 0.0
+            typing_stats = None
+            subject_results = []
+            
+            if latest_attempt:
+                # Total Marks
+                paper_obj = db_session.query(Paper).filter(Paper.id == latest_attempt.paper_id).first()
+                if paper_obj:
+                    q_ids = _extract_question_ids(paper_obj.question_id)
+                    total_marks = db_session.query(func.sum(Question.marks)).filter(Question.id.in_(q_ids)).scalar() or 0.0
+
+                # Typing stats and subject grades (requires full detail calculation for accuracy)
+                # To keep list view relatively fast, we perform a mini-calculation here
+                responses = (
+                    db_session.query(InterviewAttemptResponse, Question, QuestionAnswer)
+                    .join(Question, Question.id == InterviewAttemptResponse.question_id)
+                    .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
+                    .filter(InterviewAttemptResponse.attempt_id == latest_attempt.id)
+                    .all()
+                )
+                
+                subject_stats = {}
+                for resp, ques, corr in responses:
+                    # Typing
+                    if ques.question_type == "TYPING_TEST" and resp.answer_text and resp.answer_text.startswith("{"):
+                        try:
+                            parsed = json.loads(resp.answer_text)
+                            typing_stats = parsed.get("stats")
+                        except Exception:
+                            pass
+                    
+                    # Subject Stats
+                    s_name = resp.section_name
+                    if s_name not in subject_stats:
+                        subject_stats[s_name] = {"max": 0.0, "obtained": 0.0}
+                    
+                    ques_marks = float(ques.marks or 0)
+                    subject_stats[s_name]["max"] += ques_marks
+                    
+                    if resp.is_attempted:
+                        if resp.manual_marks is not None:
+                            subject_stats[s_name]["obtained"] += float(resp.manual_marks)
+                        else:
+                            corr_text = corr.answer_text if corr else ""
+                            if _is_answer_correct(resp.answer_text or "", corr_text):
+                                subject_stats[s_name]["obtained"] += ques_marks
+                
+                # Format subjects
+                for s_name, stats in subject_stats.items():
+                    perc = (stats["obtained"] / stats["max"] * 100) if stats["max"] > 0 else 0
+                    grade = "N/A"
+                    for gs in grade_settings:
+                        if gs.get("min", 0) <= perc <= gs.get("max", 100):
+                            grade = gs.get("grade_label", "N/A")
+                            break
+                    subject_results.append({
+                        "section_name": s_name,
+                        "grade": grade,
+                        "obtained": stats["obtained"],
+                        "max": stats["max"]
+                    })
 
             results.append(
                 {
@@ -576,8 +646,11 @@ def get_admin_user_results(
                     "mobile": user.mobile,
                     "email": user.email,
                     "attempts_count": attempts_count,
+                    "is_reattempt": attempts_count > 1,
                     "latest_attempt": {
                         "attempt_id": latest_attempt.id,
+                        "paper_id": latest_attempt.paper_id,
+                        "paper_name": paper_name,
                         "status": latest_attempt.status,
                         "completion_reason": latest_attempt.completion_reason,
                         "submitted_at": latest_attempt.submitted_at,
@@ -587,6 +660,9 @@ def get_admin_user_results(
                         "obtained_marks": float(latest_attempt.obtained_marks)
                         if latest_attempt.obtained_marks is not None
                         else None,
+                        "total_marks": float(total_marks),
+                        "typing_stats": typing_stats,
+                        "subject_results": subject_results
                     }
                     if latest_attempt
                     else None,
