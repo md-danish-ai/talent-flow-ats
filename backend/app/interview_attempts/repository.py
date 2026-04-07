@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import re
+import math
 from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from app.classifications.models import Classification
 from app.database.db import SessionLocal
@@ -515,7 +516,14 @@ def get_attempt_summary(attempt_id: int, user_id: int) -> dict:
         db_session.close()
 
 
-def get_admin_user_results(search: str | None = None) -> list[dict]:
+
+def get_admin_user_results(
+    search: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    page: int = 1,
+    limit: int = 10,
+) -> dict:
     db_session = SessionLocal()
     try:
         users_query = db_session.query(User).filter(User.role == "user")
@@ -527,21 +535,109 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                 | (User.email.ilike(pattern))
             )
 
-        users = users_query.order_by(User.id.desc()).all()
+        if start_date or end_date:
+            attempt_query = db_session.query(InterviewAttempt.user_id)
+            if start_date:
+                attempt_query = attempt_query.filter(InterviewAttempt.started_at >= f"{start_date} 00:00:00")
+            if end_date:
+                attempt_query = attempt_query.filter(InterviewAttempt.started_at <= f"{end_date} 23:59:59")
+            
+            users_query = users_query.filter(User.id.in_(attempt_query))
+
+        total_items = users_query.count()
+        total_pages = math.ceil(total_items / limit) if limit > 0 else 0
+
+        users = (
+            users_query.order_by(User.id.desc())
+            .limit(limit)
+            .offset((page - 1) * limit)
+            .all()
+        )
+        
         results: list[dict] = []
 
         for user in users:
-            latest_attempt = (
-                db_session.query(InterviewAttempt)
+            # Latest attempt with paper and total_marks calculation
+            latest_attempt_info = (
+                db_session.query(InterviewAttempt, Paper.paper_name, Paper.grade_settings)
+                .join(Paper, Paper.id == InterviewAttempt.paper_id)
                 .filter(InterviewAttempt.user_id == user.id)
                 .order_by(desc(InterviewAttempt.id))
                 .first()
             )
+            
+            latest_attempt = latest_attempt_info[0] if latest_attempt_info else None
+            paper_name = latest_attempt_info[1] if latest_attempt_info else None
+            grade_settings = latest_attempt_info[2] if latest_attempt_info and latest_attempt_info[2] else []
+            
             attempts_count = (
                 db_session.query(InterviewAttempt)
                 .filter(InterviewAttempt.user_id == user.id)
                 .count()
             )
+
+            # Calculate total_marks and typing_stats for latest attempt
+            total_marks = 0.0
+            typing_stats = None
+            subject_results = []
+            
+            if latest_attempt:
+                # Total Marks
+                paper_obj = db_session.query(Paper).filter(Paper.id == latest_attempt.paper_id).first()
+                if paper_obj:
+                    q_ids = _extract_question_ids(paper_obj.question_id)
+                    total_marks = db_session.query(func.sum(Question.marks)).filter(Question.id.in_(q_ids)).scalar() or 0.0
+
+                # Typing stats and subject grades (requires full detail calculation for accuracy)
+                # To keep list view relatively fast, we perform a mini-calculation here
+                responses = (
+                    db_session.query(InterviewAttemptResponse, Question, QuestionAnswer)
+                    .join(Question, Question.id == InterviewAttemptResponse.question_id)
+                    .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
+                    .filter(InterviewAttemptResponse.attempt_id == latest_attempt.id)
+                    .all()
+                )
+                
+                subject_stats = {}
+                for resp, ques, corr in responses:
+                    # Typing
+                    if ques.question_type == "TYPING_TEST" and resp.answer_text and resp.answer_text.startswith("{"):
+                        try:
+                            parsed = json.loads(resp.answer_text)
+                            typing_stats = parsed.get("stats")
+                        except Exception:
+                            pass
+                    
+                    # Subject Stats
+                    s_name = resp.section_name
+                    if s_name not in subject_stats:
+                        subject_stats[s_name] = {"max": 0.0, "obtained": 0.0}
+                    
+                    ques_marks = float(ques.marks or 0)
+                    subject_stats[s_name]["max"] += ques_marks
+                    
+                    if resp.is_attempted:
+                        if resp.manual_marks is not None:
+                            subject_stats[s_name]["obtained"] += float(resp.manual_marks)
+                        else:
+                            corr_text = corr.answer_text if corr else ""
+                            if _is_answer_correct(resp.answer_text or "", corr_text):
+                                subject_stats[s_name]["obtained"] += ques_marks
+                
+                # Format subjects
+                for s_name, stats in subject_stats.items():
+                    perc = (stats["obtained"] / stats["max"] * 100) if stats["max"] > 0 else 0
+                    grade = "N/A"
+                    for gs in grade_settings:
+                        if gs.get("min", 0) <= perc <= gs.get("max", 100):
+                            grade = gs.get("grade_label", "N/A")
+                            break
+                    subject_results.append({
+                        "section_name": s_name,
+                        "grade": grade,
+                        "obtained": stats["obtained"],
+                        "max": stats["max"]
+                    })
 
             results.append(
                 {
@@ -550,8 +646,11 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                     "mobile": user.mobile,
                     "email": user.email,
                     "attempts_count": attempts_count,
+                    "is_reattempt": attempts_count > 1,
                     "latest_attempt": {
                         "attempt_id": latest_attempt.id,
+                        "paper_id": latest_attempt.paper_id,
+                        "paper_name": paper_name,
                         "status": latest_attempt.status,
                         "completion_reason": latest_attempt.completion_reason,
                         "submitted_at": latest_attempt.submitted_at,
@@ -561,13 +660,22 @@ def get_admin_user_results(search: str | None = None) -> list[dict]:
                         "obtained_marks": float(latest_attempt.obtained_marks)
                         if latest_attempt.obtained_marks is not None
                         else None,
+                        "total_marks": float(total_marks),
+                        "typing_stats": typing_stats,
+                        "subject_results": subject_results
                     }
                     if latest_attempt
                     else None,
                 }
             )
 
-        return results
+        return {
+            "items": results,
+            "total": total_items,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages,
+        }
     finally:
         db_session.close()
 
@@ -586,14 +694,15 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 detail=f"User {user_id} not found",
             )
 
-        attempts = (
-            db_session.query(InterviewAttempt)
+        attempts_with_papers = (
+            db_session.query(InterviewAttempt, Paper.paper_name)
+            .join(Paper, Paper.id == InterviewAttempt.paper_id)
             .filter(InterviewAttempt.user_id == user_id)
             .order_by(desc(InterviewAttempt.id))
             .all()
         )
 
-        attempt_ids = [a.id for a in attempts]
+        attempt_ids = [a[0].id for a in attempts_with_papers]
 
         # Fetch typing test stats for summary
         typing_responses = (
@@ -627,6 +736,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 {
                     "attempt_id": attempt.id,
                     "paper_id": attempt.paper_id,
+                    "paper_name": paper_name,
                     "status": attempt.status,
                     "completion_reason": attempt.completion_reason,
                     "started_at": attempt.started_at,
@@ -640,7 +750,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                     "is_auto_submitted": attempt.is_auto_submitted,
                     "typing_stats": typing_stats_map.get(attempt.id),
                 }
-                for attempt in attempts
+                for attempt, paper_name in attempts_with_papers
             ],
         }
     finally:
@@ -675,6 +785,19 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 detail="No interview attempt found for this user",
             )
 
+        paper_obj = db_session.query(Paper).filter(Paper.id == attempt.paper_id).first()
+        grade_settings = paper_obj.grade_settings if paper_obj and paper_obj.grade_settings else []
+
+        # Current attempt number for this user
+        attempt_number = (
+            db_session.query(InterviewAttempt)
+            .filter(
+                InterviewAttempt.user_id == user_id,
+                InterviewAttempt.id <= attempt.id
+            )
+            .count()
+        )
+
         answer_rows = (
             db_session.query(InterviewAttemptResponse,
                              Question, QuestionAnswer)
@@ -686,6 +809,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         )
 
         detailed_answers: list[dict] = []
+        subject_stats: dict[str, dict[str, Any]] = {}
         correct_count = 0
         incorrect_count = 0
         not_attempted_count = 0
@@ -704,18 +828,27 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 not_attempted_count += 1
                 marks_obtained = 0.0
             else:
-                if correct_answer_text.strip():
-                    is_correct = _is_answer_correct(
-                        user_answer=user_answer_text,
-                        correct_answer=correct_answer_text,
-                    )
-                status = "correct" if is_correct else "incorrect"
-                if is_correct:
-                    correct_count += 1
+                if answer_row.manual_marks is not None:
+                    marks_obtained = float(answer_row.manual_marks)
+                    is_correct = marks_obtained > 0
+                    status = "correct" if is_correct else "incorrect"
+                    if is_correct:
+                        correct_count += 1
+                    else:
+                        incorrect_count += 1
                 else:
-                    incorrect_count += 1
-                marks_obtained = float(
-                    question.marks or 0) if is_correct else 0.0
+                    if correct_answer_text.strip():
+                        is_correct = _is_answer_correct(
+                            user_answer=user_answer_text,
+                            correct_answer=correct_answer_text,
+                        )
+                    status = "correct" if is_correct else "incorrect"
+                    if is_correct:
+                        correct_count += 1
+                    else:
+                        incorrect_count += 1
+                    marks_obtained = float(
+                        question.marks or 0) if is_correct else 0.0
 
             total_marks_obtained += marks_obtained
 
@@ -750,11 +883,63 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "correct_answer": correct_answer_text or None,
                     "status": status,
                     "marks_obtained": marks_obtained,
+                    "manual_marks": float(answer_row.manual_marks) if answer_row.manual_marks is not None else None,
                     "is_attempted": answer_row.is_attempted,
                     "is_auto_saved": answer_row.is_auto_saved,
                     "saved_at": answer_row.saved_at,
                 }
             )
+            # Track subject-wise stats
+            section_name = answer_row.section_name
+            if section_name not in subject_stats:
+                subject_stats[section_name] = {
+                    "total_questions": 0,
+                    "attempted_count": 0,
+                    "unattempted_count": 0,
+                    "correct_count": 0,
+                    "incorrect_count": 0,
+                    "obtained_marks": 0.0,
+                    "max_marks": 0.0,
+                }
+            
+            stats = subject_stats[section_name]
+            stats["total_questions"] += 1
+            stats["max_marks"] += float(question.marks or 0)
+            
+            if is_attempted:
+                stats["attempted_count"] += 1
+                stats["obtained_marks"] += marks_obtained
+                if status == "correct":
+                    stats["correct_count"] += 1
+                else:
+                    stats["incorrect_count"] += 1
+            else:
+                stats["unattempted_count"] += 1
+
+        # Calculate subject-wise grades
+        subject_wise_result = []
+        for section_name, stats in subject_stats.items():
+            percentage = (stats["obtained_marks"] / stats["max_marks"] * 100) if stats["max_marks"] > 0 else 0
+            
+            grade_label = "N/A"
+            for setting in grade_settings:
+                # Support both inclusive and exclusive ranges if needed, but here we do standard check
+                if setting.get("min", 0) <= percentage <= setting.get("max", 100):
+                    grade_label = setting.get("grade_label", "N/A")
+                    break
+            
+            subject_wise_result.append({
+                "section_name": section_name,
+                "total_questions": stats["total_questions"],
+                "attempted_count": stats["attempted_count"],
+                "unattempted_count": stats["unattempted_count"],
+                "correct_count": stats["correct_count"],
+                "incorrect_count": stats["incorrect_count"],
+                "obtained_marks": stats["obtained_marks"],
+                "max_marks": stats["max_marks"],
+                "percentage": round(percentage, 2),
+                "grade": grade_label
+            })
 
         return {
             "user": {
@@ -766,6 +951,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             "attempt": {
                 "attempt_id": attempt.id,
                 "paper_id": attempt.paper_id,
+                "paper_name": paper_obj.paper_name if paper_obj else "Unknown Paper",
+                "attempt_number": attempt_number,
                 "status": attempt.status,
                 "completion_reason": attempt.completion_reason,
                 "started_at": attempt.started_at,
@@ -784,6 +971,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "not_attempted_count": not_attempted_count,
                 "total_marks_obtained": total_marks_obtained,
             },
+            "subject_wise_result": subject_wise_result,
             "answers": detailed_answers,
         }
     finally:
@@ -909,3 +1097,71 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         raise exception
     finally:
         db_session.close()
+
+
+def assign_manual_marks(user_id: int, attempt_id: int, question_id: int, marks: float) -> dict:
+    db_session = SessionLocal()
+    try:
+        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
+
+        answer_row = (
+            db_session.query(InterviewAttemptResponse)
+            .filter(
+                InterviewAttemptResponse.attempt_id == attempt_id,
+                InterviewAttemptResponse.question_id == question_id,
+            )
+            .first()
+        )
+        if not answer_row:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="Response not found",
+            )
+            
+        question = db_session.query(Question).filter(Question.id == question_id).first()
+        if not question:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Question not found")
+            
+        if question.question_type in ["MULTIPLE_CHOICE", "IMAGE_MULTIPLE_CHOICE"]:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST, 
+                detail="Cannot assign manual marks to auto-graded questions."
+            )
+            
+        max_marks = float(question.marks or 0)
+        if marks < 0 or marks > max_marks:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST, 
+                detail=f"Marks must be between 0 and {max_marks}"
+            )
+
+        answer_row.manual_marks = marks
+        db_session.commit()
+    except HTTPException:
+        raise
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
+    finally:
+        db_session.close()
+
+    result_details = get_admin_user_result_detail(user_id=user_id, attempt_id=attempt_id)
+    new_total = result_details["summary"]["total_marks_obtained"]
+
+    update_db = SessionLocal()
+    try:
+        attempt = update_db.query(InterviewAttempt).filter(InterviewAttempt.id == attempt_id).first()
+        if attempt:
+            attempt.obtained_marks = new_total
+            update_db.commit()
+    except Exception as exception:
+        update_db.rollback()
+        raise exception
+    finally:
+        update_db.close()
+
+    return {
+        "message": "Manual marks applied successfully",
+        "manual_marks": marks,
+        "new_total_marks": new_total,
+    }

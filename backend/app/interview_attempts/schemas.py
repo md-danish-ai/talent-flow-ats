@@ -62,3 +62,7 @@ class SaveAnswerResponse(BaseModel):
     is_attempted: bool
     is_auto_saved: bool
     saved_at: datetime
+
+
+class ManualMarksRequest(BaseModel):
+    marks: float

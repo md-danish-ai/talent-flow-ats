@@ -17,8 +17,10 @@ import Link from "next/link";
 interface AttemptHistoryCardProps {
   attemptId: number;
   paperId: number;
+  paperName?: string;
   status: string;
   index: number;
+  totalAttempts: number;
   isAutoSubmitted: boolean;
   completionReason?: string;
   startedAt: string;
@@ -39,8 +41,10 @@ interface AttemptHistoryCardProps {
 export const AttemptHistoryCard = ({
   attemptId,
   paperId,
+  paperName,
   status,
   index,
+  totalAttempts,
   isAutoSubmitted,
   completionReason,
   startedAt,
@@ -52,11 +56,13 @@ export const AttemptHistoryCard = ({
   statusBadge,
   typingStats,
 }: AttemptHistoryCardProps) => {
+  const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
+
   // Calculate Duration
   const getDuration = () => {
     if (!startedAt || !submittedAt) return "--:--";
-    const start = new Date(startedAt).getTime();
-    const end = new Date(submittedAt).getTime();
+    const start = parseUTC(startedAt).getTime();
+    const end = parseUTC(submittedAt).getTime();
     const diff = Math.floor((end - start) / 1000);
     const mins = Math.floor(diff / 60);
     const secs = diff % 60;
@@ -91,7 +97,7 @@ export const AttemptHistoryCard = ({
         <div className="flex items-center gap-5">
           <div className="relative">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary/20 via-brand-primary/10 to-transparent text-xl font-black text-brand-primary ring-2 ring-brand-primary/10 transition-all group-hover:ring-brand-primary/30 group-hover:rotate-12">
-              #{index + 1}
+              #{totalAttempts - index}
             </div>
             <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-card text-brand-primary shadow-sm">
               <HistoryIcon size={10} />
@@ -103,7 +109,7 @@ export const AttemptHistoryCard = ({
               variant="h4"
               className="text-foreground tracking-tight font-bold"
             >
-              Interview Attempt #{index + 1}
+              Interview Attempt #{totalAttempts - index}
             </Typography>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {statusBadge}
@@ -133,7 +139,7 @@ export const AttemptHistoryCard = ({
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
               <FileText size={12} className="text-brand-primary" />
               <span>
-                {new Date(startedAt).toLocaleDateString([], {
+                {parseUTC(startedAt).toLocaleDateString([], {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -152,9 +158,10 @@ export const AttemptHistoryCard = ({
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
               <Clock3 size={12} className="text-brand-primary" />
               <span>
-                {new Date(startedAt).toLocaleTimeString([], {
+                {parseUTC(startedAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
+                  hour12: true,
                 })}
               </span>
             </div>
@@ -171,9 +178,10 @@ export const AttemptHistoryCard = ({
               <CheckCircle2 size={12} className={`text-emerald-500`} />
               <span>
                 {submittedAt
-                  ? new Date(submittedAt).toLocaleTimeString([], {
+                  ? parseUTC(submittedAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
+                      hour12: true,
                     })
                   : "--:--"}
               </span>
@@ -202,7 +210,10 @@ export const AttemptHistoryCard = ({
             <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary opacity-60">
               Typing Speed
             </span>
-            <Typography variant="body4" className="font-black text-brand-primary">
+            <Typography
+              variant="body4"
+              className="font-black text-brand-primary"
+            >
               {typingStats.wpm} WPM
             </Typography>
           </div>
@@ -236,7 +247,7 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-brand-primary font-bold">
               <FileText size={14} />
-              <span>Paper #{paperId}</span>
+              <span>{paperName || `Paper #${paperId}`}</span>
             </div>
           </div>
           <div className="hidden sm:block h-8 w-px bg-border/60" />
@@ -267,9 +278,9 @@ export const AttemptHistoryCard = ({
           <Button
             size="sm"
             variant="primary"
+            color="primary"
             shadow
             animate="scale"
-            className="font-bold h-9 bg-brand-primary hover:bg-brand-primary/90"
             endIcon={<Eye size={14} />}
           >
             Analyze Attempt

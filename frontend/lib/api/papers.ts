@@ -11,6 +11,12 @@ export interface PaperSubjectConfig {
   order: number;
 }
 
+export interface GradeSetting {
+  min: number;
+  max: number;
+  grade_label: string;
+}
+
 export interface PaperSetup {
   id: number;
   department_id: number;
@@ -28,6 +34,7 @@ export interface PaperSetup {
   test_level_name?: string;
   subject_ids_data: PaperSubjectConfig[];
   question_id?: number[];
+  grade_settings?: GradeSetting[];
 }
 
 export interface PaperSetupCreate {
@@ -98,5 +105,9 @@ export const papersApi = {
 
   togglePaperStatus: async (id: number, is_active: boolean) => {
     return api.put<PaperSetup>(`/papers/update/${id}`, { is_active });
+  },
+
+  updateGradeSettings: async (id: number, grade_settings: GradeSetting[]) => {
+    return api.put<PaperSetup>(`/papers/grade-settings/${id}`, grade_settings);
   },
 };

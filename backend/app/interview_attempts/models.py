@@ -79,6 +79,7 @@ class InterviewAttemptResponse(Base):
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
 
     answer_text = Column(Text, nullable=True)
+    manual_marks = Column(Numeric(10, 2), nullable=True)
     is_attempted = Column(Boolean, nullable=False, server_default="false")
     is_auto_saved = Column(Boolean, nullable=False, server_default="false")
 

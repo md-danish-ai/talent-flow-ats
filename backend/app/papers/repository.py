@@ -119,3 +119,16 @@ def delete_paper(db: Session, paper_id: int) -> bool:
     db.delete(db_paper)
     db.commit()
     return True
+
+
+def update_paper_grade_settings(
+    db: Session, paper_id: int, grade_settings: List[dict]
+) -> Optional[Paper]:
+    db_paper = db.query(Paper).filter(Paper.id == paper_id).first()
+    if not db_paper:
+        return None
+
+    db_paper.grade_settings = grade_settings
+    db.commit()
+    db.refresh(db_paper)
+    return get_paper(db, paper_id)

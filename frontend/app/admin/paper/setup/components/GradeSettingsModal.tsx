@@ -1,0 +1,318 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Modal } from "@components/ui-elements/Modal";
+import { Button } from "@components/ui-elements/Button";
+import { Input } from "@components/ui-elements/Input";
+import { Select } from "@components/ui-elements/Select";
+import { Typography } from "@components/ui-elements/Typography";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@components/ui-elements/Table";
+import { papersApi, GradeSetting } from "@lib/api/papers";
+import { toast } from "@lib/toast";
+import { Trash2, Edit2, Loader2 } from "lucide-react";
+
+interface GradeSettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  paperId: number;
+}
+
+const GRADE_OPTIONS = [
+  { label: "Poor", value: "Poor" },
+  { label: "Average", value: "Average" },
+  { label: "Good", value: "Good" },
+  { label: "Excellent", value: "Excellent" },
+];
+
+export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
+  isOpen,
+  onClose,
+  paperId,
+}) => {
+  const [grades, setGrades] = useState<GradeSetting[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Form state
+  const [formMin, setFormMin] = useState("");
+  const [formMax, setFormMax] = useState("");
+  const [formLabel, setFormLabel] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchPaperData = async () => {
+      try {
+        setLoading(true);
+        const response = await papersApi.getPaperById(paperId);
+        const data = response;
+        if (data.grade_settings) {
+          setGrades(data.grade_settings);
+        } else {
+          setGrades([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch paper grade settings:", error);
+        toast.error("Failed to load settings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen && paperId) {
+      fetchPaperData();
+    }
+  }, [isOpen, paperId]);
+
+  const handleAddOrUpdateGrade = () => {
+    if (!formMin || !formMax || !formLabel) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    const minNum = parseFloat(formMin);
+    const maxNum = parseFloat(formMax);
+
+    if (isNaN(minNum) || isNaN(maxNum)) {
+      toast.error("Min and Max must be numbers");
+      return;
+    }
+
+    if (minNum >= maxNum) {
+      toast.error("Min should be less than Max");
+      return;
+    }
+
+    const newGrade: GradeSetting = {
+      min: minNum,
+      max: maxNum,
+      grade_label: formLabel,
+    };
+
+    const updatedGrades = [...grades];
+    if (editingIndex !== null) {
+      updatedGrades[editingIndex] = newGrade;
+    } else {
+      updatedGrades.push(newGrade);
+    }
+
+    // Sort by min value
+    updatedGrades.sort((a, b) => a.min - b.min);
+
+    setGrades(updatedGrades);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormMin("");
+    setFormMax("");
+    setFormLabel("");
+    setEditingIndex(null);
+  };
+
+  const handleEdit = (index: number) => {
+    const item = grades[index];
+    setFormMin(item.min.toString());
+    setFormMax(item.max.toString());
+    setFormLabel(item.grade_label);
+    setEditingIndex(index);
+  };
+
+  const handleDelete = (index: number) => {
+    const updatedGrades = grades.filter((_, i) => i !== index);
+    setGrades(updatedGrades);
+  };
+
+  const handleSaveAll = async () => {
+    try {
+      setSaving(true);
+      await papersApi.updateGradeSettings(paperId, grades);
+      toast.success("Grade settings saved successfully");
+      onClose();
+    } catch (error) {
+      console.error("Failed to save grade settings:", error);
+      toast.error("Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Grade Settings">
+      <div className="space-y-6">
+        {/* Form Area */}
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-border/50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <Typography
+                variant="body5"
+                className="mb-1.5 ml-1 text-muted-foreground uppercase font-bold tracking-wider"
+              >
+                From (%)
+              </Typography>
+              <Input
+                placeholder="0.00"
+                value={formMin}
+                onChange={(e) => setFormMin(e.target.value)}
+              />
+            </div>
+            <div>
+              <Typography
+                variant="body5"
+                className="mb-1.5 ml-1 text-muted-foreground uppercase font-bold tracking-wider"
+              >
+                To (%)
+              </Typography>
+              <Input
+                placeholder="49.99"
+                value={formMax}
+                onChange={(e) => setFormMax(e.target.value)}
+              />
+            </div>
+            <div>
+              <Typography
+                variant="body5"
+                className="mb-1.5 ml-1 text-muted-foreground uppercase font-bold tracking-wider"
+              >
+                Select Grade
+              </Typography>
+              <Select
+                value={formLabel}
+                onChange={(e) => setFormLabel(e.target.value)}
+              >
+                <option value="">Please Select Grade---</option>
+                {GRADE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={handleAddOrUpdateGrade}
+              className="rounded-xl shadow-lg shadow-brand-primary/20"
+              size="md"
+            >
+              {editingIndex !== null ? "Update Rule" : "Add Grade Rule"}
+            </Button>
+            {editingIndex !== null && (
+              <Button variant="ghost" onClick={resetForm} className="ml-2">
+                Cancel
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* List Area */}
+        <div className="border border-border/50 rounded-2xl overflow-hidden">
+          <Table>
+            <TableHeader className="bg-slate-800 dark:bg-slate-950">
+              <TableRow>
+                <TableHead className="text-white font-bold text-center w-20">
+                  Sr. No.
+                </TableHead>
+                <TableHead className="text-white font-bold">
+                  Range From(%)
+                </TableHead>
+                <TableHead className="text-white font-bold">
+                  Range To(%)
+                </TableHead>
+                <TableHead className="text-white font-bold">Grade</TableHead>
+                <TableHead className="text-white font-bold text-center">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="animate-spin text-brand-primary h-8 w-8" />
+                      <Typography
+                        variant="body4"
+                        className="text-muted-foreground"
+                      >
+                        Loading configurations...
+                      </Typography>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : grades.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="h-24 text-center text-muted-foreground italic"
+                  >
+                    No grading rules defined yet. Add your first range above.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                grades.map((grade, idx) => (
+                  <TableRow
+                    key={idx}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                  >
+                    <TableCell className="text-center font-bold text-muted-foreground/60">
+                      {idx + 1}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {grade.min.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {grade.max.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-bold text-brand-primary bg-brand-primary/5 px-3 py-1 rounded-full text-xs">
+                        {grade.grade_label}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center p-0">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-500"
+                          onClick={() => handleEdit(idx)}
+                        >
+                          <Edit2 size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500"
+                          onClick={() => handleDelete(idx)}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Footer Area */}
+        <div className="flex gap-3 justify-end pt-4 border-t border-border/50">
+          <Button variant="outline" onClick={onClose}>
+            CLOSE
+          </Button>
+          <Button onClick={handleSaveAll} disabled={saving}>
+            {saving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+            SAVE GRADE
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};

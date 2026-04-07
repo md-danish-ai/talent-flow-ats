@@ -2,13 +2,7 @@
 import { memo, useState, useMemo, useCallback } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
-import {
-  Zap,
-  Target,
-  AlertTriangle,
-  Clock,
-  Trophy,
-} from "lucide-react";
+import { Zap, Target, AlertTriangle, Clock, Trophy } from "lucide-react";
 
 interface TypingTestViewProps {
   questionText: string;
@@ -36,7 +30,11 @@ export const TypingTestView = memo(function TypingTestView({
       const parsed = JSON.parse(currentAnswer);
       // Fallback for old plain-text format
       if (typeof parsed !== "object" || parsed === null) {
-        return { typedText: currentAnswer, sourcePassage: passage, stats: null };
+        return {
+          typedText: currentAnswer,
+          sourcePassage: passage,
+          stats: null,
+        };
       }
       return {
         typedText: parsed.typed_text || "",
@@ -104,7 +102,9 @@ export const TypingTestView = memo(function TypingTestView({
       for (let i = 0; i < val.length; i++) {
         if (val[i] === passage[i]) correctNow++;
       }
-      const wpmNow = Math.round(val.length / 5 / (Math.max(timeTakenNow, 0.1) / 60));
+      const wpmNow = Math.round(
+        val.length / 5 / (Math.max(timeTakenNow, 0.1) / 60),
+      );
       const accuracyNow = Math.round((correctNow / val.length) * 100);
 
       const currentStats = {
@@ -202,7 +202,11 @@ export const TypingTestView = memo(function TypingTestView({
             >
               {stat.label}
             </Typography>
-            <Typography variant="body3" weight="bold" className="tracking-tight">
+            <Typography
+              variant="body3"
+              weight="bold"
+              className="tracking-tight"
+            >
               {stat.value}
             </Typography>
           </div>
@@ -270,7 +274,9 @@ export const TypingTestView = memo(function TypingTestView({
             >
               {isFinished ? "✓ Typing Completed" : "Start Typing Below"}
             </Typography>
-            {!isFinished && <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />}
+            {!isFinished && (
+              <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
+            )}
           </div>
           <div className="flex items-center gap-3">
             <Typography
@@ -283,16 +289,22 @@ export const TypingTestView = memo(function TypingTestView({
         </div>
 
         <div className="relative group">
-          <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 transition-opacity ${isFinished ? "bg-emerald-500/10 group-focus-within:opacity-100" : "bg-brand-primary/5 group-focus-within:opacity-100"}`} />
+          <div
+            className={`absolute inset-0 rounded-2xl blur-xl opacity-0 transition-opacity ${isFinished ? "bg-emerald-500/10 group-focus-within:opacity-100" : "bg-brand-primary/5 group-focus-within:opacity-100"}`}
+          />
           <Textarea
             rows={6}
-            placeholder={isFinished ? "Test completed. Please click 'Save & Next' to continue." : "Focus and start typing here..."}
+            placeholder={
+              isFinished
+                ? "Test completed. Please click 'Save & Next' to continue."
+                : "Focus and start typing here..."
+            }
             value={typedText}
             onChange={handleInputChange}
             disabled={isFinished}
             className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${
-              isFinished 
-                ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-900/40 cursor-not-allowed" 
+              isFinished
+                ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-900/40 cursor-not-allowed"
                 : "bg-muted/10 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10"
             }`}
           />
@@ -303,8 +315,15 @@ export const TypingTestView = memo(function TypingTestView({
           <div className="mt-0.5 p-1 rounded-md bg-amber-500/10 text-amber-600">
             <Clock size={14} />
           </div>
-          <Typography variant="body5" className="text-amber-800/80 font-medium leading-relaxed italic">
-            <strong>Note:</strong> Type Complete Paragraph and Click on <span className="font-bold underline">&quot;Save &amp; Next&quot;</span>. You will not be able to come back on this section.
+          <Typography
+            variant="body5"
+            className="text-amber-800/80 font-medium leading-relaxed italic"
+          >
+            <strong>Note:</strong> Type Complete Paragraph and Click on{" "}
+            <span className="font-bold underline">
+              &quot;Save &amp; Next&quot;
+            </span>
+            . You will not be able to come back on this section.
           </Typography>
         </div>
 
@@ -315,11 +334,16 @@ export const TypingTestView = memo(function TypingTestView({
               <Trophy size={20} />
             </div>
             <div>
-              <Typography variant="body4" weight="black" className="uppercase tracking-wide leading-none">
+              <Typography
+                variant="body4"
+                weight="black"
+                className="uppercase tracking-wide leading-none"
+              >
                 Typing Finished Successfully!
               </Typography>
               <Typography variant="body5" className="mt-1 opacity-80">
-                Great job! Your performance data has been logged. Please click &quot;Save &amp; Next&quot; to proceed with the interview.
+                Great job! Your performance data has been logged. Please click
+                &quot;Save &amp; Next&quot; to proceed with the interview.
               </Typography>
             </div>
           </div>

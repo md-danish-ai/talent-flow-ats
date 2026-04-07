@@ -102,22 +102,47 @@ export const QuestionResultCard = ({
         </div>
       </div>
 
-      {answer.image_url && (
-        <div className="mb-8 rounded-[1.5rem] border border-border/50 bg-white/50 p-2 shadow-inner group-hover:scale-[1.01] transition-transform duration-500">
+      {answer.image_url && answer.question_type !== "IMAGE_MULTIPLE_CHOICE" && (
+        <div className="mb-8 w-fit mx-auto border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.01] transition-transform duration-500">
           <Image
             src={getCanonicalImageUrl(answer.image_url) as string}
             alt="Question Content"
-            width={1200}
-            height={600}
-            className="w-full rounded-[1.25rem] object-contain bg-white h-auto max-h-[500px]"
+            width={800}
+            height={400}
+            className="w-auto h-auto max-h-[300px] max-w-full rounded-[1rem] object-contain"
             unoptimized
           />
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {answer.question_type === "IMAGE_MULTIPLE_CHOICE" &&
+          answer.image_url && (
+            <div className="lg:col-span-6 flex flex-col justify-center items-center lg:items-start">
+              <div className="w-fit border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.05] transition-transform duration-500">
+                <Image
+                  src={getCanonicalImageUrl(answer.image_url) as string}
+                  alt="Question Content"
+                  width={800}
+                  height={600}
+                  className="w-auto h-auto max-h-[400px] max-w-full rounded-[1rem] object-contain"
+                  unoptimized
+                />
+              </div>
+            </div>
+          )}
+
         {/* Main Content Area */}
-        <div className="lg:col-span-8 space-y-6">
+        <div
+          className={
+            answer.question_type === "IMAGE_MULTIPLE_CHOICE" && answer.image_url
+              ? "lg:col-span-6 space-y-6"
+              : answer.question_type === "MULTIPLE_CHOICE" ||
+                  answer.question_type === "IMAGE_MULTIPLE_CHOICE"
+                ? "lg:col-span-12 space-y-6"
+                : "lg:col-span-8 space-y-6"
+          }
+        >
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
             <Typography
@@ -130,7 +155,14 @@ export const QuestionResultCard = ({
           </div>
 
           {isChoiceType ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              className={`grid gap-4 ${
+                answer.question_type === "IMAGE_MULTIPLE_CHOICE" &&
+                answer.image_url
+                  ? "grid-cols-1"
+                  : "grid-cols-1 md:grid-cols-2"
+              }`}
+            >
               {options.map((opt) => {
                 const isSelected =
                   optionSelectedByKey === opt.optionLabel ||
@@ -264,15 +296,27 @@ export const QuestionResultCard = ({
                   className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-xs"
                 >
                   {(() => {
-                    const isStructuredType = answer.question_type === "LEAD_GENERATION" || answer.question_type === "CONTACT_DETAILS";
-                    let displayData: string | null | undefined = answer.correct_answer || answer.passage;
+                    const isStructuredType =
+                      answer.question_type === "LEAD_GENERATION" ||
+                      answer.question_type === "CONTACT_DETAILS";
+                    let displayData: string | null | undefined =
+                      answer.correct_answer || answer.passage;
 
                     // For structured types, prioritize options field if others are empty
-                    if (isStructuredType && !displayData && answer.options && !Array.isArray(answer.options)) {
+                    if (
+                      isStructuredType &&
+                      !displayData &&
+                      answer.options &&
+                      !Array.isArray(answer.options)
+                    ) {
                       displayData = JSON.stringify(answer.options);
                     }
 
-                    if (displayData && typeof displayData === "string" && displayData.trim().startsWith("{")) {
+                    if (
+                      displayData &&
+                      typeof displayData === "string" &&
+                      displayData.trim().startsWith("{")
+                    ) {
                       try {
                         const parsed = JSON.parse(displayData);
                         if (typeof parsed === "object" && parsed !== null) {
@@ -284,11 +328,20 @@ export const QuestionResultCard = ({
                                   .replace(/^./, (str) => str.toUpperCase())
                                   .replace(/_/g, " ");
                                 return (
-                                  <div key={key} className="p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5">
-                                    <Typography variant="body5" className="font-black text-[9px] uppercase tracking-wider text-emerald-600/50 mb-1 leading-none">
+                                  <div
+                                    key={key}
+                                    className="p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5"
+                                  >
+                                    <Typography
+                                      variant="body5"
+                                      className="font-black text-[9px] uppercase tracking-wider text-emerald-600/50 mb-1 leading-none"
+                                    >
                                       {label}
                                     </Typography>
-                                    <Typography variant="body4" className="font-bold text-emerald-700/80 break-words leading-tight">
+                                    <Typography
+                                      variant="body4"
+                                      className="font-bold text-emerald-700/80 break-words leading-tight"
+                                    >
                                       {String(value || "N/A")}
                                     </Typography>
                                   </div>
@@ -297,7 +350,9 @@ export const QuestionResultCard = ({
                             </div>
                           );
                         }
-                      } catch { /* fallback */ }
+                      } catch {
+                        /* fallback */
+                      }
                     }
                     return displayData || "N/A";
                   })()}
@@ -396,111 +451,111 @@ export const QuestionResultCard = ({
         </div>
 
         {/* Evaluation Sidebar Part */}
-        <div className="lg:col-span-4 space-y-6">
-          {answer.question_type !== "MULTIPLE_CHOICE" &&
-            answer.question_type !== "IMAGE_MULTIPLE_CHOICE" && (
-              <>
-                <div className="flex items-center gap-3">
+        {answer.question_type !== "MULTIPLE_CHOICE" &&
+          answer.question_type !== "IMAGE_MULTIPLE_CHOICE" &&
+          answer.is_attempted && (
+            <div className="lg:col-span-4 space-y-6">
+              <div className="flex items-center gap-3">
+                <Typography
+                  variant="body5"
+                  className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
+                >
+                  Evaluation
+                </Typography>
+                <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
+              </div>
+              <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
+                <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
                   <Typography
                     variant="body5"
-                    className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
+                    className="font-black text-muted-foreground/60 uppercase tracking-widest"
                   >
-                    Evaluation
+                    SYSTEM SCORE
                   </Typography>
-                  <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
+                  <div className="flex items-baseline gap-2">
+                    <Typography
+                      variant="h2"
+                      className="font-black tracking-tighter"
+                    >
+                      {answer.marks_obtained}
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      className="text-muted-foreground/40 font-black"
+                    >
+                      / {answer.max_marks}
+                    </Typography>
+                  </div>
+                  <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${(answer.marks_obtained / (answer.max_marks || 1)) * 100}%`,
+                      }}
+                      className={`h-full ${answer.status === "correct" ? "bg-emerald-500" : "bg-rose-500"}`}
+                    />
+                  </div>
                 </div>
 
-                <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
-                  <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <Typography
                       variant="body5"
                       className="font-black text-muted-foreground/60 uppercase tracking-widest"
                     >
-                      SYSTEM SCORE
+                      MANUAL OVERRIDE
                     </Typography>
-                    <div className="flex items-baseline gap-2">
-                      <Typography
-                        variant="h2"
-                        className="font-black tracking-tighter"
-                      >
-                        {answer.marks_obtained}
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="text-muted-foreground/40 font-black"
-                      >
-                        / {answer.max_marks}
-                      </Typography>
-                    </div>
-                    <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{
-                          width: `${(answer.marks_obtained / (answer.max_marks || 1)) * 100}%`,
-                        }}
-                        className={`h-full ${answer.status === "correct" ? "bg-emerald-500" : "bg-rose-500"}`}
-                      />
-                    </div>
+                    <PencilLine
+                      size={14}
+                      className="text-muted-foreground/40"
+                    />
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Typography
-                        variant="body5"
-                        className="font-black text-muted-foreground/60 uppercase tracking-widest"
-                      >
-                        MANUAL OVERRIDE
-                      </Typography>
-                      <PencilLine
-                        size={14}
-                        className="text-muted-foreground/40"
-                      />
-                    </div>
+                  <div className="space-y-3">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={answer.max_marks}
+                      value={manualMarksValue}
+                      onChange={(e) =>
+                        onManualMarksChange(e.target.value.replace(/\D/g, ""))
+                      }
+                      placeholder={`Score (0-${answer.max_marks})`}
+                      className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white focus:text-black shadow-inner"
+                    />
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
+                      onClick={onManualMarksApply}
+                    >
+                      Adjust Marks
+                    </Button>
 
-                    <div className="space-y-3">
-                      <Input
-                        type="number"
-                        min={0}
-                        max={answer.max_marks}
-                        value={manualMarksValue}
-                        onChange={(e) => onManualMarksChange(e.target.value)}
-                        placeholder={`Score (0-${answer.max_marks})`}
-                        className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white shadow-inner"
-                      />
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
-                        onClick={onManualMarksApply}
-                      >
-                        Adjust Marks
-                      </Button>
+                    <AnimatePresence>
+                      {isManualMarksApplied && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
+                        >
+                          <FileCheck2 size={12} />
+                          MARKS APPLIED: {manualMarksValue}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-                      <AnimatePresence>
-                        {isManualMarksApplied && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
-                          >
-                            <FileCheck2 size={12} />
-                            MARKS APPLIED: {manualMarksValue}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <Typography
-                        variant="body5"
-                        className="text-center text-muted-foreground/40 italic"
-                      >
-                        Manual override will skip system calculations.
-                      </Typography>
-                    </div>
+                    <Typography
+                      variant="body5"
+                      className="text-center text-muted-foreground/40 italic"
+                    >
+                      Manual override will skip system calculations.
+                    </Typography>
                   </div>
                 </div>
-              </>
-            )}
-        </div>
+              </div>
+            </div>
+          )}
       </div>
 
       {/* Decorative elements */}

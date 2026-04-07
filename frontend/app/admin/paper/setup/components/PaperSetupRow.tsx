@@ -1,18 +1,13 @@
 import React from "react";
-import {
-  Loader2,
-  Edit as EditIcon,
-  Trash2,
-  Settings,
-  GraduationCap,
-  Eye,
-} from "lucide-react";
+import { Loader2, Edit as EditIcon, Trash2, Settings, Eye } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Button } from "@components/ui-elements/Button";
 import { TableCell, TableRow } from "@components/ui-elements/Table";
 import { PaperSetup } from "@lib/api/papers";
+import { GradeSettingsModal } from "./GradeSettingsModal";
+import { useState } from "react";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -40,6 +35,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   visibleColumns,
 }) => {
   const isVisible = (id: string) => visibleColumns.includes(id);
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
 
   return (
     <TableRow className="group/row border-b border-border transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
@@ -139,22 +135,15 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             >
               <Eye size={16} />
             </Button>
-            {/* <Button
+            <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              title="Settings"
+              onClick={() => setIsGradeModalOpen(true)}
+              title="Grade Settings"
             >
               <Settings size={16} />
-            </Button> */}
-            {/* <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              title="Grading"
-            >
-              <GraduationCap size={16} />
-            </Button> */}
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -175,6 +164,14 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             </Button>
           </div>
         </TableCell>
+      )}
+
+      {isGradeModalOpen && row.id && (
+        <GradeSettingsModal
+          isOpen={isGradeModalOpen}
+          onClose={() => setIsGradeModalOpen(false)}
+          paperId={row.id}
+        />
       )}
     </TableRow>
   );

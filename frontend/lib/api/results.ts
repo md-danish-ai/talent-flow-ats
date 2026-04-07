@@ -2,6 +2,8 @@ import { api } from "./index";
 
 export interface AdminUserLatestAttempt {
   attempt_id: number;
+  paper_id?: number;
+  paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
   submitted_at?: string | null;
@@ -9,12 +11,19 @@ export interface AdminUserLatestAttempt {
   attempted_count: number;
   unattempted_count: number;
   obtained_marks?: number | null;
+  total_marks?: number;
   typing_stats?: {
     wpm: number;
     accuracy: number;
     errors: number;
     time_taken: number;
   } | null;
+  subject_results?: Array<{
+    section_name: string;
+    grade: string;
+    obtained: number;
+    max: number;
+  }>;
 }
 
 export interface AdminUserResultListItem {
@@ -23,11 +32,21 @@ export interface AdminUserResultListItem {
   mobile: string;
   email?: string | null;
   attempts_count: number;
+  is_reattempt?: boolean;
   latest_attempt?: AdminUserLatestAttempt | null;
+}
+
+export interface PaginatedUserResults {
+  items: AdminUserResultListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 export interface AdminUserResultAnswer {
   question_id: number;
+  section_name: string;
   question_type: string;
   subject_type: string;
   exam_level: string;
@@ -40,6 +59,7 @@ export interface AdminUserResultAnswer {
   correct_answer?: string | null;
   status: "correct" | "incorrect" | "not_attempted";
   marks_obtained: number;
+  manual_marks?: number | null;
   is_attempted: boolean;
   is_auto_saved: boolean;
   saved_at: string;
@@ -49,6 +69,19 @@ export interface AdminUserResultAnswer {
     errors: number;
     time_taken: number;
   } | null;
+}
+
+export interface SubjectWiseResult {
+  section_name: string;
+  total_questions: number;
+  attempted_count: number;
+  unattempted_count: number;
+  correct_count: number;
+  incorrect_count: number;
+  obtained_marks: number;
+  max_marks: number;
+  percentage: number;
+  grade: string;
 }
 
 export interface AdminUserResultDetail {
@@ -61,6 +94,8 @@ export interface AdminUserResultDetail {
   attempt: {
     attempt_id: number;
     paper_id: number;
+    paper_name: string;
+    attempt_number: number;
     status: string;
     completion_reason?: "manual" | "time_over" | null;
     started_at: string;
@@ -77,12 +112,14 @@ export interface AdminUserResultDetail {
     not_attempted_count: number;
     total_marks_obtained: number;
   };
+  subject_wise_result: SubjectWiseResult[];
   answers: AdminUserResultAnswer[];
 }
 
 export interface AdminUserAttemptHistoryItem {
   attempt_id: number;
   paper_id: number;
+  paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
   started_at: string;
@@ -111,9 +148,21 @@ export interface AdminUserAttemptsResponse {
 }
 
 export const resultsApi = {
-  getUserResults: async (search?: string) => {
-    const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return api.get<AdminUserResultListItem[]>(`/admin/results${query}`);
+  getUserResults: async (
+    search?: string,
+    page: number = 1,
+    limit: number = 10,
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    params.append("page", String(page));
+    params.append("limit", String(limit));
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+
+    return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
@@ -144,6 +193,22 @@ export const resultsApi = {
   enableReInterview: async (userId: number) => {
     return api.post<{ message: string; reinterview_date?: string }>(
       `/admin/results/users/${userId}/enable-reinterview`,
+    );
+  },
+
+  applyManualMarks: async (
+    userId: number,
+    attemptId: number,
+    questionId: number,
+    marks: number,
+  ) => {
+    return api.post<{
+      message: string;
+      manual_marks: number;
+      new_total_marks: number;
+    }>(
+      `/admin/results/users/${userId}/attempts/${attemptId}/responses/${questionId}/manual-marks`,
+      { marks },
     );
   },
 };

@@ -9,6 +9,7 @@ import {
   Target,
   Activity,
   FileCheck2,
+  BookOpen,
 } from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
@@ -47,10 +48,9 @@ export function AttemptDetailClient({
   const [manualMarksApplied, setManualMarksApplied] = useState<
     Record<string, string>
   >({});
-  const [expandedSections, setExpandedSections] = useState({
-    attempted: true,
-    unattempted: false,
-  });
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -73,13 +73,19 @@ export function AttemptDetailClient({
     if (!data) return;
 
     const initialMarks: Record<string, string> = {};
+    const initialApplied: Record<string, string> = {};
+
     data.answers.forEach((answer, index) => {
-      initialMarks[`${answer.question_id}-${index}`] = String(
-        answer.marks_obtained ?? "",
-      );
+      const key = `${answer.question_id}-${index}`;
+      if (answer.manual_marks !== undefined && answer.manual_marks !== null) {
+        initialMarks[key] = String(answer.manual_marks);
+        initialApplied[key] = String(answer.manual_marks);
+      } else {
+        initialMarks[key] = String(answer.marks_obtained ?? "");
+      }
     });
     setManualMarks(initialMarks);
-    setManualMarksApplied({});
+    setManualMarksApplied(initialApplied);
   }, [data]);
 
   const statusColor =
@@ -89,14 +95,33 @@ export function AttemptDetailClient({
         ? "success"
         : "default";
 
-  const handleManualMarksApply = (key: string) => {
-    setManualMarksApplied((previous) => ({
-      ...previous,
-      [key]: manualMarks[key] ?? "",
-    }));
+  const handleManualMarksApply = async (questionId: number, index: number) => {
+    const key = `${questionId}-${index}`;
+    const value = manualMarks[key];
+    if (!value) return;
+
+    try {
+      await resultsApi.applyManualMarks(
+        userId,
+        attemptId,
+        questionId,
+        parseFloat(value),
+      );
+
+      setManualMarksApplied((previous) => ({
+        ...previous,
+        [key]: value,
+      }));
+
+      // Soft fetch to visually update aggregated counts and percentages immediately.
+      const result = await resultsApi.getUserResultDetail(userId, attemptId);
+      setData(result);
+    } catch (e) {
+      console.error("Failed to apply manual marks:", e);
+    }
   };
 
-  const toggleSection = (section: "attempted" | "unattempted") => {
+  const toggleSection = (section: string) => {
     setExpandedSections((previous) => ({
       ...previous,
       [section]: !previous[section],
@@ -143,13 +168,16 @@ export function AttemptDetailClient({
     );
   }
 
-  const attemptedQuestionItems = data.answers
-    .map((answer, index) => ({ answer, index }))
-    .filter((o) => o.answer.is_attempted);
-
-  const unattemptedQuestionItems = data.answers
-    .map((answer, index) => ({ answer, index }))
-    .filter((o) => !o.answer.is_attempted);
+  // Group questions by subject
+  const answersBySubject = data.answers.reduce(
+    (acc, answer, index) => {
+      const section = answer.section_name;
+      if (!acc[section]) acc[section] = [];
+      acc[section].push({ answer, index });
+      return acc;
+    },
+    {} as Record<string, { answer: (typeof data.answers)[0]; index: number }[]>,
+  );
 
   const totalMaxMarks = data.answers.reduce(
     (acc, curr) => acc + curr.max_marks,
@@ -187,40 +215,59 @@ export function AttemptDetailClient({
   ];
 
   return (
-    <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
+    <PageContainer className="py-8 space-y-10 max-w-7xl mx-auto">
       {/* Dynamic Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+      >
+        <div className="space-y-4">
           <Link
             href={`/admin/results/${userId}`}
-            className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-colors mb-2"
+            className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all mb-4 w-fit"
           >
-            <div className="p-1 rounded-lg bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border">
+            <div className="p-1.5 rounded-xl bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30">
               <ArrowLeft size={16} />
             </div>
-            <Typography variant="body5" className="font-bold">
+            <Typography
+              variant="body5"
+              className="font-black uppercase tracking-widest text-[10px]"
+            >
               Back to Attempt History
             </Typography>
           </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <Typography variant="h2" className="tracking-tight font-black">
-              Attempt Report #{attemptId}
-            </Typography>
-            <Badge
-              color={statusColor}
-              variant="fill"
-              className="rounded-full px-4 font-black text-[10px]"
-            >
-              {data.attempt.status.toUpperCase()}
-            </Badge>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative">
+              <Typography
+                variant="h1"
+                className="tracking-tight font-black sm:text-5xl"
+              >
+                Attempt{" "}
+                <span className="text-brand-primary">
+                  #{data.attempt.attempt_number}
+                </span>
+              </Typography>
+              <div className="absolute -bottom-2 left-0 w-24 h-1.5 bg-brand-primary rounded-full opacity-20" />
+            </div>
+            <div className="flex flex-col gap-1 sm:ml-4">
+              <Badge
+                color={statusColor}
+                variant="fill"
+                className="rounded-full px-5 py-1.5 font-black text-[10px] tracking-[0.2em] shadow-lg shadow-brand-primary/10"
+              >
+                {data.attempt.status.toUpperCase()}
+              </Badge>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Profile Summary Strip */}
       <ProfileSummaryStrip
         username={data.user.username}
         mobile={data.user.mobile}
+        paperName={data.attempt.paper_name}
         startedAt={data.attempt.started_at}
         submittedAt={data.attempt.submitted_at}
       />
@@ -229,195 +276,240 @@ export function AttemptDetailClient({
       <PerformanceGrid scoreStats={scoreStats} />
 
       {/* Detailed Result Breakdown */}
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-6"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 rounded-3xl border border-border/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner">
               <FileCheck2 size={20} />
             </div>
             <div>
-              <Typography variant="h4" className="font-bold leading-none">
+              <Typography
+                variant="h4"
+                className="font-black leading-none mb-1.5"
+              >
                 Result Breakdown
               </Typography>
               <Typography
                 variant="body5"
-                className="text-muted-foreground mt-1 text-xs"
+                className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest ml-0.5 opacity-60"
               >
-                Question-by-question performance and scoring.
+                Subject-wise performance metrics.
               </Typography>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              color="success"
-              variant="outline"
-              className="px-3 py-1 font-bold"
-            >
-              Correct: {data.summary.correct_count}
-            </Badge>
-            <Badge
-              color="error"
-              variant="outline"
-              className="px-3 py-1 font-bold"
-            >
-              Incorrect: {data.summary.incorrect_count}
-            </Badge>
-            <Badge
-              color="warning"
-              variant="outline"
-              className="px-3 py-1 font-bold"
-            >
-              Skipped: {data.summary.not_attempted_count}
-            </Badge>
+            {[
+              {
+                label: "Correct",
+                val: data.summary.correct_count,
+                col: "success" as const,
+              },
+              {
+                label: "Incorrect",
+                val: data.summary.incorrect_count,
+                col: "error" as const,
+              },
+              {
+                label: "Skipped",
+                val: data.summary.not_attempted_count,
+                col: "warning" as const,
+              },
+            ].map((b) => (
+              <Badge
+                key={b.label}
+                color={b.col}
+                variant="outline"
+                className="px-4 py-1.5 font-black rounded-xl bg-background border-2 tracking-tight text-[11px]"
+              >
+                {b.label.toUpperCase()}: {b.val}
+              </Badge>
+            ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {/* Attempted Questions Section */}
-          <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-            <button
-              onClick={() => toggleSection("attempted")}
-              className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors border-b border-border"
+        <div className="grid grid-cols-1 gap-5">
+          {data.subject_wise_result.map((subject, idx) => (
+            <motion.div
+              key={subject.section_name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + idx * 0.1 }}
+              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500"
             >
-              <div className="flex items-center gap-3">
-                <Typography variant="h4" className="font-bold tracking-tight">
-                  Attempted Questions
-                </Typography>
-                <Badge variant="fill" className="rounded-full px-3">
-                  {attemptedQuestionItems.length}
-                </Badge>
-              </div>
-              <motion.div
-                animate={{ rotate: expandedSections.attempted ? 0 : 180 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
+              <button
+                onClick={() => toggleSection(subject.section_name)}
+                className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
               >
-                <ChevronUp size={20} />
-              </motion.div>
-            </button>
-            <AnimatePresence initial={false}>
-              {expandedSections.attempted && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 md:p-6 space-y-6">
-                    {attemptedQuestionItems.length > 0 ? (
-                      attemptedQuestionItems.map((item) => (
-                        <QuestionResultCard
-                          key={`${item.answer.question_id}-${item.index}`}
-                          answer={item.answer}
-                          index={item.index}
-                          manualMarksValue={
-                            manualMarks[`${item.answer.question_id}-${item.index}`] ?? ""
-                          }
-                          isManualMarksApplied={
-                            manualMarksApplied[`${item.answer.question_id}-${item.index}`] !==
-                            undefined
-                          }
-                          onManualMarksChange={(val) =>
-                            setManualMarks((p) => ({
-                              ...p,
-                              [`${item.answer.question_id}-${item.index}`]: val,
-                            }))
-                          }
-                          onManualMarksApply={() =>
-                            handleManualMarksApply(`${item.answer.question_id}-${item.index}`)
-                          }
-                          getCanonicalImageUrl={getCanonicalImageUrl}
-                          parseQuestionOptions={parseQuestionOptions}
-                          extractOptionKey={extractOptionKey}
-                          normalizeText={normalizeText}
-                        />
-                      ))
-                    ) : (
-                      <div className="py-12 text-center text-muted-foreground">
-                        No attempted questions.
+                <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-500 shadow-inner">
+                      <BookOpen size={20} />
+                    </div>
+                    <div>
+                      <Typography
+                        variant="h4"
+                        className="font-black tracking-tight leading-none mb-1.5"
+                      >
+                        {subject.section_name}
+                      </Typography>
+                      <div className="flex items-center gap-3">
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] py-0 px-2 h-5 bg-background font-black tracking-widest border-border/50 rounded-lg"
+                        >
+                          TOTAL: {subject.total_questions}
+                        </Badge>
+                        <div className="h-1 w-1 rounded-full bg-border" />
+                        <Typography
+                          variant="body5"
+                          className="text-brand-primary font-black uppercase text-[10px] tracking-tighter"
+                        >
+                          PERFORMANCE: {subject.percentage}%
+                        </Typography>
                       </div>
-                    )}
+                    </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                </div>
 
-          {/* Unattempted Questions Section */}
-          <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-            <button
-              onClick={() => toggleSection("unattempted")}
-              className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors border-b border-border"
-            >
-              <div className="flex items-center gap-3">
-                <Typography variant="h4" className="font-bold tracking-tight">
-                  Unattempted Questions
-                </Typography>
-                <Badge
-                  variant="fill"
-                  color="default"
-                  className="rounded-full px-3"
-                >
-                  {unattemptedQuestionItems.length}
-                </Badge>
-              </div>
-              <motion.div
-                animate={{ rotate: expandedSections.unattempted ? 0 : 180 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                <ChevronUp size={20} />
-              </motion.div>
-            </button>
-            <AnimatePresence initial={false}>
-              {expandedSections.unattempted && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 md:p-6 space-y-6">
-                    {unattemptedQuestionItems.length > 0 ? (
-                      unattemptedQuestionItems.map((item) => (
-                        <QuestionResultCard
-                          key={`${item.answer.question_id}-${item.index}`}
-                          answer={item.answer}
-                          index={item.index}
-                          manualMarksValue={
-                            manualMarks[`${item.answer.question_id}-${item.index}`] ?? ""
-                          }
-                          isManualMarksApplied={
-                            manualMarksApplied[`${item.answer.question_id}-${item.index}`] !==
-                            undefined
-                          }
-                          onManualMarksChange={(val) =>
-                            setManualMarks((p) => ({
-                              ...p,
-                              [`${item.answer.question_id}-${item.index}`]: val,
-                            }))
-                          }
-                          onManualMarksApply={() =>
-                            handleManualMarksApply(`${item.answer.question_id}-${item.index}`)
-                          }
-                          getCanonicalImageUrl={getCanonicalImageUrl}
-                          parseQuestionOptions={parseQuestionOptions}
-                          extractOptionKey={extractOptionKey}
-                          normalizeText={normalizeText}
-                        />
-                      ))
-                    ) : (
-                      <div className="py-12 text-center text-muted-foreground">
-                        No unattempted questions.
-                      </div>
-                    )}
+                <div className="flex items-center gap-5">
+                  <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
+                    <div className="text-center group-hover:scale-110 transition-transform">
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                      >
+                        Correct
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        className="font-black text-emerald-600 leading-none"
+                      >
+                        {subject.correct_count}
+                      </Typography>
+                    </div>
+                    <div className="text-center group-hover:scale-110 transition-transform delay-75">
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                      >
+                        Incorrect
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        className="font-black text-rose-600 leading-none"
+                      >
+                        {subject.incorrect_count}
+                      </Typography>
+                    </div>
+                    <div className="text-center group-hover:scale-110 transition-transform delay-100">
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                      >
+                        Skipped
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        className="font-black text-amber-600 leading-none"
+                      >
+                        {subject.unattempted_count}
+                      </Typography>
+                    </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+
+                  {/* Grade Badge */}
+                  <Badge
+                    variant="fill"
+                    color={
+                      subject.grade === "Excellent"
+                        ? "success"
+                        : subject.grade === "Good"
+                          ? "primary"
+                          : subject.grade === "Average"
+                            ? "warning"
+                            : subject.grade === "Poor"
+                              ? "error"
+                              : "default"
+                    }
+                    className="px-5 py-2 rounded-xl font-black text-[11px] tracking-[0.12em] shadow-md shadow-black/5 uppercase min-w-[100px] text-center"
+                  >
+                    {subject.grade}
+                  </Badge>
+
+                  <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
+                    <motion.div
+                      animate={{
+                        rotate: expandedSections[subject.section_name]
+                          ? 0
+                          : 180,
+                      }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <ChevronUp size={18} />
+                    </motion.div>
+                  </div>
+                </div>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {expandedSections[subject.section_name] && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
+                      {(answersBySubject[subject.section_name] || []).map(
+                        (item) => (
+                          <QuestionResultCard
+                            key={`${item.answer.question_id}-${item.index}`}
+                            answer={item.answer}
+                            index={item.index}
+                            manualMarksValue={
+                              manualMarks[
+                                `${item.answer.question_id}-${item.index}`
+                              ] ?? ""
+                            }
+                            isManualMarksApplied={
+                              manualMarksApplied[
+                                `${item.answer.question_id}-${item.index}`
+                              ] !== undefined
+                            }
+                            onManualMarksChange={(val) =>
+                              setManualMarks((p) => ({
+                                ...p,
+                                [`${item.answer.question_id}-${item.index}`]:
+                                  val,
+                              }))
+                            }
+                            onManualMarksApply={() =>
+                              handleManualMarksApply(
+                                item.answer.question_id,
+                                item.index,
+                              )
+                            }
+                            getCanonicalImageUrl={getCanonicalImageUrl}
+                            parseQuestionOptions={parseQuestionOptions}
+                            extractOptionKey={extractOptionKey}
+                            normalizeText={normalizeText}
+                          />
+                        ),
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
         </div>
-      </div>
+      </motion.div>
     </PageContainer>
   );
 }

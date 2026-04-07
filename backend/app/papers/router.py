@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
@@ -94,3 +95,22 @@ def delete_paper(paper_id: int, db: Session = Depends(get_db)):
     if not success:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.DELETED)
+
+
+@router.put("/grade-settings/{paper_id}")
+def update_grade_settings(
+    paper_id: int,
+    grade_settings: List[schemas.GradeSettingItem],
+    db: Session = Depends(get_db),
+):
+    grade_data = [item.model_dump() for item in grade_settings]
+    db_paper = repository.update_paper_grade_settings(
+        db=db, paper_id=paper_id, grade_settings=grade_data
+    )
+    if db_paper is None:
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.UPDATED,
+        data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
+    )

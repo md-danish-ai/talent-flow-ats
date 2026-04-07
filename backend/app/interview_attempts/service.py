@@ -87,9 +87,22 @@ class InterviewAttemptService:
                 detail=str(exception),
             )
 
-    async def get_admin_user_results(self, search: str | None = None):
+    async def get_admin_user_results(
+        self,
+        search: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        page: int = 1,
+        limit: int = 10,
+    ):
         try:
-            return repository.get_admin_user_results(search=search)
+            return repository.get_admin_user_results(
+                search=search,
+                start_date=start_date,
+                end_date=end_date,
+                page=page,
+                limit=limit,
+            )
         except HTTPException:
             raise
         except Exception as exception:
@@ -150,6 +163,24 @@ class InterviewAttemptService:
     async def reset_user_for_reinterview(self, user_id: int):
         try:
             return repository.reset_user_for_reinterview(user_id=user_id)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
+
+    async def assign_manual_marks(
+        self, user_id: int, attempt_id: int, question_id: int, marks: float
+    ):
+        try:
+            return repository.assign_manual_marks(
+                user_id=user_id,
+                attempt_id=attempt_id,
+                question_id=question_id,
+                marks=marks,
+            )
         except HTTPException:
             raise
         except Exception as exception:
