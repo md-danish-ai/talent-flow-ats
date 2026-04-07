@@ -162,16 +162,14 @@ export function TodayUserListing({
                             </span>
                             {row.is_reinterview ? (
                               <Badge
-                                className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-violet-500/10 animate-pulse"
                                 variant="outline"
+                                color="violet"
+                                animate="pulse"
                               >
                                 RETURNING
                               </Badge>
                             ) : (
-                              <Badge
-                                className="bg-green-500/10 text-green-600 border-green-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-green-500/10"
-                                variant="outline"
-                              >
+                              <Badge variant="outline" color="success">
                                 NEW
                               </Badge>
                             )}

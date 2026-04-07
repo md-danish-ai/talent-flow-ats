@@ -1,6 +1,11 @@
 "use client";
 
-import { CheckCircle2, History as HistoryIcon, LayoutGrid, UserX } from "lucide-react";
+import {
+  CheckCircle2,
+  History as HistoryIcon,
+  LayoutGrid,
+  UserX,
+} from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { cn } from "@lib/utils";
@@ -60,8 +65,8 @@ export function CollapsibleResultDetail({
                   res.grade === "Excellent" || res.grade === "Good"
                     ? "success"
                     : res.grade === "Average"
-                    ? "warning"
-                    : "error"
+                      ? "warning"
+                      : "error"
                 }
                 className="rounded-lg font-bold text-[10px] px-2 h-6"
               >
@@ -121,7 +126,10 @@ export function CollapsibleResultDetail({
                   {stat.icon}
                 </div>
                 <div>
-                  <Typography variant="body5" className="text-muted-foreground font-medium">
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground font-medium"
+                  >
                     {stat.label}
                   </Typography>
                   <Typography variant="body2" className="font-bold">

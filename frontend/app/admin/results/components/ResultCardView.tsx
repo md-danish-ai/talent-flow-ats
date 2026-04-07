@@ -1,6 +1,13 @@
 "use client";
 
-import { Phone, ArrowRight, History as HistoryIcon, CheckCircle2, CircleAlert, User2 } from "lucide-react";
+import {
+  Phone,
+  ArrowRight,
+  History as HistoryIcon,
+  CheckCircle2,
+  CircleAlert,
+  User2,
+} from "lucide-react";
 import { ResultCard } from "@components/ui-cards/ResultCard";
 import { AdminUserResultListItem } from "@lib/api/results";
 
@@ -44,7 +51,9 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                 },
                 {
                   label: "Completion",
-                  value: latest ? `${latest.attempted_count}/${latest.total_questions}` : "0/0",
+                  value: latest
+                    ? `${latest.attempted_count}/${latest.total_questions}`
+                    : "0/0",
                   icon: CheckCircle2,
                   color: "text-emerald-500",
                 },

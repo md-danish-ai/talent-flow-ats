@@ -150,7 +150,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
                 onEdit(row);
               }}
               title="Edit Question"
-              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+              // className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
             >
               <EditIcon size={16} />
             </Button>
