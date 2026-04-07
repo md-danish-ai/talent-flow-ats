@@ -257,7 +257,7 @@ export function UserResultsClient() {
               }}
               initialLabel="All Time"
             />
-            
+
             <div className="h-6 w-px bg-border/60 mx-1 hidden md:block" />
             <Badge
               variant="outline"

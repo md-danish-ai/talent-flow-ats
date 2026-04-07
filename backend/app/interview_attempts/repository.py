@@ -709,6 +709,19 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 detail="No interview attempt found for this user",
             )
 
+        paper_obj = db_session.query(Paper).filter(Paper.id == attempt.paper_id).first()
+        grade_settings = paper_obj.grade_settings if paper_obj and paper_obj.grade_settings else []
+
+        # Current attempt number for this user
+        attempt_number = (
+            db_session.query(InterviewAttempt)
+            .filter(
+                InterviewAttempt.user_id == user_id,
+                InterviewAttempt.id <= attempt.id
+            )
+            .count()
+        )
+
         answer_rows = (
             db_session.query(InterviewAttemptResponse,
                              Question, QuestionAnswer)
@@ -720,6 +733,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         )
 
         detailed_answers: list[dict] = []
+        subject_stats: dict[str, dict[str, Any]] = {}
         correct_count = 0
         incorrect_count = 0
         not_attempted_count = 0
@@ -799,6 +813,57 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "saved_at": answer_row.saved_at,
                 }
             )
+            # Track subject-wise stats
+            section_name = answer_row.section_name
+            if section_name not in subject_stats:
+                subject_stats[section_name] = {
+                    "total_questions": 0,
+                    "attempted_count": 0,
+                    "unattempted_count": 0,
+                    "correct_count": 0,
+                    "incorrect_count": 0,
+                    "obtained_marks": 0.0,
+                    "max_marks": 0.0,
+                }
+            
+            stats = subject_stats[section_name]
+            stats["total_questions"] += 1
+            stats["max_marks"] += float(question.marks or 0)
+            
+            if is_attempted:
+                stats["attempted_count"] += 1
+                stats["obtained_marks"] += marks_obtained
+                if status == "correct":
+                    stats["correct_count"] += 1
+                else:
+                    stats["incorrect_count"] += 1
+            else:
+                stats["unattempted_count"] += 1
+
+        # Calculate subject-wise grades
+        subject_wise_result = []
+        for section_name, stats in subject_stats.items():
+            percentage = (stats["obtained_marks"] / stats["max_marks"] * 100) if stats["max_marks"] > 0 else 0
+            
+            grade_label = "N/A"
+            for setting in grade_settings:
+                # Support both inclusive and exclusive ranges if needed, but here we do standard check
+                if setting.get("min", 0) <= percentage <= setting.get("max", 100):
+                    grade_label = setting.get("grade_label", "N/A")
+                    break
+            
+            subject_wise_result.append({
+                "section_name": section_name,
+                "total_questions": stats["total_questions"],
+                "attempted_count": stats["attempted_count"],
+                "unattempted_count": stats["unattempted_count"],
+                "correct_count": stats["correct_count"],
+                "incorrect_count": stats["incorrect_count"],
+                "obtained_marks": stats["obtained_marks"],
+                "max_marks": stats["max_marks"],
+                "percentage": round(percentage, 2),
+                "grade": grade_label
+            })
 
         return {
             "user": {
@@ -810,6 +875,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             "attempt": {
                 "attempt_id": attempt.id,
                 "paper_id": attempt.paper_id,
+                "paper_name": paper_obj.paper_name if paper_obj else "Unknown Paper",
+                "attempt_number": attempt_number,
                 "status": attempt.status,
                 "completion_reason": attempt.completion_reason,
                 "started_at": attempt.started_at,
@@ -828,6 +895,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "not_attempted_count": not_attempted_count,
                 "total_marks_obtained": total_marks_obtained,
             },
+            "subject_wise_result": subject_wise_result,
             "answers": detailed_answers,
         }
     finally:

@@ -12,6 +12,12 @@ class SubjectConfigItem(BaseModel):
     order: int
 
 
+class GradeSettingItem(BaseModel):
+    min: float
+    max: float
+    grade_label: str
+
+
 class PaperBase(BaseModel):
     paper_name: str
     description: Optional[str] = None
@@ -29,6 +35,7 @@ class PaperBase(BaseModel):
     total_marks: Optional[int] = None
     is_active: bool = True
     grade: Optional[str] = None
+    grade_settings: Optional[List[GradeSettingItem]] = None
 
 
 class PaperCreate(PaperBase):
@@ -56,6 +63,7 @@ class PaperUpdate(BaseModel):
     total_marks: Optional[int] = None
     is_active: Optional[bool] = None
     grade: Optional[str] = None
+    grade_settings: Optional[List[GradeSettingItem]] = None
 
 
 class PaperResponse(PaperBase):

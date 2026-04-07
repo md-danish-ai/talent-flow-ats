@@ -25,6 +25,7 @@ class Paper(Base):
     total_marks = Column(Integer, nullable=True)
     is_active = Column(Boolean, server_default="true", nullable=False)
     grade = Column(String(100), nullable=True)
+    grade_settings = Column(JSONB, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(
         TIMESTAMP, server_default=func.current_timestamp(), nullable=False

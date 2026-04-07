@@ -36,6 +36,7 @@ export interface PaginatedUserResults {
 
 export interface AdminUserResultAnswer {
   question_id: number;
+  section_name: string;
   question_type: string;
   subject_type: string;
   exam_level: string;
@@ -60,6 +61,19 @@ export interface AdminUserResultAnswer {
   } | null;
 }
 
+export interface SubjectWiseResult {
+  section_name: string;
+  total_questions: number;
+  attempted_count: number;
+  unattempted_count: number;
+  correct_count: number;
+  incorrect_count: number;
+  obtained_marks: number;
+  max_marks: number;
+  percentage: number;
+  grade: string;
+}
+
 export interface AdminUserResultDetail {
   user: {
     id: number;
@@ -70,6 +84,8 @@ export interface AdminUserResultDetail {
   attempt: {
     attempt_id: number;
     paper_id: number;
+    paper_name: string;
+    attempt_number: number;
     status: string;
     completion_reason?: "manual" | "time_over" | null;
     started_at: string;
@@ -86,6 +102,7 @@ export interface AdminUserResultDetail {
     not_attempted_count: number;
     total_marks_obtained: number;
   };
+  subject_wise_result: SubjectWiseResult[];
   answers: AdminUserResultAnswer[];
 }
 
