@@ -18,6 +18,7 @@ import {
 import { toast } from "@lib/toast";
 import { PaperSubjectConfig } from "@lib/api/papers";
 import { Classification } from "@lib/api/classifications";
+import { filterQuestionTypesForSubject } from "@lib/utils/exclusivity";
 
 interface SubjectAssignmentCardProps {
   subj: PaperSubjectConfig;
@@ -29,6 +30,7 @@ interface SubjectAssignmentCardProps {
   questionTypes: Classification[];
   paperId: number | string;
   isSaving: boolean;
+  subjects: Classification[];
   onToggle: () => void;
   onQtyChange: (subjectCode: string, typeCode: string, val: number) => void;
   onAutoAssign: () => void;
@@ -44,6 +46,7 @@ export function SubjectAssignmentCard({
   questionTypes,
   paperId,
   isSaving,
+  subjects,
   onToggle,
   onQtyChange,
   onAutoAssign,
@@ -169,33 +172,7 @@ export function SubjectAssignmentCard({
               }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 pb-6"
             >
-              {questionTypes
-                .filter((type) => {
-                  const normalizeStr = (s: string) => (s || "").toLowerCase().replace(/_/g, " ").trim();
-                  
-                  const SPECIAL_CATEGORIES = [
-                    "company contact detail",
-                    "company contact details",
-                    "lead generation",
-                    "typing test"
-                  ];
-                  
-                  const normalizedSubjName = normalizeStr(subj.subject_name || subjCode);
-                  const normalizedTypeName = normalizeStr(type.name || type.code);
-                  
-                  const isSpecialSubject = SPECIAL_CATEGORIES.includes(normalizedSubjName);
-                  const isSpecialType = SPECIAL_CATEGORIES.includes(normalizedTypeName);
-                  
-                  if (isSpecialSubject) {
-                    // For special subjects, ONLY show the matching special question type
-                    // Handle "details" vs "detail" minor mismatch
-                    if (normalizedSubjName.includes("company contact") && normalizedTypeName.includes("company contact")) return true;
-                    return normalizedTypeName === normalizedSubjName;
-                  } else {
-                    // For normal subjects, DO NOT show any special question types
-                    return !isSpecialType;
-                  }
-                })
+              {filterQuestionTypesForSubject(questionTypes, subjCode, subjects)
                 .map((type) => {
                 const val = subjectReqs[type.code] || 0;
                 const isUsed = val > 0;

@@ -25,6 +25,7 @@ import {
 } from "@lib/api/classifications";
 import { type QuestionCreate } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const AddPassageQuestionForm = ({
   initialData,
@@ -53,7 +54,13 @@ export const AddPassageQuestionForm = ({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [], 
+          QUESTION_TYPES.PASSAGE_CONTENT, 
+          subjectsRes.data || []
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);

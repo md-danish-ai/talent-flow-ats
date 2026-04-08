@@ -27,6 +27,7 @@ import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
 import { useRouter } from "next/navigation";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { toast } from "@lib/toast";
 import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
@@ -199,7 +200,12 @@ export function ImageMCQClient({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [], 
+          QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE, 
+          subjectsRes.data || []
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (err) {
         if (handleAuthError(err)) return;

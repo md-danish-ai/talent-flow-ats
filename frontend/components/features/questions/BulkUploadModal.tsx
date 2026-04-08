@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Upload, Loader2, FileUp, Database, Award, Target } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
@@ -8,6 +8,7 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -34,13 +35,8 @@ export function BulkUploadModal({
     file: null as File | null,
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchClassifications();
-    }
-  }, [isOpen]);
 
-  const fetchClassifications = async () => {
+  const fetchClassifications = useCallback(async () => {
     setIsLoading(true);
     try {
       const [subjectsRes, examLevelsRes] = await Promise.all([
@@ -55,7 +51,12 @@ export function BulkUploadModal({
           limit: 100,
         }),
       ]);
-      setSubjects(subjectsRes.data || []);
+      const filteredSubjects = filterSubjectsForQuestionType(
+        subjectsRes.data || [],
+        questionType,
+        subjectsRes.data || []
+      );
+      setSubjects(filteredSubjects);
       setExamLevels(examLevelsRes.data || []);
     } catch (error) {
       console.error("Failed to fetch classifications:", error);
@@ -63,7 +64,14 @@ export function BulkUploadModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [questionType]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchClassifications();
+    }
+  }, [isOpen, fetchClassifications]);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,7 +121,7 @@ export function BulkUploadModal({
     }
   };
 
-  const subjectOptions = subjects.map((s) => ({ id: s.name, label: s.name }));
+  const subjectOptions = subjects.map((s) => ({ id: s.code || s.name, label: s.name }));
   const examLevelOptions = examLevels.map((l) => ({
     id: l.name,
     label: l.name,

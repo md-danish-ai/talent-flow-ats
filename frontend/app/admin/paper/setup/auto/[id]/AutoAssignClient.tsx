@@ -308,6 +308,7 @@ export function AutoAssignClient({ id }: AutoAssignClientProps) {
                 questionTypes={questionTypes}
                 paperId={paper.id}
                 isSaving={isSaving}
+                subjects={subjects}
                 onToggle={() => toggleSubject(subjCode)}
                 onQtyChange={handleQtyChange}
                 onAutoAssign={handleAutoAssign}
