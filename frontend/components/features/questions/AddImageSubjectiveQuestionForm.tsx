@@ -28,6 +28,7 @@ import {
 import { toast } from "@lib/toast";
 import Image from "next/image";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const AddImageSubjectiveQuestionForm = ({
   questionId,
@@ -69,7 +70,12 @@ export const AddImageSubjectiveQuestionForm = ({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [], 
+          QUESTION_TYPES.IMAGE_SUBJECTIVE, 
+          subjectsRes.data || []
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);

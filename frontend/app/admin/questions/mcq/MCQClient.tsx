@@ -26,6 +26,7 @@ import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 import { Question } from "@lib/api/questions";
 import { MCQFilters } from "./components/MCQFilters";
@@ -194,7 +195,12 @@ export function MCQClient({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [], 
+          QUESTION_TYPES.MULTIPLE_CHOICE, 
+          subjectsRes.data || []
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         if (handleAuthError(error)) {

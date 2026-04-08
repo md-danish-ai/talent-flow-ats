@@ -61,6 +61,32 @@ async def get_questions_by_ids(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
+@router.post("/auto-generate")
+async def auto_generate_questions(
+    payload: schemas.AutoGenerateRequest,
+):
+    """
+    Randomly select questions per type for a given subject + exam level.
+    Returns question_ids (flat list), per-type details, and warnings if
+    fewer questions were found than requested.
+    """
+    data = await question_service.auto_generate_questions(payload)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get("/type-counts")
+async def get_available_question_counts(
+    subject: str,
+    exam_level: str,
+):
+    """
+    Returns the total number of available active questions per type
+    for a given subject and exam level.
+    """
+    data = await question_service.get_available_question_counts(subject, exam_level)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
 @router.post("/create")
 async def create_question(
     payload: schemas.QuestionCreate, current_user: int = Depends(authenticate_user)

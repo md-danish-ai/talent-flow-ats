@@ -13,6 +13,8 @@ interface MainCardProps {
   className?: string;
   /** Extra classes on the content body */
   bodyClassName?: string;
+  /** Optional click handler for the entire header bar */
+  onHeaderClick?: () => void;
 }
 
 export const MainCard: React.FC<MainCardProps> = ({
@@ -21,6 +23,7 @@ export const MainCard: React.FC<MainCardProps> = ({
   children,
   className = "",
   bodyClassName = "",
+  onHeaderClick,
 }) => {
   return (
     <div
@@ -29,7 +32,13 @@ export const MainCard: React.FC<MainCardProps> = ({
         className,
       )}
     >
-      <div className="px-6 py-5 border-b border-border flex items-center justify-between gap-3">
+      <div 
+        onClick={onHeaderClick}
+        className={cn(
+          "px-6 py-5 border-b border-border flex items-center justify-between gap-3 transition-colors duration-300",
+          onHeaderClick && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
+        )}
+      >
         <Typography
           variant="h4"
           as="h3"

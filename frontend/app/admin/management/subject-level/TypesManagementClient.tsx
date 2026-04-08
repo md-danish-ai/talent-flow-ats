@@ -31,6 +31,7 @@ interface BaseType {
   code: string;
   description: string;
   is_active: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 interface TypesManagementClientProps {
@@ -56,7 +57,7 @@ export function TypesManagementClient({
   const [editingType, setEditingType] = useState<BaseType | null>(null);
   const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: "", description: "", is_exclusive: false });
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
@@ -88,6 +89,7 @@ export function TypesManagementClient({
         code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
+        metadata: item.metadata,
       }));
 
       setTargetData(formattedData);
@@ -129,10 +131,10 @@ export function TypesManagementClient({
   const handleOpenModal = (item?: BaseType) => {
     if (item) {
       setEditingType(item);
-      setFormData({ name: item.name, description: item.description });
+      setFormData({ name: item.name, description: item.description, is_exclusive: item.metadata?.is_exclusive === true });
     } else {
       setEditingType(null);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", is_exclusive: false });
     }
     setIsModalOpen(true);
   };
@@ -140,19 +142,27 @@ export function TypesManagementClient({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingType(null);
-    setFormData({ name: "", description: "" });
+    setFormData({ name: "", description: "", is_exclusive: false });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const metadataToSubmit: Record<string, unknown> = {
+        description: formData.description,
+      };
+      // For Subjects, allow saving the is_exclusive flag inside the record metadata
+      if (classificationType === "subject" && formData.is_exclusive) {
+        metadataToSubmit.is_exclusive = true;
+      }
+
       if (editingType) {
         const response = await classificationsApi.updateClassification(
           editingType.id,
           {
             name: formData.name,
-            metadata: { description: formData.description },
+            metadata: metadataToSubmit,
           },
         );
         const updatedItem = {
@@ -161,6 +171,7 @@ export function TypesManagementClient({
           code: response.code || "",
           description: (response.metadata?.description as string) || "",
           is_active: response.is_active,
+          metadata: response.metadata,
         };
         setTargetData(
           currentData.map((t) => (t.id === editingType.id ? updatedItem : t)),
@@ -169,7 +180,7 @@ export function TypesManagementClient({
         const response = await classificationsApi.createClassification({
           type: classificationType,
           name: formData.name,
-          metadata: { description: formData.description },
+          metadata: metadataToSubmit,
         });
         const newItem = {
           id: response.id,
@@ -177,6 +188,7 @@ export function TypesManagementClient({
           code: response.code || "",
           description: (response.metadata?.description as string) || "",
           is_active: response.is_active,
+          metadata: response.metadata,
         };
         setTargetData([...currentData, newItem]);
       }
@@ -310,6 +322,9 @@ export function TypesManagementClient({
                   <TableHead>Subject Code</TableHead>
                 )}
                 <TableHead>Description</TableHead>
+                {activeTab === "subjects" && (
+                  <TableHead className="text-center">Exclusive</TableHead>
+                )}
                 <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-center w-[100px]">Action</TableHead>
               </TableRow>
@@ -350,6 +365,15 @@ export function TypesManagementClient({
                       </TableCell>
                     )}
                     <TableCell>{item.description}</TableCell>
+                    {activeTab === "subjects" && (
+                      <TableCell className="text-center">
+                        {item.metadata?.is_exclusive ? (
+                          <Badge variant="outline" color="primary">Yes</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="flex flex-col items-center justify-center gap-1">
                         <Switch

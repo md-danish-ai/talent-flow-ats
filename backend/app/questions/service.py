@@ -138,6 +138,46 @@ class QuestionService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
+    async def auto_generate_questions(self, payload):
+        """
+        Randomly pick questions per type for a subject + exam level.
+        Validates subject_code and exam_level codes before querying.
+        Returns partial results with warnings when DB has fewer questions
+        than requested (never blocks the workflow).
+        """
+        try:
+            self._validate_classification_code(payload.subject_code, "subject")
+            self._validate_classification_code(payload.exam_level, "exam_level")
+
+            requirements = [
+                {"type_code": r.type_code, "count": r.count}
+                for r in payload.requirements
+            ]
+
+            return repository.auto_generate_questions(
+                subject_code=payload.subject_code,
+                exam_level=payload.exam_level,
+                requirements=requirements,
+            )
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
+            )
+
+    async def get_available_question_counts(self, subject_code: str, exam_level: str):
+        try:
+            self._validate_classification_code(subject_code, "subject")
+            self._validate_classification_code(exam_level, "exam_level")
+            return repository.get_available_question_counts(subject_code, exam_level)
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
+            )
+
     async def save_image(self, file: UploadFile) -> str:
         try:
             os.makedirs(settings.UPLOAD_DIR, exist_ok=True)

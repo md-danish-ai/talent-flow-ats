@@ -54,3 +54,14 @@ class QuestionUpdate(BaseModel):
 
 class QuestionIds(BaseModel):
     ids: List[int]
+
+
+class AutoGenerateRequirement(BaseModel):
+    type_code: str
+    count: int
+
+
+class AutoGenerateRequest(BaseModel):
+    subject_code: str
+    exam_level: str
+    requirements: List[AutoGenerateRequirement]

@@ -43,8 +43,10 @@ CLASSIFICATIONS = [
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
         "metadata": {
-            "description": "Knowledge regarding company structure and history."
-        }, },
+            "description": "Knowledge regarding company structure and history.",
+            "is_exclusive": True
+        },
+    },
     {
         "type": "subject",
         "name": "Comprehension",
@@ -95,7 +97,10 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Lead Generation",
         "code": "LEAD_GENERATION",
-        "metadata": {"description": "Testing skills in identifying potential clients."},
+        "metadata": {
+            "description": "Testing skills in identifying potential clients.",
+            "is_exclusive": True
+        },
     },
     {
         "type": "subject",
@@ -107,7 +112,10 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Typing Test",
         "code": "TYPING_TEST",
-        "metadata": {"description": "Assessment of typing speed and accuracy."},
+        "metadata": {
+            "description": "Assessment of typing speed and accuracy.",
+            "is_exclusive": True
+        },
     },
     {
         "type": "subject",

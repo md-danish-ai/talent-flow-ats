@@ -20,6 +20,7 @@ import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
 import { AddLeadGenerationModal } from "./components/AddLeadGenerationModal";
 import { LeadGenerationFilters } from "./components/LeadGenerationFilters";
@@ -161,7 +162,12 @@ export function LeadGenerationClient() {
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [], 
+          QUESTION_TYPES.LEAD_GENERATION, 
+          subjectsRes.data || []
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
