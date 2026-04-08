@@ -4,6 +4,7 @@ import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Badge } from "@components/ui-elements/Badge";
+import { Alert } from "@components/ui-elements/Alert";
 import {
   Table,
   TableBody,
@@ -12,10 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { X, Loader2, Search, RotateCw } from "lucide-react";
+import { X, Loader2, Search, RotateCw, Wand2, ListFilter, AlertCircle } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
+import { toast } from "@lib/toast";
 
 interface AddContentModalProps {
   subjectName: string;
@@ -58,32 +60,26 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
 
   // Fetch Question Types
   useEffect(() => {
-    const fetchTypes = async () => {
+    const fetchData = async () => {
       try {
-        const res = await classificationsApi.getClassifications({
+        const typesRes = await classificationsApi.getClassifications({
           type: "question_type",
           is_active: true,
           limit: 100,
         });
-        setQuestionTypes(res.data || []);
+        setQuestionTypes(typesRes.data || []);
       } catch (error) {
-        console.error("Failed to fetch question types:", error);
-      } finally {
+        console.error("Failed to fetch data:", error);
       }
     };
-    fetchTypes();
+    fetchData();
   }, []);
 
   // Fetch Questions
   const fetchQuestions = useCallback(async () => {
-    // Safety guard: subjectCode empty hone par saari questions fetch karne se rok
     if (!subjectCode) {
-      console.warn(
-        "[AddContentModal] subjectCode is empty — skipping fetch to avoid showing all questions.",
-      );
       setQuestions([]);
       setTotalRecords(0);
-      setIsLoading(false);
       return;
     }
     try {
@@ -143,7 +139,6 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
     );
 
     if (allCurrentSelected) {
-      // Remove all on current page
       const currentIds = questions.map((q) => q.id);
       setSelectedQuestions((prev) =>
         prev.filter((id) => !currentIds.includes(id)),
@@ -154,7 +149,6 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         return newMap;
       });
     } else {
-      // Add all missing on current page
       const currentQuestionsToSelect = questions.filter(
         (q) => !selectedQuestions.includes(q.id),
       );
@@ -205,26 +199,51 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             </Typography>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-          >
-            <X size={20} />
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X size={20} />
+            </Button>
+          </div>
         </div>
 
-        {/* Filters and Target Stats */}
+        {/* Stats bar */}
+        <div className="px-8 py-4 bg-slate-50/30 dark:bg-slate-800/10 border-b border-border/40 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+                 <div className="flex items-center gap-2">
+                    <Typography variant="body5" weight="black" className="text-slate-400 uppercase text-[8px]">Target Qty</Typography>
+                    <Typography variant="body4" weight="black" className="text-brand-success font-mono">{targetQuestionCount}</Typography>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <Typography variant="body5" weight="black" className="text-slate-400 uppercase text-[8px]">Target Marks</Typography>
+                    <Typography variant="body4" weight="black" className="text-brand-success font-mono">{targetTotalMarks}</Typography>
+                 </div>
+            </div>
+
+            <div className="flex items-center gap-8">
+                <div className="flex flex-col items-end">
+                    <Typography variant="body5" weight="black" className="text-slate-400 uppercase tracking-tighter text-[8px]">Selected Qty.</Typography>
+                    <Typography variant="h5" weight="black" className={currentSelectedCount === targetQuestionCount ? "text-brand-success font-mono" : "text-red-500 font-mono"}>
+                        {currentSelectedCount}
+                    </Typography>
+                </div>
+                <div className="flex flex-col items-end">
+                    <Typography variant="body5" weight="black" className="text-slate-400 uppercase tracking-tighter text-[8px]">Selected Marks</Typography>
+                    <Typography variant="h5" weight="black" className={currentSelectedMarks === targetTotalMarks ? "text-brand-success font-mono" : "text-red-500 font-mono"}>
+                        {currentSelectedMarks}
+                    </Typography>
+                </div>
+            </div>
+        </div>
+
+        {/* Filters */}
         <div className="px-8 py-6 bg-white dark:bg-slate-900 border-b border-border/50 flex flex-wrap items-end gap-6">
           <div className="space-y-1.5 w-[200px]">
-            <Typography
-              variant="body5"
-              weight="bold"
-              className="text-muted-foreground uppercase tracking-wider ml-1 text-[10px]"
-            >
-              Question Type
-            </Typography>
+            <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-wider ml-1 text-[10px]">Question Type</Typography>
             <SelectDropdown
               value={selectedType}
               onChange={(val) => setSelectedType(String(val))}
@@ -237,29 +256,14 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             />
           </div>
           <div className="space-y-1.5 w-[160px]">
-            <Typography
-              variant="body5"
-              weight="bold"
-              className="text-muted-foreground uppercase tracking-wider ml-1 text-[10px]"
-            >
-              Filter by Marks
-            </Typography>
+            <Typography variant="body5" weight="bold" className="text-muted-foreground uppercase tracking-wider ml-1 text-[10px]">Filter by Marks</Typography>
             <SelectDropdown
               value={selectedMarks}
               onChange={(val) => setSelectedMarks(String(val))}
               placeholder="All Marks"
               options={[
                 { id: "", label: "All Marks" },
-                { id: "1", label: "1 Mark" },
-                { id: "2", label: "2 Marks" },
-                { id: "3", label: "3 Marks" },
-                { id: "4", label: "4 Marks" },
-                { id: "5", label: "5 Marks" },
-                { id: "6", label: "6 Marks" },
-                { id: "7", label: "7 Marks" },
-                { id: "8", label: "8 Marks" },
-                { id: "9", label: "9 Marks" },
-                { id: "10", label: "10 Marks" },
+                ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(m => ({ id: String(m), label: `${m} Mark${m > 1 ? 's' : ''}` }))
               ]}
               className="h-10 border-slate-200 dark:border-slate-800 rounded-md"
             />
@@ -275,85 +279,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             >
               <RotateCw size={18} className={isLoading ? "animate-spin" : ""} />
             </Button>
-            <Typography variant="body5" className="text-slate-400 italic">
-              Found {totalRecords}
-            </Typography>
-          </div>
-
-          <div className="ml-auto flex items-center gap-8 pb-1">
-            <div className="flex flex-col items-end">
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-slate-400 uppercase tracking-tighter text-[8px]"
-              >
-                Target Qty
-              </Typography>
-              <Typography
-                variant="h5"
-                weight="black"
-                className="text-brand-success dark:text-brand-success font-mono"
-              >
-                {targetQuestionCount}
-              </Typography>
-            </div>
-            <div className="flex flex-col items-end">
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-slate-400 uppercase tracking-tighter text-[8px]"
-              >
-                Target Marks
-              </Typography>
-              <Typography
-                variant="h5"
-                weight="black"
-                className="text-brand-success dark:text-brand-success font-mono"
-              >
-                {targetTotalMarks}
-              </Typography>
-            </div>
-            <div className="w-[1px] h-8 bg-border" />
-            <div className="flex flex-col items-end">
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-slate-400 uppercase tracking-tighter text-[8px]"
-              >
-                Selected Qty.
-              </Typography>
-              <Typography
-                variant="h5"
-                weight="black"
-                className={
-                  currentSelectedCount === targetQuestionCount
-                    ? "text-brand-success font-mono"
-                    : "text-red-500 font-mono"
-                }
-              >
-                {currentSelectedCount}
-              </Typography>
-            </div>
-            <div className="flex flex-col items-end">
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-slate-400 uppercase tracking-tighter text-[8px]"
-              >
-                Selected Marks
-              </Typography>
-              <Typography
-                variant="h5"
-                weight="black"
-                className={
-                  currentSelectedMarks === targetTotalMarks
-                    ? "text-brand-success font-mono"
-                    : "text-red-500 font-mono"
-                }
-              >
-                {currentSelectedMarks}
-              </Typography>
-            </div>
+            <Typography variant="body5" className="text-slate-400 italic">Found {totalRecords}</Typography>
           </div>
         </div>
 
@@ -362,150 +288,82 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
           {isLoading ? (
             <div className="h-[300px] flex flex-col items-center justify-center gap-4">
               <Loader2 size={40} className="text-brand-primary animate-spin" />
-              <Typography
-                variant="body4"
-                className="text-muted-foreground animate-pulse"
-              >
-                Loading Question Library...
-              </Typography>
-            </div>
-          ) : !subjectCode ? (
-            <div className="h-[300px] flex flex-col items-center justify-center text-center p-8">
-              <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
-                <Search size={24} className="text-red-400" />
-              </div>
-              <Typography
-                variant="h4"
-                weight="bold"
-                className="text-red-600 dark:text-red-400 text-sm"
-              >
-                Subject Configuration Error
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]"
-              >
-                This subject&apos;s code could not be resolved. Please re-seed
-                the classifications database.
-              </Typography>
+              <Typography variant="body4" className="text-muted-foreground animate-pulse">Loading Question Library...</Typography>
             </div>
           ) : questions.length === 0 ? (
             <div className="h-[300px] flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
                 <Search size={24} className="text-slate-400" />
               </div>
-              <Typography
-                variant="h4"
-                weight="bold"
-                className="text-slate-800 dark:text-slate-200 text-sm"
-              >
-                No Questions Found
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]"
-              >
-                Try adjusting your filters or check if questions exist for this
-                subject.
+              <Typography variant="h4" weight="bold" className="text-slate-800 dark:text-slate-200 text-sm">No Questions Found</Typography>
+              <Typography variant="body5" className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]">
+                Try adjusting your filters or check if questions exist for this subject.
               </Typography>
             </div>
           ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-center w-20 pl-6">Sr.</TableHead>
-                    <TableHead className="pl-4">Question Details</TableHead>
-                    <TableHead className="text-center w-[180px]">
-                      Question Type
-                    </TableHead>
-                    <TableHead className="text-center w-24">Marks</TableHead>
-                    <TableHead className="pr-6">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-[10px] opacity-70">ALL</span>
-                        <Checkbox
-                          checked={
-                            questions.length > 0 &&
-                            questions.every((q) =>
-                              selectedQuestions.includes(q.id),
-                            )
-                          }
-                          onChange={handleToggleAll}
-                          className="border-white/40 data-[state=checked]:bg-brand-primary data-[state=checked]:border-brand-primary"
-                        />
-                      </div>
-                    </TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center w-20 pl-6">Sr.</TableHead>
+                  <TableHead className="pl-4">Question Details</TableHead>
+                  <TableHead className="text-center w-[180px]">Question Type</TableHead>
+                  <TableHead className="text-center w-24">Marks</TableHead>
+                  <TableHead className="pr-6">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] opacity-70">ALL</span>
+                      <Checkbox
+                        checked={questions.length > 0 && questions.every((q) => selectedQuestions.includes(q.id))}
+                        onChange={() => handleToggleAll()}
+                      />
+                    </div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {questions.map((q, index) => (
+                  <TableRow key={q.id} className="group border-b border-border/40 hover:bg-brand-primary/[0.02] dark:hover:bg-brand-primary/[0.04] transition-colors min-h-16">
+                    <TableCell className="text-center text-slate-400 font-black text-[11px] pl-6 w-20">
+                      {((currentPage - 1) * pageSize + index + 1).toString().padStart(2, "0")}
+                    </TableCell>
+                    <TableCell className="py-6 pl-4">
+                      <Typography variant="body4" weight="bold" className="text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-2">
+                        {q.question_text}
+                      </Typography>
+                    </TableCell>
+                    <TableCell className="text-center w-[180px]">
+                      <Badge variant="outline" shape="square" color="primary" className="font-black text-[9px] px-3 py-1 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap">
+                        {q.question_type?.name || "N/A"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center w-24">
+                      <Typography variant="body4" weight="black" className="text-brand-primary text-[13px]">{q.marks}</Typography>
+                    </TableCell>
+                    <TableCell className="text-center pr-6">
+                        <Checkbox 
+                            checked={selectedQuestions.includes(q.id)} 
+                            onChange={() => handleToggleQuestion(q.id, q.marks)} />
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {questions.map((q, index) => (
-                    <TableRow
-                      key={q.id}
-                      className="group border-b border-border/40 hover:bg-brand-primary/[0.02] dark:hover:bg-brand-primary/[0.04] transition-colors min-h-16"
-                    >
-                      <TableCell className="text-center text-slate-400 font-black text-[11px] pl-6 w-20">
-                        {((currentPage - 1) * pageSize + index + 1)
-                          .toString()
-                          .padStart(2, "0")}
-                      </TableCell>
-                      <TableCell className="py-6 pl-4">
-                        <Typography
-                          variant="body4"
-                          weight="bold"
-                          className="text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-2"
-                        >
-                          {q.question_text}
-                        </Typography>
-                      </TableCell>
-                      <TableCell className="text-center w-[180px]">
-                        <Badge
-                          variant="outline"
-                          shape="square"
-                          color="primary"
-                          className="font-black text-[9px] px-3 py-1 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
-                        >
-                          {q.question_type?.name || "N/A"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center w-24">
-                        <Typography
-                          variant="body4"
-                          weight="black"
-                          className="text-brand-primary text-[13px]"
-                        >
-                          {q.marks}
-                        </Typography>
-                      </TableCell>
-                      <TableCell className="text-center pr-6">
-                        <div className="flex justify-center">
-                          <Checkbox
-                            checked={selectedQuestions.includes(q.id)}
-                            onChange={() => handleToggleQuestion(q.id, q.marks)}
-                          />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </div>
 
-        {/* Improved Footer with Pagination */}
+        {/* Footer */}
         <div className="px-8 py-4 border-t border-border bg-slate-50/50 dark:bg-slate-800/30">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <Pagination
-              currentPage={currentPage}
-              totalPages={Math.ceil(totalRecords / pageSize) || 1}
-              onPageChange={setCurrentPage}
-              totalItems={totalRecords}
-              pageSize={pageSize}
-              onPageSizeChange={setPageSize}
-              className="border-none py-0"
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalRecords / pageSize) || 1}
+                onPageChange={setCurrentPage}
+                totalItems={totalRecords}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                className="border-none py-0"
             />
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-auto">
               <Button
                 variant="outline"
                 color="primary"
@@ -513,7 +371,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 onClick={onClose}
                 className="px-6 font-bold text-[10px] uppercase tracking-widest h-9 rounded-md"
               >
-                Close
+                Cancel
               </Button>
               <Button
                 variant="primary"
@@ -523,7 +381,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 className="px-8 font-extrabold text-[10px] uppercase tracking-widest h-9 rounded-md shadow-lg shadow-brand-primary/20"
                 disabled={isLoading || !isRequirementMet}
               >
-                Save Assignment
+                Save Selection
               </Button>
             </div>
           </div>

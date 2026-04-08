@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, Edit as EditIcon, Trash2, Settings, Eye } from "lucide-react";
+import { Loader2, Edit as EditIcon, Trash2, Settings, Eye, Wand2 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -8,6 +8,7 @@ import { TableCell, TableRow } from "@components/ui-elements/Table";
 import { PaperSetup } from "@lib/api/papers";
 import { GradeSettingsModal } from "./GradeSettingsModal";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -34,6 +35,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   onViewDetails,
   visibleColumns,
 }) => {
+  const router = useRouter();
   const isVisible = (id: string) => visibleColumns.includes(id);
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
 
@@ -134,6 +136,15 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
               title="View Details"
             >
               <Eye size={16} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-brand-primary hover:text-brand-primary group-hover/row:scale-110 transition-transform"
+              onClick={() => router.push(`/admin/paper/setup/auto/${row.id}`)}
+              title="Auto Question Setup"
+            >
+              <Wand2 size={16} />
             </Button>
             <Button
               variant="ghost"

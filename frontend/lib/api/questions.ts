@@ -21,6 +21,33 @@ export interface ClassificationRef {
   sort_order: number;
 }
 
+// ─── Auto-Generate Types ─────────────────────────────────────────────────────
+
+export interface AutoGenerateRequirement {
+  type_code: string;
+  count: number;
+}
+
+export interface AutoGenerateRequest {
+  subject_code: string;
+  exam_level: string;
+  requirements: AutoGenerateRequirement[];
+}
+
+export interface AutoGenerateTypeDetail {
+  type_code: string;
+  requested: number;
+  found: number;
+  question_ids: number[];
+}
+
+export interface AutoGenerateResponse {
+  question_ids: number[];
+  details: AutoGenerateTypeDetail[];
+  warnings: string[];
+}
+
+
 export interface Question {
   id: number;
   question_text: string;
@@ -93,6 +120,16 @@ export const questionsApi = {
       "/questions/get-by-ids",
       { ids },
       { silentSuccess: true },
+    );
+  },
+  autoGenerateQuestions: async (data: AutoGenerateRequest) => {
+    return api.post<AutoGenerateResponse>("/questions/auto-generate", data, {
+      silentSuccess: true,
+    });
+  },
+  getQuestionTypeCounts: async (subject: string, examLevel: string) => {
+    return api.get<Record<string, number>>(
+      `/questions/type-counts?subject=${subject}&exam_level=${examLevel}`,
     );
   },
   createQuestion: async (data: QuestionCreate) => {
