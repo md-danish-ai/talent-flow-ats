@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Eye, Phone } from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableHeader,
@@ -13,7 +13,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Button } from "@components/ui-elements/Button";
 import { AdminUserResultListItem } from "@lib/api/results";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 
@@ -116,15 +116,17 @@ export function ResultTableView({
                           </Typography>
                           {item.is_reattempt ? (
                             <Badge
-                              className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-violet-500/10 animate-pulse"
                               variant="outline"
+                              color="violet"
+                              animate="pulse"
                             >
                               RE-ATTEMPT
                             </Badge>
                           ) : (
                             <Badge
-                              className="bg-green-500/10 text-green-600 border-green-500/20 text-[9px] px-2 font-bold uppercase tracking-wider h-5 flex items-center justify-center italic shadow-sm shadow-green-500/10"
+                              color="success"
                               variant="outline"
+                              animate="pulse"
                             >
                               NEW
                             </Badge>
@@ -153,7 +155,9 @@ export function ResultTableView({
                         },
                       )
                     ) : (
-                      <span className="text-muted-foreground/60 font-medium">N/A</span>
+                      <span className="text-muted-foreground/60 font-medium">
+                        N/A
+                      </span>
                     )}
                   </TableCell>
                 )}
@@ -162,7 +166,9 @@ export function ResultTableView({
                     {latest?.paper_name ? (
                       latest.paper_name
                     ) : (
-                      <span className="text-muted-foreground/60 font-medium">N/A</span>
+                      <span className="text-muted-foreground/60 font-medium">
+                        N/A
+                      </span>
                     )}
                   </TableCell>
                 )}
@@ -212,32 +218,38 @@ export function ResultTableView({
                           {subRes.grade}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground/60 font-medium">N/A</span>
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
                       )}
                     </TableCell>
                   );
                 })}
 
-            {visibleColumns.includes("typing_wpm") && (
-              <TableCell className="text-center font-medium">
-                {latest?.typing_stats &&
-                typeof latest.typing_stats.wpm === "number" ? (
-                  latest.typing_stats.wpm
-                ) : (
-                  <span className="text-muted-foreground/60 font-medium">N/A</span>
+                {visibleColumns.includes("typing_wpm") && (
+                  <TableCell className="text-center font-medium">
+                    {latest?.typing_stats &&
+                    typeof latest.typing_stats.wpm === "number" ? (
+                      latest.typing_stats.wpm
+                    ) : (
+                      <span className="text-muted-foreground/60 font-medium">
+                        N/A
+                      </span>
+                    )}
+                  </TableCell>
                 )}
-              </TableCell>
-            )}
-            {visibleColumns.includes("typing_acc") && (
-              <TableCell className="text-center font-medium">
-                {latest?.typing_stats &&
-                typeof latest.typing_stats.accuracy === "number" ? (
-                  `${latest.typing_stats.accuracy}%`
-                ) : (
-                  <span className="text-muted-foreground/60 font-medium">N/A</span>
+                {visibleColumns.includes("typing_acc") && (
+                  <TableCell className="text-center font-medium">
+                    {latest?.typing_stats &&
+                    typeof latest.typing_stats.accuracy === "number" ? (
+                      `${latest.typing_stats.accuracy}%`
+                    ) : (
+                      <span className="text-muted-foreground/60 font-medium">
+                        N/A
+                      </span>
+                    )}
+                  </TableCell>
                 )}
-              </TableCell>
-            )}
                 {visibleColumns.includes("status") && (
                   <TableCell>
                     <Badge
@@ -258,14 +270,17 @@ export function ResultTableView({
                 )}
                 {visibleColumns.includes("actions") && (
                   <TableCell className="text-right">
-                    <Tooltip content="View Detailed Result">
-                      <Link
-                        href={`/admin/results/${item.user_id}`}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10 transition-all shadow-sm"
+                    <Link href={`/admin/results/${item.user_id}`}>
+                      <Button
+                        variant="ghost"
+                        color="primary"
+                        size="icon"
+                        animate="scale"
+                        title="View Result"
                       >
-                        <Eye size={18} />
-                      </Link>
-                    </Tooltip>
+                        <Eye size={16} />
+                      </Button>
+                    </Link>
                   </TableCell>
                 )}
               </TableCollapsibleRow>

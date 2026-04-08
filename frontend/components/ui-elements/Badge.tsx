@@ -10,7 +10,10 @@ export type BadgeColor =
   | "success"
   | "error"
   | "warning"
+  | "violet"
   | "default";
+
+export type BadgeAnimate = "pulse" | "none";
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -18,6 +21,7 @@ interface BadgeProps {
   shape?: BadgeShape;
   color?: BadgeColor;
   icon?: React.ReactNode;
+  animate?: BadgeAnimate;
   className?: string;
 }
 
@@ -43,6 +47,11 @@ const colorStyles: Record<BadgeColor, { fill: string; outline: string }> = {
     fill: "bg-amber-500 text-black",
     outline: "border-amber-500/30 text-amber-600 bg-amber-500/5",
   },
+  violet: {
+    fill: "bg-violet-500 text-white shadow-sm shadow-violet-500/10",
+    outline:
+      "border-violet-500/20 text-violet-600 bg-violet-500/10 shadow-sm shadow-violet-500/10",
+  },
   default: {
     fill: "bg-muted text-foreground",
     outline: "border-border text-muted-foreground bg-muted/20",
@@ -55,6 +64,7 @@ export const Badge = ({
   shape = "curve",
   color = "primary",
   icon,
+  animate = "none",
   className,
 }: BadgeProps) => {
   return (
@@ -64,6 +74,7 @@ export const Badge = ({
         shape === "curve" ? "rounded-full" : "rounded-sm",
         variant === "outline" ? "border" : "",
         colorStyles[color][variant],
+        animate === "pulse" && "animate-pulse",
         className,
       )}
     >

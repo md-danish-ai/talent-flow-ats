@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
+import { Badge } from "@components/ui-elements/Badge";
 import { Input } from "@components/ui-elements/Input";
 import { Select } from "@components/ui-elements/Select";
 import { Typography } from "@components/ui-elements/Typography";
@@ -186,7 +187,7 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                 value={formLabel}
                 onChange={(e) => setFormLabel(e.target.value)}
               >
-                <option value="">Please Select Grade---</option>
+                <option value="">Please Select Grade</option>
                 {GRADE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -196,11 +197,7 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <Button
-              onClick={handleAddOrUpdateGrade}
-              className="rounded-xl shadow-lg shadow-brand-primary/20"
-              size="md"
-            >
+            <Button onClick={handleAddOrUpdateGrade} color="primary" size="md">
               {editingIndex !== null ? "Update Rule" : "Add Grade Rule"}
             </Button>
             {editingIndex !== null && (
@@ -271,9 +268,9 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                       {grade.max.toFixed(2)}
                     </TableCell>
                     <TableCell>
-                      <span className="font-bold text-brand-primary bg-brand-primary/5 px-3 py-1 rounded-full text-xs">
+                      <Badge variant="outline" color="primary" shape="square">
                         {grade.grade_label}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center p-0">
                       <div className="flex items-center justify-center gap-1">
@@ -303,11 +300,11 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
         </div>
 
         {/* Footer Area */}
-        <div className="flex gap-3 justify-end pt-4 border-t border-border/50">
-          <Button variant="outline" onClick={onClose}>
+        <div className="flex gap-3 justify-end pt-4">
+          <Button variant="outline" color="primary" onClick={onClose}>
             CLOSE
           </Button>
-          <Button onClick={handleSaveAll} disabled={saving}>
+          <Button color="primary" onClick={handleSaveAll} disabled={saving}>
             {saving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
             SAVE GRADE
           </Button>
