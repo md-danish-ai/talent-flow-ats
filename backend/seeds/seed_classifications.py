@@ -227,7 +227,8 @@ def seed():
         )
         for record in stale_records:
             db.delete(record)
-            print(f"  🗑️  Deleted [{record.type}] {record.code} — \"{record.name}\"")
+            print(
+                f"  🗑️  Deleted [{record.type}] {record.code} — \"{record.name}\"")
 
         if not stale_records:
             print(f"  ✅ No stale records for type: {type_}")
