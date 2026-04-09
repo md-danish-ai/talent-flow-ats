@@ -110,9 +110,12 @@ export function CollapsibleResultDetail({
               },
               {
                 label: "Time Taken",
-                value: `${Math.floor(latest.typing_stats.time_taken / 60)}m ${
-                  latest.typing_stats.time_taken % 60
-                }s`,
+                value:
+                  latest.typing_stats.time_taken < 60
+                    ? `${Math.round(latest.typing_stats.time_taken)}s`
+                    : `${Math.floor(latest.typing_stats.time_taken / 60)}m ${Math.round(
+                        latest.typing_stats.time_taken % 60
+                      )}s`,
                 icon: <HistoryIcon size={18} />,
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
