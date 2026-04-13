@@ -1,5 +1,12 @@
 import React from "react";
-import { Loader2, Edit as EditIcon, Trash2, Settings, Eye, Wand2 } from "lucide-react";
+import {
+  Loader2,
+  Edit as EditIcon,
+  Trash2,
+  Settings,
+  Eye,
+  Wand2,
+} from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -9,6 +16,7 @@ import { PaperSetup } from "@lib/api/papers";
 import { GradeSettingsModal } from "./GradeSettingsModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -127,52 +135,61 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("actions") && (
         <TableCell className="text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              onClick={() => onViewDetails(row.id!)}
-              title="View Details"
-            >
-              <Eye size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-brand-primary hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              onClick={() => router.push(`/admin/paper/setup/auto/${row.id}`)}
-              title="Auto Question Setup"
-            >
-              <Wand2 size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              onClick={() => setIsGradeModalOpen(true)}
-              title="Grade Settings"
-            >
-              <Settings size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-500 hover:text-blue-600 group-hover/row:scale-110 transition-transform"
-              onClick={() => onEdit(row)}
-              title="Edit"
-            >
-              <EditIcon size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-500 hover:text-red-600 group-hover/row:scale-110 transition-transform"
-              onClick={() => onDelete(row.id!)}
-              title="Delete"
-            >
-              <Trash2 size={16} />
-            </Button>
+          <div className="flex items-center justify-center gap-3">
+            <Tooltip content="View Details & Manual Question Setup" side="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-slate-500 hover:text-slate-700 bg-slate-50 dark:bg-slate-400/10 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-400/20 border border-transparent hover:border-slate-200 dark:hover:border-slate-400/30 shadow-sm transition-all duration-300"
+                onClick={() => onViewDetails(row.id!)}
+              >
+                <Eye size={16} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Auto Question Setup" side="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-amber-500 hover:text-amber-600 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 border border-transparent hover:border-amber-200 dark:hover:border-amber-500/30 shadow-sm transition-all duration-300"
+                onClick={() => router.push(`/admin/paper/setup/auto/${row.id}`)}
+              >
+                <Wand2 size={16} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Grade Settings" side="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-brand-primary hover:text-brand-primary/80 bg-brand-primary/5 dark:bg-brand-primary/10 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 border border-transparent hover:border-brand-primary/20 dark:hover:border-brand-primary/30 shadow-sm transition-all duration-300"
+                onClick={() => setIsGradeModalOpen(true)}
+              >
+                <Settings size={16} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Edit Paper" side="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-blue-500 hover:text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-500/30 shadow-sm transition-all duration-300"
+                onClick={() => onEdit(row)}
+              >
+                <EditIcon size={16} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Delete Paper" side="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-transparent hover:border-red-200 dark:hover:border-red-500/30 shadow-sm transition-all duration-300"
+                onClick={() => onDelete(row.id!)}
+              >
+                <Trash2 size={16} />
+              </Button>
+            </Tooltip>
           </div>
         </TableCell>
       )}
