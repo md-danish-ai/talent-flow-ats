@@ -26,6 +26,7 @@ export interface ClassificationRef {
 export interface AutoGenerateRequirement {
   type_code: string;
   count: number;
+  marks?: number;
 }
 
 export interface AutoGenerateRequest {
@@ -128,7 +129,7 @@ export const questionsApi = {
     });
   },
   getQuestionTypeCounts: async (subject: string, examLevel: string) => {
-    return api.get<Record<string, number>>(
+    return api.get<{ type_code: string; marks: number; count: number }[]>(
       `/questions/type-counts?subject=${subject}&exam_level=${examLevel}`,
     );
   },

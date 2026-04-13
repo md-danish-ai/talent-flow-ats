@@ -59,6 +59,7 @@ class QuestionIds(BaseModel):
 class AutoGenerateRequirement(BaseModel):
     type_code: str
     count: int
+    marks: Optional[int] = None
 
 
 class AutoGenerateRequest(BaseModel):
