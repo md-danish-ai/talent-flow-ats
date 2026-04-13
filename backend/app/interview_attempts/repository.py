@@ -442,6 +442,11 @@ def finalize_attempt(
         attempt.is_auto_submitted = is_auto_submitted
         attempt.submitted_at = datetime.utcnow()
 
+        # Capture grade settings snapshot
+        paper_obj = _get_paper_or_404(db_session, attempt.paper_id)
+        if paper_obj:
+            attempt.grade_settings_snapshot = paper_obj.grade_settings
+
         # Update UserDetail flag
         user_detail = db_session.query(UserDetail).filter(
             UserDetail.user_id == user_id).first()
@@ -568,7 +573,12 @@ def get_admin_user_results(
             
             latest_attempt = latest_attempt_info[0] if latest_attempt_info else None
             paper_name = latest_attempt_info[1] if latest_attempt_info else None
-            grade_settings = latest_attempt_info[2] if latest_attempt_info and latest_attempt_info[2] else []
+            
+            # Use snapshot if available, else fallback to current paper settings
+            if latest_attempt and latest_attempt.grade_settings_snapshot is not None:
+                grade_settings = latest_attempt.grade_settings_snapshot
+            else:
+                grade_settings = latest_attempt_info[2] if latest_attempt_info and latest_attempt_info[2] else []
             
             attempts_count = (
                 db_session.query(InterviewAttempt)
@@ -786,7 +796,10 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             )
 
         paper_obj = db_session.query(Paper).filter(Paper.id == attempt.paper_id).first()
-        grade_settings = paper_obj.grade_settings if paper_obj and paper_obj.grade_settings else []
+        if attempt.grade_settings_snapshot is not None:
+            grade_settings = attempt.grade_settings_snapshot
+        else:
+            grade_settings = paper_obj.grade_settings if paper_obj and paper_obj.grade_settings else []
 
         # Current attempt number for this user
         attempt_number = (

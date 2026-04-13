@@ -83,7 +83,7 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
-              <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky right-0 bg-[#f8fafc] dark:bg-[#0f172a] z-10 font-bold text-foreground/80 border-l border-border/50">
+              <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky z-10 font-bold text-foreground/80">
                 Actions
               </TableHead>
             )}

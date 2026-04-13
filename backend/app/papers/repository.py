@@ -1,4 +1,4 @@
-from app.papers.models import Paper
+from app.papers.models import Paper, PaperGradeSettingLog
 from app.papers.schemas import PaperCreate, PaperUpdate
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -122,13 +122,46 @@ def delete_paper(db: Session, paper_id: int) -> bool:
 
 
 def update_paper_grade_settings(
-    db: Session, paper_id: int, grade_settings: List[dict]
+    db: Session, paper_id: int, grade_settings: List[dict], user_id: int
 ) -> Optional[Paper]:
     db_paper = db.query(Paper).filter(Paper.id == paper_id).first()
     if not db_paper:
         return None
 
+    # Audit logging
+    log_entry = PaperGradeSettingLog(
+        paper_id=paper_id,
+        updated_by=user_id,
+        old_grade_settings=db_paper.grade_settings,
+        new_grade_settings=grade_settings,
+    )
+    db.add(log_entry)
+
     db_paper.grade_settings = grade_settings
     db.commit()
     db.refresh(db_paper)
     return get_paper(db, paper_id)
+
+
+def get_paper_grade_setting_logs(db: Session, paper_id: int) -> List[dict]:
+    from app.users.models import User
+    logs = (
+        db.query(PaperGradeSettingLog, User.username.label("updated_by_name"))
+        .join(User, User.id == PaperGradeSettingLog.updated_by)
+        .filter(PaperGradeSettingLog.paper_id == paper_id)
+        .order_by(PaperGradeSettingLog.id.desc())
+        .all()
+    )
+    
+    return [
+        {
+            "id": log[0].id,
+            "paper_id": log[0].paper_id,
+            "updated_by": log[0].updated_by,
+            "updated_by_name": log[1],
+            "old_grade_settings": log[0].old_grade_settings,
+            "new_grade_settings": log[0].new_grade_settings,
+            "updated_at": log[0].updated_at.isoformat() if log[0].updated_at else None,
+        }
+        for log in logs
+    ]

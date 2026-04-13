@@ -36,3 +36,16 @@ class Paper(Base):
         onupdate=func.current_timestamp(),
         nullable=False,
     )
+
+
+class PaperGradeSettingLog(Base):
+    __tablename__ = "paper_grade_setting_logs"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    paper_id = Column(Integer, ForeignKey("papers.id", ondelete="CASCADE"), nullable=False)
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    old_grade_settings = Column(JSONB, nullable=True)
+    new_grade_settings = Column(JSONB, nullable=True)
+    updated_at = Column(
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
+    )
