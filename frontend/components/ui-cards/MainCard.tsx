@@ -32,11 +32,12 @@ export const MainCard: React.FC<MainCardProps> = ({
         className,
       )}
     >
-      <div 
+      <div
         onClick={onHeaderClick}
         className={cn(
           "px-6 py-5 border-b border-border flex items-center justify-between gap-3 transition-colors duration-300",
-          onHeaderClick && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
+          onHeaderClick &&
+            "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
         )}
       >
         <Typography

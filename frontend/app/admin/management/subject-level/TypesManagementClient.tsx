@@ -57,7 +57,11 @@ export function TypesManagementClient({
   const [editingType, setEditingType] = useState<BaseType | null>(null);
   const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", is_exclusive: false });
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    is_exclusive: false,
+  });
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
@@ -131,7 +135,11 @@ export function TypesManagementClient({
   const handleOpenModal = (item?: BaseType) => {
     if (item) {
       setEditingType(item);
-      setFormData({ name: item.name, description: item.description, is_exclusive: item.metadata?.is_exclusive === true });
+      setFormData({
+        name: item.name,
+        description: item.description,
+        is_exclusive: item.metadata?.is_exclusive === true,
+      });
     } else {
       setEditingType(null);
       setFormData({ name: "", description: "", is_exclusive: false });
@@ -368,7 +376,9 @@ export function TypesManagementClient({
                     {activeTab === "subjects" && (
                       <TableCell className="text-center">
                         {item.metadata?.is_exclusive ? (
-                          <Badge variant="outline" color="primary">Yes</Badge>
+                          <Badge variant="outline" color="primary">
+                            Yes
+                          </Badge>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}

@@ -33,7 +33,12 @@ interface SubjectAssignmentCardProps {
   isSaving: boolean;
   subjects: Classification[];
   onToggle: () => void;
-  onQtyChange: (subjectCode: string, typeCode: string, marks: number, val: number) => void;
+  onQtyChange: (
+    subjectCode: string,
+    typeCode: string,
+    marks: number,
+    val: number,
+  ) => void;
   onAutoAssign: () => void;
 }
 
@@ -54,7 +59,7 @@ export function SubjectAssignmentCard({
   onAutoAssign,
 }: SubjectAssignmentCardProps) {
   const router = useRouter();
-  
+
   const isCountPerfect = currentTotal === subj.question_count;
   const isMarksPerfect = currentMarksTotal === subj.total_marks;
   const isPerfect = isCountPerfect && isMarksPerfect;
@@ -198,16 +203,21 @@ export function SubjectAssignmentCard({
               }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 pb-6"
             >
-              {filterQuestionTypesForSubject(questionTypes, subjCode, subjects)
-                .map((type) => {
+              {filterQuestionTypesForSubject(
+                questionTypes,
+                subjCode,
+                subjects,
+              ).map((type) => {
                 const markCounts = counts[type.code] || {};
                 const markReqs = subjectReqs[type.code] || {};
-                
+
                 // Get all mark values that have either availability or an existing selection
-                const availableMarks = Array.from(new Set([
-                   ...Object.keys(markCounts).map(Number),
-                   ...Object.keys(markReqs).map(Number)
-                ])).sort((a, b) => a - b);
+                const availableMarks = Array.from(
+                  new Set([
+                    ...Object.keys(markCounts).map(Number),
+                    ...Object.keys(markReqs).map(Number),
+                  ]),
+                ).sort((a, b) => a - b);
 
                 if (availableMarks.length === 0) availableMarks.push(0);
 
@@ -219,17 +229,17 @@ export function SubjectAssignmentCard({
                       visible: { y: 0, opacity: 1 },
                     }}
                     className={`relative p-5 rounded-[2rem] border transition-all duration-500 group overflow-hidden ${
-                      Object.values(markReqs).some(v => v > 0)
+                      Object.values(markReqs).some((v) => v > 0)
                         ? "border-brand-primary/50 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.07] ring-1 ring-brand-primary/20"
                         : "border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50"
-                    } ${isTargetReached && !Object.values(markReqs).some(v => v > 0) ? "opacity-40 scale-[0.98]" : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5"}`}
+                    } ${isTargetReached && !Object.values(markReqs).some((v) => v > 0) ? "opacity-40 scale-[0.98]" : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5"}`}
                   >
                     <div className="flex flex-col gap-5 relative z-10">
                       <div className="flex flex-col gap-1">
                         <Typography
                           variant="body5"
                           weight="black"
-                          className={`uppercase tracking-[0.15em] text-[8px] transition-colors ${Object.values(markReqs).some(v => v > 0) ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
+                          className={`uppercase tracking-[0.15em] text-[8px] transition-colors ${Object.values(markReqs).some((v) => v > 0) ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
                         >
                           {type.name}
                         </Typography>
@@ -264,7 +274,12 @@ export function SubjectAssignmentCard({
                               <div className="flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
                                 <button
                                   onClick={() =>
-                                    onQtyChange(subjCode, type.code, mark, val - 1)
+                                    onQtyChange(
+                                      subjCode,
+                                      type.code,
+                                      mark,
+                                      val - 1,
+                                    )
                                   }
                                   disabled={val <= 0}
                                   className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${val > 0 ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95" : "text-slate-300 dark:text-slate-700 cursor-not-allowed"}`}
@@ -278,10 +293,19 @@ export function SubjectAssignmentCard({
                                     min="0"
                                     value={val}
                                     onChange={(e) => {
-                                      const newVal = parseInt(e.target.value) || 0;
+                                      const newVal =
+                                        parseInt(e.target.value) || 0;
                                       const otherTotal = currentTotal - val;
-                                      if (otherTotal + newVal <= subj.question_count) {
-                                        onQtyChange(subjCode, type.code, mark, newVal);
+                                      if (
+                                        otherTotal + newVal <=
+                                        subj.question_count
+                                      ) {
+                                        onQtyChange(
+                                          subjCode,
+                                          type.code,
+                                          mark,
+                                          newVal,
+                                        );
                                       } else {
                                         onQtyChange(
                                           subjCode,
@@ -300,7 +324,12 @@ export function SubjectAssignmentCard({
 
                                 <button
                                   onClick={() =>
-                                    onQtyChange(subjCode, type.code, mark, val + 1)
+                                    onQtyChange(
+                                      subjCode,
+                                      type.code,
+                                      mark,
+                                      val + 1,
+                                    )
                                   }
                                   disabled={isTargetReached}
                                   className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${!isTargetReached ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95" : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"}`}
@@ -308,7 +337,7 @@ export function SubjectAssignmentCard({
                                   <Plus size={16} strokeWidth={3} />
                                 </button>
                               </div>
-                              
+
                               {isUsed && (
                                 <motion.div
                                   initial={{ y: 5, opacity: 0 }}
@@ -410,7 +439,11 @@ export function SubjectAssignmentCard({
                     weight="black"
                     className="uppercase tracking-[0.15em] text-[11px] text-white"
                   >
-                    {isSaving ? "Saving..." : !isPerfect ? "Incomplete" : "Submit Question"}
+                    {isSaving
+                      ? "Saving..."
+                      : !isPerfect
+                        ? "Incomplete"
+                        : "Submit Question"}
                   </Typography>
                 </Button>
               </div>

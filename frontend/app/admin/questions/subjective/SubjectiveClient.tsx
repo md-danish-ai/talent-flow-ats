@@ -159,9 +159,9 @@ export function SubjectiveClient() {
           }),
         ]);
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.SUBJECTIVE, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.SUBJECTIVE,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

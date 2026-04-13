@@ -904,41 +904,122 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                     "saved_at": answer_row.saved_at,
                 }
             )
-            # Track subject-wise stats
+        # Get ALL sections from the paper in CURRICULUM ORDER
+        # subject_ids_data has {subject_id, order, ...} - use this to get correct sequence
+        paper_question_ids = _extract_question_ids(paper_obj.question_id) if paper_obj else []
+        
+        ordered_sections = []
+        if paper_obj and paper_obj.subject_ids_data:
+            # Sort subjects by their defined order in the paper setup
+            sorted_subjects = sorted(paper_obj.subject_ids_data, key=lambda x: x.get("order", 999) if isinstance(x, dict) else getattr(x, "order", 999))
+            for subj in sorted_subjects:
+                subj_id = subj.get("subject_id") if isinstance(subj, dict) else getattr(subj, "subject_id", None)
+                if subj_id is None:
+                    continue
+                classification = (
+                    db_session.query(Classification)
+                    .filter(Classification.id == subj_id)
+                    .first()
+                )
+                if classification:
+                    ordered_sections.append(classification.name)
+        
+        # Fallback: derive order from question_id list if subject_ids_data is empty
+        if not ordered_sections:
+            paper_questions = (
+                db_session.query(Question)
+                .filter(Question.id.in_(paper_question_ids))
+                .all()
+            )
+            q_id_to_question = {q.id: q for q in paper_questions}
+            seen_sections: set[str] = set()
+            for q_id in paper_question_ids:
+                q_obj = q_id_to_question.get(q_id)
+                if q_obj:
+                    _, section_name = _resolve_question_section(db_session, q_obj)
+                    if section_name not in seen_sections:
+                        ordered_sections.append(section_name)
+                        seen_sections.add(section_name)
+        
+        # Always fetch paper questions for stats calculation
+        paper_questions_list = (
+            db_session.query(Question)
+            .filter(Question.id.in_(paper_question_ids))
+            .all()
+        )
+        q_id_to_question = {q.id: q for q in paper_questions_list}
+
+        # Initialize subject_stats for all paper sections
+        subject_stats: dict[str, dict[str, Any]] = {
+            section: {
+                "total_questions": 0,
+                "attempted_count": 0,
+                "unattempted_count": 0,
+                "correct_count": 0,
+                "incorrect_count": 0,
+                "obtained_marks": 0.0,
+                "max_marks": 0.0,
+            }
+            for section in ordered_sections
+        }
+
+        # Count total questions and max marks from the PAPER definition
+        for q_id in paper_question_ids:
+            q_obj = q_id_to_question.get(q_id)
+            if q_obj:
+                _, section_name = _resolve_question_section(db_session, q_obj)
+                stats = subject_stats[section_name]
+                stats["total_questions"] += 1
+                stats["max_marks"] += float(q_obj.marks or 0)
+                stats["unattempted_count"] += 1
+
+        # Now fill in actual attempt data from answer_rows
+        for answer_row, question, correct_answer in answer_rows:
             section_name = answer_row.section_name
             if section_name not in subject_stats:
-                subject_stats[section_name] = {
-                    "total_questions": 0,
-                    "attempted_count": 0,
-                    "unattempted_count": 0,
-                    "correct_count": 0,
-                    "incorrect_count": 0,
-                    "obtained_marks": 0.0,
-                    "max_marks": 0.0,
-                }
+                continue # Should not happen if paper is consistent
             
             stats = subject_stats[section_name]
-            stats["total_questions"] += 1
-            stats["max_marks"] += float(question.marks or 0)
             
+            # Since we initialized total_questions from paper, we don't increment it here
+            # But we update attempted counts and marks
+            is_attempted = bool(answer_row.is_attempted)
+            
+            # Logic for correctness and marks_obtained
+            correct_answer_text = (correct_answer.answer_text if correct_answer else None) or ""
+            user_answer_text = (answer_row.answer_text or "").strip()
+            
+            marks_obtained = 0.0
+            is_correct = False
+            status = "incorrect"
+
             if is_attempted:
+                if answer_row.manual_marks is not None:
+                    marks_obtained = float(answer_row.manual_marks)
+                    is_correct = marks_obtained > 0
+                else:
+                    if correct_answer_text.strip():
+                        is_correct = _is_answer_correct(user_answer=user_answer_text, correct_answer=correct_answer_text)
+                    marks_obtained = float(question.marks or 0) if is_correct else 0.0
+                
+                status = "correct" if is_correct else "incorrect"
+                
                 stats["attempted_count"] += 1
+                stats["unattempted_count"] -= 1
                 stats["obtained_marks"] += marks_obtained
-                if status == "correct":
+                if is_correct:
                     stats["correct_count"] += 1
                 else:
                     stats["incorrect_count"] += 1
-            else:
-                stats["unattempted_count"] += 1
 
-        # Calculate subject-wise grades
+        # Calculate grades in correct order
         subject_wise_result = []
-        for section_name, stats in subject_stats.items():
+        for section_name in ordered_sections:
+            stats = subject_stats[section_name]
             percentage = (stats["obtained_marks"] / stats["max_marks"] * 100) if stats["max_marks"] > 0 else 0
             
             grade_label = "N/A"
             for setting in grade_settings:
-                # Support both inclusive and exclusive ranges if needed, but here we do standard check
                 if setting.get("min", 0) <= percentage <= setting.get("max", 100):
                     grade_label = setting.get("grade_label", "N/A")
                     break
@@ -1190,3 +1271,73 @@ def assign_manual_marks(user_id: int, attempt_id: int, question_id: int, marks: 
         "manual_marks": marks,
         "new_total_marks": new_total,
     }
+
+
+def reset_subject_responses(
+    user_id: int, attempt_id: int, section_names: list[str]
+) -> dict:
+    db_session = SessionLocal()
+    try:
+        # 1. Delete rows from interview_attempt_responses
+        db_session.query(InterviewAttemptResponse).filter(
+            InterviewAttemptResponse.attempt_id == attempt_id,
+            InterviewAttemptResponse.section_name.in_(section_names),
+        ).delete(synchronize_session=False)
+
+        # 2. Reset InterviewAttempt status if it was finalized
+        attempt = (
+            db_session.query(InterviewAttempt)
+            .filter(
+                InterviewAttempt.id == attempt_id,
+                InterviewAttempt.user_id == user_id,
+            )
+            .first()
+        )
+
+        if attempt:
+            attempt.status = "started"
+            attempt.submitted_at = None
+            attempt.completion_reason = None
+            # Re-calculate attempted_count
+            attempted_count = (
+                db_session.query(InterviewAttemptResponse)
+                .filter(
+                    InterviewAttemptResponse.attempt_id == attempt_id,
+                    InterviewAttemptResponse.is_attempted.is_(True),
+                )
+                .count()
+            )
+            attempt.attempted_count = attempted_count
+            attempt.unattempted_count = max(
+                attempt.total_questions - attempted_count, 0
+            )
+
+        # 3. Update UserDetail flag
+        user_detail = (
+            db_session.query(UserDetail).filter(
+                UserDetail.user_id == user_id).first()
+        )
+        if user_detail:
+            user_detail.is_interview_submitted = False
+
+        # 4. Update PaperAssignment flag
+        today = datetime.utcnow().date()
+        assignment = (
+            db_session.query(PaperAssignment)
+            .filter(
+                PaperAssignment.user_id == user_id,
+                PaperAssignment.assigned_date == today,
+            )
+            .first()
+        )
+        if assignment:
+            assignment.is_attempted = False
+
+        db_session.commit()
+        return {"message": f"Successfully reset {len(section_names)} subjects"}
+
+    except Exception as e:
+        db_session.rollback()
+        raise e
+    finally:
+        db_session.close()

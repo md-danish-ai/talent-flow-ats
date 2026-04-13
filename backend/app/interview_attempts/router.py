@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
-from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, ManualMarksRequest
+from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, ManualMarksRequest, ResetSubjectsRequest
 from .service import InterviewAttemptService
 
 router = APIRouter(
@@ -162,6 +162,22 @@ async def assign_manual_marks(
         attempt_id=attempt_id,
         question_id=question_id,
         marks=payload.marks,
+    )
+    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+
+
+@router.post(
+    "/admin/results/users/{user_id}/reset-subjects",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+async def reset_user_subjects(
+    user_id: int,
+    payload: ResetSubjectsRequest,
+):
+    data = await service.reset_user_subjects(
+        user_id=user_id,
+        attempt_id=payload.attempt_id,
+        section_names=payload.section_names,
     )
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 

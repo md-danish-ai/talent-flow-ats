@@ -18,7 +18,9 @@ interface PerformanceGridProps {
 
 export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 ${scoreStats.length > 3 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+    <div
+      className={`grid grid-cols-1 md:grid-cols-2 ${scoreStats.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-4`}
+    >
       {scoreStats.map((stat, idx) => (
         <motion.div
           key={idx}
@@ -49,7 +51,7 @@ export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
               <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1">
                 <Typography
                   variant="h1"
-                  className={`font-black leading-none ${stat.value.length > 8 ? 'text-2xl sm:text-3xl lg:text-2xl xl:text-3xl' : 'text-3xl sm:text-4xl'}`}
+                  className={`font-black leading-none ${stat.value.length > 8 ? "text-2xl sm:text-3xl lg:text-2xl xl:text-3xl" : "text-3xl sm:text-4xl"}`}
                 >
                   {stat.value}
                 </Typography>

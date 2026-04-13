@@ -95,7 +95,7 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
       return;
     }
 
-    const existingIndex = grades.findIndex(g => g.grade_label === formLabel);
+    const existingIndex = grades.findIndex((g) => g.grade_label === formLabel);
     if (existingIndex !== -1 && existingIndex !== editingIndex) {
       toast.error(`Grade "${formLabel}" is already added.`);
       return;
@@ -318,18 +318,32 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
             </Typography>
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
               {logs.length === 0 ? (
-                <Typography variant="body4" className="text-muted-foreground italic text-center py-4">
+                <Typography
+                  variant="body4"
+                  className="text-muted-foreground italic text-center py-4"
+                >
                   No logs available yet.
                 </Typography>
               ) : (
                 logs.map((log) => (
-                  <div key={log.id} className="border-b border-border/50 pb-3 last:border-0 last:pb-0">
+                  <div
+                    key={log.id}
+                    className="border-b border-border/50 pb-3 last:border-0 last:pb-0"
+                  >
                     <div className="flex justify-between items-center mb-2">
-                      <Typography variant="body4" className="font-bold text-brand-primary">
+                      <Typography
+                        variant="body4"
+                        className="font-bold text-brand-primary"
+                      >
                         Updated by: {log.updated_by_name}
                       </Typography>
-                      <Typography variant="body5" className="text-muted-foreground">
-                        {log.updated_at ? new Date(log.updated_at).toLocaleString() : 'N/A'}
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground"
+                      >
+                        {log.updated_at
+                          ? new Date(log.updated_at).toLocaleString()
+                          : "N/A"}
                       </Typography>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg text-sm w-full">
@@ -339,35 +353,68 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                           const newSet = log.new_grade_settings || [];
                           const differences: React.ReactNode[] = [];
 
-                          oldSet.forEach(oldGrade => {
-                            const newGrade = newSet.find(g => g.grade_label === oldGrade.grade_label);
+                          oldSet.forEach((oldGrade) => {
+                            const newGrade = newSet.find(
+                              (g) => g.grade_label === oldGrade.grade_label,
+                            );
                             if (!newGrade) {
-                              differences.push(<span key={`del-${oldGrade.grade_label}`} className="text-red-500">Deleted grade <b>{oldGrade.grade_label}</b></span>);
-                            } else if (oldGrade.min !== newGrade.min || oldGrade.max !== newGrade.max) {
                               differences.push(
-                                <span key={`upd-${oldGrade.grade_label}`} className="text-blue-500">
-                                  Updated grade <b>{oldGrade.grade_label}</b> (Range changed from {oldGrade.min}-{oldGrade.max}% to {newGrade.min}-{newGrade.max}%)
-                                </span>
+                                <span
+                                  key={`del-${oldGrade.grade_label}`}
+                                  className="text-red-500"
+                                >
+                                  Deleted grade <b>{oldGrade.grade_label}</b>
+                                </span>,
+                              );
+                            } else if (
+                              oldGrade.min !== newGrade.min ||
+                              oldGrade.max !== newGrade.max
+                            ) {
+                              differences.push(
+                                <span
+                                  key={`upd-${oldGrade.grade_label}`}
+                                  className="text-blue-500"
+                                >
+                                  Updated grade <b>{oldGrade.grade_label}</b>{" "}
+                                  (Range changed from {oldGrade.min}-
+                                  {oldGrade.max}% to {newGrade.min}-
+                                  {newGrade.max}%)
+                                </span>,
                               );
                             }
                           });
 
-                          newSet.forEach(newGrade => {
-                            const oldGrade = oldSet.find(g => g.grade_label === newGrade.grade_label);
+                          newSet.forEach((newGrade) => {
+                            const oldGrade = oldSet.find(
+                              (g) => g.grade_label === newGrade.grade_label,
+                            );
                             if (!oldGrade) {
                               differences.push(
-                                <span key={`add-${newGrade.grade_label}`} className="text-green-500">
-                                  Added grade <b>{newGrade.grade_label}</b> (Range {newGrade.min}-{newGrade.max}%)
-                                </span>
+                                <span
+                                  key={`add-${newGrade.grade_label}`}
+                                  className="text-green-500"
+                                >
+                                  Added grade <b>{newGrade.grade_label}</b>{" "}
+                                  (Range {newGrade.min}-{newGrade.max}%)
+                                </span>,
                               );
                             }
                           });
 
                           if (differences.length === 0) {
-                            differences.push(<span key="no-change" className="text-muted-foreground">No specific changes detected.</span>);
+                            differences.push(
+                              <span
+                                key="no-change"
+                                className="text-muted-foreground"
+                              >
+                                No specific changes detected.
+                              </span>,
+                            );
                           }
 
-                          return differences.map((diff, i) => <li key={i}>{diff}</li>);
+                          return differences.map((diff, i) => (
+                            <li key={i}>{diff}</li>
+                          ));
                         })()}
                       </ul>
                     </div>
@@ -380,7 +427,11 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
 
         {/* Footer Area */}
         <div className="flex justify-between w-full pt-4">
-          <Button variant="ghost" color="primary" onClick={() => setShowLogs(!showLogs)}>
+          <Button
+            variant="ghost"
+            color="primary"
+            onClick={() => setShowLogs(!showLogs)}
+          >
             {showLogs ? "Hide Logs" : "View Update Logs"}
           </Button>
           <div className="flex gap-3">
@@ -388,7 +439,9 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
               CLOSE
             </Button>
             <Button color="primary" onClick={handleSaveAll} disabled={saving}>
-              {saving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+              {saving ? (
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              ) : null}
               SAVE GRADE
             </Button>
           </div>

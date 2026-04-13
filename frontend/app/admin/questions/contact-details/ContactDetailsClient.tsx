@@ -167,9 +167,9 @@ export function ContactDetailsClient() {
           }),
         ]);
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.CONTACT_DETAILS, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.CONTACT_DETAILS,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

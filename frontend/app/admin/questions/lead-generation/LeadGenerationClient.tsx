@@ -163,9 +163,9 @@ export function LeadGenerationClient() {
           }),
         ]);
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.LEAD_GENERATION, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.LEAD_GENERATION,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

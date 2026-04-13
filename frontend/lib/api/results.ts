@@ -200,6 +200,17 @@ export const resultsApi = {
     );
   },
 
+  resetUserSubjects: async (
+    userId: number,
+    attemptId: number,
+    sectionNames: string[],
+  ) => {
+    return api.post<{ message: string }>(
+      `/admin/results/users/${userId}/reset-subjects`,
+      { attempt_id: attemptId, section_names: sectionNames },
+    );
+  },
+
   applyManualMarks: async (
     userId: number,
     attemptId: number,

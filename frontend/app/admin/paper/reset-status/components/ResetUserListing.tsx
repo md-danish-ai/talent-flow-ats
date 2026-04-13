@@ -19,6 +19,7 @@ import { Input } from "@components/ui-elements/Input";
 import { ResetConfirmModal } from "./ResetConfirmModal";
 import { ResetDetailsModal } from "./ResetDetailsModal";
 import { ReInterviewModal } from "./ReInterviewModal";
+import { ResetSubjectsModal } from "./ResetSubjectsModal";
 import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
@@ -31,6 +32,7 @@ import {
   X,
   FileEdit,
   RotateCcw,
+  BookOpenCheck,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
@@ -70,6 +72,8 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isReInterviewModalOpen, setIsReInterviewModalOpen] = useState(false);
+  const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
+    useState(false);
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -290,60 +294,78 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                         </TableCell>
 
                         <TableCell className="text-center p-0 align-middle">
-                          <div className="flex items-center justify-center gap-1.5 min-h-[80px] py-3">
+                          <div className="flex items-center justify-center gap-2 min-h-[80px] py-3">
                             {row.is_details_submitted && (
-                              <Tooltip content="Enable candidate to edit personal details">
+                              <Tooltip
+                                content="Enable candidate to edit personal details"
+                                side="top"
+                              >
                                 <Button
-                                  variant="primary"
-                                  color="warning"
-                                  className="bg-orange-50 text-orange-600 hover:bg-orange-100 border-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                                  animate="scale"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-9 w-9 text-orange-500 hover:text-orange-600 bg-orange-50 dark:bg-orange-500/10 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30 shadow-sm transition-all duration-300"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedUser(row);
                                     setIsDetailsModalOpen(true);
                                   }}
                                 >
-                                  <FileEdit size={14} />
-                                  Reset Details
+                                  <FileEdit size={16} />
                                 </Button>
                               </Tooltip>
                             )}
 
-                            <Tooltip content="Delete current attempt and allow re-start">
+                            <Tooltip
+                              content="Delete current attempt and allow re-start"
+                              side="top"
+                            >
                               <Button
-                                variant="primary"
-                                color="error"
-                                className="bg-red-50 text-red-600 hover:bg-red-100 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                                animate="scale"
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-transparent hover:border-red-200 dark:hover:border-red-500/30 shadow-sm transition-all duration-300"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedUser(row);
                                   setIsModalOpen(true);
                                 }}
                               >
-                                <RefreshCw
-                                  size={14}
-                                  className="group-hover:rotate-180 transition-transform duration-500"
-                                />
-                                Reset Current Interview
+                                <RefreshCw size={16} />
                               </Button>
                             </Tooltip>
 
-                            <Tooltip content="Assign a fresh session (Returning Candidate)">
+                            <Tooltip
+                              content="Assign a fresh session (Returning Candidate)"
+                              side="top"
+                            >
                               <Button
-                                variant="primary"
-                                color="secondary"
-                                className="bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-500/10 dark:text-violet-400 dark:hover:bg-violet-500/20 px-4 py-2 font-bold uppercase tracking-wider text-[10px] flex items-center gap-2"
-                                animate="scale"
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-violet-500 hover:text-violet-600 bg-violet-50 dark:bg-violet-500/10 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-500/20 border border-transparent hover:border-violet-200 dark:hover:border-violet-500/30 shadow-sm transition-all duration-300"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedUser(row);
                                   setIsReInterviewModalOpen(true);
                                 }}
                               >
-                                <RotateCcw size={14} />
-                                Re-Interview
+                                <RotateCcw size={16} />
+                              </Button>
+                            </Tooltip>
+
+                            <Tooltip
+                              content="Reset specific subjects data"
+                              side="top"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-blue-500 hover:text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-500/30 shadow-sm transition-all duration-300"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsResetSubjectsModalOpen(true);
+                                }}
+                              >
+                                <BookOpenCheck size={16} />
                               </Button>
                             </Tooltip>
                           </div>
@@ -512,6 +534,18 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
           onSuccess={() => router.refresh()}
           onClose={() => {
             setIsReInterviewModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+
+      {selectedUser && (
+        <ResetSubjectsModal
+          isOpen={isResetSubjectsModalOpen}
+          user={selectedUser}
+          onSuccess={() => router.refresh()}
+          onClose={() => {
+            setIsResetSubjectsModalOpen(false);
             setSelectedUser(null);
           }}
         />

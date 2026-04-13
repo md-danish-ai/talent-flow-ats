@@ -218,24 +218,36 @@ export function AttemptDetailClient({
       value: data.summary.overall_grade.toUpperCase() || "N/A",
       sub: `Performance: ${data.summary.overall_percentage}%`,
       icon: <Star size={20} />,
-      color: 
-        data.summary.overall_grade === "Excellent" ? "text-emerald-600" :
-        data.summary.overall_grade === "Good" ? "text-brand-primary" :
-        data.summary.overall_grade === "Average" ? "text-amber-600" :
-        data.summary.overall_grade === "Poor" ? "text-rose-600" :
-        "text-indigo-600",
-      bg: 
-        data.summary.overall_grade === "Excellent" ? "bg-emerald-500/10" :
-        data.summary.overall_grade === "Good" ? "bg-brand-primary/10" :
-        data.summary.overall_grade === "Average" ? "bg-amber-500/10" :
-        data.summary.overall_grade === "Poor" ? "bg-rose-500/10" :
-        "bg-indigo-500/10",
-      border: 
-        data.summary.overall_grade === "Excellent" ? "border-emerald-500/20" :
-        data.summary.overall_grade === "Good" ? "border-brand-primary/20" :
-        data.summary.overall_grade === "Average" ? "border-amber-500/20" :
-        data.summary.overall_grade === "Poor" ? "border-rose-500/20" :
-        "border-indigo-500/20",
+      color:
+        data.summary.overall_grade === "Excellent"
+          ? "text-emerald-600"
+          : data.summary.overall_grade === "Good"
+            ? "text-brand-primary"
+            : data.summary.overall_grade === "Average"
+              ? "text-amber-600"
+              : data.summary.overall_grade === "Poor"
+                ? "text-rose-600"
+                : "text-indigo-600",
+      bg:
+        data.summary.overall_grade === "Excellent"
+          ? "bg-emerald-500/10"
+          : data.summary.overall_grade === "Good"
+            ? "bg-brand-primary/10"
+            : data.summary.overall_grade === "Average"
+              ? "bg-amber-500/10"
+              : data.summary.overall_grade === "Poor"
+                ? "bg-rose-500/10"
+                : "bg-indigo-500/10",
+      border:
+        data.summary.overall_grade === "Excellent"
+          ? "border-emerald-500/20"
+          : data.summary.overall_grade === "Good"
+            ? "border-brand-primary/20"
+            : data.summary.overall_grade === "Average"
+              ? "border-amber-500/20"
+              : data.summary.overall_grade === "Poor"
+                ? "border-rose-500/20"
+                : "border-indigo-500/20",
     },
   ];
 
@@ -310,22 +322,36 @@ export function AttemptDetailClient({
         >
           <div className="flex items-center gap-3 shrink-0">
             <Star size={20} className="text-brand-primary" />
-            <Typography variant="h4" className="font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+            <Typography
+              variant="h4"
+              className="font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap"
+            >
               Grade Scale Matrix:
             </Typography>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full">
             {data.grade_settings.map((g, i) => {
-              const gradeCol = 
-                g.grade_label.toLowerCase() === "excellent" ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30" :
-                g.grade_label.toLowerCase() === "good" ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30" :
-                g.grade_label.toLowerCase() === "average" ? "text-amber-700 bg-amber-500/10 border-amber-500/30" :
-                g.grade_label.toLowerCase() === "poor" ? "text-rose-700 bg-rose-500/10 border-rose-500/30" :
-                "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
+              const gradeCol =
+                g.grade_label.toLowerCase() === "excellent"
+                  ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
+                  : g.grade_label.toLowerCase() === "good"
+                    ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
+                    : g.grade_label.toLowerCase() === "average"
+                      ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
+                      : g.grade_label.toLowerCase() === "poor"
+                        ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
+                        : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
               return (
-                <div key={i} className={`flex-1 min-w-[140px] flex items-center justify-between px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}>
-                  <span className="font-black text-xs uppercase tracking-widest">{g.grade_label}</span>
-                  <span className="font-bold text-xs tracking-wide opacity-90 ml-2 whitespace-nowrap">{g.min}% - {g.max}%</span>
+                <div
+                  key={i}
+                  className={`flex-1 min-w-[140px] flex items-center justify-between px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}
+                >
+                  <span className="font-black text-xs uppercase tracking-widest">
+                    {g.grade_label}
+                  </span>
+                  <span className="font-bold text-xs tracking-wide opacity-90 ml-2 whitespace-nowrap">
+                    {g.min}% - {g.max}%
+                  </span>
                 </div>
               );
             })}
@@ -476,15 +502,21 @@ export function AttemptDetailClient({
                   {/* Unified Performance & Grade Badge (Matrix Style) */}
                   {(() => {
                     const gradeLabel = subject.grade.toLowerCase();
-                    const style = 
-                      gradeLabel === "excellent" ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30" :
-                      gradeLabel === "good" ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30" :
-                      gradeLabel === "average" ? "text-amber-700 bg-amber-500/10 border-amber-500/30" :
-                      gradeLabel === "poor" ? "text-rose-700 bg-rose-500/10 border-rose-500/30" :
-                      "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
-                    
+                    const style =
+                      gradeLabel === "excellent"
+                        ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
+                        : gradeLabel === "good"
+                          ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
+                          : gradeLabel === "average"
+                            ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
+                            : gradeLabel === "poor"
+                              ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
+                              : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
+
                     return (
-                      <div className={`flex items-center justify-between px-5 py-2.5 rounded-xl border-2 ${style} shadow-sm min-w-[170px] transition-transform duration-300 group-hover:scale-105`}>
+                      <div
+                        className={`flex items-center justify-between px-5 py-2.5 rounded-xl border-2 ${style} shadow-sm min-w-[170px] transition-transform duration-300 group-hover:scale-105`}
+                      >
                         <span className="font-black text-xs uppercase tracking-widest leading-none">
                           {subject.grade}
                         </span>

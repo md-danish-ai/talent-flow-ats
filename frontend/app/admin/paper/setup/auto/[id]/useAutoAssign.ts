@@ -92,8 +92,14 @@ export function useAutoAssign(id: number) {
         setSubjects(subjectsRes.data || []);
 
         // Fetch availability for each subject
-        const countsMap: Record<string, Record<string, Record<number, number>>> = {};
-        const initialReqs: Record<string, Record<string, Record<number, number>>> = {};
+        const countsMap: Record<
+          string,
+          Record<string, Record<number, number>>
+        > = {};
+        const initialReqs: Record<
+          string,
+          Record<string, Record<number, number>>
+        > = {};
 
         await Promise.all(
           paperRes.subject_ids_data.map(async (subj: PaperSubjectConfig) => {
@@ -122,9 +128,8 @@ export function useAutoAssign(id: number) {
         // Analyze existing questions in the paper to prepopulate 'requirements' correctly
         if (paperRes.question_id && paperRes.question_id.length > 0) {
           try {
-            const existingQuestionsResponse = await questionsApi.getQuestionsByIds(
-              paperRes.question_id,
-            );
+            const existingQuestionsResponse =
+              await questionsApi.getQuestionsByIds(paperRes.question_id);
             const existingResponse = existingQuestionsResponse as object;
             const existingQuestions = Array.isArray(existingQuestionsResponse)
               ? existingQuestionsResponse
@@ -215,7 +220,11 @@ export function useAutoAssign(id: number) {
         const subjCode = getSubjectCode(subj.subject_id);
         const typeReqs = requirements[subjCode] || {};
 
-        const activeReqs: { type_code: string; count: number; marks: number }[] = [];
+        const activeReqs: {
+          type_code: string;
+          count: number;
+          marks: number;
+        }[] = [];
         Object.entries(typeReqs).forEach(([typeCode, markMap]) => {
           Object.entries(markMap).forEach(([marksStr, count]) => {
             if (count > 0) {
@@ -249,7 +258,9 @@ export function useAutoAssign(id: number) {
       }
 
       if (newGeneratedIds.length === 0) {
-        toast.error("No questions were generated. Please check your quantities.");
+        toast.error(
+          "No questions were generated. Please check your quantities.",
+        );
         return;
       }
 
@@ -257,13 +268,14 @@ export function useAutoAssign(id: number) {
 
       if (retainedIds.length > 0 && generatingSubjectCodes.size > 0) {
         try {
-          const existingQuestions = await questionsApi.getQuestionsByIds(retainedIds);
+          const existingQuestions =
+            await questionsApi.getQuestionsByIds(retainedIds);
           const existingResponse = existingQuestions as object;
           const questionsArray = Array.isArray(existingQuestions)
             ? existingQuestions
-            : (existingResponse && "data" in existingResponse
-                ? (existingResponse as { data: typeof existingQuestions }).data
-                : []);
+            : existingResponse && "data" in existingResponse
+              ? (existingResponse as { data: typeof existingQuestions }).data
+              : [];
 
           if (Array.isArray(questionsArray)) {
             retainedIds = questionsArray
@@ -286,7 +298,9 @@ export function useAutoAssign(id: number) {
         question_id: finalQuestionIds,
       });
 
-      toast.success(`Successfully assigned ${newGeneratedIds.length} questions!`);
+      toast.success(
+        `Successfully assigned ${newGeneratedIds.length} questions!`,
+      );
       if (totalWarnings.length > 0) {
         totalWarnings.forEach((w) => console.warn(w));
       }
