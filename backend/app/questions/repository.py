@@ -1,5 +1,4 @@
-# app/questions/repository.py
-
+from typing import Optional
 from sqlalchemy.orm import aliased
 from app.database.db import SessionLocal
 from app.questions.models import Question
