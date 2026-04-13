@@ -13,6 +13,7 @@ import { Users, Eye, Pencil } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import {
   getUsersByRole,
   UserListResponse,
@@ -135,28 +136,27 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                             href={`/admin/management/users/view-details/${row.id}`}
                             passHref
                           >
-                            <Button
-                              variant="secondary"
-                              color="primary"
-                              size="icon-sm"
+                            <TableIconButton
+                              iconColor="brand"
+                              btnSize="sm"
                               animate="scale"
                               title="View"
                             >
                               <Eye size={16} />
-                            </Button>
+                            </TableIconButton>
                           </Link>
                           <Link
                             href={`/admin/management/users/update-details/${row.id}`}
                             passHref
                           >
-                            <Button
-                              variant="primary"
-                              size="icon-sm"
+                            <TableIconButton
+                              iconColor="blue"
+                              btnSize="sm"
                               animate="scale"
                               title="Edit"
                             >
                               <Pencil size={16} />
-                            </Button>
+                            </TableIconButton>
                           </Link>
                         </div>
                       </TableCell>

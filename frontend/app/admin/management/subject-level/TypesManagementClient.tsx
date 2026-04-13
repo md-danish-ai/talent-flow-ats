@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Plus, Edit, Trash2, Layers, Gauge } from "lucide-react";
 import { Tabs, TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
@@ -403,34 +404,30 @@ export function TypesManagementClient({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          color="primary"
-                          size="icon"
+                        <TableIconButton
+                          iconColor="blue"
+                          btnSize="sm"
                           animate="scale"
                           onClick={(event) => {
                             event.stopPropagation();
                             handleOpenModal(item);
                           }}
                           title={`Edit ${currentEntityName}`}
-                          className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
                         >
                           <Edit size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          color="error"
-                          size="icon"
+                        </TableIconButton>
+                        <TableIconButton
+                          iconColor="red"
+                          btnSize="sm"
                           animate="scale"
                           onClick={(event) => {
                             event.stopPropagation();
                             handleDeleteClick(item.id);
                           }}
                           title={`Delete ${currentEntityName}`}
-                          className="h-8 w-8 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                         >
                           <Trash2 size={16} />
-                        </Button>
+                        </TableIconButton>
                       </div>
                     </TableCell>
                   </TableRow>

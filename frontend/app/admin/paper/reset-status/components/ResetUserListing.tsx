@@ -14,6 +14,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Input } from "@components/ui-elements/Input";
 import { ResetConfirmModal } from "./ResetConfirmModal";
@@ -296,78 +297,58 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                         <TableCell className="text-center p-0 align-middle">
                           <div className="flex items-center justify-center gap-2 min-h-[80px] py-3">
                             {row.is_details_submitted && (
-                              <Tooltip
-                                content="Enable candidate to edit personal details"
-                                side="top"
+                              <TableIconButton
+                                iconColor="orange"
+                                animate="scale"
+                                title="Enable candidate to edit personal details"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsDetailsModalOpen(true);
+                                }}
                               >
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-9 text-orange-500 hover:text-orange-600 bg-orange-50 dark:bg-orange-500/10 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30 shadow-sm transition-all duration-300"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedUser(row);
-                                    setIsDetailsModalOpen(true);
-                                  }}
-                                >
-                                  <FileEdit size={16} />
-                                </Button>
-                              </Tooltip>
+                                <FileEdit size={16} />
+                              </TableIconButton>
                             )}
 
-                            <Tooltip
-                              content="Delete current attempt and allow re-start"
-                              side="top"
+                            <TableIconButton
+                              iconColor="red"
+                              animate="scale"
+                              title="Delete current attempt and allow re-start"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(row);
+                                setIsModalOpen(true);
+                              }}
                             >
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-transparent hover:border-red-200 dark:hover:border-red-500/30 shadow-sm transition-all duration-300"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsModalOpen(true);
-                                }}
-                              >
-                                <RefreshCw size={16} />
-                              </Button>
-                            </Tooltip>
+                              <RefreshCw size={16} />
+                            </TableIconButton>
 
-                            <Tooltip
-                              content="Assign a fresh session (Returning Candidate)"
-                              side="top"
+                            <TableIconButton
+                              iconColor="violet"
+                              animate="scale"
+                              title="Assign a fresh session (Returning Candidate)"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(row);
+                                setIsReInterviewModalOpen(true);
+                              }}
                             >
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-violet-500 hover:text-violet-600 bg-violet-50 dark:bg-violet-500/10 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-500/20 border border-transparent hover:border-violet-200 dark:hover:border-violet-500/30 shadow-sm transition-all duration-300"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsReInterviewModalOpen(true);
-                                }}
-                              >
-                                <RotateCcw size={16} />
-                              </Button>
-                            </Tooltip>
+                              <RotateCcw size={16} />
+                            </TableIconButton>
 
-                            <Tooltip
-                              content="Reset specific subjects data"
-                              side="top"
+                            <TableIconButton
+                              iconColor="blue"
+                              animate="scale"
+                              title="Reset specific subjects data"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(row);
+                                setIsResetSubjectsModalOpen(true);
+                              }}
                             >
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-blue-500 hover:text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-500/30 shadow-sm transition-all duration-300"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsResetSubjectsModalOpen(true);
-                                }}
-                              >
-                                <BookOpenCheck size={16} />
-                              </Button>
-                            </Tooltip>
+                              <BookOpenCheck size={16} />
+                            </TableIconButton>
                           </div>
                         </TableCell>
                       </TableRow>
