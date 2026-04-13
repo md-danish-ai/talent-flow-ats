@@ -827,6 +827,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         incorrect_count = 0
         not_attempted_count = 0
         total_marks_obtained = 0.0
+        total_max_marks = 0.0
 
         for answer_row, question, correct_answer in answer_rows:
             correct_answer_text = (
@@ -864,6 +865,7 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                         question.marks or 0) if is_correct else 0.0
 
             total_marks_obtained += marks_obtained
+            total_max_marks += float(question.marks or 0)
 
             # Enhanced parsing for special types like Typing Test
             user_answer_display = answer_row.answer_text
@@ -953,6 +955,13 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "percentage": round(percentage, 2),
                 "grade": grade_label
             })
+            
+        overall_percentage = (total_marks_obtained / total_max_marks * 100) if total_max_marks > 0 else 0
+        overall_grade = "N/A"
+        for setting in grade_settings:
+            if setting.get("min", 0) <= overall_percentage <= setting.get("max", 100):
+                overall_grade = setting.get("grade_label", "N/A")
+                break
 
         return {
             "user": {
@@ -983,8 +992,11 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "incorrect_count": incorrect_count,
                 "not_attempted_count": not_attempted_count,
                 "total_marks_obtained": total_marks_obtained,
+                "overall_percentage": round(overall_percentage, 2),
+                "overall_grade": overall_grade,
             },
             "subject_wise_result": subject_wise_result,
+            "grade_settings": grade_settings,
             "answers": detailed_answers,
         }
     finally:

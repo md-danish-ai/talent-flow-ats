@@ -84,7 +84,7 @@ export const ProfileSummaryStrip = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="relative overflow-hidden rounded-[2rem] border border-border/50 bg-card backdrop-blur-xl p-5 shadow-2xl"
+        className="relative overflow-hidden rounded-3xl border border-border/50 bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none"
       >
         <div className="flex flex-col md:flex-row items-stretch justify-between gap-6 md:gap-0">
           {/* Paper Name */}

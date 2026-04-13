@@ -10,6 +10,7 @@ import {
   Activity,
   FileCheck2,
   BookOpen,
+  Star,
 } from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
@@ -212,6 +213,30 @@ export function AttemptDetailClient({
       bg: "bg-amber-500/10",
       border: "border-amber-500/20",
     },
+    {
+      label: "Final Grade",
+      value: data.summary.overall_grade.toUpperCase() || "N/A",
+      sub: `Performance: ${data.summary.overall_percentage}%`,
+      icon: <Star size={20} />,
+      color: 
+        data.summary.overall_grade === "Excellent" ? "text-emerald-600" :
+        data.summary.overall_grade === "Good" ? "text-brand-primary" :
+        data.summary.overall_grade === "Average" ? "text-amber-600" :
+        data.summary.overall_grade === "Poor" ? "text-rose-600" :
+        "text-indigo-600",
+      bg: 
+        data.summary.overall_grade === "Excellent" ? "bg-emerald-500/10" :
+        data.summary.overall_grade === "Good" ? "bg-brand-primary/10" :
+        data.summary.overall_grade === "Average" ? "bg-amber-500/10" :
+        data.summary.overall_grade === "Poor" ? "bg-rose-500/10" :
+        "bg-indigo-500/10",
+      border: 
+        data.summary.overall_grade === "Excellent" ? "border-emerald-500/20" :
+        data.summary.overall_grade === "Good" ? "border-brand-primary/20" :
+        data.summary.overall_grade === "Average" ? "border-amber-500/20" :
+        data.summary.overall_grade === "Poor" ? "border-rose-500/20" :
+        "border-indigo-500/20",
+    },
   ];
 
   return (
@@ -275,6 +300,39 @@ export function AttemptDetailClient({
       {/* Performance Grid */}
       <PerformanceGrid scoreStats={scoreStats} />
 
+      {/* Grade Scale Reference */}
+      {data.grade_settings && data.grade_settings.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex flex-col lg:flex-row lg:items-center gap-4 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans"
+        >
+          <div className="flex items-center gap-3 shrink-0">
+            <Star size={20} className="text-brand-primary" />
+            <Typography variant="h4" className="font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+              Grade Scale Matrix:
+            </Typography>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 w-full">
+            {data.grade_settings.map((g, i) => {
+              const gradeCol = 
+                g.grade_label.toLowerCase() === "excellent" ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30" :
+                g.grade_label.toLowerCase() === "good" ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30" :
+                g.grade_label.toLowerCase() === "average" ? "text-amber-700 bg-amber-500/10 border-amber-500/30" :
+                g.grade_label.toLowerCase() === "poor" ? "text-rose-700 bg-rose-500/10 border-rose-500/30" :
+                "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
+              return (
+                <div key={i} className={`flex-1 min-w-[140px] flex items-center justify-between px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}>
+                  <span className="font-black text-xs uppercase tracking-widest">{g.grade_label}</span>
+                  <span className="font-bold text-xs tracking-wide opacity-90 ml-2 whitespace-nowrap">{g.min}% - {g.max}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Detailed Result Breakdown */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -282,7 +340,7 @@ export function AttemptDetailClient({
         transition={{ delay: 0.2 }}
         className="space-y-6"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 rounded-3xl border border-border/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner">
               <FileCheck2 size={20} />
@@ -339,7 +397,7 @@ export function AttemptDetailClient({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.1 }}
-              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500"
+              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500"
             >
               <button
                 onClick={() => toggleSection(subject.section_name)}
@@ -364,13 +422,6 @@ export function AttemptDetailClient({
                         >
                           TOTAL: {subject.total_questions}
                         </Badge>
-                        <div className="h-1 w-1 rounded-full bg-border" />
-                        <Typography
-                          variant="body5"
-                          className="text-brand-primary font-black uppercase text-[10px] tracking-tighter"
-                        >
-                          PERFORMANCE: {subject.percentage}%
-                        </Typography>
                       </div>
                     </div>
                   </div>
@@ -422,24 +473,28 @@ export function AttemptDetailClient({
                     </div>
                   </div>
 
-                  {/* Grade Badge */}
-                  <Badge
-                    variant="fill"
-                    color={
-                      subject.grade === "Excellent"
-                        ? "success"
-                        : subject.grade === "Good"
-                          ? "primary"
-                          : subject.grade === "Average"
-                            ? "warning"
-                            : subject.grade === "Poor"
-                              ? "error"
-                              : "default"
-                    }
-                    className="px-5 py-2 rounded-xl font-black text-[11px] tracking-[0.12em] shadow-md shadow-black/5 uppercase min-w-[100px] text-center"
-                  >
-                    {subject.grade}
-                  </Badge>
+                  {/* Unified Performance & Grade Badge (Matrix Style) */}
+                  {(() => {
+                    const gradeLabel = subject.grade.toLowerCase();
+                    const style = 
+                      gradeLabel === "excellent" ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30" :
+                      gradeLabel === "good" ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30" :
+                      gradeLabel === "average" ? "text-amber-700 bg-amber-500/10 border-amber-500/30" :
+                      gradeLabel === "poor" ? "text-rose-700 bg-rose-500/10 border-rose-500/30" :
+                      "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
+                    
+                    return (
+                      <div className={`flex items-center justify-between px-5 py-2.5 rounded-xl border-2 ${style} shadow-sm min-w-[170px] transition-transform duration-300 group-hover:scale-105`}>
+                        <span className="font-black text-xs uppercase tracking-widest leading-none">
+                          {subject.grade}
+                        </span>
+                        <div className="w-1 h-3 rounded-full bg-current opacity-20 mx-3" />
+                        <span className="font-bold text-xs tracking-wide leading-none">
+                          {subject.percentage}%
+                        </span>
+                      </div>
+                    );
+                  })()}
 
                   <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
                     <motion.div

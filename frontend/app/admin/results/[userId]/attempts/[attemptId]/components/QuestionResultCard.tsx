@@ -67,7 +67,7 @@ export const QuestionResultCard = ({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-[2rem] border transition-all hover:shadow-xl hover:shadow-brand-primary/5 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
+      className={`group relative overflow-hidden rounded-[2rem] border transition-all shadow-2xl shadow-slate-300/30 dark:shadow-none hover:shadow-brand-primary/10 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
     >
       {/* Question Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">

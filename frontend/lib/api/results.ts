@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { GradeSetting } from "./papers";
 
 export interface AdminUserLatestAttempt {
   attempt_id: number;
@@ -111,8 +112,11 @@ export interface AdminUserResultDetail {
     incorrect_count: number;
     not_attempted_count: number;
     total_marks_obtained: number;
+    overall_percentage: number;
+    overall_grade: string;
   };
   subject_wise_result: SubjectWiseResult[];
+  grade_settings: GradeSetting[];
   answers: AdminUserResultAnswer[];
 }
 
