@@ -71,9 +71,9 @@ export const AddImageSubjectiveQuestionForm = ({
           }),
         ]);
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.IMAGE_SUBJECTIVE, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.IMAGE_SUBJECTIVE,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

@@ -43,11 +43,11 @@ export const AddQuestionForm = ({
             limit: 100,
           }),
         ]);
-        
+
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.MULTIPLE_CHOICE, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.MULTIPLE_CHOICE,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

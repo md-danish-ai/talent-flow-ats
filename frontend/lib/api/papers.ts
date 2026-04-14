@@ -58,6 +58,16 @@ export interface PaginatedPapersResponse {
   };
 }
 
+export interface PaperGradeSettingLog {
+  id: number;
+  paper_id: number;
+  updated_by: number;
+  updated_by_name: string;
+  old_grade_settings: GradeSetting[] | null;
+  new_grade_settings: GradeSetting[] | null;
+  updated_at: string;
+}
+
 export const papersApi = {
   getPapers: async (
     params?: {
@@ -109,5 +119,9 @@ export const papersApi = {
 
   updateGradeSettings: async (id: number, grade_settings: GradeSetting[]) => {
     return api.put<PaperSetup>(`/papers/grade-settings/${id}`, grade_settings);
+  },
+
+  getGradeSettingLogs: async (id: number) => {
+    return api.get<PaperGradeSettingLog[]>(`/papers/grade-settings/${id}/logs`);
   },
 };

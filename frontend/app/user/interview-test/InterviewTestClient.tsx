@@ -43,7 +43,7 @@ const buildSavedAnswersMap = (
 
 const getResumePosition = (
   sections: InterviewSection[],
-  answers: Record<number, string>,
+  touchedQuestionIds: Set<number>,
 ) => {
   for (
     let sectionIndex = 0;
@@ -51,7 +51,7 @@ const getResumePosition = (
     sectionIndex += 1
   ) {
     const questionIndex = sections[sectionIndex]?.questions.findIndex(
-      (question) => !(answers[question.id] || "").trim(),
+      (question) => !touchedQuestionIds.has(question.id),
     );
     if (questionIndex !== undefined && questionIndex >= 0) {
       return { sectionIndex, questionIndex };
@@ -174,7 +174,13 @@ export function InterviewTestClient() {
 
   const isLastQuestionInSection =
     questionIndex === currentSection.questions.length - 1;
-  const isLastSection = sectionIndex === sections.length - 1;
+  const isLastSection = useMemo(() => {
+    // A section is effectively the last one if no future sections are available (unlocked)
+    for (let i = sectionIndex + 1; i < sections.length; i++) {
+      if (!lockedSections[i]) return false;
+    }
+    return true;
+  }, [sectionIndex, sections, lockedSections]);
 
   const persistAnswerToBackend = useCallback(
     async (
@@ -251,20 +257,32 @@ export function InterviewTestClient() {
         return next;
       });
 
-      if (currentIndex === totalSections - 1) {
+      // Find the next section that is NOT locked
+      let nextUnlockedIndex = -1;
+      for (let i = currentIndex + 1; i < totalSections; i++) {
+        if (!lockedSections[i]) {
+          nextUnlockedIndex = i;
+          break;
+        }
+      }
+
+      if (nextUnlockedIndex === -1) {
         setCompletionReason("manual");
         setIsCompleted(true);
-        setMessage("Interview completed successfully.");
+        setMessage(
+          notice ??
+            "Interview completed. All remaining sections were already finished.",
+        );
         return;
       }
 
-      setSectionIndex(currentIndex + 1);
+      setSectionIndex(nextUnlockedIndex);
       setQuestionIndex(0);
       setMessage(
-        notice ?? "Section locked. You cannot return to this section.",
+        notice ?? "Section locked. Moving to the next available section.",
       );
     },
-    [totalSections],
+    [lockedSections, totalSections],
   );
 
   useEffect(() => {
@@ -449,11 +467,21 @@ export function InterviewTestClient() {
       return;
     }
 
-    if (!isLastSection) {
+    // Check if there are any MORE unlocked sections ahead
+    let hasNextUnlocked = false;
+    for (let i = sectionIndex + 1; i < sections.length; i++) {
+      if (!lockedSections[i]) {
+        hasNextUnlocked = true;
+        break;
+      }
+    }
+
+    if (hasNextUnlocked) {
       setIsSectionChangeConfirmOpen(true);
       return;
     }
 
+    // No unlocked sections left, perform final submission
     try {
       if (attemptId) {
         const summary = await interviewAttemptsApi.submitAttempt(attemptId);
@@ -471,7 +499,8 @@ export function InterviewTestClient() {
     currentQuestion,
     persistAnswerToBackend,
     isLastQuestionInSection,
-    isLastSection,
+    sections,
+    lockedSections,
     attemptId,
     lockAndMoveToNextSection,
     sectionIndex,
@@ -499,11 +528,23 @@ export function InterviewTestClient() {
       const restoredAnswers = buildSavedAnswersMap(
         startResponse.saved_responses,
       );
-      const resumePosition = getResumePosition(loadedSections, restoredAnswers);
+      const touchedQuestionIds = new Set(
+        startResponse.saved_responses.map((r) => r.question_id),
+      );
+      const resumePosition = getResumePosition(
+        loadedSections,
+        touchedQuestionIds,
+      );
+
+      const initialLockedSections = loadedSections.map((section) => {
+        if (!startResponse.is_resumed) return false;
+        // A section is locked if all its questions have existing records in DB
+        return section.questions.every((q) => touchedQuestionIds.has(q.id));
+      });
 
       setAttemptId(startResponse.attempt_id);
       setSections(loadedSections);
-      setLockedSections(loadedSections.map(() => false));
+      setLockedSections(initialLockedSections);
       setSectionIndex(
         startResponse.is_resumed ? resumePosition.sectionIndex : 0,
       );

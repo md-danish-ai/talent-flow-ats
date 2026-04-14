@@ -54,11 +54,11 @@ export const AddPassageQuestionForm = ({
             limit: 100,
           }),
         ]);
-        
+
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.PASSAGE_CONTENT, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.PASSAGE_CONTENT,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

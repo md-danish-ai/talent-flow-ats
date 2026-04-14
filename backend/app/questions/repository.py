@@ -1,5 +1,4 @@
-# app/questions/repository.py
-
+from typing import Optional
 from sqlalchemy.orm import aliased
 from app.database.db import SessionLocal
 from app.questions.models import Question
@@ -421,22 +420,22 @@ def auto_generate_questions(
         for req in requirements:
             type_code: str = req["type_code"]
             requested: int = max(0, int(req["count"]))
+            marks: Optional[int] = req.get("marks")
 
             if requested == 0:
                 continue
 
-            rows = (
-                db_session.query(Question.id, Question.marks)
-                .filter(
-                    Question.subject_type == subject_code,
-                    Question.exam_level == exam_level,
-                    Question.question_type == type_code,
-                    Question.is_active.is_(True),
-                )
-                .order_by(sql_func.random())
-                .limit(requested)
-                .all()
+            query = db_session.query(Question.id, Question.marks).filter(
+                Question.subject_type == subject_code,
+                Question.exam_level == exam_level,
+                Question.question_type == type_code,
+                Question.is_active.is_(True),
             )
+
+            if marks is not None:
+                query = query.filter(Question.marks == marks)
+
+            rows = query.order_by(sql_func.random()).limit(requested).all()
 
             found_ids = [r.id for r in rows]
             found = len(found_ids)
@@ -445,6 +444,7 @@ def auto_generate_questions(
             details.append(
                 {
                     "type_code": type_code,
+                    "marks": marks,
                     "requested": requested,
                     "found": found,
                     "question_ids": found_ids,
@@ -479,6 +479,7 @@ def get_available_question_counts(subject_code: str, exam_level: str):
         rows = (
             db_session.query(
                 Question.question_type,
+                Question.marks,
                 sql_func.count(Question.id).label("count")
             )
             .filter(
@@ -486,10 +487,13 @@ def get_available_question_counts(subject_code: str, exam_level: str):
                 Question.exam_level == exam_level,
                 Question.is_active.is_(True)
             )
-            .group_by(Question.question_type)
+            .group_by(Question.question_type, Question.marks)
             .all()
         )
-        return {r.question_type: r.count for r in rows}
+        return [
+            {"type_code": r.question_type, "marks": r.marks, "count": r.count} 
+            for r in rows
+        ]
     finally:
         db_session.close()
 

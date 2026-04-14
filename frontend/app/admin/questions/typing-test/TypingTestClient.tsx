@@ -159,9 +159,9 @@ export function TypingTestClient() {
           }),
         ]);
         const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [], 
-          QUESTION_TYPES.TYPING_TEST, 
-          subjectsRes.data || []
+          subjectsRes.data || [],
+          QUESTION_TYPES.TYPING_TEST,
+          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

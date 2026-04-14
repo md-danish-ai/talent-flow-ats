@@ -35,7 +35,6 @@ export function BulkUploadModal({
     file: null as File | null,
   });
 
-
   const fetchClassifications = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -54,7 +53,7 @@ export function BulkUploadModal({
       const filteredSubjects = filterSubjectsForQuestionType(
         subjectsRes.data || [],
         questionType,
-        subjectsRes.data || []
+        subjectsRes.data || [],
       );
       setSubjects(filteredSubjects);
       setExamLevels(examLevelsRes.data || []);
@@ -71,7 +70,6 @@ export function BulkUploadModal({
       fetchClassifications();
     }
   }, [isOpen, fetchClassifications]);
-
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,7 +119,10 @@ export function BulkUploadModal({
     }
   };
 
-  const subjectOptions = subjects.map((s) => ({ id: s.code || s.name, label: s.name }));
+  const subjectOptions = subjects.map((s) => ({
+    id: s.code || s.name,
+    label: s.name,
+  }));
   const examLevelOptions = examLevels.map((l) => ({
     id: l.name,
     label: l.name,

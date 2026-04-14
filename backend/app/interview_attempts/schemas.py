@@ -66,3 +66,8 @@ class SaveAnswerResponse(BaseModel):
 
 class ManualMarksRequest(BaseModel):
     marks: float
+
+
+class ResetSubjectsRequest(BaseModel):
+    attempt_id: int
+    section_names: list[str]

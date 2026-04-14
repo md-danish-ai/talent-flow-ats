@@ -14,6 +14,7 @@ import {
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { AdminUserResultListItem } from "@lib/api/results";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 
@@ -83,7 +84,7 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
-              <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky right-0 bg-[#f8fafc] dark:bg-[#0f172a] z-10 font-bold text-foreground/80 border-l border-border/50">
+              <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky z-10 font-bold text-foreground/80">
                 Actions
               </TableHead>
             )}
@@ -271,15 +272,13 @@ export function ResultTableView({
                 {visibleColumns.includes("actions") && (
                   <TableCell className="text-right">
                     <Link href={`/admin/results/${item.user_id}`}>
-                      <Button
-                        variant="ghost"
-                        color="primary"
-                        size="icon"
+                      <TableIconButton
+                        iconColor="brand"
                         animate="scale"
                         title="View Result"
                       >
                         <Eye size={16} />
-                      </Button>
+                      </TableIconButton>
                     </Link>
                   </TableCell>
                 )}

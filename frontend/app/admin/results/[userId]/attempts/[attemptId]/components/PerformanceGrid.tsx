@@ -18,7 +18,9 @@ interface PerformanceGridProps {
 
 export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div
+      className={`grid grid-cols-1 md:grid-cols-2 ${scoreStats.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-4`}
+    >
       {scoreStats.map((stat, idx) => (
         <motion.div
           key={idx}
@@ -26,7 +28,7 @@ export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 * idx }}
           whileHover={{ y: -5 }}
-          className={`group relative overflow-hidden rounded-3xl border ${stat.border} bg-card backdrop-blur-xl p-5 shadow-xl shadow-slate-200/20 dark:shadow-none transition-all duration-500 hover:border-brand-primary/30`}
+          className={`group relative overflow-hidden rounded-3xl border ${stat.border} bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none transition-all duration-500 hover:border-brand-primary/30`}
         >
           <div className="relative z-10 flex flex-col gap-4">
             <div
@@ -46,16 +48,16 @@ export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
               >
                 {stat.label}
               </Typography>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1">
                 <Typography
                   variant="h1"
-                  className="font-black leading-none sm:text-4xl"
+                  className={`font-black leading-none ${stat.value.length > 8 ? "text-2xl sm:text-3xl lg:text-2xl xl:text-3xl" : "text-3xl sm:text-4xl"}`}
                 >
                   {stat.value}
                 </Typography>
                 <Typography
                   variant="body5"
-                  className="text-muted-foreground font-black uppercase text-[11px] tracking-tighter"
+                  className="text-muted-foreground font-black uppercase text-[11px] tracking-tighter shrink-0"
                 >
                   {stat.sub}
                 </Typography>

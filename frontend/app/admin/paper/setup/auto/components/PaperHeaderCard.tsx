@@ -53,11 +53,7 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
         </div>
 
         <div className="flex bg-brand-primary/[0.08] dark:bg-brand-primary/10 border border-brand-primary/20 px-6 py-4 rounded-[1rem] gap-3.5 items-center shrink-0">
-          <Wand2
-            size={24}
-            className="text-brand-primary"
-            strokeWidth={2.5}
-          />
+          <Wand2 size={24} className="text-brand-primary" strokeWidth={2.5} />
           <div className="flex flex-col gap-0.5">
             <Typography
               variant="body5"
@@ -186,11 +182,7 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
           </Typography>
         </div>
         <div className="flex items-center gap-2.5">
-          <AlertCircle
-            size={18}
-            className="text-amber-500"
-            strokeWidth={2.5}
-          />
+          <AlertCircle size={18} className="text-amber-500" strokeWidth={2.5} />
           <Typography
             variant="body5"
             weight="black"

@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { GradeSetting } from "./papers";
 
 export interface AdminUserLatestAttempt {
   attempt_id: number;
@@ -111,8 +112,11 @@ export interface AdminUserResultDetail {
     incorrect_count: number;
     not_attempted_count: number;
     total_marks_obtained: number;
+    overall_percentage: number;
+    overall_grade: string;
   };
   subject_wise_result: SubjectWiseResult[];
+  grade_settings: GradeSetting[];
   answers: AdminUserResultAnswer[];
 }
 
@@ -193,6 +197,17 @@ export const resultsApi = {
   enableReInterview: async (userId: number) => {
     return api.post<{ message: string; reinterview_date?: string }>(
       `/admin/results/users/${userId}/enable-reinterview`,
+    );
+  },
+
+  resetUserSubjects: async (
+    userId: number,
+    attemptId: number,
+    sectionNames: string[],
+  ) => {
+    return api.post<{ message: string }>(
+      `/admin/results/users/${userId}/reset-subjects`,
+      { attempt_id: attemptId, section_names: sectionNames },
     );
   },
 

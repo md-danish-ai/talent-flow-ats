@@ -23,16 +23,22 @@ import { filterQuestionTypesForSubject } from "@lib/utils/exclusivity";
 interface SubjectAssignmentCardProps {
   subj: PaperSubjectConfig;
   subjCode: string;
-  counts: Record<string, number>;
-  subjectReqs: Record<string, number>;
+  counts: Record<string, Record<number, number>>;
+  subjectReqs: Record<string, Record<number, number>>;
   isCollapsed: boolean;
   currentTotal: number;
+  currentMarksTotal: number;
   questionTypes: Classification[];
   paperId: number | string;
   isSaving: boolean;
   subjects: Classification[];
   onToggle: () => void;
-  onQtyChange: (subjectCode: string, typeCode: string, val: number) => void;
+  onQtyChange: (
+    subjectCode: string,
+    typeCode: string,
+    marks: number,
+    val: number,
+  ) => void;
   onAutoAssign: () => void;
 }
 
@@ -43,6 +49,7 @@ export function SubjectAssignmentCard({
   subjectReqs,
   isCollapsed,
   currentTotal,
+  currentMarksTotal,
   questionTypes,
   paperId,
   isSaving,
@@ -52,8 +59,11 @@ export function SubjectAssignmentCard({
   onAutoAssign,
 }: SubjectAssignmentCardProps) {
   const router = useRouter();
+
+  const isCountPerfect = currentTotal === subj.question_count;
+  const isMarksPerfect = currentMarksTotal === subj.total_marks;
+  const isPerfect = isCountPerfect && isMarksPerfect;
   const isTargetReached = currentTotal >= subj.question_count;
-  const isPerfect = currentTotal === subj.question_count;
 
   return (
     <MainCard
@@ -71,23 +81,44 @@ export function SubjectAssignmentCard({
             >
               {(subj.subject_name || `Subject ${subjCode}`).replace(/_/g, " ")}
             </Typography>
-            <div className="flex items-center gap-2">
-              <div className="w-24 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${Math.min(100, (currentTotal / subj.question_count) * 100)}%`,
-                  }}
-                  className={`h-full ${isPerfect ? "bg-brand-success" : currentTotal > subj.question_count ? "bg-red-500" : "bg-brand-primary"}`}
-                />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-16 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${Math.min(100, (currentTotal / subj.question_count) * 100)}%`,
+                    }}
+                    className={`h-full ${isCountPerfect ? "bg-brand-success" : currentTotal > subj.question_count ? "bg-red-500" : "bg-brand-primary"}`}
+                  />
+                </div>
+                <Typography
+                  variant="body5"
+                  weight="bold"
+                  className={`text-[9px] uppercase tracking-widest ${isCountPerfect ? "text-brand-success" : currentTotal > subj.question_count ? "text-red-500" : "text-slate-400"}`}
+                >
+                  {currentTotal} / {subj.question_count} Qs
+                </Typography>
               </div>
-              <Typography
-                variant="body5"
-                weight="bold"
-                className={`text-[10px] uppercase tracking-widest ${isPerfect ? "text-brand-success" : currentTotal > subj.question_count ? "text-red-500" : "text-slate-400"}`}
-              >
-                {currentTotal} / {subj.question_count} Selected
-              </Typography>
+
+              <div className="flex items-center gap-2">
+                <div className="w-16 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${Math.min(100, (currentMarksTotal / subj.total_marks) * 100)}%`,
+                    }}
+                    className={`h-full ${isMarksPerfect ? "bg-blue-500" : currentMarksTotal > subj.total_marks ? "bg-red-500" : "bg-blue-400"}`}
+                  />
+                </div>
+                <Typography
+                  variant="body5"
+                  weight="bold"
+                  className={`text-[9px] uppercase tracking-widest ${isMarksPerfect ? "text-blue-500" : currentMarksTotal > subj.total_marks ? "text-red-500" : "text-slate-400"}`}
+                >
+                  {currentMarksTotal} / {subj.total_marks} Marks
+                </Typography>
+              </div>
             </div>
           </div>
         </div>
@@ -172,11 +203,23 @@ export function SubjectAssignmentCard({
               }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 pb-6"
             >
-              {filterQuestionTypesForSubject(questionTypes, subjCode, subjects)
-                .map((type) => {
-                const val = subjectReqs[type.code] || 0;
-                const isUsed = val > 0;
-                const isAvailable = (counts[type.code] || 0) > 0;
+              {filterQuestionTypesForSubject(
+                questionTypes,
+                subjCode,
+                subjects,
+              ).map((type) => {
+                const markCounts = counts[type.code] || {};
+                const markReqs = subjectReqs[type.code] || {};
+
+                // Get all mark values that have either availability or an existing selection
+                const availableMarks = Array.from(
+                  new Set([
+                    ...Object.keys(markCounts).map(Number),
+                    ...Object.keys(markReqs).map(Number),
+                  ]),
+                ).sort((a, b) => a - b);
+
+                if (availableMarks.length === 0) availableMarks.push(0);
 
                 return (
                   <motion.div
@@ -186,103 +229,135 @@ export function SubjectAssignmentCard({
                       visible: { y: 0, opacity: 1 },
                     }}
                     className={`relative p-5 rounded-[2rem] border transition-all duration-500 group overflow-hidden ${
-                      isUsed
+                      Object.values(markReqs).some((v) => v > 0)
                         ? "border-brand-primary/50 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.07] ring-1 ring-brand-primary/20"
                         : "border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50"
-                    } ${isTargetReached && !isUsed ? "opacity-40 scale-[0.98]" : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5"}`}
+                    } ${isTargetReached && !Object.values(markReqs).some((v) => v > 0) ? "opacity-40 scale-[0.98]" : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5"}`}
                   >
-                    {isUsed && (
-                      <div className="absolute -right-4 -top-4 w-12 h-12 bg-brand-primary/10 rounded-full blur-2xl group-hover:bg-brand-primary/20 transition-all pointer-events-none" />
-                    )}
-
-                    <div className="flex flex-col gap-4 relative z-10">
+                    <div className="flex flex-col gap-5 relative z-10">
                       <div className="flex flex-col gap-1">
                         <Typography
                           variant="body5"
                           weight="black"
-                          className={`uppercase tracking-[0.15em] text-[8px] transition-colors ${isUsed ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
+                          className={`uppercase tracking-[0.15em] text-[8px] transition-colors ${Object.values(markReqs).some((v) => v > 0) ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
                         >
                           {type.name}
                         </Typography>
-                        <div className="flex items-center gap-1.5 line-clamp-1">
-                          <div
-                            className={`w-1 h-1 rounded-full ${isAvailable ? "bg-emerald-500" : "bg-slate-400"}`}
-                          />
-                          <Typography
-                            variant="body5"
-                            className="text-[10px] text-slate-400 font-medium"
-                          >
-                            Availability:{" "}
-                            <span className="font-mono text-slate-600 dark:text-slate-300">
-                              {counts[type.code] || 0}
-                            </span>
-                          </Typography>
-                        </div>
                       </div>
 
-                      <div className="flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
-                        <button
-                          onClick={() =>
-                            onQtyChange(subjCode, type.code, val - 1)
-                          }
-                          disabled={val <= 0}
-                          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${val > 0 ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95" : "text-slate-300 dark:text-slate-700 cursor-not-allowed"}`}
-                        >
-                          <Minus size={16} strokeWidth={3} />
-                        </button>
+                      <div className="space-y-6">
+                        {availableMarks.map((mark) => {
+                          const availability = markCounts[mark] || 0;
+                          const val = markReqs[mark] || 0;
+                          const isUsed = val > 0;
+                          const isAvailable = availability > 0;
 
-                        <div className="flex-1 flex flex-col items-center">
-                          <input
-                            type="number"
-                            min="0"
-                            value={val}
-                            onChange={(e) => {
-                              const newVal = parseInt(e.target.value) || 0;
-                              const otherTotal = currentTotal - val;
-                              if (otherTotal + newVal <= subj.question_count) {
-                                onQtyChange(subjCode, type.code, newVal);
-                              } else {
-                                onQtyChange(
-                                  subjCode,
-                                  type.code,
-                                  subj.question_count - otherTotal,
-                                );
-                                toast.warning(
-                                  `Subject target reached! Max ${subj.question_count} questions allowed.`,
-                                );
-                              }
-                            }}
-                            className={`w-full bg-transparent border-none text-center font-mono font-black text-2xl outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isUsed ? "text-brand-primary" : "text-slate-500"}`}
-                          />
-                        </div>
+                          return (
+                            <div key={mark} className="space-y-3">
+                              <div className="flex items-center justify-between px-1">
+                                <div className="flex items-center gap-1.5">
+                                  <div
+                                    className={`w-1 h-1 rounded-full ${isAvailable ? "bg-emerald-500" : "bg-slate-400"}`}
+                                  />
+                                  <Typography
+                                    variant="body5"
+                                    className="text-[10px] text-slate-400 font-medium"
+                                  >
+                                    {mark} Marks • Availability:{" "}
+                                    <span className="font-mono text-slate-600 dark:text-slate-300">
+                                      {availability}
+                                    </span>
+                                  </Typography>
+                                </div>
+                              </div>
 
-                        <button
-                          onClick={() =>
-                            onQtyChange(subjCode, type.code, val + 1)
-                          }
-                          disabled={isTargetReached}
-                          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${!isTargetReached ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95" : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"}`}
-                        >
-                          <Plus size={16} strokeWidth={3} />
-                        </button>
+                              <div className="flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+                                <button
+                                  onClick={() =>
+                                    onQtyChange(
+                                      subjCode,
+                                      type.code,
+                                      mark,
+                                      val - 1,
+                                    )
+                                  }
+                                  disabled={val <= 0}
+                                  className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${val > 0 ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95" : "text-slate-300 dark:text-slate-700 cursor-not-allowed"}`}
+                                >
+                                  <Minus size={16} strokeWidth={3} />
+                                </button>
+
+                                <div className="flex-1 flex flex-col items-center">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={val}
+                                    onChange={(e) => {
+                                      const newVal =
+                                        parseInt(e.target.value) || 0;
+                                      const otherTotal = currentTotal - val;
+                                      if (
+                                        otherTotal + newVal <=
+                                        subj.question_count
+                                      ) {
+                                        onQtyChange(
+                                          subjCode,
+                                          type.code,
+                                          mark,
+                                          newVal,
+                                        );
+                                      } else {
+                                        onQtyChange(
+                                          subjCode,
+                                          type.code,
+                                          mark,
+                                          subj.question_count - otherTotal,
+                                        );
+                                        toast.warning(
+                                          `Subject target reached! Max ${subj.question_count} questions allowed.`,
+                                        );
+                                      }
+                                    }}
+                                    className={`w-full bg-transparent border-none text-center font-mono font-black text-xl outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isUsed ? "text-brand-primary" : "text-slate-500"}`}
+                                  />
+                                </div>
+
+                                <button
+                                  onClick={() =>
+                                    onQtyChange(
+                                      subjCode,
+                                      type.code,
+                                      mark,
+                                      val + 1,
+                                    )
+                                  }
+                                  disabled={isTargetReached}
+                                  className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${!isTargetReached ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95" : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"}`}
+                                >
+                                  <Plus size={16} strokeWidth={3} />
+                                </button>
+                              </div>
+
+                              {isUsed && (
+                                <motion.div
+                                  initial={{ y: 5, opacity: 0 }}
+                                  animate={{ y: 0, opacity: 1 }}
+                                  className="flex items-center justify-center gap-1.5"
+                                >
+                                  <div className="w-1 h-1 rounded-full bg-brand-primary animate-pulse" />
+                                  <Typography
+                                    variant="body5"
+                                    weight="black"
+                                    className="text-[8px] uppercase text-brand-primary tracking-widest"
+                                  >
+                                    Selection Confirmed
+                                  </Typography>
+                                </motion.div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
-
-                      {isUsed && (
-                        <motion.div
-                          initial={{ y: 5, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          className="flex items-center justify-center gap-1.5"
-                        >
-                          <div className="w-1 h-1 rounded-full bg-brand-primary animate-pulse" />
-                          <Typography
-                            variant="body5"
-                            weight="black"
-                            className="text-[8px] uppercase text-brand-primary tracking-widest"
-                          >
-                            Selection Confirmed
-                          </Typography>
-                        </motion.div>
-                      )}
                     </div>
                   </motion.div>
                 );
@@ -345,7 +420,7 @@ export function SubjectAssignmentCard({
                   type="button"
                   onClick={onAutoAssign}
                   color={isPerfect ? "success" : "primary"}
-                  disabled={isSaving || currentTotal === 0}
+                  disabled={isSaving || !isPerfect}
                   size="lg"
                   animate="scale"
                 >
@@ -364,7 +439,11 @@ export function SubjectAssignmentCard({
                     weight="black"
                     className="uppercase tracking-[0.15em] text-[11px] text-white"
                   >
-                    {isSaving ? "Saving..." : "Submit Question"}
+                    {isSaving
+                      ? "Saving..."
+                      : !isPerfect
+                        ? "Incomplete"
+                        : "Submit Question"}
                   </Typography>
                 </Button>
               </div>

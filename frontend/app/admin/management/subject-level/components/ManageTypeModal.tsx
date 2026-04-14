@@ -19,7 +19,11 @@ interface ManageTypeModalProps {
   type: "subject" | "level";
   editingType: BaseType | null;
   formData: { name: string; description: string; is_exclusive: boolean };
-  setFormData: (data: { name: string; description: string; is_exclusive: boolean }) => void;
+  setFormData: (data: {
+    name: string;
+    description: string;
+    is_exclusive: boolean;
+  }) => void;
   onSubmit: (e: React.FormEvent) => void;
   isLoading?: boolean;
 }
@@ -77,13 +81,22 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
               <Typography variant="body4" weight="semibold">
                 Exclusive Subject
               </Typography>
-              <Typography variant="body5" className="text-muted-foreground leading-tight">
-                Restricts this subject only to its dedicated question type context.
+              <Typography
+                variant="body5"
+                className="text-muted-foreground leading-tight"
+              >
+                Restricts this subject only to its dedicated question type
+                context.
               </Typography>
             </div>
             <Switch
               checked={formData.is_exclusive}
-              onChange={() => setFormData({ ...formData, is_exclusive: !formData.is_exclusive })}
+              onChange={() =>
+                setFormData({
+                  ...formData,
+                  is_exclusive: !formData.is_exclusive,
+                })
+              }
               disabled={isLoading}
             />
           </div>

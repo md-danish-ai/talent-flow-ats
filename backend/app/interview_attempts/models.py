@@ -11,6 +11,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.database.db import Base
 
@@ -39,6 +40,7 @@ class InterviewAttempt(Base):
     obtained_marks = Column(Numeric(10, 2), nullable=True)
 
     is_auto_submitted = Column(Boolean, nullable=False, server_default="false")
+    grade_settings_snapshot = Column(JSONB, nullable=True)
 
     created_at = Column(
         TIMESTAMP,
