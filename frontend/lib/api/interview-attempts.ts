@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { apiClient, type ApiRequestOptions } from "./client";
 
 export interface AttemptSavedResponse {
   question_id: number;
@@ -20,6 +21,7 @@ export interface StartAttemptResponse {
   is_resumed: boolean;
   paper_question_ids: number[];
   saved_responses: AttemptSavedResponse[];
+  total_duration_minutes: number;
 }
 
 export interface SaveAttemptAnswerResponse {
@@ -82,4 +84,22 @@ export const interviewAttemptsApi = {
     api.get<AttemptSummaryResponse>(
       `/user/interview-attempts/${attemptId}/summary`,
     ),
+
+  skipSection: (
+    attemptId: number,
+    sectionName: string,
+    options?: ApiRequestOptions,
+  ) =>
+    apiClient(
+      `/user/interview-attempts/${attemptId}/sections/${sectionName}/skip`,
+      { ...options, method: "POST" },
+    ),
+
+  getActiveStatus: (options?: ApiRequestOptions) =>
+    apiClient<{
+      has_attempt: boolean;
+      status: string | null;
+      is_expired: boolean;
+      attempt_id?: number | null;
+    }>("/user/interview-attempts/active-status", { ...options, method: "GET" }),
 };

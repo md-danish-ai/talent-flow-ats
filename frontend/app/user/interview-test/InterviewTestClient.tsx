@@ -249,13 +249,37 @@ export function InterviewTestClient() {
     void loadAssignedPaper();
   }, []);
 
+  const finalizeInterview = useCallback(async () => {
+    if (!attemptId) return;
+    try {
+      const summary = await interviewAttemptsApi.submitAttempt(attemptId);
+      setFinalSummary(summary);
+    } catch {
+      setMessage(
+        "Interview finished locally, but final server submission failed.",
+      );
+    }
+  }, [attemptId]);
+
   const lockAndMoveToNextSection = useCallback(
-    (currentIndex: number, notice?: string) => {
+    async (currentIndex: number, notice?: string) => {
       setLockedSections((prev) => {
         const next = [...prev];
         next[currentIndex] = true;
         return next;
       });
+
+      // Notify backend to skip remaining questions in this section
+      if (attemptId && currentSection) {
+        try {
+          await interviewAttemptsApi.skipSection(
+            attemptId,
+            currentSection.title,
+          );
+        } catch {
+          console.error("Failed to mark section as skipped on server");
+        }
+      }
 
       // Find the next section that is NOT locked
       let nextUnlockedIndex = -1;
@@ -273,6 +297,7 @@ export function InterviewTestClient() {
           notice ??
             "Interview completed. All remaining sections were already finished.",
         );
+        await finalizeInterview();
         return;
       }
 
@@ -282,7 +307,13 @@ export function InterviewTestClient() {
         notice ?? "Section locked. Moving to the next available section.",
       );
     },
-    [lockedSections, totalSections],
+    [
+      attemptId,
+      currentSection,
+      lockedSections,
+      totalSections,
+      finalizeInterview,
+    ],
   );
 
   useEffect(() => {
@@ -504,6 +535,7 @@ export function InterviewTestClient() {
     attemptId,
     lockAndMoveToNextSection,
     sectionIndex,
+    finalizeInterview,
   ]);
 
   const handleConfirmSectionChange = () => {
@@ -557,6 +589,29 @@ export function InterviewTestClient() {
           ? "Resumed your in-progress interview with saved responses."
           : null,
       );
+
+      // Handle server-synced timer resumption
+      if (startResponse.is_resumed && startResponse.started_at) {
+        const startedAt = new Date(startResponse.started_at);
+        const now = new Date();
+        const secondsElapsed = Math.floor(
+          (now.getTime() - startedAt.getTime()) / 1000,
+        );
+        const totalDurationSeconds =
+          (startResponse.total_duration_minutes ?? overallExamDurationMinutes) *
+          60;
+        const remainingSeconds = Math.max(
+          0,
+          totalDurationSeconds - secondsElapsed,
+        );
+
+        setExamRemainingSeconds(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+          void handleOverallTimeOver();
+        }
+      }
+
       setHasStarted(true);
     } catch {
       setStartError(
