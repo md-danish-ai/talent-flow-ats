@@ -33,7 +33,7 @@ interface TableIconButtonProps extends Omit<
 
 const colorMap: Record<TableIconButtonColor, string> = {
   slate:
-    "text-slate-500 hover:text-slate-700 bg-slate-50 dark:bg-slate-400/10 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-400/20 border border-transparent hover:border-slate-200 dark:hover:border-slate-400/30",
+    "text-slate-500 hover:text-slate-700 bg-slate-50 dark:bg-slate-400/10 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/20 dark:hover:text-slate-100 border border-transparent hover:border-slate-200 dark:hover:border-slate-400/30",
   red: "text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-transparent hover:border-red-200 dark:hover:border-red-500/30",
   orange:
     "text-orange-500 hover:text-orange-600 bg-orange-50 dark:bg-orange-500/10 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-transparent hover:border-orange-200 dark:hover:border-orange-500/30",

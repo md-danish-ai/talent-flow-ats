@@ -27,7 +27,7 @@ interface PaperSetupRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (paper: Partial<PaperSetup>) => void;
-  onDelete: (id: number) => void;
+  // onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
   visibleColumns: string[];
 }
@@ -40,7 +40,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  onDelete,
+  // onDelete,
   onViewDetails,
   visibleColumns,
 }) => {
@@ -173,14 +173,14 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
               <EditIcon size={16} />
             </TableIconButton>
 
-            <TableIconButton
+            {/* <TableIconButton
               iconColor="red"
               animate="scale"
               title="Delete Paper"
               onClick={() => onDelete(row.id!)}
             >
               <Trash2 size={16} />
-            </TableIconButton>
+            </TableIconButton> */}
           </div>
         </TableCell>
       )}
