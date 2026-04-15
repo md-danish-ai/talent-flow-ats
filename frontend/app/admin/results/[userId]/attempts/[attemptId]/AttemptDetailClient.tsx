@@ -417,7 +417,7 @@ export function AttemptDetailClient({
         </div>
 
         <div className="grid grid-cols-1 gap-5">
-          {data.subject_wise_result.map((subject, idx) => (
+          {data.subject_results.map((subject, idx) => (
             <motion.div
               key={subject.section_name}
               initial={{ opacity: 0, x: -20 }}

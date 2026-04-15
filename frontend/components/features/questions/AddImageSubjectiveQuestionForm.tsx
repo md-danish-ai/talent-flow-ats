@@ -46,12 +46,17 @@ export const AddImageSubjectiveQuestionForm = ({
 
   const getCanonicalImageUrl = (url?: string | null) => {
     if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("data:") ||
+      url.startsWith("blob:")
+    ) {
+      return url;
+    }
+    const base = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
+    ).replace(/\/$/, "");
     return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
   };
 
@@ -187,6 +192,7 @@ export const AddImageSubjectiveQuestionForm = ({
                     className="hidden"
                     accept="image/*"
                     onChange={handleFileChange}
+                    title="Upload question image"
                   />
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (

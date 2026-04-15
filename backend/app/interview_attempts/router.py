@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
-from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, ManualMarksRequest, ResetSubjectsRequest
+from .schemas import SaveAttemptAnswerRequest, StartAttemptRequest, ManualMarksRequest, ResetSubjectsRequest, BatchSaveAnswersRequest
 from .service import InterviewAttemptService
 
 router = APIRouter(
@@ -34,6 +34,20 @@ async def save_answer(
         user_id=current_user,
         answer_text=payload.answer_text,
         is_auto_saved=payload.is_auto_saved,
+    )
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+
+
+@router.post("/user/interview-attempts/{attempt_id}/answers/batch")
+async def save_answers_batch(
+    attempt_id: int,
+    payload: BatchSaveAnswersRequest,
+    current_user: int = Depends(authenticate_user),
+):
+    data = await service.save_answers_batch(
+        attempt_id=attempt_id,
+        user_id=current_user,
+        answers=[a.dict() for a in payload.answers],
     )
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
 import json
-import re
 import math
+import re
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.classifications.models import Classification
 from app.database.db import SessionLocal
@@ -19,23 +20,25 @@ from app.answer.models import QuestionAnswer
 from app.users.models import User
 from app.utils.status_codes import StatusCode
 from app.user_details.models import UserDetail
-from .models import InterviewAttempt, InterviewAttemptResponse
+from .models import InterviewRecord
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+ACTIVE_STATUSES = {"started"}
 
 
-ACTIVE_ATTEMPT_STATUSES = {"started"}
-
+# ---------------------------------------------------------------------------
+# Private text-matching helpers
+# ---------------------------------------------------------------------------
 
 def _normalize_text(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
 def _extract_option_key(value: str) -> str | None:
-    """
-    Extract leading option key from strings like:
-    "A", "A.", "A: foo", "B) option text"
-    """
-    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\):\-]?",
-                     value.strip(), flags=re.I)
+    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\)\:\-]?", value.strip(), flags=re.I)
     if not match:
         return None
     return match.group(1).lower()
@@ -50,200 +53,404 @@ def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
     normalized_correct = _normalize_text(correct_answer)
     if not normalized_user or not normalized_correct:
         return False
-
-    # Direct normalized text match.
     if normalized_user == normalized_correct:
         return True
-
-    # Option-key based comparison (for objective answers).
     user_parts = _split_answer_values(user_answer)
     correct_parts = _split_answer_values(correct_answer)
-
-    user_keys = {
-        _extract_option_key(part) or _normalize_text(part) for part in user_parts
-    }
-    correct_keys = {
-        _extract_option_key(part) or _normalize_text(part) for part in correct_parts
-    }
-
+    user_keys = {_extract_option_key(p) or _normalize_text(p) for p in user_parts}
+    correct_keys = {_extract_option_key(p) or _normalize_text(p) for p in correct_parts}
     return user_keys == correct_keys
 
 
+# ---------------------------------------------------------------------------
+# Private paper / question helpers
+# ---------------------------------------------------------------------------
+
 def _extract_question_ids(question_payload: Any) -> list[int]:
-    """Extract unique integer question ids from papers.question_id JSONB payload."""
     ids: list[int] = []
 
     def walk(value: Any) -> None:
         if isinstance(value, int):
             ids.append(value)
-            return
-
-        if isinstance(value, str):
-            stripped = value.strip()
-            if stripped.isdigit():
-                ids.append(int(stripped))
-            return
-
-        if isinstance(value, list):
+        elif isinstance(value, str) and value.strip().isdigit():
+            ids.append(int(value.strip()))
+        elif isinstance(value, list):
             for item in value:
                 walk(item)
-            return
-
-        if isinstance(value, dict):
+        elif isinstance(value, dict):
             for item in value.values():
                 walk(item)
 
     walk(question_payload)
-
-    # Keep order but remove duplicates.
-    deduped = list(dict.fromkeys(ids))
-    return deduped
+    return list(dict.fromkeys(ids))
 
 
-def _get_attempt_or_404(db_session, attempt_id: int, user_id: int) -> InterviewAttempt:
-    attempt = (
-        db_session.query(InterviewAttempt)
-        .filter(
-            InterviewAttempt.id == attempt_id,
-            InterviewAttempt.user_id == user_id,
-        )
+def _get_record_or_404(db: Session, record_id: int, user_id: int) -> InterviewRecord:
+    record = (
+        db.query(InterviewRecord)
+        .filter(InterviewRecord.id == record_id, InterviewRecord.user_id == user_id)
         .first()
     )
-    if not attempt:
-        raise HTTPException(
-            status_code=StatusCode.NOT_FOUND,
-            detail="Attempt not found",
-        )
-    return attempt
+    if not record:
+        raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Attempt not found")
+    return record
 
 
-def _get_paper_or_404(db_session, paper_id: int) -> Paper:
-    paper = db_session.query(Paper).filter(Paper.id == paper_id).first()
+def _get_paper_or_404(db: Session, paper_id: int) -> Paper:
+    paper = db.query(Paper).filter(Paper.id == paper_id).first()
     if not paper:
-        raise HTTPException(
-            status_code=StatusCode.NOT_FOUND,
-            detail=f"Paper {paper_id} not found",
-        )
+        raise HTTPException(status_code=StatusCode.NOT_FOUND, detail=f"Paper {paper_id} not found")
     return paper
 
 
-def _get_attempt_paper_question_ids(
-    db_session, attempt: InterviewAttempt
-) -> list[int]:
-    paper = _get_paper_or_404(db_session, attempt.paper_id)
-    return _extract_question_ids(paper.question_id)
-
-
-def _resolve_question_section(
-    db_session, question: Question
-) -> tuple[str, str]:
+def _resolve_question_section(db: Session, question: Question) -> tuple[str, str]:
     default_code = (question.subject_type or "").strip() or "GENERAL"
     classification = (
-        db_session.query(Classification)
-        .filter(
-            Classification.code == default_code,
-            Classification.type == "subject",
-        )
+        db.query(Classification)
+        .filter(Classification.code == default_code, Classification.type == "subject")
         .first()
     )
-
     if classification:
         return classification.code, classification.name
-
-    formatted_name = default_code.replace("_", " ").title()
-    return default_code, formatted_name
+    return default_code, default_code.replace("_", " ").title()
 
 
-def _serialize_saved_responses(
-    db_session, attempt_id: int
-) -> list[dict[str, Any]]:
-    response_rows = (
-        db_session.query(InterviewAttemptResponse)
-        .filter(InterviewAttemptResponse.attempt_id == attempt_id)
-        .order_by(InterviewAttemptResponse.id.asc())
-        .all()
+def _get_total_duration_minutes(paper: Paper) -> int:
+    subject_data = paper.subject_ids_data if isinstance(paper.subject_ids_data, list) else []
+    return sum(
+        int(item.get("time_minutes") or 0)
+        for item in subject_data
+        if isinstance(item, dict) and item.get("is_selected")
     )
 
+
+def _sort_subject_results_by_paper_order(
+    db: Session,
+    paper: Paper | None,
+    subject_results: list[dict] | None,
+) -> list[dict]:
+    results = list(subject_results or [])
+    if not paper or not results:
+        return results
+
+    subject_data = paper.subject_ids_data if isinstance(paper.subject_ids_data, list) else []
+    selected_subjects = [
+        item for item in subject_data if isinstance(item, dict) and item.get("is_selected")
+    ]
+    if not selected_subjects:
+        return results
+
+    subject_ids = [
+        int(item["subject_id"])
+        for item in selected_subjects
+        if str(item.get("subject_id") or "").isdigit()
+    ]
+    classifications = (
+        db.query(Classification).filter(Classification.id.in_(subject_ids)).all()
+        if subject_ids
+        else []
+    )
+    classification_by_id = {classification.id: classification for classification in classifications}
+
+    order_map: dict[str, int] = {}
+    for fallback_index, item in enumerate(
+        sorted(selected_subjects, key=lambda value: int(value.get("order") or 0))
+    ):
+        subject_id = int(item.get("subject_id") or 0)
+        classification = classification_by_id.get(subject_id)
+        sort_index = int(item.get("order") or fallback_index)
+
+        for value in (
+            item.get("subject_name"),
+            classification.code if classification else None,
+            classification.name if classification else None,
+        ):
+            if value:
+                order_map[_normalize_text(str(value))] = sort_index
+
+    if not order_map:
+        return results
+
     return [
-        {
-            "question_id": row.question_id,
-            "section_code": row.section_code,
-            "section_name": row.section_name,
-            "answer_text": row.answer_text,
-            "is_attempted": row.is_attempted,
-            "is_auto_saved": row.is_auto_saved,
-            "saved_at": row.saved_at,
-        }
-        for row in response_rows
+        result
+        for _, result in sorted(
+            enumerate(results),
+            key=lambda pair: (
+                min(
+                    order_map.get(
+                        _normalize_text(str(pair[1].get("section_code") or "")),
+                        math.inf,
+                    ),
+                    order_map.get(
+                        _normalize_text(str(pair[1].get("section_name") or "")),
+                        math.inf,
+                    ),
+                ),
+                pair[0],
+            ),
+        )
     ]
 
 
-def start_attempt(paper_id: int, user_id: int) -> dict:
-    db_session = SessionLocal()
-    try:
-        paper = _get_paper_or_404(db_session, paper_id)
-        question_ids = _extract_question_ids(paper.question_id)
+# ---------------------------------------------------------------------------
+# Grade computation helpers
+# ---------------------------------------------------------------------------
 
-        existing_attempt = (
-            db_session.query(InterviewAttempt)
+def _get_grade_label(percentage: float, grade_settings: list) -> str:
+    for gs in grade_settings:
+        if isinstance(gs, dict) and gs.get("min", 0) <= percentage <= gs.get("max", 100):
+            return gs.get("grade_label", "N/A")
+    return "N/A"
+
+
+def _recompute_grades(record: InterviewRecord, db: Session, paper_obj: Paper | None = None) -> None:
+    """
+    Recompute obtained_marks, total_marks, overall_grade, subject_grades
+    from record.responses JSON array. Modifies record in-place (caller must commit).
+    """
+    if paper_obj is None:
+        paper_obj = db.query(Paper).filter(Paper.id == record.paper_id).first()
+
+    grade_settings: list = (paper_obj.grade_settings or []) if paper_obj else []
+    responses: list[dict] = list(record.responses or [])
+
+    if not responses:
+        record.total_marks = 0
+        record.obtained_marks = 0
+        record.overall_grade = "N/A"
+        record.subject_grades = []
+        return
+
+    question_ids = [r["question_id"] for r in responses]
+
+    questions = db.query(Question).filter(Question.id.in_(question_ids)).all()
+    questions_map: dict[int, Question] = {q.id: q for q in questions}
+
+    correct_answers = (
+        db.query(QuestionAnswer)
+        .filter(QuestionAnswer.question_id.in_(question_ids))
+        .all()
+    )
+    correct_answers_map: dict[int, QuestionAnswer] = {ca.question_id: ca for ca in correct_answers}
+
+    # Maintain insertion order for sections
+    section_order: list[str] = []
+    section_stats: dict[str, dict] = {}
+
+    for resp in responses:
+        qid = resp.get("question_id")
+        question = questions_map.get(qid)
+        if not question:
+            continue
+
+        s_name = resp.get("section_name", "General")
+        s_code = resp.get("section_code", "GENERAL")
+
+        if s_name not in section_stats:
+            section_order.append(s_name)
+            section_stats[s_name] = {
+                "section_code": s_code,
+                "section_name": s_name,
+                "total_marks": 0.0,
+                "obtained_marks": 0.0,
+                "total_questions": 0,
+                "attempted_count": 0,
+                "correct_count": 0,
+                "incorrect_count": 0,
+                "unattempted_count": 0,
+            }
+
+        stats = section_stats[s_name]
+        q_marks = float(question.marks or 0)
+        stats["total_marks"] += q_marks
+        stats["total_questions"] += 1
+
+        is_attempted = resp.get("is_attempted", False)
+
+        if not is_attempted:
+            stats["unattempted_count"] += 1
+        else:
+            stats["attempted_count"] += 1
+            manual_marks = resp.get("manual_marks")
+
+            if manual_marks is not None:
+                obtained = float(manual_marks)
+                stats["obtained_marks"] += obtained
+                if obtained > 0:
+                    stats["correct_count"] += 1
+                else:
+                    stats["incorrect_count"] += 1
+            else:
+                correct_answer = correct_answers_map.get(qid)
+                correct_text = (correct_answer.answer_text if correct_answer else "") or ""
+                user_text = (resp.get("answer_text") or "").strip()
+
+                is_correct = _is_answer_correct(user_text, correct_text) if correct_text.strip() else False
+
+                if is_correct:
+                    stats["correct_count"] += 1
+                    stats["obtained_marks"] += q_marks
+                else:
+                    stats["incorrect_count"] += 1
+
+    total_obtained = 0.0
+    total_max = 0.0
+    subject_grades: list[dict] = []
+
+    for s_name in section_order:
+        stats = section_stats[s_name]
+        pct = (stats["obtained_marks"] / stats["total_marks"] * 100) if stats["total_marks"] > 0 else 0
+        subject_grades.append({
+            "section_code": stats["section_code"],
+            "section_name": s_name,
+            "total_marks": round(stats["total_marks"], 2),
+            "obtained_marks": round(stats["obtained_marks"], 2),
+            "percentage": round(pct, 2),
+            "grade": _get_grade_label(pct, grade_settings),
+            "total_questions": stats["total_questions"],
+            "attempted_count": stats["attempted_count"],
+            "correct_count": stats["correct_count"],
+            "incorrect_count": stats["incorrect_count"],
+            "unattempted_count": stats["unattempted_count"],
+        })
+        total_obtained += stats["obtained_marks"]
+        total_max += stats["total_marks"]
+
+    overall_pct = (total_obtained / total_max * 100) if total_max > 0 else 0
+
+    record.obtained_marks = round(total_obtained, 2)
+    record.total_marks = round(total_max, 2)
+    record.overall_grade = _get_grade_label(overall_pct, grade_settings)
+    record.subject_grades = _sort_subject_results_by_paper_order(db, paper_obj, subject_grades)
+    flag_modified(record, "subject_grades")
+
+
+# ---------------------------------------------------------------------------
+# Materialization helper
+# ---------------------------------------------------------------------------
+
+def _materialize_unanswered_entries(
+    db: Session, record: InterviewRecord, is_auto_saved: bool
+) -> None:
+    """Append blank response entries for questions not yet in responses JSON."""
+    paper = _get_paper_or_404(db, record.paper_id)
+    question_ids = _extract_question_ids(paper.question_id)
+    record.total_questions = len(question_ids)
+
+    existing = list(record.responses or [])
+    answered_ids = {r["question_id"] for r in existing}
+    missing_ids = [qid for qid in question_ids if qid not in answered_ids]
+
+    if not missing_ids:
+        return
+
+    questions = db.query(Question).filter(Question.id.in_(missing_ids)).all()
+    questions_map = {q.id: q for q in questions}
+    now = datetime.utcnow().isoformat()
+
+    new_entries: list[dict] = []
+    for qid in missing_ids:
+        q = questions_map.get(qid)
+        if not q:
+            continue
+        s_code, s_name = _resolve_question_section(db, q)
+        new_entries.append({
+            "question_id": qid,
+            "section_code": s_code,
+            "section_name": s_name,
+            "answer_text": None,
+            "is_attempted": False,
+            "is_auto_saved": is_auto_saved,
+            "is_skipped": False,
+            "manual_marks": None,
+            "saved_at": now,
+        })
+
+    record.responses = existing + new_entries
+    flag_modified(record, "responses")
+
+
+# ---------------------------------------------------------------------------
+# Saved-responses serializer (for resume)
+# ---------------------------------------------------------------------------
+
+def _serialize_saved_responses(record: InterviewRecord) -> list[dict]:
+    return [
+        {
+            "question_id": r["question_id"],
+            "section_code": r.get("section_code", ""),
+            "section_name": r.get("section_name", ""),
+            "answer_text": r.get("answer_text"),
+            "is_attempted": r.get("is_attempted", False),
+            "is_auto_saved": r.get("is_auto_saved", False),
+            "saved_at": r.get("saved_at"),
+        }
+        for r in (record.responses or [])
+    ]
+
+
+# ===========================================================================
+# Public repository functions
+# ===========================================================================
+
+
+def start_attempt(paper_id: int, user_id: int) -> dict:
+    db = SessionLocal()
+    try:
+        paper = _get_paper_or_404(db, paper_id)
+        question_ids = _extract_question_ids(paper.question_id)
+        total_dur = _get_total_duration_minutes(paper)
+
+        existing = (
+            db.query(InterviewRecord)
             .filter(
-                InterviewAttempt.paper_id == paper_id,
-                InterviewAttempt.user_id == user_id,
-                InterviewAttempt.status.in_(ACTIVE_ATTEMPT_STATUSES),
+                InterviewRecord.paper_id == paper_id,
+                InterviewRecord.user_id == user_id,
+                InterviewRecord.status.in_(ACTIVE_STATUSES),
             )
-            .order_by(desc(InterviewAttempt.id))
+            .order_by(desc(InterviewRecord.id))
             .first()
         )
 
-        subject_data = paper.subject_ids_data if isinstance(
-            paper.subject_ids_data, list) else []
-        total_dur = sum(int(item.get("time_minutes") or 0) for item in subject_data if isinstance(
-            item, dict) and item.get("is_selected"))
-
-        if existing_attempt:
-            # 3. Strict Timer Enforcement (Server-side)
-            if total_dur > 0 and existing_attempt.status == "started":
-                # Ensure we compare with UTC-aware datetime
-                started_at_utc = existing_attempt.started_at
-                if started_at_utc.tzinfo is None:
-                    started_at_utc = started_at_utc.replace(
-                        tzinfo=timezone.utc)
-
-                expiration_time = started_at_utc + timedelta(minutes=total_dur)
-                if datetime.now(timezone.utc) > expiration_time:
-                    # Attempt has expired, finalize it immediately
+        if existing:
+            # Server-side timer enforcement
+            if total_dur > 0 and existing.status == "started":
+                started_utc = existing.started_at
+                if started_utc.tzinfo is None:
+                    started_utc = started_utc.replace(tzinfo=timezone.utc)
+                expiry = started_utc + timedelta(minutes=total_dur)
+                if datetime.now(timezone.utc) > expiry:
                     finalize_attempt(
-                        db_session=db_session,
-                        attempt_id=existing_attempt.id,
+                        record_id=existing.id,
                         user_id=user_id,
                         status="auto_submitted",
                         completion_reason="time_over",
-                        is_auto_submitted=True
+                        is_auto_submitted=True,
+                        db=db,
                     )
-                    # Re-fetch to return latest status
-                    db_session.refresh(existing_attempt)
-                    if existing_attempt.status != "started":
+                    db.refresh(existing)
+                    if existing.status != "started":
                         raise HTTPException(
                             status_code=StatusCode.BAD_REQUEST,
-                            detail="Interview time has expired. Participation closed."
+                            detail="Interview time has expired. Participation closed.",
                         )
 
-            saved_responses = _serialize_saved_responses(
-                db_session, existing_attempt.id)
             return {
-                "attempt_id": existing_attempt.id,
-                "paper_id": existing_attempt.paper_id,
-                "user_id": existing_attempt.user_id,
-                "status": existing_attempt.status,
-                "total_questions": existing_attempt.total_questions,
-                "started_at": existing_attempt.started_at.replace(tzinfo=timezone.utc) if existing_attempt.started_at.tzinfo is None else existing_attempt.started_at,
+                "attempt_id": existing.id,
+                "paper_id": existing.paper_id,
+                "user_id": existing.user_id,
+                "status": existing.status,
+                "total_questions": existing.total_questions,
+                "started_at": existing.started_at.replace(tzinfo=timezone.utc)
+                if existing.started_at.tzinfo is None
+                else existing.started_at,
                 "is_resumed": True,
                 "paper_question_ids": question_ids,
                 "total_duration_minutes": total_dur,
-                "saved_responses": saved_responses,
+                "saved_responses": _serialize_saved_responses(existing),
             }
 
-        attempt = InterviewAttempt(
+        record = InterviewRecord(
             paper_id=paper_id,
             user_id=user_id,
             status="started",
@@ -253,23 +460,17 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
             is_auto_submitted=False,
             started_at=datetime.now(timezone.utc),
         )
-
-        db_session.add(attempt)
-        db_session.commit()
-        db_session.refresh(attempt)
-
-        subject_data = paper.subject_ids_data if isinstance(
-            paper.subject_ids_data, list) else []
-        total_dur = sum(int(item.get("time_minutes") or 0) for item in subject_data if isinstance(
-            item, dict) and item.get("is_selected"))
+        db.add(record)
+        db.commit()
+        db.refresh(record)
 
         return {
-            "attempt_id": attempt.id,
-            "paper_id": attempt.paper_id,
-            "user_id": attempt.user_id,
-            "status": attempt.status,
-            "total_questions": attempt.total_questions,
-            "started_at": attempt.started_at,
+            "attempt_id": record.id,
+            "paper_id": record.paper_id,
+            "user_id": record.user_id,
+            "status": record.status,
+            "total_questions": record.total_questions,
+            "started_at": record.started_at,
             "is_resumed": False,
             "paper_question_ids": question_ids,
             "total_duration_minutes": total_dur,
@@ -278,292 +479,293 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
 
     except HTTPException:
         raise
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
 def save_answer(
-    attempt_id: int,
+    record_id: int,
     question_id: int,
     user_id: int,
     answer_text: str | None,
     is_auto_saved: bool,
 ) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
-        paper_question_ids = set(
-            _get_attempt_paper_question_ids(db_session, attempt))
+        record = _get_record_or_404(db, record_id, user_id)
 
-        if attempt.status != "started":
+        if record.status != "started":
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Cannot save answer. Attempt is already submitted.",
             )
 
-        question = db_session.query(Question).filter(
-            Question.id == question_id).first()
-        if not question:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail=f"Question {question_id} not found",
-            )
-
+        paper_question_ids = set(_extract_question_ids(
+            _get_paper_or_404(db, record.paper_id).question_id
+        ))
         if question_id not in paper_question_ids:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Question does not belong to the paper for this attempt.",
             )
 
-        normalized_text = (answer_text or "").strip()
-        is_attempted = bool(normalized_text)
-        section_code, section_name = _resolve_question_section(
-            db_session, question)
+        question = db.query(Question).filter(Question.id == question_id).first()
+        if not question:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail=f"Question {question_id} not found")
 
-        attempt_response = (
-            db_session.query(InterviewAttemptResponse)
-            .filter(
-                InterviewAttemptResponse.attempt_id == attempt_id,
-                InterviewAttemptResponse.question_id == question_id,
-            )
-            .first()
-        )
+        normalized = (answer_text or "").strip()
+        is_attempted = bool(normalized)
+        s_code, s_name = _resolve_question_section(db, question)
+        now = datetime.utcnow().isoformat()
 
-        now = datetime.utcnow()
+        responses: list[dict] = list(record.responses or [])
+        found = False
+        for resp in responses:
+            if resp.get("question_id") == question_id:
+                resp["answer_text"] = normalized or None
+                resp["is_attempted"] = is_attempted
+                resp["is_auto_saved"] = is_auto_saved
+                resp["section_code"] = s_code
+                resp["section_name"] = s_name
+                resp["saved_at"] = now
+                found = True
+                break
 
-        if attempt_response:
-            attempt_response.section_code = section_code
-            attempt_response.section_name = section_name
-            attempt_response.answer_text = normalized_text or None
-            attempt_response.is_attempted = is_attempted
-            attempt_response.is_auto_saved = is_auto_saved
-            attempt_response.saved_at = now
-            attempt_response.updated_at = now
-        else:
-            attempt_response = InterviewAttemptResponse(
-                attempt_id=attempt_id,
-                section_code=section_code,
-                section_name=section_name,
-                question_id=question_id,
-                answer_text=normalized_text or None,
-                is_attempted=is_attempted,
-                is_auto_saved=is_auto_saved,
-                saved_at=now,
-            )
-            db_session.add(attempt_response)
+        if not found:
+            responses.append({
+                "question_id": question_id,
+                "section_code": s_code,
+                "section_name": s_name,
+                "answer_text": normalized or None,
+                "is_attempted": is_attempted,
+                "is_auto_saved": is_auto_saved,
+                "is_skipped": False,
+                "manual_marks": None,
+                "saved_at": now,
+            })
 
-        db_session.flush()
+        record.responses = responses
+        flag_modified(record, "responses")
 
-        attempted_count = (
-            db_session.query(InterviewAttemptResponse)
-            .filter(
-                InterviewAttemptResponse.attempt_id == attempt_id,
-                InterviewAttemptResponse.is_attempted.is_(True),
-            )
-            .count()
-        )
+        attempted_count = sum(1 for r in responses if r.get("is_attempted"))
+        record.attempted_count = attempted_count
+        record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
-        attempt.attempted_count = attempted_count
-        attempt.unattempted_count = max(
-            attempt.total_questions - attempted_count, 0)
-
-        db_session.commit()
-        db_session.refresh(attempt_response)
+        db.commit()
 
         return {
-            "attempt_id": attempt_id,
+            "attempt_id": record_id,
             "question_id": question_id,
-            "section_code": attempt_response.section_code,
-            "section_name": attempt_response.section_name,
-            "is_attempted": attempt_response.is_attempted,
-            "is_auto_saved": attempt_response.is_auto_saved,
-            "saved_at": attempt_response.saved_at,
+            "section_code": s_code,
+            "section_name": s_name,
+            "is_attempted": is_attempted,
+            "is_auto_saved": is_auto_saved,
+            "saved_at": now,
         }
 
     except HTTPException:
         raise
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
-def _materialize_unanswered_rows(
-    db_session, attempt: InterviewAttempt, is_auto_saved: bool
-) -> None:
-    paper = _get_paper_or_404(db_session, attempt.paper_id)
-    question_ids = _extract_question_ids(paper.question_id)
-    attempt.total_questions = len(question_ids)
+def save_answers_batch(
+    record_id: int,
+    user_id: int,
+    answers: list[dict],
+) -> dict:
+    db = SessionLocal()
+    try:
+        record = _get_record_or_404(db, record_id, user_id)
 
-    questions = (
-        db_session.query(Question)
-        .filter(Question.id.in_(question_ids))
-        .all()
-        if question_ids
-        else []
-    )
-    questions_by_id = {question.id: question for question in questions}
+        if record.status != "started":
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Cannot save answers. Attempt is already submitted.",
+            )
 
-    answered_ids = {
-        row.question_id
-        for row in db_session.query(InterviewAttemptResponse)
-        .filter(InterviewAttemptResponse.attempt_id == attempt.id)
-        .all()
-    }
+        # Get all valid question IDs for this paper
+        paper_question_ids = set(_extract_question_ids(
+            _get_paper_or_404(db, record.paper_id).question_id
+        ))
 
-    missing_question_ids = [
-        qid for qid in question_ids if qid not in answered_ids]
-    now = datetime.utcnow()
+        # Get all questions info in one query for section resolution
+        q_ids_to_fetch = [a["question_id"] for a in answers if a["question_id"] in paper_question_ids]
+        questions = db.query(Question).filter(Question.id.in_(q_ids_to_fetch)).all()
+        questions_map = {q.id: q for q in questions}
 
-    if missing_question_ids:
-        missing_rows = []
-        for qid in missing_question_ids:
-            question = questions_by_id.get(qid)
+        now = datetime.utcnow().isoformat()
+        responses: list[dict] = list(record.responses or [])
+        resp_map = {r["question_id"]: r for r in responses}
+
+        for entry in answers:
+            qid = entry["question_id"]
+            if qid not in paper_question_ids:
+                continue
+
+            question = questions_map.get(qid)
             if not question:
                 continue
-            section_code, section_name = _resolve_question_section(
-                db_session, question)
-            missing_rows.append(
-                InterviewAttemptResponse(
-                    attempt_id=attempt.id,
-                    section_code=section_code,
-                    section_name=section_name,
-                    question_id=qid,
-                    answer_text=None,
-                    is_attempted=False,
-                    is_auto_saved=is_auto_saved,
-                    saved_at=now,
-                )
-            )
-        db_session.add_all(missing_rows)
-        db_session.flush()
+
+            normalized = (entry.get("answer_text") or "").strip()
+            is_attempted = bool(normalized)
+            s_code, s_name = _resolve_question_section(db, question)
+
+            if qid in resp_map:
+                resp = resp_map[qid]
+                resp["answer_text"] = normalized or None
+                resp["is_attempted"] = is_attempted
+                resp["is_auto_saved"] = entry.get("is_auto_saved", False)
+                resp["section_code"] = s_code
+                resp["section_name"] = s_name
+                resp["saved_at"] = now
+            else:
+                new_resp = {
+                    "question_id": qid,
+                    "section_code": s_code,
+                    "section_name": s_name,
+                    "answer_text": normalized or None,
+                    "is_attempted": is_attempted,
+                    "is_auto_saved": entry.get("is_auto_saved", False),
+                    "is_skipped": False,
+                    "manual_marks": None,
+                    "saved_at": now,
+                }
+                responses.append(new_resp)
+                resp_map[qid] = new_resp
+
+        record.responses = responses
+        flag_modified(record, "responses")
+
+        attempted_count = sum(1 for r in responses if r.get("is_attempted"))
+        record.attempted_count = attempted_count
+        record.unattempted_count = max(record.total_questions - attempted_count, 0)
+
+        db.commit()
+
+        return {
+            "attempt_id": record_id,
+            "count": len(answers),
+            "saved_at": now,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise exc
+    finally:
+        db.close()
 
 
 def finalize_attempt(
-    attempt_id: int,
+    record_id: int,
     user_id: int,
     status: str,
     completion_reason: str,
     is_auto_submitted: bool,
-    db_session: Session = None,
+    db: Session | None = None,
 ) -> dict:
-    own_session = False
-    if db_session is None:
-        db_session = SessionLocal()
-        own_session = True
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
     try:
-        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
+        record = _get_record_or_404(db, record_id, user_id)
 
-        if attempt.status != "started":
-            # If already finalized, just return the summary instead of erroring.
-            # This handles race conditions and multiple submit clicks gracefully.
-            return get_attempt_summary(attempt_id, user_id)
+        if record.status != "started":
+            return get_attempt_summary(record_id, user_id)
 
-        _materialize_unanswered_rows(
-            db_session=db_session,
-            attempt=attempt,
-            is_auto_saved=is_auto_submitted,
-        )
+        # 1. Materialize unanswered questions
+        _materialize_unanswered_entries(db, record, is_auto_saved=is_auto_submitted)
 
-        attempted_count = (
-            db_session.query(InterviewAttemptResponse)
-            .filter(
-                InterviewAttemptResponse.attempt_id == attempt.id,
-                InterviewAttemptResponse.is_attempted.is_(True),
-            )
-            .count()
-        )
+        # 2. Recount
+        attempted_count = sum(1 for r in (record.responses or []) if r.get("is_attempted"))
+        record.attempted_count = attempted_count
+        record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
-        attempt.attempted_count = attempted_count
-        attempt.unattempted_count = max(
-            attempt.total_questions - attempted_count, 0)
-        attempt.status = status
-        attempt.completion_reason = completion_reason
-        attempt.is_auto_submitted = is_auto_submitted
-        attempt.submitted_at = datetime.utcnow()
+        # 3. Status + timestamps
+        record.status = status
+        record.completion_reason = completion_reason
+        record.is_auto_submitted = is_auto_submitted
+        record.submitted_at = datetime.utcnow()
 
-        # Capture grade settings snapshot
-        paper_obj = _get_paper_or_404(db_session, attempt.paper_id)
-        if paper_obj:
-            attempt.grade_settings_snapshot = paper_obj.grade_settings
+        # 4. Compute and store grades permanently
+        paper_obj = _get_paper_or_404(db, record.paper_id)
+        _recompute_grades(record, db, paper_obj)
 
-        # Update UserDetail flag
-        user_detail = db_session.query(UserDetail).filter(
-            UserDetail.user_id == user_id).first()
+        # 5. Update UserDetail
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = True
 
-        # Update PaperAssignment status
+        # 6. Update PaperAssignment
         today = datetime.utcnow().date()
         assignment = (
-            db_session.query(PaperAssignment)
-            .filter(
-                PaperAssignment.user_id == user_id,
-                PaperAssignment.assigned_date == today
-            )
+            db.query(PaperAssignment)
+            .filter(PaperAssignment.user_id == user_id, PaperAssignment.assigned_date == today)
             .first()
         )
         if assignment:
             assignment.is_attempted = True
 
-        db_session.commit()
-        db_session.refresh(attempt)
+        db.commit()
+        db.refresh(record)
 
         return {
-            "attempt_id": attempt.id,
-            "paper_id": attempt.paper_id,
-            "user_id": attempt.user_id,
-            "status": attempt.status,
-            "completion_reason": attempt.completion_reason,
-            "started_at": attempt.started_at,
-            "submitted_at": attempt.submitted_at,
-            "total_questions": attempt.total_questions,
-            "attempted_count": attempt.attempted_count,
-            "unattempted_count": attempt.unattempted_count,
-            "obtained_marks": float(attempt.obtained_marks)
-            if attempt.obtained_marks is not None
-            else None,
-            "is_auto_submitted": attempt.is_auto_submitted,
+            "attempt_id": record.id,
+            "paper_id": record.paper_id,
+            "user_id": record.user_id,
+            "status": record.status,
+            "completion_reason": record.completion_reason,
+            "started_at": record.started_at,
+            "submitted_at": record.submitted_at,
+            "total_questions": record.total_questions,
+            "attempted_count": record.attempted_count,
+            "unattempted_count": record.unattempted_count,
+            "total_marks": float(record.total_marks),
+            "obtained_marks": float(record.obtained_marks),
+            "overall_grade": record.overall_grade,
+            "is_auto_submitted": record.is_auto_submitted,
         }
 
     except HTTPException:
         raise
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
         if own_session:
-            db_session.close()
+            db.close()
 
 
-def get_attempt_summary(attempt_id: int, user_id: int) -> dict:
-    db_session = SessionLocal()
+def get_attempt_summary(record_id: int, user_id: int) -> dict:
+    db = SessionLocal()
     try:
-        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
-
+        record = _get_record_or_404(db, record_id, user_id)
         return {
-            "attempt_id": attempt.id,
-            "paper_id": attempt.paper_id,
-            "user_id": attempt.user_id,
-            "status": attempt.status,
-            "completion_reason": attempt.completion_reason,
-            "started_at": attempt.started_at,
-            "submitted_at": attempt.submitted_at,
-            "total_questions": attempt.total_questions,
-            "attempted_count": attempt.attempted_count,
-            "unattempted_count": attempt.unattempted_count,
-            "obtained_marks": float(attempt.obtained_marks)
-            if attempt.obtained_marks is not None
-            else None,
-            "is_auto_submitted": attempt.is_auto_submitted,
+            "attempt_id": record.id,
+            "paper_id": record.paper_id,
+            "user_id": record.user_id,
+            "status": record.status,
+            "completion_reason": record.completion_reason,
+            "started_at": record.started_at,
+            "submitted_at": record.submitted_at,
+            "total_questions": record.total_questions,
+            "attempted_count": record.attempted_count,
+            "unattempted_count": record.unattempted_count,
+            "total_marks": float(record.total_marks),
+            "obtained_marks": float(record.obtained_marks),
+            "overall_grade": record.overall_grade,
+            "is_auto_submitted": record.is_auto_submitted,
         }
-
     finally:
-        db_session.close()
+        db.close()
 
 
 def get_admin_user_results(
@@ -573,9 +775,10 @@ def get_admin_user_results(
     page: int = 1,
     limit: int = 10,
 ) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        users_query = db_session.query(User).filter(User.role == "user")
+        users_query = db.query(User).filter(User.role == "user")
+
         if search:
             pattern = f"%{search.strip()}%"
             users_query = users_query.filter(
@@ -585,152 +788,79 @@ def get_admin_user_results(
             )
 
         if start_date or end_date:
-            attempt_query = db_session.query(InterviewAttempt.user_id)
+            attempt_query = db.query(InterviewRecord.user_id)
             if start_date:
                 attempt_query = attempt_query.filter(
-                    InterviewAttempt.started_at >= f"{start_date} 00:00:00")
+                    InterviewRecord.started_at >= f"{start_date} 00:00:00"
+                )
             if end_date:
                 attempt_query = attempt_query.filter(
-                    InterviewAttempt.started_at <= f"{end_date} 23:59:59")
-
+                    InterviewRecord.started_at <= f"{end_date} 23:59:59"
+                )
             users_query = users_query.filter(User.id.in_(attempt_query))
 
         total_items = users_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
-
-        users = (
-            users_query.order_by(User.id.desc())
-            .limit(limit)
-            .offset((page - 1) * limit)
-            .all()
-        )
+        users = users_query.order_by(User.id.desc()).limit(limit).offset((page - 1) * limit).all()
 
         results: list[dict] = []
 
         for user in users:
-            # Latest attempt with paper and total_marks calculation
-            latest_attempt_info = (
-                db_session.query(InterviewAttempt,
-                                 Paper.paper_name, Paper.grade_settings)
-                .join(Paper, Paper.id == InterviewAttempt.paper_id)
-                .filter(InterviewAttempt.user_id == user.id)
-                .order_by(desc(InterviewAttempt.id))
+            latest_info = (
+                db.query(InterviewRecord, Paper.paper_name)
+                .join(Paper, Paper.id == InterviewRecord.paper_id)
+                .filter(InterviewRecord.user_id == user.id)
+                .order_by(desc(InterviewRecord.id))
                 .first()
             )
 
-            latest_attempt = latest_attempt_info[0] if latest_attempt_info else None
-            paper_name = latest_attempt_info[1] if latest_attempt_info else None
-
-            # Use snapshot if available, else fallback to current paper settings
-            if latest_attempt and latest_attempt.grade_settings_snapshot is not None:
-                grade_settings = latest_attempt.grade_settings_snapshot
-            else:
-                grade_settings = latest_attempt_info[2] if latest_attempt_info and latest_attempt_info[2] else [
-                ]
+            latest = latest_info[0] if latest_info else None
+            paper_name = latest_info[1] if latest_info else None
 
             attempts_count = (
-                db_session.query(InterviewAttempt)
-                .filter(InterviewAttempt.user_id == user.id)
+                db.query(InterviewRecord)
+                .filter(InterviewRecord.user_id == user.id)
                 .count()
             )
 
-            # Calculate total_marks and typing_stats for latest attempt
-            total_marks = 0.0
+            # Typing stats — parsed from responses JSON if present
             typing_stats = None
-            subject_results = []
-
-            if latest_attempt:
-                # Total Marks
-                paper_obj = db_session.query(Paper).filter(
-                    Paper.id == latest_attempt.paper_id).first()
-                if paper_obj:
-                    q_ids = _extract_question_ids(paper_obj.question_id)
-                    total_marks = db_session.query(func.sum(Question.marks)).filter(
-                        Question.id.in_(q_ids)).scalar() or 0.0
-
-                # Typing stats and subject grades (requires full detail calculation for accuracy)
-                # To keep list view relatively fast, we perform a mini-calculation here
-                responses = (
-                    db_session.query(InterviewAttemptResponse,
-                                     Question, QuestionAnswer)
-                    .join(Question, Question.id == InterviewAttemptResponse.question_id)
-                    .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
-                    .filter(InterviewAttemptResponse.attempt_id == latest_attempt.id)
-                    .all()
-                )
-
-                subject_stats = {}
-                for resp, ques, corr in responses:
-                    # Typing
-                    if ques.question_type == "TYPING_TEST" and resp.answer_text and resp.answer_text.startswith("{"):
+            if latest:
+                for resp in (latest.responses or []):
+                    answer_text = resp.get("answer_text")
+                    if answer_text and isinstance(answer_text, str) and answer_text.startswith("{"):
                         try:
-                            parsed = json.loads(resp.answer_text)
-                            typing_stats = parsed.get("stats")
+                            parsed = json.loads(answer_text)
+                            if "stats" in parsed:
+                                typing_stats = parsed["stats"]
+                                break
                         except Exception:
                             pass
 
-                    # Subject Stats
-                    s_name = resp.section_name
-                    if s_name not in subject_stats:
-                        subject_stats[s_name] = {"max": 0.0, "obtained": 0.0}
-
-                    ques_marks = float(ques.marks or 0)
-                    subject_stats[s_name]["max"] += ques_marks
-
-                    if resp.is_attempted:
-                        if resp.manual_marks is not None:
-                            subject_stats[s_name]["obtained"] += float(
-                                resp.manual_marks)
-                        else:
-                            corr_text = corr.answer_text if corr else ""
-                            if _is_answer_correct(resp.answer_text or "", corr_text):
-                                subject_stats[s_name]["obtained"] += ques_marks
-
-                # Format subjects
-                for s_name, stats in subject_stats.items():
-                    perc = (stats["obtained"] / stats["max"]
-                            * 100) if stats["max"] > 0 else 0
-                    grade = "N/A"
-                    for gs in grade_settings:
-                        if gs.get("min", 0) <= perc <= gs.get("max", 100):
-                            grade = gs.get("grade_label", "N/A")
-                            break
-                    subject_results.append({
-                        "section_name": s_name,
-                        "grade": grade,
-                        "obtained": stats["obtained"],
-                        "max": stats["max"]
-                    })
-
-            results.append(
-                {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "mobile": user.mobile,
-                    "email": user.email,
-                    "attempts_count": attempts_count,
-                    "is_reattempt": attempts_count > 1,
-                    "latest_attempt": {
-                        "attempt_id": latest_attempt.id,
-                        "paper_id": latest_attempt.paper_id,
-                        "paper_name": paper_name,
-                        "status": latest_attempt.status,
-                        "completion_reason": latest_attempt.completion_reason,
-                        "submitted_at": latest_attempt.submitted_at,
-                        "total_questions": latest_attempt.total_questions,
-                        "attempted_count": latest_attempt.attempted_count,
-                        "unattempted_count": latest_attempt.unattempted_count,
-                        "obtained_marks": float(latest_attempt.obtained_marks)
-                        if latest_attempt.obtained_marks is not None
-                        else None,
-                        "total_marks": float(total_marks),
-                        "typing_stats": typing_stats,
-                        "subject_results": subject_results
-                    }
-                    if latest_attempt
-                    else None,
-                }
-            )
+            results.append({
+                "user_id": user.id,
+                "username": user.username,
+                "mobile": user.mobile,
+                "email": user.email,
+                "attempts_count": attempts_count,
+                "is_reattempt": attempts_count > 1,
+                "latest_attempt": {
+                    "attempt_id": latest.id,
+                    "paper_id": latest.paper_id,
+                    "paper_name": paper_name,
+                    "status": latest.status,
+                    "completion_reason": latest.completion_reason,
+                    "submitted_at": latest.submitted_at,
+                    "total_questions": latest.total_questions,
+                    "attempted_count": latest.attempted_count,
+                    "unattempted_count": latest.unattempted_count,
+                    "total_marks": float(latest.total_marks),
+                    "obtained_marks": float(latest.obtained_marks),
+                    "overall_grade": latest.overall_grade,
+                    "typing_stats": typing_stats,
+                    "subject_results": latest.subject_grades,
+                } if latest else None,
+            })
 
         return {
             "items": results,
@@ -740,53 +870,54 @@ def get_admin_user_results(
             "total_pages": total_pages,
         }
     finally:
-        db_session.close()
+        db.close()
 
 
 def get_admin_user_attempts(user_id: int) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        user = (
-            db_session.query(User)
-            .filter(User.id == user_id, User.role == "user")
-            .first()
-        )
+        user = db.query(User).filter(User.id == user_id, User.role == "user").first()
         if not user:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail=f"User {user_id} not found",
-            )
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail=f"User {user_id} not found")
 
-        attempts_with_papers = (
-            db_session.query(InterviewAttempt, Paper.paper_name)
-            .join(Paper, Paper.id == InterviewAttempt.paper_id)
-            .filter(InterviewAttempt.user_id == user_id)
-            .order_by(desc(InterviewAttempt.id))
+        records_with_papers = (
+            db.query(InterviewRecord, Paper.paper_name)
+            .join(Paper, Paper.id == InterviewRecord.paper_id)
+            .filter(InterviewRecord.user_id == user_id)
+            .order_by(desc(InterviewRecord.id))
             .all()
         )
 
-        attempt_ids = [a[0].id for a in attempts_with_papers]
+        attempts: list[dict] = []
+        for record, paper_name in records_with_papers:
+            typing_stats = None
+            for resp in (record.responses or []):
+                user_answer = resp.get("answer_text")
+                if user_answer and isinstance(user_answer, str) and user_answer.startswith("{"):
+                    try:
+                        parsed = json.loads(user_answer)
+                        typing_stats = parsed.get("stats")
+                    except Exception:
+                        pass
 
-        # Fetch typing test stats for summary
-        typing_responses = (
-            db_session.query(InterviewAttemptResponse)
-            .join(Question, Question.id == InterviewAttemptResponse.question_id)
-            .filter(
-                InterviewAttemptResponse.attempt_id.in_(attempt_ids),
-                Question.question_type == "TYPING_TEST",
-                InterviewAttemptResponse.is_attempted.is_(True),
-            )
-            .all()
-        )
-        typing_stats_map = {}
-        for row in typing_responses:
-            if not row.answer_text or not row.answer_text.startswith("{"):
-                continue
-            try:
-                parsed = json.loads(row.answer_text)
-                typing_stats_map[row.attempt_id] = parsed.get("stats")
-            except Exception:
-                continue
+            attempts.append({
+                "attempt_id": record.id,
+                "paper_id": record.paper_id,
+                "paper_name": paper_name,
+                "status": record.status,
+                "completion_reason": record.completion_reason,
+                "started_at": record.started_at,
+                "submitted_at": record.submitted_at,
+                "total_questions": record.total_questions,
+                "attempted_count": record.attempted_count,
+                "unattempted_count": record.unattempted_count,
+                "total_marks": float(record.total_marks),
+                "obtained_marks": float(record.obtained_marks),
+                "overall_grade": record.overall_grade,
+                "is_auto_submitted": record.is_auto_submitted,
+                "typing_stats": typing_stats,
+                "subject_results": record.subject_grades,
+            })
 
         return {
             "user": {
@@ -795,317 +926,130 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 "mobile": user.mobile,
                 "email": user.email,
             },
-            "attempts": [
-                {
-                    "attempt_id": attempt.id,
-                    "paper_id": attempt.paper_id,
-                    "paper_name": paper_name,
-                    "status": attempt.status,
-                    "completion_reason": attempt.completion_reason,
-                    "started_at": attempt.started_at,
-                    "submitted_at": attempt.submitted_at,
-                    "total_questions": attempt.total_questions,
-                    "attempted_count": attempt.attempted_count,
-                    "unattempted_count": attempt.unattempted_count,
-                    "obtained_marks": float(attempt.obtained_marks)
-                    if attempt.obtained_marks is not None
-                    else None,
-                    "is_auto_submitted": attempt.is_auto_submitted,
-                    "typing_stats": typing_stats_map.get(attempt.id),
-                }
-                for attempt, paper_name in attempts_with_papers
-            ],
+            "attempts": attempts,
         }
     finally:
-        db_session.close()
+        db.close()
 
 
 def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        user = (
-            db_session.query(User)
-            .filter(User.id == user_id, User.role == "user")
-            .first()
-        )
+        user = db.query(User).filter(User.id == user_id, User.role == "user").first()
         if not user:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail=f"User {user_id} not found",
-            )
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail=f"User {user_id} not found")
 
-        attempt_query = db_session.query(InterviewAttempt).filter(
-            InterviewAttempt.user_id == user_id
-        )
+        record_query = db.query(InterviewRecord).filter(InterviewRecord.user_id == user_id)
         if attempt_id is not None:
-            attempt_query = attempt_query.filter(
-                InterviewAttempt.id == attempt_id)
+            record_query = record_query.filter(InterviewRecord.id == attempt_id)
+        record = record_query.order_by(desc(InterviewRecord.id)).first()
 
-        attempt = attempt_query.order_by(desc(InterviewAttempt.id)).first()
-        if not attempt:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail="No interview attempt found for this user",
-            )
+        if not record:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="No interview attempt found for this user")
 
-        paper_obj = db_session.query(Paper).filter(
-            Paper.id == attempt.paper_id).first()
-        if attempt.grade_settings_snapshot is not None:
-            grade_settings = attempt.grade_settings_snapshot
-        else:
-            grade_settings = paper_obj.grade_settings if paper_obj and paper_obj.grade_settings else []
+        paper_obj = db.query(Paper).filter(Paper.id == record.paper_id).first()
 
-        # Current attempt number for this user
         attempt_number = (
-            db_session.query(InterviewAttempt)
-            .filter(
-                InterviewAttempt.user_id == user_id,
-                InterviewAttempt.id <= attempt.id
-            )
+            db.query(InterviewRecord)
+            .filter(InterviewRecord.user_id == user_id, InterviewRecord.id <= record.id)
             .count()
         )
 
-        answer_rows = (
-            db_session.query(InterviewAttemptResponse,
-                             Question, QuestionAnswer)
-            .join(Question, Question.id == InterviewAttemptResponse.question_id)
-            .outerjoin(QuestionAnswer, QuestionAnswer.question_id == Question.id)
-            .filter(InterviewAttemptResponse.attempt_id == attempt.id)
-            .order_by(InterviewAttemptResponse.id.asc())
-            .all()
+        # Build detailed answers using stored responses + live question/answer data
+        responses: list[dict] = list(record.responses or [])
+        question_ids = [r["question_id"] for r in responses]
+
+        questions = db.query(Question).filter(Question.id.in_(question_ids)).all() if question_ids else []
+        questions_map = {q.id: q for q in questions}
+
+        correct_answers = (
+            db.query(QuestionAnswer).filter(QuestionAnswer.question_id.in_(question_ids)).all()
+            if question_ids else []
         )
+        correct_answers_map = {ca.question_id: ca for ca in correct_answers}
 
         detailed_answers: list[dict] = []
-        subject_stats: dict[str, dict[str, Any]] = {}
         correct_count = 0
         incorrect_count = 0
         not_attempted_count = 0
-        total_marks_obtained = 0.0
-        total_max_marks = 0.0
 
-        for answer_row, question, correct_answer in answer_rows:
-            correct_answer_text = (
-                correct_answer.answer_text if correct_answer else None
-            ) or ""
-            user_answer_text = (answer_row.answer_text or "").strip()
-            is_attempted = bool(answer_row.is_attempted)
-            is_correct = False
+        for resp in responses:
+            qid = resp["question_id"]
+            question = questions_map.get(qid)
+            if not question:
+                continue
+
+            correct_answer_obj = correct_answers_map.get(qid)
+            correct_answer_text = (correct_answer_obj.answer_text if correct_answer_obj else None) or ""
+            user_answer_text = (resp.get("answer_text") or "").strip()
+            is_attempted = resp.get("is_attempted", False)
+            manual_marks = resp.get("manual_marks")
 
             if not is_attempted:
-                status = "not_attempted"
-                not_attempted_count += 1
+                status_label = "not_attempted"
                 marks_obtained = 0.0
+                is_correct = False
+                not_attempted_count += 1
             else:
-                if answer_row.manual_marks is not None:
-                    marks_obtained = float(answer_row.manual_marks)
+                if manual_marks is not None:
+                    marks_obtained = float(manual_marks)
                     is_correct = marks_obtained > 0
-                    status = "correct" if is_correct else "incorrect"
-                    if is_correct:
-                        correct_count += 1
-                    else:
-                        incorrect_count += 1
+                    status_label = "correct" if is_correct else "incorrect"
                 else:
-                    if correct_answer_text.strip():
-                        is_correct = _is_answer_correct(
-                            user_answer=user_answer_text,
-                            correct_answer=correct_answer_text,
-                        )
-                    status = "correct" if is_correct else "incorrect"
-                    if is_correct:
-                        correct_count += 1
-                    else:
-                        incorrect_count += 1
-                    marks_obtained = float(
-                        question.marks or 0) if is_correct else 0.0
+                    is_correct = (
+                        _is_answer_correct(user_answer_text, correct_answer_text)
+                        if correct_answer_text.strip()
+                        else False
+                    )
+                    marks_obtained = float(question.marks or 0) if is_correct else 0.0
+                    status_label = "correct" if is_correct else "incorrect"
 
-            total_marks_obtained += marks_obtained
-            total_max_marks += float(question.marks or 0)
+                if is_correct:
+                    correct_count += 1
+                else:
+                    incorrect_count += 1
 
-            # Enhanced parsing for special types like Typing Test
-            user_answer_display = answer_row.answer_text
+            # Typing test special parsing
+            user_answer_display = resp.get("answer_text")
             typing_stats = None
-
-            if question.question_type == "TYPING_TEST" and user_answer_text.startswith("{"):
+            if question.question_type == "TYPING_TEST" and user_answer_text and isinstance(user_answer_text, str) and user_answer_text.startswith("{"):
                 try:
                     parsed = json.loads(user_answer_text)
-                    user_answer_display = parsed.get(
-                        "typed_text", user_answer_text)
+                    user_answer_display = parsed.get("typed_text", user_answer_text)
                     typing_stats = parsed.get("stats")
                 except Exception:
                     pass
 
-            detailed_answers.append(
-                {
-                    "question_id": question.id,
-                    "section_code": answer_row.section_code,
-                    "section_name": answer_row.section_name,
-                    "question_type": question.question_type,
-                    "subject_type": question.subject_type,
-                    "exam_level": question.exam_level,
-                    "question_text": question.question_text,
-                    "passage": question.passage,
-                    "image_url": question.image_url,
-                    "options": question.options,
-                    "max_marks": float(question.marks or 0),
-                    "user_answer": user_answer_display,
-                    "typing_stats": typing_stats,
-                    "correct_answer": correct_answer_text or None,
-                    "status": status,
-                    "marks_obtained": marks_obtained,
-                    "manual_marks": float(answer_row.manual_marks) if answer_row.manual_marks is not None else None,
-                    "is_attempted": answer_row.is_attempted,
-                    "is_auto_saved": answer_row.is_auto_saved,
-                    "saved_at": answer_row.saved_at,
-                }
-            )
-        # Get ALL sections from the paper in CURRICULUM ORDER
-        # subject_ids_data has {subject_id, order, ...} - use this to get correct sequence
-        paper_question_ids = _extract_question_ids(
-            paper_obj.question_id) if paper_obj else []
-
-        ordered_sections = []
-        if paper_obj and paper_obj.subject_ids_data:
-            # Sort subjects by their defined order in the paper setup
-            sorted_subjects = sorted(paper_obj.subject_ids_data, key=lambda x: x.get(
-                "order", 999) if isinstance(x, dict) else getattr(x, "order", 999))
-            for subj in sorted_subjects:
-                subj_id = subj.get("subject_id") if isinstance(
-                    subj, dict) else getattr(subj, "subject_id", None)
-                if subj_id is None:
-                    continue
-                classification = (
-                    db_session.query(Classification)
-                    .filter(Classification.id == subj_id)
-                    .first()
-                )
-                if classification:
-                    ordered_sections.append(classification.name)
-
-        # Fallback: derive order from question_id list if subject_ids_data is empty
-        if not ordered_sections:
-            paper_questions = (
-                db_session.query(Question)
-                .filter(Question.id.in_(paper_question_ids))
-                .all()
-            )
-            q_id_to_question = {q.id: q for q in paper_questions}
-            seen_sections: set[str] = set()
-            for q_id in paper_question_ids:
-                q_obj = q_id_to_question.get(q_id)
-                if q_obj:
-                    _, section_name = _resolve_question_section(
-                        db_session, q_obj)
-                    if section_name not in seen_sections:
-                        ordered_sections.append(section_name)
-                        seen_sections.add(section_name)
-
-        # Always fetch paper questions for stats calculation
-        paper_questions_list = (
-            db_session.query(Question)
-            .filter(Question.id.in_(paper_question_ids))
-            .all()
-        )
-        q_id_to_question = {q.id: q for q in paper_questions_list}
-
-        # Initialize subject_stats for all paper sections
-        subject_stats: dict[str, dict[str, Any]] = {
-            section: {
-                "total_questions": 0,
-                "attempted_count": 0,
-                "unattempted_count": 0,
-                "correct_count": 0,
-                "incorrect_count": 0,
-                "obtained_marks": 0.0,
-                "max_marks": 0.0,
-            }
-            for section in ordered_sections
-        }
-
-        # Count total questions and max marks from the PAPER definition
-        for q_id in paper_question_ids:
-            q_obj = q_id_to_question.get(q_id)
-            if q_obj:
-                _, section_name = _resolve_question_section(db_session, q_obj)
-                stats = subject_stats[section_name]
-                stats["total_questions"] += 1
-                stats["max_marks"] += float(q_obj.marks or 0)
-                stats["unattempted_count"] += 1
-
-        # Now fill in actual attempt data from answer_rows
-        for answer_row, question, correct_answer in answer_rows:
-            section_name = answer_row.section_name
-            if section_name not in subject_stats:
-                continue  # Should not happen if paper is consistent
-
-            stats = subject_stats[section_name]
-
-            # Since we initialized total_questions from paper, we don't increment it here
-            # But we update attempted counts and marks
-            is_attempted = bool(answer_row.is_attempted)
-
-            # Logic for correctness and marks_obtained
-            correct_answer_text = (
-                correct_answer.answer_text if correct_answer else None) or ""
-            user_answer_text = (answer_row.answer_text or "").strip()
-
-            marks_obtained = 0.0
-            is_correct = False
-            status = "incorrect"
-
-            if is_attempted:
-                if answer_row.manual_marks is not None:
-                    marks_obtained = float(answer_row.manual_marks)
-                    is_correct = marks_obtained > 0
-                else:
-                    if correct_answer_text.strip():
-                        is_correct = _is_answer_correct(
-                            user_answer=user_answer_text, correct_answer=correct_answer_text)
-                    marks_obtained = float(
-                        question.marks or 0) if is_correct else 0.0
-
-                status = "correct" if is_correct else "incorrect"
-
-                stats["attempted_count"] += 1
-                stats["unattempted_count"] -= 1
-                stats["obtained_marks"] += marks_obtained
-                if is_correct:
-                    stats["correct_count"] += 1
-                else:
-                    stats["incorrect_count"] += 1
-
-        # Calculate grades in correct order
-        subject_wise_result = []
-        for section_name in ordered_sections:
-            stats = subject_stats[section_name]
-            percentage = (stats["obtained_marks"] / stats["max_marks"]
-                          * 100) if stats["max_marks"] > 0 else 0
-
-            grade_label = "N/A"
-            for setting in grade_settings:
-                if setting.get("min", 0) <= percentage <= setting.get("max", 100):
-                    grade_label = setting.get("grade_label", "N/A")
-                    break
-
-            subject_wise_result.append({
-                "section_name": section_name,
-                "total_questions": stats["total_questions"],
-                "attempted_count": stats["attempted_count"],
-                "unattempted_count": stats["unattempted_count"],
-                "correct_count": stats["correct_count"],
-                "incorrect_count": stats["incorrect_count"],
-                "obtained_marks": stats["obtained_marks"],
-                "max_marks": stats["max_marks"],
-                "percentage": round(percentage, 2),
-                "grade": grade_label
+            detailed_answers.append({
+                "question_id": question.id,
+                "section_code": resp.get("section_code", ""),
+                "section_name": resp.get("section_name", ""),
+                "question_type": question.question_type,
+                "subject_type": question.subject_type,
+                "exam_level": question.exam_level,
+                "question_text": question.question_text,
+                "passage": question.passage,
+                "image_url": question.image_url,
+                "options": question.options,
+                "max_marks": float(question.marks or 0),
+                "user_answer": user_answer_display,
+                "typing_stats": typing_stats,
+                "correct_answer": correct_answer_text or None,
+                "status": status_label,
+                "marks_obtained": marks_obtained,
+                "manual_marks": float(manual_marks) if manual_marks is not None else None,
+                "is_attempted": is_attempted,
+                "is_auto_saved": resp.get("is_auto_saved", False),
+                "saved_at": resp.get("saved_at"),
             })
 
-        overall_percentage = (
-            total_marks_obtained / total_max_marks * 100) if total_max_marks > 0 else 0
-        overall_grade = "N/A"
-        for setting in grade_settings:
-            if setting.get("min", 0) <= overall_percentage <= setting.get("max", 100):
-                overall_grade = setting.get("grade_label", "N/A")
-                break
+        # Grade settings for scale display (not for computation — grades already stored)
+        grade_settings = (paper_obj.grade_settings or []) if paper_obj else []
+        ordered_subject_results = _sort_subject_results_by_paper_order(
+            db,
+            paper_obj,
+            record.subject_grades,
+        )
 
         return {
             "user": {
@@ -1115,411 +1059,353 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "email": user.email,
             },
             "attempt": {
-                "attempt_id": attempt.id,
-                "paper_id": attempt.paper_id,
+                "attempt_id": record.id,
+                "paper_id": record.paper_id,
                 "paper_name": paper_obj.paper_name if paper_obj else "Unknown Paper",
                 "attempt_number": attempt_number,
-                "status": attempt.status,
-                "completion_reason": attempt.completion_reason,
-                "started_at": attempt.started_at,
-                "submitted_at": attempt.submitted_at,
-                "total_questions": attempt.total_questions,
-                "attempted_count": attempt.attempted_count,
-                "unattempted_count": attempt.unattempted_count,
-                "obtained_marks": float(attempt.obtained_marks)
-                if attempt.obtained_marks is not None
-                else None,
-                "is_auto_submitted": attempt.is_auto_submitted,
+                "status": record.status,
+                "completion_reason": record.completion_reason,
+                "started_at": record.started_at,
+                "submitted_at": record.submitted_at,
+                "total_questions": record.total_questions,
+                "attempted_count": record.attempted_count,
+                "unattempted_count": record.unattempted_count,
+                "total_marks": float(record.total_marks),
+                "obtained_marks": float(record.obtained_marks),
+                "overall_grade": record.overall_grade,
+                "is_auto_submitted": record.is_auto_submitted,
             },
             "summary": {
                 "correct_count": correct_count,
                 "incorrect_count": incorrect_count,
                 "not_attempted_count": not_attempted_count,
-                "total_marks_obtained": total_marks_obtained,
-                "overall_percentage": round(overall_percentage, 2),
-                "overall_grade": overall_grade,
+                "total_marks_obtained": float(record.obtained_marks),
+                "overall_percentage": round(
+                    float(record.obtained_marks) / float(record.total_marks) * 100, 2
+                ) if float(record.total_marks) > 0 else 0,
+                "overall_grade": record.overall_grade,
             },
-            "subject_wise_result": subject_wise_result,
+            "subject_results": ordered_subject_results,
             "grade_settings": grade_settings,
             "answers": detailed_answers,
         }
     finally:
-        db_session.close()
+        db.close()
 
 
 def reset_user_today_attempt(user_id: int) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        # Find latest attempt created today (UTC)
-        today_start = datetime.utcnow().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
 
-        attempt = (
-            db_session.query(InterviewAttempt)
+        record = (
+            db.query(InterviewRecord)
             .filter(
-                InterviewAttempt.user_id == user_id,
-                InterviewAttempt.created_at >= today_start,
+                InterviewRecord.user_id == user_id,
+                InterviewRecord.created_at >= today_start,
             )
-            .order_by(desc(InterviewAttempt.id))
+            .order_by(desc(InterviewRecord.id))
             .first()
         )
 
-        if attempt:
-            # Delete responses first (cascade might handle it but let's be explicit)
-            db_session.query(InterviewAttemptResponse).filter(
-                InterviewAttemptResponse.attempt_id == attempt.id
-            ).delete()
-            # Delete the attempt
-            db_session.delete(attempt)
+        if record:
+            db.delete(record)
 
-        # Reset UserDetail flag
-        user_detail = (
-            db_session.query(UserDetail).filter(
-                UserDetail.user_id == user_id).first()
-        )
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
 
-        # Reset PaperAssignment status
         today = datetime.utcnow().date()
         assignment = (
-            db_session.query(PaperAssignment)
-            .filter(
-                PaperAssignment.user_id == user_id,
-                PaperAssignment.assigned_date == today
-            )
+            db.query(PaperAssignment)
+            .filter(PaperAssignment.user_id == user_id, PaperAssignment.assigned_date == today)
             .first()
         )
         if assignment:
             assignment.is_attempted = False
 
-        db_session.commit()
-        return {
-            "message": "User interview status has been reset and today's attempt removed."
-        }
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+        db.commit()
+        return {"message": "User interview status has been reset and today's attempt removed."}
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
 def reset_user_details(user_id: int) -> dict:
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        user_detail = (
-            db_session.query(UserDetail).filter(
-                UserDetail.user_id == user_id).first()
-        )
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_submitted = False
-            db_session.commit()
+            db.commit()
             return {"message": "User details submission status reset successfully."}
-        else:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail="User details not found."
-            )
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+        raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="User details not found.")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
 def reset_user_for_reinterview(user_id: int) -> dict:
-    """
-    Existing user ko dobara interview ke liye enable karta hai.
-    - is_submitted = False  (user form phir se fill kar sake)
-    - is_interview_submitted = False  (user interview phir de sake)
-    - is_reinterview = True  (flag: yeh returning user hai)
-    - reinterview_date = today  (Today's Papers me dikhega aaj)
-    """
     from datetime import date as dt_date
-    db_session = SessionLocal()
+    db = SessionLocal()
     try:
-        user_detail = (
-            db_session.query(UserDetail).filter(
-                UserDetail.user_id == user_id).first()
-        )
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if not user_detail:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
-                detail="User details not found. Cannot enable re-interview."
+                detail="User details not found. Cannot enable re-interview.",
             )
-
         user_detail.is_submitted = False
         user_detail.is_interview_submitted = False
         user_detail.is_reinterview = True
         user_detail.reinterview_date = dt_date.today()
-
-        db_session.commit()
+        db.commit()
         return {
             "message": "Re-interview enabled. User will appear in Today's Papers as RETURNING.",
             "reinterview_date": str(dt_date.today()),
         }
     except HTTPException:
         raise
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
-def assign_manual_marks(user_id: int, attempt_id: int, question_id: int, marks: float) -> dict:
-    db_session = SessionLocal()
+def assign_manual_marks(user_id: int, record_id: int, question_id: int, marks: float) -> dict:
+    db = SessionLocal()
     try:
-        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
+        record = _get_record_or_404(db, record_id, user_id)
 
-        answer_row = (
-            db_session.query(InterviewAttemptResponse)
-            .filter(
-                InterviewAttemptResponse.attempt_id == attempt_id,
-                InterviewAttemptResponse.question_id == question_id,
-            )
-            .first()
-        )
-        if not answer_row:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail="Response not found",
-            )
-
-        question = db_session.query(Question).filter(
-            Question.id == question_id).first()
+        # Validate question type
+        question = db.query(Question).filter(Question.id == question_id).first()
         if not question:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND, detail="Question not found")
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Question not found")
 
         if question.question_type in ["MULTIPLE_CHOICE", "IMAGE_MULTIPLE_CHOICE"]:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
-                detail="Cannot assign manual marks to auto-graded questions."
+                detail="Cannot assign manual marks to auto-graded questions.",
             )
 
         max_marks = float(question.marks or 0)
         if marks < 0 or marks > max_marks:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
-                detail=f"Marks must be between 0 and {max_marks}"
+                detail=f"Marks must be between 0 and {max_marks}",
             )
 
-        answer_row.manual_marks = marks
-        db_session.commit()
+        # Update manual_marks in responses JSON
+        responses: list[dict] = list(record.responses or [])
+        found = False
+        for resp in responses:
+            if resp.get("question_id") == question_id:
+                resp["manual_marks"] = marks
+                found = True
+                break
+
+        if not found:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Response not found for this question")
+
+        record.responses = responses
+        flag_modified(record, "responses")
+
+        # Recompute all grades in one shot
+        _recompute_grades(record, db)
+
+        db.commit()
+
+        return {
+            "message": "Manual marks applied successfully",
+            "manual_marks": marks,
+            "new_obtained_marks": float(record.obtained_marks),
+            "new_overall_grade": record.overall_grade,
+        }
     except HTTPException:
         raise
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
-    result_details = get_admin_user_result_detail(
-        user_id=user_id, attempt_id=attempt_id)
-    new_total = result_details["summary"]["total_marks_obtained"]
 
-    update_db = SessionLocal()
+def reset_subject_responses(user_id: int, record_id: int, section_names: list[str]) -> dict:
+    db = SessionLocal()
     try:
-        attempt = update_db.query(InterviewAttempt).filter(
-            InterviewAttempt.id == attempt_id).first()
-        if attempt:
-            attempt.obtained_marks = new_total
-            update_db.commit()
-    except Exception as exception:
-        update_db.rollback()
-        raise exception
-    finally:
-        update_db.close()
-
-    return {
-        "message": "Manual marks applied successfully",
-        "manual_marks": marks,
-        "new_total_marks": new_total,
-    }
-
-
-def reset_subject_responses(
-    user_id: int, attempt_id: int, section_names: list[str]
-) -> dict:
-    db_session = SessionLocal()
-    try:
-        # 1. Delete rows from interview_attempt_responses
-        db_session.query(InterviewAttemptResponse).filter(
-            InterviewAttemptResponse.attempt_id == attempt_id,
-            InterviewAttemptResponse.section_name.in_(section_names),
-        ).delete(synchronize_session=False)
-
-        # 2. Reset InterviewAttempt status if it was finalized
-        attempt = (
-            db_session.query(InterviewAttempt)
-            .filter(
-                InterviewAttempt.id == attempt_id,
-                InterviewAttempt.user_id == user_id,
-            )
+        record = (
+            db.query(InterviewRecord)
+            .filter(InterviewRecord.id == record_id, InterviewRecord.user_id == user_id)
             .first()
         )
+        if not record:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Attempt not found")
 
-        if attempt:
-            # Refresh started_at to give candidate a fresh timer window
-            # Using timezone-aware UTC to ensure correct frontend interpretation
-            attempt.started_at = datetime.now(timezone.utc)
-            attempt.status = "started"
-            attempt.submitted_at = None
-            attempt.completion_reason = None
-            # Re-calculate attempted_count
-            attempted_count = (
-                db_session.query(InterviewAttemptResponse)
-                .filter(
-                    InterviewAttemptResponse.attempt_id == attempt_id,
-                    InterviewAttemptResponse.is_attempted.is_(True),
-                )
-                .count()
-            )
-            attempt.attempted_count = attempted_count
-            attempt.unattempted_count = max(
-                attempt.total_questions - attempted_count, 0
+        # Filter out responses for reset sections
+        reset_sections = {_normalize_text(name) for name in section_names if name and name.strip()}
+        if not reset_sections:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Please select at least one subject to reset",
             )
 
-        # 3. Update UserDetail flag
-        user_detail = (
-            db_session.query(UserDetail).filter(
-                UserDetail.user_id == user_id).first()
-        )
+        existing = list(record.responses or [])
+        filtered = [
+            r
+            for r in existing
+            if _normalize_text(str(r.get("section_name") or "")) not in reset_sections
+            and _normalize_text(str(r.get("section_code") or "")) not in reset_sections
+        ]
+
+        removed_count = len(existing) - len(filtered)
+        if removed_count == 0:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="No saved responses were found for the selected subjects. Please refresh and try again.",
+            )
+
+        record.responses = filtered
+        flag_modified(record, "responses")
+
+        # Reset attempt status
+        record.started_at = datetime.now(timezone.utc)
+        record.status = "started"
+        record.submitted_at = None
+        record.completion_reason = None
+        record.is_auto_submitted = False
+        record.overall_grade = "N/A"
+        record.subject_grades = []
+        flag_modified(record, "subject_grades")
+
+        # Recount
+        paper = _get_paper_or_404(db, record.paper_id)
+        record.total_questions = len(_extract_question_ids(paper.question_id))
+        attempted_count = sum(1 for r in filtered if r.get("is_attempted"))
+        record.attempted_count = attempted_count
+        record.unattempted_count = max(record.total_questions - attempted_count, 0)
+
+        # Reset UserDetail + PaperAssignment
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
 
-        # 4. Update PaperAssignment flag
         today = datetime.utcnow().date()
         assignment = (
-            db_session.query(PaperAssignment)
-            .filter(
-                PaperAssignment.user_id == user_id,
-                PaperAssignment.assigned_date == today,
-            )
+            db.query(PaperAssignment)
+            .filter(PaperAssignment.user_id == user_id, PaperAssignment.assigned_date == today)
             .first()
         )
         if assignment:
             assignment.is_attempted = False
 
-        db_session.commit()
-        return {"message": f"Successfully reset {len(section_names)} subjects"}
-
-    except Exception as e:
-        db_session.rollback()
-        raise e
-    finally:
-        db_session.close()
-
-
-def get_active_attempt_status(user_id: int) -> dict:
-    db_session = SessionLocal()
-    try:
-        today = datetime.utcnow().date()
-        # Find latest attempt created today
-        attempt = (
-            db_session.query(InterviewAttempt)
-            .filter(
-                InterviewAttempt.user_id == user_id,
-                func.date(InterviewAttempt.created_at) == today,
-            )
-            .order_by(desc(InterviewAttempt.id))
-            .first()
-        )
-
-        if not attempt:
-            return {"has_attempt": False, "status": None, "is_expired": False}
-
-        # Calculate expiration
-        is_expired = False
-        if attempt.status == "started":
-            paper = _get_paper_or_404(db_session, attempt.paper_id)
-            subject_data = paper.subject_ids_data if isinstance(
-                paper.subject_ids_data, list) else []
-            total_dur = sum(int(item.get("time_minutes") or 0) for item in subject_data if isinstance(
-                item, dict) and item.get("is_selected"))
-
-            if total_dur > 0:
-                expiration_time = attempt.started_at + \
-                    timedelta(minutes=total_dur)
-                is_expired = datetime.utcnow() > expiration_time
-
+        db.commit()
         return {
-            "has_attempt": True,
-            "status": attempt.status,
-            "is_expired": is_expired,
-            "attempt_id": attempt.id
+            "message": f"Successfully reset {len(reset_sections)} subjects",
+            "removed_responses": removed_count,
         }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
 
 
-def mark_subject_section_as_skipped(
-    user_id: int, attempt_id: int, section_name: str
-) -> dict:
-    db_session = SessionLocal()
+def mark_subject_section_as_skipped(user_id: int, record_id: int, section_name: str) -> dict:
+    db = SessionLocal()
     try:
-        attempt = _get_attempt_or_404(db_session, attempt_id, user_id)
-        paper = _get_paper_or_404(db_session, attempt.paper_id)
+        record = _get_record_or_404(db, record_id, user_id)
+        paper = _get_paper_or_404(db, record.paper_id)
         question_ids = _extract_question_ids(paper.question_id)
 
-        # Find questions belonging to this section
-        target_questions = (
-            db_session.query(Question)
-            .filter(Question.id.in_(question_ids))
-            .all()
+        # Get all questions in this section
+        all_questions = (
+            db.query(Question).filter(Question.id.in_(question_ids)).all()
+            if question_ids else []
         )
-
-        # Filter questions by section name
-        section_question_ids = []
-        for q in target_questions:
-            _, s_name = _resolve_question_section(db_session, q)
+        section_question_ids: list[int] = []
+        for q in all_questions:
+            _, s_name = _resolve_question_section(db, q)
             if s_name == section_name:
                 section_question_ids.append(q.id)
 
         if not section_question_ids:
             return {"message": "No questions found for this section"}
 
-        # Get existing responses for these questions
-        existing_responses = (
-            db_session.query(InterviewAttemptResponse)
-            .filter(
-                InterviewAttemptResponse.attempt_id == attempt_id,
-                InterviewAttemptResponse.question_id.in_(section_question_ids),
-            )
-            .all()
-        )
-        responded_ids = {r.question_id for r in existing_responses}
+        existing = list(record.responses or [])
+        responded_ids = {r["question_id"] for r in existing}
+        now = datetime.utcnow().isoformat()
 
-        # For unresponded questions, create "skipped" entries
-        new_responses = []
+        new_entries: list[dict] = []
+        for qid in section_question_ids:
+            if qid not in responded_ids:
+                q = next((x for x in all_questions if x.id == qid), None)
+                if not q:
+                    continue
+                s_code, s_nm = _resolve_question_section(db, q)
+                new_entries.append({
+                    "question_id": qid,
+                    "section_code": s_code,
+                    "section_name": s_nm,
+                    "answer_text": None,
+                    "is_attempted": False,
+                    "is_auto_saved": True,
+                    "is_skipped": True,
+                    "manual_marks": None,
+                    "saved_at": now,
+                })
 
-        for q_id in section_question_ids:
-            if q_id not in responded_ids:
-                q_obj = db_session.query(Question).filter(
-                    Question.id == q_id).first()
-                s_code, s_name = _resolve_question_section(db_session, q_obj)
+        if new_entries:
+            record.responses = existing + new_entries
+            flag_modified(record, "responses")
+            db.commit()
 
-                new_responses.append(
-                    InterviewAttemptResponse(
-                        attempt_id=attempt_id,
-                        section_code=s_code,
-                        section_name=s_name,
-                        question_id=q_id,
-                        answer_text=None,
-                        is_attempted=False,  # Explicitly not attempted
-                        is_auto_saved=True
-                    )
-                )
-
-        if new_responses:
-            db_session.add_all(new_responses)
-            db_session.commit()
-
-        return {"message": f"Section {section_name} marked as skipped", "count": len(new_responses)}
-    except Exception as e:
-        db_session.rollback()
-        raise e
+        return {"message": f"Section {section_name} marked as skipped", "count": len(new_entries)}
+    except Exception as exc:
+        db.rollback()
+        raise exc
     finally:
-        db_session.close()
+        db.close()
+
+
+def get_active_attempt_status(user_id: int) -> dict:
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().date()
+        record = (
+            db.query(InterviewRecord)
+            .filter(
+                InterviewRecord.user_id == user_id,
+                func.date(InterviewRecord.created_at) == today,
+            )
+            .order_by(desc(InterviewRecord.id))
+            .first()
+        )
+
+        if not record:
+            return {"has_attempt": False, "status": None, "is_expired": False}
+
+        is_expired = False
+        if record.status == "started":
+            paper = _get_paper_or_404(db, record.paper_id)
+            total_dur = _get_total_duration_minutes(paper)
+            if total_dur > 0:
+                expiry = record.started_at + timedelta(minutes=total_dur)
+                is_expired = datetime.utcnow() > expiry
+
+        return {
+            "has_attempt": True,
+            "status": record.status,
+            "is_expired": is_expired,
+            "attempt_id": record.id,
+        }
+    finally:
+        db.close()

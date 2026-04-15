@@ -56,7 +56,7 @@ export function CollapsibleResultDetail({
                   {res.section_name}
                 </Typography>
                 <Typography variant="body2" className="font-bold">
-                  {res.obtained} / {res.max}
+                  {res.obtained_marks} / {res.total_marks}
                 </Typography>
               </div>
               <Badge

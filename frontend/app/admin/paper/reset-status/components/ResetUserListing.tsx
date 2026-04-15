@@ -34,6 +34,8 @@ import {
   FileEdit,
   RotateCcw,
   BookOpenCheck,
+  Phone,
+  Mail,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
@@ -238,7 +240,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                           <div className="flex flex-col justify-center gap-0.5">
                             <div className="flex items-center gap-1.5 text-xs text-foreground/70">
                               <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                📱
+                                <Phone size={12} />
                               </span>
                               <span className="font-bold text-slate-700 dark:text-slate-300">
                                 {row.mobile}
@@ -246,7 +248,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             </div>
                             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
                               <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                ✉️
+                                <Mail size={12} />
                               </span>
                               <span className="opacity-80">
                                 {row.email || "-"}

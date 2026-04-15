@@ -69,10 +69,11 @@ export function ResetSubjectsModal({
 
   const handleSelectAll = () => {
     if (!data) return;
-    if (selectedSubjects.length === data.subject_wise_result.length) {
+    const subjects = data.subject_results ?? [];
+    if (selectedSubjects.length === subjects.length) {
       setSelectedSubjects([]);
     } else {
-      setSelectedSubjects(data.subject_wise_result.map((s) => s.section_name));
+      setSelectedSubjects(subjects.map((s) => s.section_name));
     }
   };
 
@@ -209,20 +210,20 @@ export function ResetSubjectsModal({
                   variant="body5"
                   className="font-black uppercase tracking-widest text-[10px] text-muted-foreground"
                 >
-                  Paper Curriculum ({data.subject_wise_result.length} Sections)
+                  Paper Curriculum ({(data.subject_results ?? []).length} Sections)
                 </Typography>
                 <button
                   onClick={handleSelectAll}
                   className="text-[10px] font-black uppercase tracking-widest text-brand-primary hover:underline transition-all"
                 >
-                  {selectedSubjects.length === data.subject_wise_result.length
+                  {selectedSubjects.length === (data.subject_results ?? []).length
                     ? "Deselect All"
                     : "Select All"}
                 </button>
               </div>
 
               <div className="grid grid-cols-1 gap-2.5 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                {data.subject_wise_result.map((subject) => {
+                {data?.subject_results?.map((subject) => {
                   const isSubjectSubmitted =
                     subject.attempted_count === subject.total_questions ||
                     isAttemptSubmitted;

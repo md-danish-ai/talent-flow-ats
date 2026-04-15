@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Any
 
 from pydantic import BaseModel
 
@@ -28,7 +28,9 @@ class AttemptSummaryResponse(BaseModel):
     total_questions: int
     attempted_count: int
     unattempted_count: int
+    total_marks: float
     obtained_marks: Optional[float]
+    overall_grade: str
     is_auto_submitted: bool
 
 
@@ -51,6 +53,7 @@ class AttemptStartResponse(BaseModel):
     started_at: datetime
     is_resumed: bool
     paper_question_ids: list[int]
+    total_duration_minutes: int
     saved_responses: list[AttemptSavedResponse]
 
 
@@ -71,3 +74,13 @@ class ManualMarksRequest(BaseModel):
 class ResetSubjectsRequest(BaseModel):
     attempt_id: int
     section_names: list[str]
+
+
+class AnswerEntry(BaseModel):
+    question_id: int
+    answer_text: Optional[str] = None
+    is_auto_saved: bool = False
+
+
+class BatchSaveAnswersRequest(BaseModel):
+    answers: list[AnswerEntry]

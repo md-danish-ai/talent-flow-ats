@@ -210,6 +210,7 @@ export function BulkUploadModal({
               className="absolute inset-0 opacity-0 cursor-pointer"
               accept=".xlsx,.xls,.csv"
               disabled={isSubmitting}
+              aria-label="Upload file"
             />
 
             {formData.file ? (

@@ -74,6 +74,20 @@ const getResumePosition = (
   };
 };
 
+const getResetSectionIndexes = (
+  sections: InterviewSection[],
+  touchedQuestionIds: Set<number>,
+) =>
+  new Set(
+    sections.reduce<number[]>((indexes, section, sectionIdx) => {
+      const hasResetQuestion = section.questions.some(
+        (question) => !touchedQuestionIds.has(question.id),
+      );
+      if (hasResetQuestion) indexes.push(sectionIdx);
+      return indexes;
+    }, []),
+  );
+
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const [loadedSections, setLoadedSections] =
@@ -182,18 +196,26 @@ export function InterviewTestClient() {
     return true;
   }, [sectionIndex, sections, lockedSections]);
 
-  const persistAnswerToBackend = useCallback(
-    async (
-      questionId: number,
-      answerText: string,
-      isAutoSaved: boolean = false,
-    ) => {
+  const persistSubjectAnswers = useCallback(
+    async (sectionToSave: InterviewSection, isAutoSaved: boolean = false) => {
       if (!attemptId) return;
 
-      await interviewAttemptsApi.saveAnswer(attemptId, questionId, {
-        answer_text: answerText,
+      const answersToBatch = sectionToSave.questions.map((q) => ({
+        question_id: q.id,
+        answer_text: latestAnswersRef.current[q.id] || "",
         is_auto_saved: isAutoSaved,
-      });
+      }));
+
+      if (answersToBatch.length === 0) return;
+
+      try {
+        await interviewAttemptsApi.saveAnswersBatch(attemptId, {
+          answers: answersToBatch,
+        });
+      } catch (error) {
+        console.error("Failed to batch save answers:", error);
+        throw error;
+      }
     },
     [attemptId],
   );
@@ -269,24 +291,29 @@ export function InterviewTestClient() {
         return next;
       });
 
-      // Notify backend to skip remaining questions in this section
-      if (attemptId && currentSection) {
-        try {
-          await interviewAttemptsApi.skipSection(
-            attemptId,
-            currentSection.title,
-          );
-        } catch {
-          console.error("Failed to mark section as skipped on server");
-        }
-      }
-
       // Find the next section that is NOT locked
       let nextUnlockedIndex = -1;
       for (let i = currentIndex + 1; i < totalSections; i++) {
         if (!lockedSections[i]) {
           nextUnlockedIndex = i;
           break;
+        }
+      }
+
+      // Send batch answers for this subject before locking/submitting
+      if (attemptId && currentSection) {
+        try {
+          await persistSubjectAnswers(currentSection, notice?.includes("time") ?? false);
+          
+          // Only skip if there's actually a next move (not finishing)
+          if (nextUnlockedIndex !== -1) {
+            await interviewAttemptsApi.skipSection(
+              attemptId,
+              currentSection.title,
+            );
+          }
+        } catch {
+          console.error("Failed to sync subject answers or skip section");
         }
       }
 
@@ -336,15 +363,11 @@ export function InterviewTestClient() {
     const submitOnTimeout = async () => {
       try {
         if (attemptId) {
-          const snapshot = latestAnswersRef.current;
-          const saveRequests = allQuestions.map((question) =>
-            persistAnswerToBackend(
-              question.id,
-              snapshot[question.id] ?? "",
-              true,
-            ),
+          // Batch save everything
+          const allBatchRequests = sections.map((sec) =>
+            persistSubjectAnswers(sec, true),
           );
-          await Promise.all(saveRequests);
+          await Promise.allSettled(allBatchRequests);
 
           const summary =
             await interviewAttemptsApi.autoSubmitAttempt(attemptId);
@@ -368,28 +391,13 @@ export function InterviewTestClient() {
     };
 
     void submitOnTimeout();
-  }, [allLockedSections, allQuestions, attemptId, persistAnswerToBackend]);
+  }, [allLockedSections, sections, attemptId, persistSubjectAnswers]);
 
   const handleSectionTimeOver = useCallback(() => {
     if (hasHandledSectionTimeoutRef.current) return;
     hasHandledSectionTimeoutRef.current = true;
 
     const advanceSection = async () => {
-      const snapshot = latestAnswersRef.current;
-      if (attemptId && currentQuestion) {
-        try {
-          await persistAnswerToBackend(
-            currentQuestion.id,
-            snapshot[currentQuestion.id] ?? "",
-            true,
-          );
-        } catch {
-          setMessage(
-            "Current answer was kept locally, but syncing before section lock failed.",
-          );
-        }
-      }
-
       lockAndMoveToNextSection(
         sectionIndex,
         `Time is up for ${currentSection.title}. Section auto-locked.`,
@@ -402,7 +410,7 @@ export function InterviewTestClient() {
     currentQuestion,
     currentSection,
     lockAndMoveToNextSection,
-    persistAnswerToBackend,
+    persistSubjectAnswers,
     sectionIndex,
   ]);
 
@@ -465,16 +473,9 @@ export function InterviewTestClient() {
     (value: string) => {
       if (!currentQuestion) return;
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
-
-      if (isAutoSaveQuestionType(currentQuestion.type)) {
-        void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
-          setMessage(
-            "Answer selected locally, but failed to sync with server.",
-          );
-        });
-      }
+      // Individual auto-save removed for subject-wise optimization
     },
-    [currentQuestion, persistAnswerToBackend],
+    [currentQuestion],
   );
 
   const handlePrevious = useCallback(() => {
@@ -487,11 +488,8 @@ export function InterviewTestClient() {
     if (!currentQuestion) return;
     setMessage(null);
 
-    try {
-      await persistAnswerToBackend(currentQuestion.id, currentAnswer);
-    } catch {
-      setMessage("Answer saved locally, but failed to sync with server.");
-    }
+    // Question-level remote persist removed for subject-wise optimization
+    // Answers are kept in local state until subject completion
 
     if (!isLastQuestionInSection) {
       setQuestionIndex((prev) => prev + 1);
@@ -512,30 +510,18 @@ export function InterviewTestClient() {
       return;
     }
 
-    // No unlocked sections left, perform final submission
-    try {
-      if (attemptId) {
-        const summary = await interviewAttemptsApi.submitAttempt(attemptId);
-        setFinalSummary(summary);
-      }
-    } catch {
-      setMessage(
-        "Interview finished locally, but final server submission failed.",
-      );
-    }
-
+    // No unlocked sections left, perform final submission via locking mechanism
     lockAndMoveToNextSection(sectionIndex);
   }, [
-    currentAnswer,
     currentQuestion,
-    persistAnswerToBackend,
+    persistSubjectAnswers,
     isLastQuestionInSection,
     sections,
     lockedSections,
     attemptId,
     lockAndMoveToNextSection,
     sectionIndex,
-    finalizeInterview,
+    persistSubjectAnswers,
   ]);
 
   const handleConfirmSectionChange = () => {
@@ -560,19 +546,28 @@ export function InterviewTestClient() {
       const restoredAnswers = buildSavedAnswersMap(
         startResponse.saved_responses,
       );
+      // touchedQuestionIds: ALL questions with any saved record (drives resume position)
       const touchedQuestionIds = new Set(
         startResponse.saved_responses.map((r) => r.question_id),
       );
+      const resetSectionIndexes = startResponse.is_resumed
+        ? getResetSectionIndexes(loadedSections, touchedQuestionIds)
+        : new Set<number>();
+
+      if (startResponse.is_resumed && resetSectionIndexes.size === 0) {
+        setStartError(
+          "No unlocked questions were found for this resume session. Please ask admin to reset the subject again.",
+        );
+        return;
+      }
+
       const resumePosition = getResumePosition(
         loadedSections,
         touchedQuestionIds,
       );
-
-      const initialLockedSections = loadedSections.map((section) => {
-        if (!startResponse.is_resumed) return false;
-        // A section is locked if all its questions have existing records in DB
-        return section.questions.every((q) => touchedQuestionIds.has(q.id));
-      });
+      const initialLockedSections = loadedSections.map((_, sectionIdx) =>
+        startResponse.is_resumed ? !resetSectionIndexes.has(sectionIdx) : false,
+      );
 
       setAttemptId(startResponse.attempt_id);
       setSections(loadedSections);
