@@ -30,40 +30,53 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Aptitude",
         "code": "APTITUDE",
-        "metadata": {"description": "Logical reasoning and problem-solving."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Logical reasoning and problem-solving."
+        },
     },
     {
         "type": "subject",
         "name": "Brand Awareness",
         "code": "BRAND_AWARENESS",
-        "metadata": {"description": "Knowledge about brand positioning."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Knowledge about brand positioning."
+        },
     },
     {
         "type": "subject",
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
         "metadata": {
-            "description": "Knowledge regarding company structure and history.",
-            "is_exclusive": True
+            "is_exclusive": True,
+            "description": "Knowledge regarding company structure and history."
         },
     },
     {
         "type": "subject",
         "name": "Comprehension",
         "code": "COMPREHENSION",
-        "metadata": {"description": "Ability to understand written passages."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Ability to understand written passages."
+        },
     },
     {
         "type": "subject",
         "name": "Data Interpretation & Analytics",
         "code": "DATA_INTERPRETATION_ANALYTICS",
-        "metadata": {"description": "Analyze complex data sets."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Analyze complex data sets."
+        },
     },
     {
         "type": "subject",
         "name": "English",
         "code": "ENGLISH",
         "metadata": {
+            "is_exclusive": False,
             "description": "Comprehensive assessment of English language proficiency."
         },
     },
@@ -72,6 +85,7 @@ CLASSIFICATIONS = [
         "name": "Excel",
         "code": "EXCEL",
         "metadata": {
+            "is_exclusive": False,
             "description": "Proficient use of Microsoft Excel for data analysis."
         },
     },
@@ -79,55 +93,73 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Food Industry",
         "code": "FOOD_INDUSTRY",
-        "metadata": {"description": "Food safety and culinary trends."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Food safety and culinary trends."
+        },
     },
     {
         "type": "subject",
         "name": "Grammar",
         "code": "GRAMMAR",
-        "metadata": {"description": "Testing of grammatical rules."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Testing of grammatical rules."
+        },
     },
     {
         "type": "subject",
         "name": "Industry Awareness",
         "code": "INDUSTRY_AWARENESS",
-        "metadata": {"description": "Knowledge concerning current trends."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Knowledge concerning current trends."
+        },
     },
     {
         "type": "subject",
         "name": "Lead Generation",
         "code": "LEAD_GENERATION",
         "metadata": {
-            "description": "Testing skills in identifying potential clients.",
-            "is_exclusive": True
+            "is_exclusive": True,
+            "description": "Testing skills in identifying potential clients."
         },
     },
     {
         "type": "subject",
         "name": "Real Estate",
         "code": "REAL_ESTATE",
-        "metadata": {"description": "Knowledge of property markets."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Knowledge of property markets."
+        },
     },
     {
         "type": "subject",
         "name": "Typing Test",
         "code": "TYPING_TEST",
         "metadata": {
-            "description": "Assessment of typing speed and accuracy.",
-            "is_exclusive": True
+            "is_exclusive": True,
+            "description": "Assessment of typing speed and accuracy."
         },
     },
     {
         "type": "subject",
         "name": "Written",
         "code": "WRITTEN",
-        "metadata": {"description": "Assessment of professional writing skills."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Assessment of professional writing skills."
+        },
     },
     {
         "type": "subject",
         "name": "e-Commerce & Online Shopping",
         "code": "E_COMMERCE_ONLINE_SHOPPING",
-        "metadata": {"description": "Online retail operations."},
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Online retail operations."
+        },
     },
 ]
 

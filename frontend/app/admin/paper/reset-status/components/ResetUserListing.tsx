@@ -263,14 +263,16 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                               <Badge
                                 color="success"
                                 variant="outline"
+                                shape="square"
                                 className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center"
                               >
-                                ✓ Submitted
+                                Submitted
                               </Badge>
                             ) : row.assignment?.has_started ? (
                               <Badge
                                 color="warning"
                                 variant="outline"
+                                shape="square"
                                 className="text-orange-500 border-orange-500/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
                               >
                                 In Progress
@@ -278,6 +280,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             ) : (
                               <Badge
                                 variant="outline"
+                                shape="square"
                                 className="text-slate-500 border-slate-500/30 dark:text-slate-400 dark:border-slate-400/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
                               >
                                 Ready
