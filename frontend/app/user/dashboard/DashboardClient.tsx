@@ -19,6 +19,11 @@ interface DashboardClientProps {
   user: CurrentUser | null;
   isDetailsComplete: boolean;
   isInterviewSubmitted: boolean;
+  activeInterviewStatus?: {
+    has_attempt: boolean;
+    status: string | null;
+    is_expired: boolean;
+  };
 }
 
 /**
@@ -53,8 +58,29 @@ export function DashboardClient({
   user,
   isDetailsComplete,
   isInterviewSubmitted,
+  activeInterviewStatus,
 }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+  const activeStatus = activeInterviewStatus?.status;
+  const isExpired = activeInterviewStatus?.is_expired;
+
+  // Enabled if details are complete AND (no attempt yet OR attempt is started and not expired)
+  // AND NOT already submitted
+  const isInterviewEnabled =
+    isDetailsComplete &&
+    !isInterviewSubmitted &&
+    (!activeInterviewStatus?.has_attempt ||
+      (activeStatus === "started" && !isExpired));
+
+  const isResuming =
+    activeInterviewStatus?.has_attempt &&
+    activeStatus === "started" &&
+    !isExpired;
+  const isDecommissioned =
+    isInterviewSubmitted ||
+    (activeInterviewStatus?.has_attempt && isExpired) ||
+    (activeStatus && activeStatus !== "started");
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -74,8 +100,6 @@ export function DashboardClient({
       transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] } as Transition,
     },
   };
-
-  const isInterviewEnabled = isDetailsComplete && !isInterviewSubmitted;
 
   return (
     <div className="min-h-screen dark:bg-[radial-gradient(circle_at_top_right,_rgba(39,39,42,0.1),_transparent_40%)] py-4 px-4 sm:px-6 lg:px-8">
@@ -103,47 +127,39 @@ export function DashboardClient({
         {/* Interview Status Alert */}
         {isInterviewSubmitted && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-14 p-10 rounded-[3rem] bg-white/80 dark:bg-zinc-900/40 backdrop-blur-3xl border border-emerald-100/50 dark:border-emerald-500/10 shadow-[0_20px_50px_rgba(16,185,129,0.08)] dark:shadow-[0_40px_100px_rgba(0,0,0,0.6)] flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden group"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10 p-5 rounded-3xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-6 relative overflow-hidden group shadow-sm shadow-emerald-500/5"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:opacity-[0.08] transition-opacity -rotate-12 translate-x-1/4 -translate-y-1/4 pointer-events-none">
-              <CheckCircle2 size={400} strokeWidth={0.5} />
+            <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+              <CheckCircle2 className="h-7 w-7" />
             </div>
-
-            <div className="flex items-center gap-8 relative z-10 text-center lg:text-left">
-              <div className="h-20 w-20 rounded-3xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xl">
-                <CheckCircle2 className="h-10 w-10" />
-              </div>
-              <div className="space-y-2">
-                <Typography
-                  variant="h2"
-                  weight="black"
-                  className="text-emerald-950 dark:text-emerald-50 tracking-tighter uppercase italic text-2xl"
-                >
-                  Mission Accomplished
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="text-emerald-700/80 dark:text-zinc-400 max-w-2xl leading-relaxed text-lg font-medium"
-                >
-                  Your technical assessment has been successfully logged. Our
-                  elite recruitment core will now analyze your performance. Stay
-                  vigilant for updates.
-                </Typography>
-              </div>
+            <div className="flex-1 space-y-1">
+              <Typography
+                variant="h4"
+                weight="black"
+                className="text-emerald-950 dark:text-emerald-400 tracking-tighter uppercase italic leading-none"
+              >
+                Mission Accomplished
+              </Typography>
+              <Typography
+                variant="body2"
+                className="text-emerald-700/80 dark:text-zinc-500 font-medium leading-tight max-w-3xl"
+              >
+                Your technical assessment has been successfully logged. Our
+                recruitment core is now analyzing your performance.
+              </Typography>
             </div>
-
-            <Link
-              href="/user/profile"
-              className="relative z-10 w-full lg:w-auto"
-            >
-              <button className="w-full h-16 flex items-center justify-center gap-3 px-12 rounded-[1.5rem] bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 group/btn">
-                <User className="h-5 w-5" />
-                View Status
-                <ArrowRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
-              </button>
-            </Link>
+            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle2 className="h-3 w-3 text-emerald-500 animate-pulse" />
+              <Typography
+                variant="body5"
+                weight="black"
+                className="text-emerald-600 uppercase tracking-tighter text-[9px]"
+              >
+                Analysis In Progress
+              </Typography>
+            </div>
           </motion.div>
         )}
 
@@ -370,8 +386,10 @@ export function DashboardClient({
                           : "bg-slate-50 dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-300"
                       }`}
                     >
-                      {isInterviewSubmitted ? (
-                        <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                      {isDecommissioned ? (
+                        <CheckCircle2
+                          className={`h-10 w-10 ${isInterviewSubmitted ? "text-emerald-500" : "text-slate-400"}`}
+                        />
                       ) : (
                         <PlayCircle className="h-10 w-10" />
                       )}
@@ -393,9 +411,17 @@ export function DashboardClient({
                     <Typography
                       variant="h3"
                       weight="black"
-                      className={`mb-3 text-2xl tracking-tighter uppercase italic ${!isInterviewEnabled && "text-slate-400 dark:text-zinc-600"}`}
+                      className={`tracking-tight uppercase italic ${
+                        !isInterviewEnabled
+                          ? "text-slate-400 dark:text-zinc-600"
+                          : "text-slate-900 dark:text-zinc-100"
+                      }`}
                     >
-                      Core Assessment
+                      {isDecommissioned
+                        ? "Decommissioned"
+                        : isResuming
+                          ? "Resume Phase"
+                          : "Initiate Phase"}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -406,8 +432,12 @@ export function DashboardClient({
                       }`}
                     >
                       {isInterviewSubmitted
-                        ? "Operational mission complete. Technical metrics successfully transmitted to base."
-                        : "High-priority technical assessment to evaluate engineering combat readiness."}
+                        ? "Interview successfully completed and processed."
+                        : isExpired
+                          ? "Interview time has expired. Participation closed."
+                          : isResuming
+                            ? "An active session exists. Resume your core assessment."
+                            : "Standard competency evaluation protocols."}
                     </Typography>
                   </div>
 

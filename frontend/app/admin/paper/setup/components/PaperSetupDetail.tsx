@@ -301,7 +301,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                 weight="black"
                 className="text-brand-primary/60 uppercase tracking-[0.2em] mb-1 z-10"
               >
-                Test Competency
+                Test Level
               </Typography>
               <Typography
                 variant="h2"

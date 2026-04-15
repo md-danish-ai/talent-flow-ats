@@ -203,3 +203,23 @@ class InterviewAttemptService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR,
                 detail=str(exception),
             )
+
+    async def skip_section(self, attempt_id: int, user_id: int, section_name: str):
+        try:
+            return repository.mark_subject_section_as_skipped(
+                user_id=user_id, attempt_id=attempt_id, section_name=section_name
+            )
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )
+
+    async def get_active_attempt_status(self, user_id: int):
+        try:
+            return repository.get_active_attempt_status(user_id=user_id)
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR,
+                detail=str(exception),
+            )

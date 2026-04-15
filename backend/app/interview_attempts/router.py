@@ -181,3 +181,22 @@ async def reset_user_subjects(
     )
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
+
+@router.post("/user/interview-attempts/{attempt_id}/sections/{section_name}/skip")
+async def skip_section(
+    attempt_id: int,
+    section_name: str,
+    current_user: int = Depends(authenticate_user),
+):
+    data = await service.skip_section(
+        attempt_id=attempt_id, user_id=current_user, section_name=section_name
+    )
+    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+
+
+@router.get("/user/interview-attempts/active-status")
+async def get_active_status(
+    current_user: int = Depends(authenticate_user),
+):
+    data = await service.get_active_attempt_status(user_id=current_user)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
