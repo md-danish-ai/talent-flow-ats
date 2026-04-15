@@ -7,6 +7,7 @@ export interface AdminUserLatestAttempt {
   paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
+  started_at?: string | null;
   submitted_at?: string | null;
   total_questions: number;
   attempted_count: number;

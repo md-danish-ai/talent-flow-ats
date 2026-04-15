@@ -102,11 +102,10 @@ def update_grade_settings(
     paper_id: int,
     grade_settings: List[schemas.GradeSettingItem],
     db: Session = Depends(get_db),
-    user_id: int = Depends(authenticate_user),
 ):
     grade_data = [item.model_dump() for item in grade_settings]
     db_paper = repository.update_paper_grade_settings(
-        db=db, paper_id=paper_id, grade_settings=grade_data, user_id=user_id
+        db=db, paper_id=paper_id, grade_settings=grade_data
     )
     if db_paper is None:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
@@ -114,17 +113,4 @@ def update_grade_settings(
         StatusCode.OK,
         ResponseMessage.UPDATED,
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
-    )
-
-
-@router.get("/grade-settings/{paper_id}/logs")
-def get_grade_setting_logs(
-    paper_id: int,
-    db: Session = Depends(get_db),
-):
-    logs = repository.get_paper_grade_setting_logs(db=db, paper_id=paper_id)
-    return api_response(
-        StatusCode.OK,
-        ResponseMessage.FETCHED,
-        data=logs,
     )

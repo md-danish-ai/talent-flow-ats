@@ -139,8 +139,12 @@ export function UserResultsClient() {
   }, [fetchItems]);
 
   const stats = useMemo(() => {
-    const attempted = items.filter((item) => item.attempts_count > 0).length;
-    const pending = totalItems - attempted;
+    const completed = items.filter((item) =>
+      ["submitted", "auto_submitted"].includes(item.latest_attempt?.status || ""),
+    ).length;
+    const active = items.filter(
+      (item) => item.latest_attempt?.status === "started",
+    ).length;
 
     return [
       {
@@ -150,25 +154,25 @@ export function UserResultsClient() {
         color: "text-brand-primary",
         bg: "bg-brand-primary/10",
         border: "border-brand-primary/20",
-        trend: "Total registered",
+        trend: "Latest records",
       },
       {
         label: "Active Attempts",
-        value: attempted,
+        value: active,
         icon: <UserCheck size={20} />,
         color: "text-emerald-600",
         bg: "bg-emerald-500/10",
         border: "border-emerald-500/20",
-        trend: `${totalItems > 0 ? ((attempted / items.length || 0) * 100).toFixed(0) : 0}% Engagement (Page)`,
+        trend: "Currently started",
       },
       {
-        label: "Pending Review",
-        value: pending,
+        label: "Completed Results",
+        value: completed,
         icon: <UserX size={20} />,
         color: "text-amber-600",
         bg: "bg-amber-500/10",
         border: "border-amber-500/20",
-        trend: "Awaiting first session",
+        trend: "Submitted records",
       },
     ];
   }, [items, totalItems]);
@@ -402,6 +406,11 @@ function EmptyState({
         We couldn&apos;t find any candidates matching &quot;{search}&quot;. Try
         searching with a different name or phone number.
       </Typography>
+      {search ? (
+        <Button variant="outline" size="sm" className="mt-5" onClick={onClear}>
+          Clear Search
+        </Button>
+      ) : null}
     </div>
   );
 }

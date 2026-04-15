@@ -777,46 +777,55 @@ def get_admin_user_results(
 ) -> dict:
     db = SessionLocal()
     try:
-        users_query = db.query(User).filter(User.role == "user")
+        latest_record_ids_query = (
+            db.query(func.max(InterviewRecord.id).label("latest_record_id"))
+            .join(User, User.id == InterviewRecord.user_id)
+            .filter(User.role == "user")
+        )
 
         if search:
             pattern = f"%{search.strip()}%"
-            users_query = users_query.filter(
+            latest_record_ids_query = latest_record_ids_query.filter(
                 (User.username.ilike(pattern))
                 | (User.mobile.ilike(pattern))
                 | (User.email.ilike(pattern))
             )
 
-        if start_date or end_date:
-            attempt_query = db.query(InterviewRecord.user_id)
-            if start_date:
-                attempt_query = attempt_query.filter(
-                    InterviewRecord.started_at >= f"{start_date} 00:00:00"
-                )
-            if end_date:
-                attempt_query = attempt_query.filter(
-                    InterviewRecord.started_at <= f"{end_date} 23:59:59"
-                )
-            users_query = users_query.filter(User.id.in_(attempt_query))
+        if start_date:
+            latest_record_ids_query = latest_record_ids_query.filter(
+                InterviewRecord.started_at >= f"{start_date} 00:00:00"
+            )
+        if end_date:
+            latest_record_ids_query = latest_record_ids_query.filter(
+                InterviewRecord.started_at <= f"{end_date} 23:59:59"
+            )
 
-        total_items = users_query.count()
+        latest_record_ids = (
+            latest_record_ids_query
+            .group_by(InterviewRecord.user_id)
+            .subquery()
+        )
+
+        records_query = (
+            db.query(InterviewRecord, User, Paper.paper_name)
+            .join(latest_record_ids, latest_record_ids.c.latest_record_id == InterviewRecord.id)
+            .join(User, User.id == InterviewRecord.user_id)
+            .join(Paper, Paper.id == InterviewRecord.paper_id)
+        )
+
+        total_items = records_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
-        users = users_query.order_by(User.id.desc()).limit(limit).offset((page - 1) * limit).all()
+        records = (
+            records_query
+            .order_by(desc(InterviewRecord.id))
+            .limit(limit)
+            .offset((page - 1) * limit)
+            .all()
+        )
 
         results: list[dict] = []
 
-        for user in users:
-            latest_info = (
-                db.query(InterviewRecord, Paper.paper_name)
-                .join(Paper, Paper.id == InterviewRecord.paper_id)
-                .filter(InterviewRecord.user_id == user.id)
-                .order_by(desc(InterviewRecord.id))
-                .first()
-            )
-
-            latest = latest_info[0] if latest_info else None
-            paper_name = latest_info[1] if latest_info else None
-
+        for record, user, paper_name in records:
             attempts_count = (
                 db.query(InterviewRecord)
                 .filter(InterviewRecord.user_id == user.id)
@@ -825,17 +834,16 @@ def get_admin_user_results(
 
             # Typing stats — parsed from responses JSON if present
             typing_stats = None
-            if latest:
-                for resp in (latest.responses or []):
-                    answer_text = resp.get("answer_text")
-                    if answer_text and isinstance(answer_text, str) and answer_text.startswith("{"):
-                        try:
-                            parsed = json.loads(answer_text)
-                            if "stats" in parsed:
-                                typing_stats = parsed["stats"]
-                                break
-                        except Exception:
-                            pass
+            for resp in (record.responses or []):
+                answer_text = resp.get("answer_text")
+                if answer_text and isinstance(answer_text, str) and answer_text.startswith("{"):
+                    try:
+                        parsed = json.loads(answer_text)
+                        if "stats" in parsed:
+                            typing_stats = parsed["stats"]
+                            break
+                    except Exception:
+                        pass
 
             results.append({
                 "user_id": user.id,
@@ -845,21 +853,22 @@ def get_admin_user_results(
                 "attempts_count": attempts_count,
                 "is_reattempt": attempts_count > 1,
                 "latest_attempt": {
-                    "attempt_id": latest.id,
-                    "paper_id": latest.paper_id,
+                    "attempt_id": record.id,
+                    "paper_id": record.paper_id,
                     "paper_name": paper_name,
-                    "status": latest.status,
-                    "completion_reason": latest.completion_reason,
-                    "submitted_at": latest.submitted_at,
-                    "total_questions": latest.total_questions,
-                    "attempted_count": latest.attempted_count,
-                    "unattempted_count": latest.unattempted_count,
-                    "total_marks": float(latest.total_marks),
-                    "obtained_marks": float(latest.obtained_marks),
-                    "overall_grade": latest.overall_grade,
+                    "status": record.status,
+                    "completion_reason": record.completion_reason,
+                    "started_at": record.started_at,
+                    "submitted_at": record.submitted_at,
+                    "total_questions": record.total_questions,
+                    "attempted_count": record.attempted_count,
+                    "unattempted_count": record.unattempted_count,
+                    "total_marks": float(record.total_marks),
+                    "obtained_marks": float(record.obtained_marks),
+                    "overall_grade": record.overall_grade,
                     "typing_stats": typing_stats,
-                    "subject_results": latest.subject_grades,
-                } if latest else None,
+                    "subject_results": record.subject_grades,
+                },
             })
 
         return {
