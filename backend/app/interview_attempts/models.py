@@ -19,8 +19,8 @@ class InterviewRecord(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
-    paper_id = Column(Integer, ForeignKey("papers.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    paper_id = Column(Integer, ForeignKey("papers.id"), index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
 
     # Status
     status = Column(String(30), nullable=False, server_default="started")
