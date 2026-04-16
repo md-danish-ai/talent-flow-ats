@@ -257,25 +257,35 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
 
         # Fix duplication by using subqueries for assignments and attempts
         # (One user might have 2 assignments or 2 attempts on same day - we only show 1)
-        assignment_subq = (
+        # Get the latest assignment ID for each user
+        latest_assignment_id_subq = (
             db_session.query(
                 PaperAssignment.user_id,
-                func.max(PaperAssignment.paper_id).label("paper_id"),
-                func.max(PaperAssignment.department_id).label("department_id"),
-                func.max(PaperAssignment.test_level_id).label("test_level_id"),
-                func.max(func.cast(PaperAssignment.is_attempted, Integer)).label("is_attempted")
+                func.max(PaperAssignment.id).label("max_id")
             )
-            .filter(PaperAssignment.assigned_date == target_date)
             .group_by(PaperAssignment.user_id)
             .subquery()
         )
 
+        # Join to get full details of that latest assignment
+        assignment_subq = (
+            db_session.query(
+                PaperAssignment.user_id,
+                PaperAssignment.paper_id,
+                PaperAssignment.department_id,
+                PaperAssignment.test_level_id,
+                func.cast(PaperAssignment.is_attempted, Integer).label("is_attempted")
+            )
+            .join(latest_assignment_id_subq, PaperAssignment.id == latest_assignment_id_subq.c.max_id)
+            .subquery()
+        )
+
+        # Get latest attempt for each user
         attempt_subq = (
             db_session.query(
                 InterviewRecord.user_id,
                 func.max(InterviewRecord.id).label("id")
             )
-            .filter(func.date(InterviewRecord.created_at) == target_date)
             .group_by(InterviewRecord.user_id)
             .subquery()
         )
