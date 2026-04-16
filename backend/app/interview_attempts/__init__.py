@@ -1,1 +1,1 @@
-from .models import InterviewAttempt, InterviewAttemptResponse  # noqa: F401
+from .models import InterviewRecord  # noqa: F401

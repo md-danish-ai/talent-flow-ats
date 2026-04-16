@@ -5,7 +5,7 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Badge } from "@components/ui-elements/Badge";
 import { Input } from "@components/ui-elements/Input";
-import { Select } from "@components/ui-elements/Select";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import {
   Table,
@@ -15,7 +15,7 @@ import {
   TableBody,
   TableCell,
 } from "@components/ui-elements/Table";
-import { papersApi, GradeSetting, PaperGradeSettingLog } from "@lib/api/papers";
+import { papersApi, GradeSetting } from "@lib/api/papers";
 import { toast } from "@lib/toast";
 import { Trash2, Edit2, Loader2 } from "lucide-react";
 
@@ -40,8 +40,6 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
   const [grades, setGrades] = useState<GradeSetting[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [logs, setLogs] = useState<PaperGradeSettingLog[]>([]);
-  const [showLogs, setShowLogs] = useState(false);
 
   // Form state
   const [formMin, setFormMin] = useState("");
@@ -60,9 +58,6 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
         } else {
           setGrades([]);
         }
-
-        const logsResponse = await papersApi.getGradeSettingLogs(paperId);
-        setLogs(logsResponse || []);
       } catch (error) {
         console.error("Failed to fetch paper grade settings:", error);
         toast.error("Failed to load settings");
@@ -194,17 +189,15 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
               >
                 Select Grade
               </Typography>
-              <Select
+              <SelectDropdown
+                placeholder="Please Select Grade"
                 value={formLabel}
-                onChange={(e) => setFormLabel(e.target.value)}
-              >
-                <option value="">Please Select Grade</option>
-                {GRADE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(value) => setFormLabel(String(value))}
+                options={GRADE_OPTIONS.map((opt) => ({
+                  id: opt.value,
+                  label: opt.label,
+                }))}
+              />
             </div>
           </div>
           <div className="mt-4 flex justify-end">
@@ -310,130 +303,8 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
           </Table>
         </div>
 
-        {/* Logs Area */}
-        {showLogs && (
-          <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-border/50">
-            <Typography variant="h6" className="mb-4">
-              Update Logs History
-            </Typography>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-              {logs.length === 0 ? (
-                <Typography
-                  variant="body4"
-                  className="text-muted-foreground italic text-center py-4"
-                >
-                  No logs available yet.
-                </Typography>
-              ) : (
-                logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="border-b border-border/50 pb-3 last:border-0 last:pb-0"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <Typography
-                        variant="body4"
-                        className="font-bold text-brand-primary"
-                      >
-                        Updated by: {log.updated_by_name}
-                      </Typography>
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground"
-                      >
-                        {log.updated_at
-                          ? new Date(log.updated_at).toLocaleString()
-                          : "N/A"}
-                      </Typography>
-                    </div>
-                    <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg text-sm w-full">
-                      <ul className="list-disc pl-5 space-y-1">
-                        {(() => {
-                          const oldSet = log.old_grade_settings || [];
-                          const newSet = log.new_grade_settings || [];
-                          const differences: React.ReactNode[] = [];
-
-                          oldSet.forEach((oldGrade) => {
-                            const newGrade = newSet.find(
-                              (g) => g.grade_label === oldGrade.grade_label,
-                            );
-                            if (!newGrade) {
-                              differences.push(
-                                <span
-                                  key={`del-${oldGrade.grade_label}`}
-                                  className="text-red-500"
-                                >
-                                  Deleted grade <b>{oldGrade.grade_label}</b>
-                                </span>,
-                              );
-                            } else if (
-                              oldGrade.min !== newGrade.min ||
-                              oldGrade.max !== newGrade.max
-                            ) {
-                              differences.push(
-                                <span
-                                  key={`upd-${oldGrade.grade_label}`}
-                                  className="text-blue-500"
-                                >
-                                  Updated grade <b>{oldGrade.grade_label}</b>{" "}
-                                  (Range changed from {oldGrade.min}-
-                                  {oldGrade.max}% to {newGrade.min}-
-                                  {newGrade.max}%)
-                                </span>,
-                              );
-                            }
-                          });
-
-                          newSet.forEach((newGrade) => {
-                            const oldGrade = oldSet.find(
-                              (g) => g.grade_label === newGrade.grade_label,
-                            );
-                            if (!oldGrade) {
-                              differences.push(
-                                <span
-                                  key={`add-${newGrade.grade_label}`}
-                                  className="text-green-500"
-                                >
-                                  Added grade <b>{newGrade.grade_label}</b>{" "}
-                                  (Range {newGrade.min}-{newGrade.max}%)
-                                </span>,
-                              );
-                            }
-                          });
-
-                          if (differences.length === 0) {
-                            differences.push(
-                              <span
-                                key="no-change"
-                                className="text-muted-foreground"
-                              >
-                                No specific changes detected.
-                              </span>,
-                            );
-                          }
-
-                          return differences.map((diff, i) => (
-                            <li key={i}>{diff}</li>
-                          ));
-                        })()}
-                      </ul>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Footer Area */}
-        <div className="flex justify-between w-full pt-4">
-          <Button
-            variant="ghost"
-            color="primary"
-            onClick={() => setShowLogs(!showLogs)}
-          >
-            {showLogs ? "Hide Logs" : "View Update Logs"}
-          </Button>
+        <div className="flex justify-end w-full pt-4">
           <div className="flex gap-3">
             <Button variant="outline" color="primary" onClick={onClose}>
               CLOSE

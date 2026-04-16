@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.classifications.models import Classification
 from app.paper_assignments.models import PaperAssignment
-from app.interview_attempts.models import InterviewAttempt
+from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
 
 
@@ -272,11 +272,11 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
 
         attempt_subq = (
             db_session.query(
-                InterviewAttempt.user_id,
-                func.max(InterviewAttempt.id).label("id")
+                InterviewRecord.user_id,
+                func.max(InterviewRecord.id).label("id")
             )
-            .filter(func.date(InterviewAttempt.created_at) == target_date)
-            .group_by(InterviewAttempt.user_id)
+            .filter(func.date(InterviewRecord.created_at) == target_date)
+            .group_by(InterviewRecord.user_id)
             .subquery()
         )
 

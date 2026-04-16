@@ -7,6 +7,7 @@ export interface AdminUserLatestAttempt {
   paper_name?: string;
   status: string;
   completion_reason?: "manual" | "time_over" | null;
+  started_at?: string | null;
   submitted_at?: string | null;
   total_questions: number;
   attempted_count: number;
@@ -19,12 +20,7 @@ export interface AdminUserLatestAttempt {
     errors: number;
     time_taken: number;
   } | null;
-  subject_results?: Array<{
-    section_name: string;
-    grade: string;
-    obtained: number;
-    max: number;
-  }>;
+  subject_results?: SubjectResult[];
 }
 
 export interface AdminUserResultListItem {
@@ -72,7 +68,8 @@ export interface AdminUserResultAnswer {
   } | null;
 }
 
-export interface SubjectWiseResult {
+export interface SubjectResult {
+  section_code: string;
   section_name: string;
   total_questions: number;
   attempted_count: number;
@@ -80,7 +77,7 @@ export interface SubjectWiseResult {
   correct_count: number;
   incorrect_count: number;
   obtained_marks: number;
-  max_marks: number;
+  total_marks: number;
   percentage: number;
   grade: string;
 }
@@ -105,7 +102,10 @@ export interface AdminUserResultDetail {
     attempted_count: number;
     unattempted_count: number;
     obtained_marks?: number | null;
+    total_marks: number;
+    overall_grade: string;
     is_auto_submitted: boolean;
+    subject_results?: SubjectResult[];
   };
   summary: {
     correct_count: number;
@@ -115,7 +115,7 @@ export interface AdminUserResultDetail {
     overall_percentage: number;
     overall_grade: string;
   };
-  subject_wise_result: SubjectWiseResult[];
+  subject_results: SubjectResult[];
   grade_settings: GradeSetting[];
   answers: AdminUserResultAnswer[];
 }
@@ -132,7 +132,10 @@ export interface AdminUserAttemptHistoryItem {
   attempted_count: number;
   unattempted_count: number;
   obtained_marks?: number | null;
+  total_marks?: number;
+  overall_grade?: string;
   is_auto_submitted: boolean;
+  subject_results?: SubjectResult[];
   typing_stats?: {
     wpm: number;
     accuracy: number;

@@ -34,6 +34,8 @@ import {
   FileEdit,
   RotateCcw,
   BookOpenCheck,
+  Phone,
+  Mail,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
@@ -238,7 +240,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                           <div className="flex flex-col justify-center gap-0.5">
                             <div className="flex items-center gap-1.5 text-xs text-foreground/70">
                               <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                📱
+                                <Phone size={12} />
                               </span>
                               <span className="font-bold text-slate-700 dark:text-slate-300">
                                 {row.mobile}
@@ -246,7 +248,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             </div>
                             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
                               <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                ✉️
+                                <Mail size={12} />
                               </span>
                               <span className="opacity-80">
                                 {row.email || "-"}
@@ -261,14 +263,16 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                               <Badge
                                 color="success"
                                 variant="outline"
+                                shape="square"
                                 className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center"
                               >
-                                ✓ Submitted
+                                Submitted
                               </Badge>
                             ) : row.assignment?.has_started ? (
                               <Badge
                                 color="warning"
                                 variant="outline"
+                                shape="square"
                                 className="text-orange-500 border-orange-500/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
                               >
                                 In Progress
@@ -276,6 +280,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             ) : (
                               <Badge
                                 variant="outline"
+                                shape="square"
                                 className="text-slate-500 border-slate-500/30 dark:text-slate-400 dark:border-slate-400/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
                               >
                                 Ready

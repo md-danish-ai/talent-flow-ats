@@ -344,12 +344,12 @@ export function AttemptDetailClient({
               return (
                 <div
                   key={i}
-                  className={`flex-1 min-w-[140px] flex items-center justify-between px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}
+                  className={`flex-1 min-w-max flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}
                 >
                   <span className="font-black text-xs uppercase tracking-widest">
                     {g.grade_label}
                   </span>
-                  <span className="font-bold text-xs tracking-wide opacity-90 ml-2 whitespace-nowrap">
+                  <span className="font-bold text-xs tracking-wide opacity-90 whitespace-nowrap">
                     {g.min}% - {g.max}%
                   </span>
                 </div>
@@ -417,7 +417,7 @@ export function AttemptDetailClient({
         </div>
 
         <div className="grid grid-cols-1 gap-5">
-          {data.subject_wise_result.map((subject, idx) => (
+          {data.subject_results.map((subject, idx) => (
             <motion.div
               key={subject.section_name}
               initial={{ opacity: 0, x: -20 }}

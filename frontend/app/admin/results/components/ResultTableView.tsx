@@ -13,7 +13,6 @@ import {
 } from "@components/ui-elements/Table";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
-import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { AdminUserResultListItem } from "@lib/api/results";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
@@ -93,9 +92,11 @@ export function ResultTableView({
         <TableBody>
           {items.map((item) => {
             const latest = item.latest_attempt;
+            const interviewDate = latest?.submitted_at || latest?.started_at;
+            const detailHref = `/admin/results/${item.user_id}`;
             return (
               <TableCollapsibleRow
-                key={item.user_id}
+                key={latest?.attempt_id ?? item.user_id}
                 colSpan={visibleColumns.length + 1}
                 expandedContent={
                   <CollapsibleResultDetail
@@ -146,15 +147,12 @@ export function ResultTableView({
                 )}
                 {visibleColumns.includes("date") && (
                   <TableCell className="text-muted-foreground">
-                    {latest?.submitted_at ? (
-                      new Date(latest.submitted_at).toLocaleDateString(
-                        "en-GB",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "2-digit",
-                        },
-                      )
+                    {interviewDate ? (
+                      new Date(interviewDate).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "2-digit",
+                      })
                     ) : (
                       <span className="text-muted-foreground/60 font-medium">
                         N/A
@@ -271,7 +269,7 @@ export function ResultTableView({
                 )}
                 {visibleColumns.includes("actions") && (
                   <TableCell className="text-right">
-                    <Link href={`/admin/results/${item.user_id}`}>
+                    <Link href={detailHref}>
                       <TableIconButton
                         iconColor="brand"
                         animate="scale"

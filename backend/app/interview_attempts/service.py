@@ -11,10 +11,7 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def save_answer(
         self,
@@ -26,7 +23,7 @@ class InterviewAttemptService:
     ):
         try:
             return repository.save_answer(
-                attempt_id=attempt_id,
+                record_id=attempt_id,
                 question_id=question_id,
                 user_id=user_id,
                 answer_text=answer_text,
@@ -35,15 +32,24 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
+
+    async def save_answers_batch(self, attempt_id: int, user_id: int, answers: list[dict]):
+        try:
+            return repository.save_answers_batch(
+                record_id=attempt_id,
+                user_id=user_id,
+                answers=answers,
             )
+        except HTTPException:
+            raise
+        except Exception as exception:
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def submit_attempt(self, attempt_id: int, user_id: int):
         try:
             return repository.finalize_attempt(
-                attempt_id=attempt_id,
+                record_id=attempt_id,
                 user_id=user_id,
                 status="submitted",
                 completion_reason="manual",
@@ -52,15 +58,12 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def auto_submit_attempt(self, attempt_id: int, user_id: int):
         try:
             return repository.finalize_attempt(
-                attempt_id=attempt_id,
+                record_id=attempt_id,
                 user_id=user_id,
                 status="auto_submitted",
                 completion_reason="time_over",
@@ -69,23 +72,15 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def get_summary(self, attempt_id: int, user_id: int):
         try:
-            return repository.get_attempt_summary(
-                attempt_id=attempt_id, user_id=user_id
-            )
+            return repository.get_attempt_summary(record_id=attempt_id, user_id=user_id)
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def get_admin_user_results(
         self,
@@ -106,26 +101,15 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
-    async def get_admin_user_result_detail(
-        self, user_id: int, attempt_id: int | None = None
-    ):
+    async def get_admin_user_result_detail(self, user_id: int, attempt_id: int | None = None):
         try:
-            return repository.get_admin_user_result_detail(
-                user_id=user_id,
-                attempt_id=attempt_id,
-            )
+            return repository.get_admin_user_result_detail(user_id=user_id, attempt_id=attempt_id)
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def get_admin_user_attempts(self, user_id: int):
         try:
@@ -133,10 +117,7 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def reset_user_today_attempt(self, user_id: int):
         try:
@@ -144,10 +125,7 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def reset_user_details(self, user_id: int):
         try:
@@ -155,10 +133,7 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def reset_user_for_reinterview(self, user_id: int):
         try:
@@ -166,60 +141,45 @@ class InterviewAttemptService:
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
-    async def assign_manual_marks(
-        self, user_id: int, attempt_id: int, question_id: int, marks: float
-    ):
+    async def assign_manual_marks(self, user_id: int, attempt_id: int, question_id: int, marks: float):
         try:
             return repository.assign_manual_marks(
                 user_id=user_id,
-                attempt_id=attempt_id,
+                record_id=attempt_id,
                 question_id=question_id,
                 marks=marks,
             )
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
-    async def reset_user_subjects(
-        self, user_id: int, attempt_id: int, section_names: list[str]
-    ):
+    async def reset_user_subjects(self, user_id: int, attempt_id: int, section_names: list[str]):
         try:
             return repository.reset_subject_responses(
-                user_id=user_id, attempt_id=attempt_id, section_names=section_names
+                user_id=user_id,
+                record_id=attempt_id,
+                section_names=section_names,
             )
         except HTTPException:
             raise
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def skip_section(self, attempt_id: int, user_id: int, section_name: str):
         try:
             return repository.mark_subject_section_as_skipped(
-                user_id=user_id, attempt_id=attempt_id, section_name=section_name
+                user_id=user_id,
+                record_id=attempt_id,
+                section_name=section_name,
             )
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))
 
     async def get_active_attempt_status(self, user_id: int):
         try:
             return repository.get_active_attempt_status(user_id=user_id)
         except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR,
-                detail=str(exception),
-            )
+            raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception))

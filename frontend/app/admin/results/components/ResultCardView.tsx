@@ -21,10 +21,11 @@ export function ResultCardView({ items }: ResultCardViewProps) {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {items.map((item) => {
           const latest = item.latest_attempt;
+          const detailHref = `/admin/results/${item.user_id}`;
 
           return (
             <ResultCard
-              key={item.user_id}
+              key={latest?.attempt_id ?? item.user_id}
               title={item.username || "Anonymous Candidate"}
               avatarContent={item.username?.[0]?.toUpperCase() || "A"}
               identityIcon={User2}
@@ -64,7 +65,7 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                   color: "text-rose-500",
                 },
               ]}
-              actionHref={`/admin/results/${item.user_id}`}
+              actionHref={detailHref}
               actionLabel="View Result"
               actionIcon={ArrowRight}
             />

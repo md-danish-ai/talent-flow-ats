@@ -152,7 +152,7 @@ export function PaperSetupClient() {
           togglingId={togglingId}
           onToggleStatus={handleToggleStatus}
           onEdit={(paper) => handleEditClick(paper.id!)}
-          onDelete={handleDelete}
+          // onDelete={handleDelete}
           onViewDetails={handleViewDetails}
           visibleColumns={visibleColumns}
         />

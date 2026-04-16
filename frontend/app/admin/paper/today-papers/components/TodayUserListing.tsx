@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { ClipboardCheck, Users } from "lucide-react";
+import { ClipboardCheck, Users, Phone, Mail } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -183,7 +183,7 @@ export function TodayUserListing({
                         <div className="flex flex-col justify-center gap-0.5">
                           <div className="flex items-center gap-1.5 text-xs text-foreground/70">
                             <span className="opacity-70 group-hover:scale-110 transition-transform">
-                              📱
+                              <Phone size={12} />
                             </span>
                             <span className="font-bold text-slate-700 dark:text-slate-300">
                               {row.mobile}
@@ -191,7 +191,7 @@ export function TodayUserListing({
                           </div>
                           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
                             <span className="opacity-70 group-hover:scale-110 transition-transform">
-                              ✉️
+                              <Mail size={12} />
                             </span>
                             <span className="opacity-80 truncate max-w-[150px]">
                               {row.email || "-"}

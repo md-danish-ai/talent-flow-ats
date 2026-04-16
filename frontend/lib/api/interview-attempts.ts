@@ -1,4 +1,3 @@
-import { api } from "./index";
 import { apiClient, type ApiRequestOptions } from "./client";
 
 export interface AttemptSavedResponse {
@@ -49,6 +48,23 @@ export interface AttemptSummaryResponse {
   is_auto_submitted: boolean;
 }
 
+export interface ActiveStatusResponse {
+  has_attempt: boolean;
+  status: string | null;
+  is_expired: boolean;
+  attempt_id?: number | null;
+}
+
+// Local helper to avoid circularity with index.ts
+const api = {
+  get: <T>(url: string, options?: ApiRequestOptions) =>
+    apiClient<T>(url, { ...options, method: "GET" }),
+  post: <T>(url: string, body?: unknown, options?: ApiRequestOptions) =>
+    apiClient<T>(url, { ...options, method: "POST", body }),
+  put: <T>(url: string, body?: unknown, options?: ApiRequestOptions) =>
+    apiClient<T>(url, { ...options, method: "PUT", body }),
+};
+
 export const interviewAttemptsApi = {
   startAttempt: (paperId: number) =>
     api.post<StartAttemptResponse>("/user/interview-attempts/start", {
@@ -90,16 +106,29 @@ export const interviewAttemptsApi = {
     sectionName: string,
     options?: ApiRequestOptions,
   ) =>
-    apiClient(
+    api.post(
       `/user/interview-attempts/${attemptId}/sections/${sectionName}/skip`,
-      { ...options, method: "POST" },
+      undefined,
+      options,
     ),
 
   getActiveStatus: (options?: ApiRequestOptions) =>
-    apiClient<{
-      has_attempt: boolean;
-      status: string | null;
-      is_expired: boolean;
-      attempt_id?: number | null;
-    }>("/user/interview-attempts/active-status", { ...options, method: "GET" }),
+    api.get<ActiveStatusResponse>("/user/interview-attempts/active-status", options),
+
+  saveAnswersBatch: (
+    attemptId: number,
+    payload: {
+      answers: {
+        question_id: number;
+        answer_text?: string | null;
+        is_auto_saved?: boolean;
+      }[];
+    },
+    options?: ApiRequestOptions,
+  ) =>
+    api.post<{ attempt_id: number; count: number; saved_at: string }>(
+      `/user/interview-attempts/${attemptId}/answers/batch`,
+      payload,
+      options,
+    ),
 };
