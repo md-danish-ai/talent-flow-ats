@@ -131,7 +131,8 @@ export function UpdateAccountInfoForm({
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 error={
-                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
                 }
               />
               {field.state.meta.isTouched &&
@@ -161,7 +162,8 @@ export function UpdateAccountInfoForm({
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 error={
-                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
                 }
               />
               {field.state.meta.isTouched &&
@@ -191,7 +193,8 @@ export function UpdateAccountInfoForm({
                 value={field.state.value || ""}
                 onChange={(e) => field.handleChange(e.target.value)}
                 error={
-                  field.state.meta.isTouched && field.state.meta.errors.length > 0
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0
                 }
               />
               {field.state.meta.isTouched &&

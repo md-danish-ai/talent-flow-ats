@@ -6,10 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Input } from "@components/ui-elements/Input";
-import {
-  signUpSchema,
-  type SignUpFormValues,
-} from "@lib/validations/auth";
+import { signUpSchema, type SignUpFormValues } from "@lib/validations/auth";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { useSignUp } from "@lib/react-query/user/use-auth";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
@@ -80,7 +77,6 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       }
     },
   });
-
 
   return (
     <div className="w-full">

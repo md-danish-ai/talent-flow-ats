@@ -11,8 +11,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.database.db import Base
-from app.classifications.models import Classification
-from app.departments.models import Department
 
 
 class User(Base):

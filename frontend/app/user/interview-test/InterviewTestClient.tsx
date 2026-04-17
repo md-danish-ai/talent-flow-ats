@@ -303,8 +303,11 @@ export function InterviewTestClient() {
       // Send batch answers for this subject before locking/submitting
       if (attemptId && currentSection) {
         try {
-          await persistSubjectAnswers(currentSection, notice?.includes("time") ?? false);
-          
+          await persistSubjectAnswers(
+            currentSection,
+            notice?.includes("time") ?? false,
+          );
+
           // Only skip if there's actually a next move (not finishing)
           if (nextUnlockedIndex !== -1) {
             await interviewAttemptsApi.skipSection(

@@ -210,13 +210,15 @@ export function ResetSubjectsModal({
                   variant="body5"
                   className="font-black uppercase tracking-widest text-[10px] text-muted-foreground"
                 >
-                  Paper Curriculum ({(data.subject_results ?? []).length} Sections)
+                  Paper Curriculum ({(data.subject_results ?? []).length}{" "}
+                  Sections)
                 </Typography>
                 <button
                   onClick={handleSelectAll}
                   className="text-[10px] font-black uppercase tracking-widest text-brand-primary hover:underline transition-all"
                 >
-                  {selectedSubjects.length === (data.subject_results ?? []).length
+                  {selectedSubjects.length ===
+                  (data.subject_results ?? []).length
                     ? "Deselect All"
                     : "Select All"}
                 </button>

@@ -341,7 +341,11 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                           )}
                         </TableCell>
                         <TableCell className="align-middle py-3 text-center">
-                          <Badge variant="outline" shape="square" color="default">
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color="default"
+                          >
                             {row.assignment?.test_level_name ||
                               row.test_level_name ||
                               "N/A"}

@@ -5,9 +5,6 @@ from app.auth.utils import hash_password, verify_password, generate_jwt
 from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
 from app.users.models import User
-from sqlalchemy.orm import Session
-
-from app.classifications.models import Classification
 from app.paper_assignments.models import PaperAssignment
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
@@ -228,7 +225,7 @@ def get_user_by_id(user_id):
 def get_users_by_role(role: str, date: str = None, date_from: str = None, date_to: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func, or_, Integer
+        from sqlalchemy import func, or_
 
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()

@@ -35,7 +35,11 @@ export function useSignIn() {
 // ─── Update Basic Info Mutation ──────────────────────────────────────────
 
 export function useUpdateBasicInfo(userId: number | string) {
-  return useMutation<{ message: string; user_id: number }, ApiError, SignUpFormValues>({
+  return useMutation<
+    { message: string; user_id: number },
+    ApiError,
+    SignUpFormValues
+  >({
     mutationFn: (data) => updateBasicInfo(userId, data),
     mutationKey: ["auth", "update-basic", userId],
   });
