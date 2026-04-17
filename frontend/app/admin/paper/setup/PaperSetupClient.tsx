@@ -11,6 +11,14 @@ import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
 import { papersApi, PaperSetup } from "@lib/api/papers";
 import { TableColumnToggle } from "@components/ui-elements/Table";
+import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { Typography } from "@components/ui-elements/Typography";
+import { Filter, RotateCcw, Search } from "lucide-react";
+import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { Input } from "@components/ui-elements/Input";
+import { cn } from "@lib/utils";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -30,6 +38,29 @@ export function PaperSetupClient() {
     "active",
     "actions",
   ]);
+
+  const [deptFilter, setDeptFilter] = useState<string>("all");
+  const [levelFilter, setLevelFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Fetch all departments and levels for filters
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
+  const deptOptions = [
+    { id: "all", label: "All Departments" },
+    ...allDepartments.map((d) => ({ id: String(d.id), label: d.name })),
+  ];
+
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
+  ];
 
   const columns = [
     { id: "sr_no", label: "Sr. No.", pinned: true },
@@ -55,6 +86,9 @@ export function PaperSetupClient() {
       const response = await papersApi.getPapers({
         page: currentPage,
         limit: pageSize,
+        search: searchQuery || undefined,
+        department_id: deptFilter === "all" ? undefined : deptFilter,
+        test_level_id: levelFilter === "all" ? undefined : levelFilter,
       });
       setPapers(response.data);
       setTotalItems(response.pagination.total_records);
@@ -63,11 +97,11 @@ export function PaperSetupClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, deptFilter, levelFilter, searchQuery]);
 
   useEffect(() => {
     fetchPapers();
-  }, [fetchPapers]);
+  }, [fetchPapers, deptFilter, levelFilter, searchQuery]);
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
@@ -123,6 +157,15 @@ export function PaperSetupClient() {
               onToggle={handleToggleColumn}
             />
             <Button
+              variant="action"
+              size="rounded-icon"
+              isActive={isFilterOpen}
+              animate="scale"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              <Filter size={18} />
+            </Button>
+            <Button
               variant="primary"
               color="primary"
               size="md"
@@ -139,23 +182,123 @@ export function PaperSetupClient() {
           </div>
         }
         className="mt-6 flex flex-col"
-        bodyClassName="p-0 flex-1 overflow-hidden"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
       >
-        <PaperSetupTable
-          data={papers}
-          totalItems={totalItems}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
-          isLoading={isLoading}
-          togglingId={togglingId}
-          onToggleStatus={handleToggleStatus}
-          onEdit={(paper) => handleEditClick(paper.id!)}
-          // onDelete={handleDelete}
-          onViewDetails={handleViewDetails}
-          visibleColumns={visibleColumns}
-        />
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
+          <PaperSetupTable
+            data={papers}
+            totalItems={totalItems}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            isLoading={isLoading}
+            togglingId={togglingId}
+            onToggleStatus={handleToggleStatus}
+            onEdit={(paper) => handleEditClick(paper.id!)}
+            // onDelete={handleDelete}
+            onViewDetails={handleViewDetails}
+            visibleColumns={visibleColumns}
+          />
+        </div>
+
+        <InlineDrawer
+          title="Filters"
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+        >
+          <div className="p-6 flex flex-col gap-8">
+            {/* Search */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                Quick Search
+              </Typography>
+              <div className="relative group">
+                <Search
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
+                  size={18}
+                />
+                <Input
+                  placeholder="Paper name..."
+                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Department Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                By Department
+              </Typography>
+              <SelectDropdown
+                options={deptOptions}
+                value={deptFilter}
+                onChange={(val) => {
+                  setDeptFilter(String(val));
+                  setCurrentPage(1);
+                }}
+                placeholder="Select Department"
+                isLoading={allDepartments.length === 0}
+              />
+            </div>
+
+            {/* Exam Level Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                By Exam Level
+              </Typography>
+              <SelectDropdown
+                options={levelOptions}
+                value={levelFilter}
+                onChange={(val) => {
+                  setLevelFilter(String(val));
+                  setCurrentPage(1);
+                }}
+                placeholder="Select Level"
+                isLoading={classificationQuery.isLoading}
+              />
+            </div>
+
+            <Button
+              variant="outline"
+              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
+              onClick={() => {
+                setSearchQuery("");
+                setDeptFilter("all");
+                setLevelFilter("all");
+                setCurrentPage(1);
+              }}
+            >
+              <RotateCcw size={14} />
+              Reset All
+            </Button>
+          </div>
+        </InlineDrawer>
       </MainCard>
     </PageContainer>
   );

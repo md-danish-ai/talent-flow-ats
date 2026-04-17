@@ -9,11 +9,11 @@ import { Input } from "@components/ui-elements/Input";
 import {
   signUpSchema,
   type SignUpFormValues,
-  TEST_LEVELS,
 } from "@lib/validations/auth";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { useSignUp } from "@lib/react-query/user/use-auth";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -29,6 +29,16 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     is_active: true,
   });
 
+  const { data: classificationRes, isLoading: isLoadingLevels } =
+    useClassifications({
+      type: "exam_level",
+      is_active: true,
+    });
+  const levels = (classificationRes?.data || []).map((c) => ({
+    id: String(c.id),
+    label: c.name,
+  }));
+
   const deptOptions = (departments || []).map((d) => ({
     id: String(d.id),
     label: d.name,
@@ -41,7 +51,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       name: "",
       mobile: "",
       email: "",
-      testLevel: "FRESHER",
+      test_level_id: "",
       department_id: "",
       role: "user",
     } as SignUpFormValues,
@@ -71,12 +81,6 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     },
   });
 
-  const levelLabels: Record<(typeof TEST_LEVELS)[number], string> = {
-    FRESHER: "Fresher",
-    QA: "Quality Analyst",
-    TEAMLEAD: "Team Lead",
-  };
-  const levels = TEST_LEVELS.map((id) => ({ id, label: levelLabels[id] }));
 
   return (
     <div className="w-full">
@@ -209,7 +213,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </form.Field>
 
-        <form.Field name="testLevel">
+        <form.Field name="test_level_id">
           {(field) => (
             <div className="group">
               <Typography
@@ -222,13 +226,21 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
               <SelectDropdown
                 options={levels}
                 value={field.state.value}
-                onChange={(val) =>
-                  field.handleChange(
-                    val as (typeof TEST_LEVELS)[number],
-                  )
-                }
+                onChange={(val) => field.handleChange(String(val))}
+                placeholder="Choose Level"
+                isLoading={isLoadingLevels}
+                disabled={isLoadingLevels}
                 placement="top"
               />
+              {field.state.meta.isTouched &&
+                field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="mt-1 font-medium text-red-500"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
+                )}
             </div>
           )}
         </form.Field>
@@ -248,11 +260,8 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                   options={deptOptions}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(String(val))}
-                  placeholder={
-                    isLoadingDepts
-                      ? "Loading Departments..."
-                      : "Choose Department"
-                  }
+                  placeholder="Choose Department"
+                  isLoading={isLoadingDepts}
                   disabled={isLoadingDepts}
                   placement="top"
                 />

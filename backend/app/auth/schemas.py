@@ -7,11 +7,6 @@ import re
 # ─── Shared Enums (single source of truth for both backend & frontend) ────
 
 
-class TestLevelEnum(str, Enum):
-    FRESHER = "FRESHER"
-    QA = "QA"
-    TEAMLEAD = "TEAMLEAD"
-
 
 class RoleEnum(str, Enum):
     user = "user"
@@ -24,7 +19,7 @@ class RoleEnum(str, Enum):
 class SignUpSchema(BaseModel):
     name: str
     mobile: str
-    testLevel: TestLevelEnum
+    test_level_id: int
     department_id: int
     email: Optional[EmailStr] = None
 
@@ -45,7 +40,7 @@ class UpdateUserSchema(BaseModel):
     name: Optional[str] = None
     mobile: Optional[str] = None
     email: Optional[EmailStr] = None
-    testLevel: Optional[TestLevelEnum] = None
+    test_level_id: Optional[int] = None
     department_id: Optional[int] = None
 
     @validator("email", "department_id", pre=True)

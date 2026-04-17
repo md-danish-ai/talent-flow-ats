@@ -74,7 +74,8 @@ export interface UserDetails {
   username?: string;
   mobile?: string;
   email?: string;
-  testlevel?: string;
+  test_level_id?: number | string;
+  test_level_name?: string;
   department_id?: number | string;
   personalDetails: PersonalDetails;
   familyDetails: FamilyDetail[];

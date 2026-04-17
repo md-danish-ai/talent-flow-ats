@@ -73,7 +73,7 @@ export function UserDetailView({
               </div>
             </div>
           </div>
-          <Link href={`/admin/user-management/update-details/${userId}`}>
+          <Link href={`/admin/management/users/update-details/${userId}`}>
             <Button
               variant="primary"
               animate="scale"

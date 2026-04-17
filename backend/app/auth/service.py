@@ -13,22 +13,6 @@ from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
 
 
-def _get_level_mapping(db: Session) -> dict[str, int]:
-    """Helper to get a dictionary of classification name/code mapping to IDs."""
-    classifications = (
-        db.query(Classification)
-        .filter(Classification.type == "exam_level", Classification.is_active)
-        .all()
-    )
-    mapping = {}
-    for c in classifications:
-        mapping[c.code] = c.id
-        mapping[c.name] = c.id
-        # Also handle uppercase variations for robustness
-        mapping[c.code.upper()] = c.id
-        mapping[c.name.upper()] = c.id
-    return mapping
-
 
 def signup_user(data):
     db_session = SessionLocal()
@@ -49,7 +33,7 @@ def signup_user(data):
             mobile=data.mobile,
             email=data.email,
             password=hashed_password,
-            testlevel=data.testLevel.value,
+            test_level_id=data.test_level_id,
             department_id=data.department_id,
             role="user",
             is_active=True,
@@ -195,17 +179,16 @@ def get_user_by_id(user_id):
         if not user_obj:
             return None
 
-        level_mapping = _get_level_mapping(db_session)
         user = {
             "id": user_obj.id,
             "username": user_obj.username,
             "mobile": user_obj.mobile,
             "email": user_obj.email,
             "role": user_obj.role,
-            "testlevel": user_obj.testlevel,
-            "testlevel_id": level_mapping.get(user_obj.testlevel),
-            "test_level_id": level_mapping.get(user_obj.testlevel),
+            "test_level_id": user_obj.test_level_id,
+            "test_level_name": user_obj.test_level.name if user_obj.test_level else None,
             "department_id": user_obj.department_id,
+            "department_name": user_obj.department.name if user_obj.department else None,
             "created_at": user_obj.created_at,
         }
 
@@ -345,7 +328,6 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
 
         results = results.order_by(User.id.desc()).all()
 
-        level_mapping = _get_level_mapping(db_session)
         return [
             {
                 "id": row.User.id,
@@ -353,11 +335,10 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                 "mobile": row.User.mobile,
                 "email": row.User.email,
                 "role": row.User.role,
-                "testlevel": row.User.testlevel,
-                "testlevel_id": level_mapping.get(row.User.testlevel),
-                "test_level_id": level_mapping.get(row.User.testlevel),
+                "test_level_id": row.User.test_level_id,
+                "test_level_name": row.User.test_level.name if row.User.test_level else None,
                 "department_id": row.User.department_id,
-                "department_name": row.user_dept_name,
+                "department_name": row.User.department.name if row.User.department else None,
                 "is_active": row.User.is_active,
                 "is_details_submitted": row.is_submitted if row.is_submitted is not None else False,
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
@@ -461,8 +442,8 @@ def update_user_basic_info(user_id: int, data):
                 user.mobile = data.mobile
         if data.email is not None:
             user.email = data.email
-        if data.testLevel is not None:
-            user.testlevel = data.testLevel.value
+        if data.test_level_id is not None:
+            user.test_level_id = data.test_level_id
         if data.department_id is not None:
             user.department_id = data.department_id
 

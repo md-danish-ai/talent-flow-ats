@@ -4,7 +4,7 @@
 Revision ID: 805da4a656f5
 Revises: 10c5585e78a2
 Create Date: 2026-04-16 12:49:41.564945
-Created By: unknown
+Created By: md-danish-ai
 
 """
 from typing import Sequence, Union
@@ -22,8 +22,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.add_column('users', sa.Column('department_id', sa.Integer(), nullable=True))
-    op.create_foreign_key('fk_users_department', 'users', 'departments', ['department_id'], ['id'])
+    op.add_column('users', sa.Column(
+        'department_id', sa.Integer(), nullable=True))
+    op.create_foreign_key('fk_users_department', 'users',
+                          'departments', ['department_id'], ['id'])
 
 
 def downgrade() -> None:

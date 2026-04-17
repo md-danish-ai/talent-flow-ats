@@ -13,6 +13,7 @@ def get_papers(
     limit: int = 100,
     department_id: Optional[int] = None,
     test_level_id: Optional[int] = None,
+    search: Optional[str] = None,
 ) -> tuple[List[Paper], int]:
     query = (
         db.query(
@@ -29,6 +30,8 @@ def get_papers(
         query = query.filter(Paper.department_id == department_id)
     if test_level_id:
         query = query.filter(Paper.test_level_id == test_level_id)
+    if search:
+        query = query.filter(Paper.paper_name.ilike(f"%{search}%"))
 
     total_records = query.count()
     results = query.offset(skip).limit(limit).all()

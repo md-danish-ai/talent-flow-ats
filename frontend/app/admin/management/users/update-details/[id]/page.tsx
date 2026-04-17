@@ -3,7 +3,6 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { getUserDetailsById } from "@lib/api/user-details";
 import { cookies } from "next/headers";
 import { UserForm } from "@features/user-details/UserForm";
-import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -38,17 +37,6 @@ export default async function UpdateUserDetailsPage({
           </Button>
         </Link>
       </div>
-
-      <UpdateAccountInfoForm
-        userId={id}
-        initialData={{
-          username: details?.username,
-          mobile: details?.mobile,
-          email: details?.email,
-          testlevel: details?.testlevel,
-          department_id: details?.department_id,
-        }}
-      />
 
       {details && details.personalDetails ? (
         <UserForm initialData={details} userId={id} isAdmin={true} />

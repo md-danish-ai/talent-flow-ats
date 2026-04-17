@@ -84,9 +84,8 @@ export interface UserListResponse {
   role: string;
   department_id?: number | null;
   department_name?: string | null;
-  testlevel?: string;
-  testlevel_id?: number | string;
-  test_level_id?: number | string;
+  test_level_id?: number | null;
+  test_level_name?: string | null;
   is_active: boolean;
   is_reinterview?: boolean;
   reinterview_date?: string | null;

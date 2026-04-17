@@ -34,9 +34,9 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   onSuccess,
   user,
 }) => {
-  const userLevel = user.testlevel;
+  const userLevel = user.test_level_name || user.assignment?.test_level_name;
   const testLevelId =
-    user.test_level_id?.toString() || user.testlevel_id?.toString();
+    user.test_level_id?.toString() || user.assignment?.test_level_id?.toString();
 
   const [papers, setPapers] = useState<PaperSetup[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);

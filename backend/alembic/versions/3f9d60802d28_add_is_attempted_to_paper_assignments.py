@@ -4,7 +4,7 @@
 Revision ID: 3f9d60802d28
 Revises: 21aac8226726
 Create Date: 2026-03-20 12:31:45.523921
-Created By: unknown
+Created By: md-danish-ai
 
 """
 from typing import Sequence, Union
@@ -22,7 +22,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.add_column("paper_assignments", sa.Column("is_attempted", sa.Boolean(), server_default=sa.text("false"), nullable=False))
+    op.add_column("paper_assignments", sa.Column(
+        "is_attempted", sa.Boolean(), server_default=sa.text("false"), nullable=False))
 
 
 def downgrade() -> None:

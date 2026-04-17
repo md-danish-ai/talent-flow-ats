@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
 from app.papers import repository, schemas
@@ -27,8 +27,8 @@ def get_db():
 @router.get("/get")
 def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
-    department_id: int = None,
-    test_level_id: int = None,
+    department_id: Optional[int] = Query(None),
+    test_level_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
     offset = (pagination.page - 1) * pagination.limit
@@ -37,7 +37,8 @@ def read_papers(
         skip=offset, 
         limit=pagination.limit,
         department_id=department_id,
-        test_level_id=test_level_id
+        test_level_id=test_level_id,
+        search=pagination.search
     )
 
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization

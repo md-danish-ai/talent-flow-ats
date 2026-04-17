@@ -27,6 +27,7 @@ import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import {
   RefreshCw,
   Search,
@@ -84,6 +85,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,11 +110,27 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
     const departmentMatch =
       departmentFilter === "all" || deptName === departmentFilter;
 
-    return searchMatch && statusMatch && departmentMatch;
+    const userLevel = user.test_level_name || user.assignment?.test_level_name;
+    const levelMatch = levelFilter === "all" || userLevel === levelFilter;
+
+    return searchMatch && statusMatch && departmentMatch && levelMatch;
   });
 
-  // Fetch all departments from API
+  // Fetch all departments and levels from API
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((lvl) => ({
+      id: lvl.name,
+      label: lvl.name,
+    })),
+  ];
 
   const departmentOptions = [
     { id: "all", label: "All Departments" },
@@ -325,7 +343,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                         <TableCell className="align-middle py-3 text-center">
                           <Badge variant="outline" shape="square" color="default">
                             {row.assignment?.test_level_name ||
-                              row.testlevel ||
+                              row.test_level_name ||
                               "N/A"}
                           </Badge>
                         </TableCell>
@@ -517,6 +535,26 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 value={departmentFilter}
                 onChange={(val) => setDepartmentFilter(val as string)}
                 placeholder="Select Department"
+                isLoading={allDepartments.length === 0}
+              />
+            </div>
+
+            {/* Exam Level Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                Exam Level
+              </Typography>
+              <SelectDropdown
+                options={levelOptions}
+                value={levelFilter}
+                onChange={(val) => setLevelFilter(val as string)}
+                placeholder="Select Level"
+                isLoading={classificationQuery.isLoading}
               />
             </div>
 
@@ -552,6 +590,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 setSearchQuery("");
                 setStatusFilter("all");
                 setDepartmentFilter("all");
+                setLevelFilter("all");
               }}
             >
               <RotateCcw size={14} />

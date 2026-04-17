@@ -29,6 +29,7 @@ import { cn } from "@lib/utils";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import { Badge } from "@components/ui-elements/Badge";
 import { useRouter } from "next/navigation";
 import { Tooltip } from "@components/ui-elements/Tooltip";
@@ -95,13 +96,27 @@ export function TodayUserListing({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const router = useRouter();
 
-  // Fetch all departments from API
+  // Fetch all departments and levels from API
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((lvl) => ({
+      id: lvl.name,
+      label: lvl.name,
+    })),
+  ];
 
   const departmentOptions = [
     { id: "all", label: "All Departments" },
@@ -131,6 +146,9 @@ export function TodayUserListing({
     const departmentMatch =
       departmentFilter === "all" || deptName === departmentFilter;
 
+    const userLevel = user.test_level_name || user.assignment?.test_level_name;
+    const levelMatch = levelFilter === "all" || userLevel === levelFilter;
+
     const statusMatch =
       statusFilter === "all" ||
       (statusFilter === "completed" && user.assignment?.is_attempted) ||
@@ -139,7 +157,7 @@ export function TodayUserListing({
         !user.assignment?.is_attempted) ||
       (statusFilter === "pending" && !user.assignment?.paper_id);
 
-    return searchMatch && departmentMatch && statusMatch;
+    return searchMatch && departmentMatch && levelMatch && statusMatch;
   });
 
   const totalItems = filteredUsers.length;
@@ -312,7 +330,7 @@ export function TodayUserListing({
                             color="default"
                           >
                             {row.assignment?.test_level_name ||
-                              row.testlevel ||
+                              row.test_level_name ||
                               "N/A"}
                           </Badge>
                         </TableCell>
@@ -494,6 +512,26 @@ export function TodayUserListing({
                 value={departmentFilter}
                 onChange={(val) => setDepartmentFilter(val as string)}
                 placeholder="Select Department"
+                isLoading={allDepartments.length === 0}
+              />
+            </div>
+
+            {/* Exam Level Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                Exam Level
+              </Typography>
+              <SelectDropdown
+                options={levelOptions}
+                value={levelFilter}
+                onChange={(val) => setLevelFilter(val as string)}
+                placeholder="Select Level"
+                isLoading={classificationQuery.isLoading}
               />
             </div>
 
@@ -504,6 +542,7 @@ export function TodayUserListing({
               onClick={() => {
                 setSearchQuery("");
                 setDepartmentFilter("all");
+                setLevelFilter("all");
                 setStatusFilter("all");
               }}
             >
