@@ -44,6 +44,18 @@ def upgrade() -> None:
         sa.UniqueConstraint("name"),
     )
     op.create_index(op.f("ix_departments_id"), "departments", ["id"], unique=False)
+    
+    # Initial seeding of departments
+    # Use a dummy table object for bulk_insert
+    departments_table = sa.sql.table('departments',
+        sa.sql.column('name', sa.String),
+        sa.sql.column('is_active', sa.Boolean)
+    )
+    op.bulk_insert(departments_table, [
+        {"name": "BPO", "is_active": True},
+        {"name": "KPO", "is_active": True},
+        {"name": "QA", "is_active": True},
+    ])
     # ### end Alembic commands ###
 
 
