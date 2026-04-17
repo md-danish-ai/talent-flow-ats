@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -96,27 +98,66 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState(initialLabel);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const [coords, setCoords] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  });
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height,
+      });
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (!mounted) setMounted(true);
+    if (!isOpen) {
+      updateCoords();
+    }
+    setIsOpen(!isOpen);
+  };
 
   // For custom selection
   const [rangeFrom, setRangeFrom] = useState<Date | null>(null);
   const [rangeTo, setRangeTo] = useState<Date | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("scroll", updateCoords, true);
+      window.addEventListener("resize", updateCoords);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [isOpen]);
 
   const handlePresetSelect = (preset: (typeof PRESETS)[0]) => {
     const range = preset.getValue();
@@ -245,69 +286,100 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     );
   };
 
+  const menuNode = (
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: coords.top + coords.height + 8,
+            left: Math.max(16, coords.left + coords.width - 460), // Align to right of trigger but don't go off left
+            width: 460,
+            zIndex: 99999,
+          }}
+          ref={dropdownRef}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="bg-card border border-border shadow-2xl rounded-2xl overflow-hidden flex origin-top-right"
+          >
+            {/* Presets Sidebar */}
+            <div className="w-[180px] bg-muted/30 border-r border-border/50 p-4 space-y-1">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="px-2 mb-3 uppercase tracking-widest text-[9px] text-muted-foreground/60"
+              >
+                Suggestions
+              </Typography>
+              {PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() => handlePresetSelect(preset)}
+                  className={cn(
+                    "w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between group",
+                    selectedLabel === preset.label
+                      ? "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/10"
+                      : "hover:bg-muted hover:text-foreground text-foreground/70",
+                  )}
+                >
+                  <span>{preset.label}</span>
+                  {selectedLabel === preset.label && <Check size={12} />}
+                </button>
+              ))}
+
+              <div className="pt-4 mt-4 border-t border-border/50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-[10px] h-8 text-muted-foreground/70"
+                  onClick={() => {
+                    setSelectedLabel("All Time");
+                    setRangeFrom(null);
+                    setRangeTo(null);
+                    onRangeChange(null, "All Time");
+                    setIsOpen(false);
+                  }}
+                >
+                  <X size={12} className="mr-2" />
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+
+            {/* Calendar Area */}
+            <div className="bg-card">{renderCalendar()}</div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div className={cn("relative", className)}>
       <Button
+        ref={triggerRef}
         variant="outline"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-background/50 hover:bg-muted/50 border-border/50 rounded-xl transition-all h-10 min-w-[140px] justify-between"
+        onClick={toggleDropdown}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-border rounded-md transition-all h-12 w-full justify-between focus:ring-1 focus:ring-brand-primary focus:border-brand-primary",
+          isOpen && "ring-1 ring-brand-primary border-brand-primary",
+        )}
       >
-        <div className="flex items-center gap-2">
-          <CalendarIcon size={16} className="text-brand-primary" />
-          <span className="text-sm font-medium">{selectedLabel}</span>
+        <div className="flex items-center gap-3">
+          <CalendarIcon size={18} className="text-brand-primary/80" />
+          <span className="text-sm font-semibold text-foreground/90">
+            {selectedLabel}
+          </span>
         </div>
       </Button>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-3 z-50 bg-card border border-border shadow-2xl rounded-3xl overflow-hidden flex animate-in fade-in zoom-in duration-200 origin-top-right">
-          {/* Presets Sidebar */}
-          <div className="w-[180px] bg-muted/30 border-r border-border/50 p-4 space-y-1">
-            <Typography
-              variant="body5"
-              weight="bold"
-              className="px-2 mb-3 uppercase tracking-widest text-[9px] text-muted-foreground/60"
-            >
-              Suggestions
-            </Typography>
-            {PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                onClick={() => handlePresetSelect(preset)}
-                className={cn(
-                  "w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between group",
-                  selectedLabel === preset.label
-                    ? "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/10"
-                    : "hover:bg-muted hover:text-foreground text-foreground/70",
-                )}
-              >
-                <span>{preset.label}</span>
-                {selectedLabel === preset.label && <Check size={12} />}
-              </button>
-            ))}
-
-            <div className="pt-4 mt-4 border-t border-border/50">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-[10px] h-8 text-muted-foreground/70"
-                onClick={() => {
-                  setSelectedLabel("All Time");
-                  setRangeFrom(null);
-                  setRangeTo(null);
-                  onRangeChange(null, "All Time");
-                  setIsOpen(false);
-                }}
-              >
-                <X size={12} className="mr-2" />
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-
-          {/* Calendar Area */}
-          <div className="bg-card">{renderCalendar()}</div>
-        </div>
-      )}
+      {mounted && typeof document !== "undefined"
+        ? createPortal(menuNode, document.body)
+        : null}
     </div>
   );
 };

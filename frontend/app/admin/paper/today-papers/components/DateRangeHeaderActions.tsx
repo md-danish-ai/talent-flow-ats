@@ -11,12 +11,14 @@ interface DateRangeHeaderActionsProps {
   initialLabel?: string;
   onRefresh?: () => Promise<void>;
   isLoading?: boolean;
+  showRefresh?: boolean;
 }
 
 export const DateRangeHeaderActions: React.FC<DateRangeHeaderActionsProps> = ({
   initialLabel = "Today",
   onRefresh,
   isLoading = false,
+  showRefresh = true,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,26 +49,29 @@ export const DateRangeHeaderActions: React.FC<DateRangeHeaderActionsProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full">
       <DateRangePicker
         onRangeChange={handleRangeChange}
         initialLabel={initialLabel}
+        className="w-full"
       />
-      <Tooltip content="Refresh candidates list">
-        <Button
-          variant="action"
-          size="rounded-icon"
-          animate="scale"
-          onClick={onRefresh || handleRefresh}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <RefreshCw size={18} className="animate-spin" />
-          ) : (
-            <RotateCcw size={18} />
-          )}
-        </Button>
-      </Tooltip>
+      {showRefresh && (
+        <Tooltip content="Refresh candidates list">
+          <Button
+            variant="action"
+            size="rounded-icon"
+            animate="scale"
+            onClick={onRefresh || handleRefresh}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <RefreshCw size={18} className="animate-spin" />
+            ) : (
+              <RotateCcw size={18} />
+            )}
+          </Button>
+        </Tooltip>
+      )}
     </div>
   );
 };

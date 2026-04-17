@@ -38,14 +38,14 @@ export default async function UpdateUserDetailsPage({
         </Link>
       </div>
 
-      {!details ? (
-        <div className="bg-card rounded-2xl p-12 text-center border ring-1 ring-border">
-          <p className="text-muted-foreground">
-            User details not found or not submitted yet.
+      {details && details.personalDetails ? (
+        <UserForm initialData={details} userId={id} isAdmin={true} />
+      ) : (
+        <div className="bg-card rounded-2xl p-12 text-center border ring-1 ring-border mt-6">
+          <p className="text-muted-foreground uppercase tracking-wider font-bold text-sm">
+            Recruitment details not submitted yet.
           </p>
         </div>
-      ) : (
-        <UserForm initialData={details} userId={id} isAdmin={true} />
       )}
     </PageContainer>
   );

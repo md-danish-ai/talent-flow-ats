@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, Loader2, Info } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -23,6 +23,8 @@ export interface SelectDropdownProps {
   wrapperClassName?: string;
   error?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
+  emptyMessage?: string;
 }
 
 export function SelectDropdown({
@@ -35,6 +37,8 @@ export function SelectDropdown({
   wrapperClassName,
   error = false,
   disabled = false,
+  isLoading = false,
+  emptyMessage = "No options available",
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -136,37 +140,58 @@ export function SelectDropdown({
             ref={dropdownRef}
           >
             <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
-              {options.map((option) => (
-                <Button
-                  key={option.id}
-                  type="button"
-                  variant="ghost"
-                  color="default"
-                  onClick={() => {
-                    onChange(option.id);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
-                    String(value) === String(option.id)
-                      ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
-                      : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
-                  )}
-                >
+              {isLoading ? (
+                <div className="flex items-center justify-center py-4 px-4 gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
                   <Typography
                     variant="body4"
-                    weight="semibold"
-                    as="span"
-                    color="inherit"
-                    className="flex-1 text-left leading-tight pr-4"
+                    className="italic text-muted-foreground font-medium"
                   >
-                    {option.label}
+                    Fetching options...
                   </Typography>
-                  {String(value) === String(option.id) && (
-                    <Check className="h-4 w-4 flex-shrink-0" />
-                  )}
-                </Button>
-              ))}
+                </div>
+              ) : options.length === 0 ? (
+                <div className="py-3 px-4 text-center">
+                  <Typography
+                    variant="body4"
+                    className="italic text-muted-foreground font-medium"
+                  >
+                    {emptyMessage}
+                  </Typography>
+                </div>
+              ) : (
+                options.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    variant="ghost"
+                    color="default"
+                    onClick={() => {
+                      onChange(option.id);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
+                      String(value) === String(option.id)
+                        ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+                        : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
+                    )}
+                  >
+                    <Typography
+                      variant="body4"
+                      weight="semibold"
+                      as="span"
+                      color="inherit"
+                      className="flex-1 text-left leading-tight pr-4"
+                    >
+                      {option.label}
+                    </Typography>
+                    {String(value) === String(option.id) && (
+                      <Check className="h-4 w-4 flex-shrink-0" />
+                    )}
+                  </Button>
+                ))
+              )}
             </div>
           </motion.div>
         </div>

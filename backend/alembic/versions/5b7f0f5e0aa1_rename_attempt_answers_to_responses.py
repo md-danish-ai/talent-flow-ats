@@ -3,7 +3,7 @@
 Revision ID: 5b7f0f5e0aa1
 Revises: 3f9d60802d28
 Create Date: 2026-03-26 11:30:00.000000
-Created By: codex
+Created By: md-danish-ai
 
 """
 
@@ -100,5 +100,3 @@ def downgrade() -> None:
         "ALTER INDEX ix_interview_attempt_responses_id "
         "RENAME TO ix_interview_attempt_answers_id"
     )
-
-

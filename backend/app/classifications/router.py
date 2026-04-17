@@ -13,7 +13,6 @@ from app.utils.pagination import (
 router = APIRouter(
     prefix="/classifications",
     tags=["Classifications"],
-    dependencies=[Depends(require_roles(["admin"]))],
 )
 service = ClassificationService()
 
@@ -46,13 +45,13 @@ def get_by_id(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: ClassificationCreate):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update/{classification_id}")
+@router.put("/update/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
 def update(
     classification_id: int,
     payload: ClassificationUpdate,
@@ -61,7 +60,7 @@ def update(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/delete/{classification_id}")
+@router.delete("/delete/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
 def delete(
     classification_id: int,
 ):

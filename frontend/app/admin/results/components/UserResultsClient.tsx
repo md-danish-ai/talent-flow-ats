@@ -140,7 +140,9 @@ export function UserResultsClient() {
 
   const stats = useMemo(() => {
     const completed = items.filter((item) =>
-      ["submitted", "auto_submitted"].includes(item.latest_attempt?.status || ""),
+      ["submitted", "auto_submitted"].includes(
+        item.latest_attempt?.status || "",
+      ),
     ).length;
     const active = items.filter(
       (item) => item.latest_attempt?.status === "started",

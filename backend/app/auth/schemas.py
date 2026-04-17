@@ -7,11 +7,6 @@ import re
 # ─── Shared Enums (single source of truth for both backend & frontend) ────
 
 
-class TestLevelEnum(str, Enum):
-    FRESHER = "FRESHER"
-    QA = "QA"
-    TEAMLEAD = "TEAMLEAD"
-
 
 class RoleEnum(str, Enum):
     user = "user"
@@ -24,10 +19,31 @@ class RoleEnum(str, Enum):
 class SignUpSchema(BaseModel):
     name: str
     mobile: str
-    testLevel: TestLevelEnum
+    test_level_id: int
+    department_id: int
     email: Optional[EmailStr] = None
 
     @validator("email", pre=True)
+    def empty_to_none(cls, field_value):
+        if field_value == "":
+            return None
+        return field_value
+
+    @validator("department_id", pre=True)
+    def validate_dept_id(cls, value):
+        if value == "":
+            return None
+        return value
+
+
+class UpdateUserSchema(BaseModel):
+    name: Optional[str] = None
+    mobile: Optional[str] = None
+    email: Optional[EmailStr] = None
+    test_level_id: Optional[int] = None
+    department_id: Optional[int] = None
+
+    @validator("email", "department_id", pre=True)
     def empty_to_none(cls, field_value):
         if field_value == "":
             return None

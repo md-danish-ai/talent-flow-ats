@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 // ─── Enum Constants (mirrors backend enums — single source of truth) ─────
-export const TEST_LEVELS = ["FRESHER", "QA", "TEAMLEAD"] as const;
 export const ROLES = ["user", "admin"] as const;
 
 // ─── Sign Up Schema ─────────────────────────────────────────────────────
@@ -15,7 +14,8 @@ export const signUpSchema = z.object({
     .length(10, "The mobile number must be exactly 10 digits.")
     .regex(/^\d+$/, "The mobile number must contain only digits."),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  testLevel: z.enum(TEST_LEVELS),
+  test_level_id: z.string().min(1, "Please select a test level"),
+  department_id: z.string().min(1, "Please select a department"),
   role: z.enum(ROLES),
 });
 

@@ -30,7 +30,7 @@ USERS = [
         "mobile":   "8829059600",
         "email":    "admin@arcgate.com",
         "role":     "admin",
-        "testlevel": None,
+        "test_level_code": None,
         "is_active": True,
     },
     {
@@ -38,7 +38,7 @@ USERS = [
         "mobile":   "1234567890",
         "email":    "user@arcgate.com",
         "role":     "user",
-        "testlevel": "FRESHER",
+        "test_level_code": "FRESHER",
         "is_active": True,
     },
 ]
@@ -50,6 +50,11 @@ def seed_users():
         print("🚀 Seeding users...")
         total_seeded = 0
         total_skipped = 0
+
+        # Fetch level mapping
+        from app.classifications.models import Classification
+        levels = db.query(Classification).filter(Classification.type == "exam_level").all()
+        level_map = {c.code: c.id for c in levels}
 
         for user_data in USERS:
             # Check if mobile already exists
@@ -75,7 +80,7 @@ def seed_users():
                 email=user_data.get("email"),
                 password=hashed_pw,
                 role=user_data["role"],
-                testlevel=user_data.get("testlevel"),
+                test_level_id=level_map.get(user_data.get("test_level_code")),
                 is_active=user_data["is_active"],
                 created_by=None,
             )

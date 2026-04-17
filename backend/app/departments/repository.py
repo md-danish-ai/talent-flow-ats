@@ -29,7 +29,7 @@ def get_all(
             query = query.filter(Department.name.ilike(f"%{search}%"))
 
         total_records = query.count()
-        results = query.order_by(Department.id.desc()).offset(offset).limit(limit).all()
+        results = query.order_by(Department.name.asc()).offset(offset).limit(limit).all()
 
         data = [_to_dict(dept) for dept in results]
         return data, total_records

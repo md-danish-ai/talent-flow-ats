@@ -113,7 +113,10 @@ export const interviewAttemptsApi = {
     ),
 
   getActiveStatus: (options?: ApiRequestOptions) =>
-    api.get<ActiveStatusResponse>("/user/interview-attempts/active-status", options),
+    api.get<ActiveStatusResponse>(
+      "/user/interview-attempts/active-status",
+      options,
+    ),
 
   saveAnswersBatch: (
     attemptId: number,

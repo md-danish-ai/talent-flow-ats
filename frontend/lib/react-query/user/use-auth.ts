@@ -9,7 +9,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { signIn, signUp } from "@lib/api/auth";
+import { signIn, signUp, updateBasicInfo } from "@lib/api/auth";
 import type { AuthResponse, SignUpResponse } from "@lib/api/auth";
 import type { SignInFormValues, SignUpFormValues } from "@lib/validations/auth";
 import type { ApiError } from "@lib/api/client";
@@ -29,5 +29,18 @@ export function useSignIn() {
   return useMutation<AuthResponse, ApiError, SignInFormValues>({
     mutationFn: (data) => signIn(data),
     mutationKey: ["auth", "signin"],
+  });
+}
+
+// ─── Update Basic Info Mutation ──────────────────────────────────────────
+
+export function useUpdateBasicInfo(userId: number | string) {
+  return useMutation<
+    { message: string; user_id: number },
+    ApiError,
+    SignUpFormValues
+  >({
+    mutationFn: (data) => updateBasicInfo(userId, data),
+    mutationKey: ["auth", "update-basic", userId],
   });
 }

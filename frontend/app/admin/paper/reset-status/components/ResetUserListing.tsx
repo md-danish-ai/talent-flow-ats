@@ -24,10 +24,14 @@ import { ResetSubjectsModal } from "./ResetSubjectsModal";
 import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { Avatar } from "@components/ui-elements/Avatar";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import {
   RefreshCw,
   Search,
-  Settings2,
+  Filter,
   Trash2,
   Users,
   X,
@@ -80,6 +84,8 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,8 +106,45 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
       (statusFilter === "submitted" && user.is_interview_submitted) ||
       (statusFilter === "inprogress" && !user.is_interview_submitted);
 
-    return searchMatch && statusMatch;
+    const deptName = user.department_name || user.assignment?.department_name;
+    const departmentMatch =
+      departmentFilter === "all" || deptName === departmentFilter;
+
+    const userLevel = user.test_level_name || user.assignment?.test_level_name;
+    const levelMatch = levelFilter === "all" || userLevel === levelFilter;
+
+    return searchMatch && statusMatch && departmentMatch && levelMatch;
   });
+
+  // Fetch all departments and levels from API
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((lvl) => ({
+      id: lvl.name,
+      label: lvl.name,
+    })),
+  ];
+
+  const departmentOptions = [
+    { id: "all", label: "All Departments" },
+    ...allDepartments.map((dept) => ({
+      id: dept.name,
+      label: dept.name,
+    })),
+  ];
+
+  const statusOptions = [
+    { id: "all", label: "All Statuses" },
+    { id: "submitted", label: "Submitted" },
+    { id: "inprogress", label: "In Progress" },
+  ];
 
   const totalItems = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -144,18 +187,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <Tooltip content="Advanced Filters & Searching">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                <Settings2 size={18} />
-              </Button>
-            </Tooltip>
-
             <Tooltip content="Reload Candidate List">
               <Button
                 variant="action"
@@ -168,6 +199,17 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                   size={18}
                   className={loading ? "animate-spin" : ""}
                 />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Advanced Filters & Searching">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                <Filter size={18} />
               </Button>
             </Tooltip>
           </div>
@@ -194,7 +236,13 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                       Contact Info
                     </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Status / Progress
+                      Department
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Test Level
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Status
                     </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
                       Action
@@ -206,7 +254,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                   paginatedUsers.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="h-48 text-center bg-muted/20"
                       >
                         <div className="flex flex-col items-center justify-center gap-2 opacity-50">
@@ -226,45 +274,93 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                         <TableCell className="font-medium text-center align-middle">
                           {(currentPage - 1) * pageSize + idx + 1}
                         </TableCell>
-                        <TableCell className="align-middle">
-                          <div className="flex flex-col justify-center">
-                            <span className="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight text-sm">
-                              {row.username || "Unnamed Candidate"}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground/60 italic font-medium -mt-1 opacity-70">
-                              ID: #{row.id}
-                            </span>
+                        <TableCell className="align-middle py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={row.username}
+                              variant="brand"
+                              size="sm"
+                            />
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                                  {row.username || "Unnamed Candidate"}
+                                </span>
+                                {row.is_reinterview ? (
+                                  <Badge
+                                    variant="outline"
+                                    color="violet"
+                                    animate="pulse"
+                                    shape="square"
+                                    className="text-[9px] font-bold"
+                                  >
+                                    RETURNING
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    color="success"
+                                    animate="pulse"
+                                    shape="square"
+                                    className="text-[9px] font-bold"
+                                  >
+                                    NEW
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-slate-500 font-medium italic opacity-70 mt-0.5">
+                                <Mail size={11} />
+                                <span className="text-[11px] truncate max-w-[150px]">
+                                  {row.email || "-"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell className="align-middle">
-                          <div className="flex flex-col justify-center gap-0.5">
-                            <div className="flex items-center gap-1.5 text-xs text-foreground/70">
-                              <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                <Phone size={12} />
-                              </span>
-                              <span className="font-bold text-slate-700 dark:text-slate-300">
-                                {row.mobile}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground italic">
-                              <span className="opacity-70 group-hover:scale-110 transition-transform">
-                                <Mail size={12} />
-                              </span>
-                              <span className="opacity-80">
-                                {row.email || "-"}
-                              </span>
-                            </div>
-                          </div>
+                        <TableCell className="align-middle py-3">
+                          <span className="text-[12px] font-normal tracking-tight text-slate-800 dark:text-slate-200">
+                            {row.mobile}
+                          </span>
                         </TableCell>
-                        <TableCell className="text-center p-0 align-middle">
-                          <div className="flex flex-col items-center justify-center min-h-[80px] py-3">
+                        <TableCell className="align-middle py-3 text-center">
+                          {row.department_name ||
+                          row.assignment?.department_name ? (
+                            <Badge
+                              color="primary"
+                              animate="pulse"
+                              shape="square"
+                              variant="outline"
+                            >
+                              {row.department_name ||
+                                row.assignment?.department_name}
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 italic">
+                              No Dept
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-middle py-3 text-center">
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color="default"
+                          >
+                            {row.assignment?.test_level_name ||
+                              row.test_level_name ||
+                              "N/A"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center align-middle py-3">
+                          <div className="flex flex-col items-center justify-center gap-1">
                             {row.is_interview_submitted ||
                             row.assignment?.is_attempted ? (
                               <Badge
                                 color="success"
                                 variant="outline"
+                                animate="pulse"
                                 shape="square"
-                                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center"
+                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
                               >
                                 Submitted
                               </Badge>
@@ -272,35 +368,37 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                               <Badge
                                 color="warning"
                                 variant="outline"
+                                animate="pulse"
                                 shape="square"
-                                className="text-orange-500 border-orange-500/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
+                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
                               >
                                 In Progress
                               </Badge>
                             ) : (
                               <Badge
+                                color="default"
                                 variant="outline"
                                 shape="square"
-                                className="text-slate-500 border-slate-500/30 dark:text-slate-400 dark:border-slate-400/30 text-[10px] px-3 font-bold uppercase tracking-wider h-6 flex items-center justify-center italic"
+                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
                               >
                                 Ready
                               </Badge>
                             )}
-                            <span className="text-[9px] text-muted-foreground italic opacity-60 mt-1 uppercase tracking-tighter">
+                            <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
                               {row.is_interview_submitted ||
                               row.assignment?.is_attempted
-                                ? "Interview process complete."
+                                ? "Process complete"
                                 : row.assignment?.has_started
-                                  ? "Interview session active."
+                                  ? "Attempt Active"
                                   : row.is_details_submitted
-                                    ? "Form Submitted"
-                                    : "Awaiting first login."}
+                                    ? "Form Done"
+                                    : "Awaiting Login"}
                             </span>
                           </div>
                         </TableCell>
 
-                        <TableCell className="text-center p-0 align-middle">
-                          <div className="flex items-center justify-center gap-2 min-h-[80px] py-3">
+                        <TableCell className="text-center align-middle py-3">
+                          <div className="flex items-center justify-center gap-2">
                             {row.is_details_submitted && (
                               <TableIconButton
                                 iconColor="orange"
@@ -418,28 +516,50 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 <span className="w-4 h-px bg-muted-foreground/30" />
                 Attempt Status
               </Typography>
-              <div className="grid grid-cols-1 gap-2">
-                {[
-                  { id: "all", label: "All Candidates" },
-                  { id: "submitted", label: "Submitted" },
-                  { id: "inprogress", label: "In Progress" },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setStatusFilter(opt.id)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg text-xs font-bold transition-all border ${
-                      statusFilter === opt.id
-                        ? "bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm"
-                        : "bg-background border-border text-slate-500 hover:border-slate-300 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    {opt.label}
-                    {statusFilter === opt.id && (
-                      <div className="w-2 h-2 rounded-full bg-brand-primary animate-pulse" />
-                    )}
-                  </button>
-                ))}
-              </div>
+              <SelectDropdown
+                options={statusOptions}
+                value={statusFilter}
+                onChange={(val) => setStatusFilter(val as string)}
+                placeholder="Select Status"
+              />
+            </div>
+
+            {/* Department Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                Department
+              </Typography>
+              <SelectDropdown
+                options={departmentOptions}
+                value={departmentFilter}
+                onChange={(val) => setDepartmentFilter(val as string)}
+                placeholder="Select Department"
+                isLoading={allDepartments.length === 0}
+              />
+            </div>
+
+            {/* Exam Level Filter */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+              >
+                <span className="w-4 h-px bg-muted-foreground/30" />
+                Exam Level
+              </Typography>
+              <SelectDropdown
+                options={levelOptions}
+                value={levelFilter}
+                onChange={(val) => setLevelFilter(val as string)}
+                placeholder="Select Level"
+                isLoading={classificationQuery.isLoading}
+              />
             </div>
 
             {/* Help Info */}
@@ -473,17 +593,12 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
               onClick={() => {
                 setSearchQuery("");
                 setStatusFilter("all");
+                setDepartmentFilter("all");
+                setLevelFilter("all");
               }}
             >
               <RotateCcw size={14} />
               Reset All
-            </Button>
-
-            <Button
-              className="w-full h-11 font-bold uppercase tracking-widest text-[10px]"
-              onClick={() => setIsFilterOpen(false)}
-            >
-              Apply Filters
             </Button>
           </div>
         </InlineDrawer>

@@ -34,9 +34,10 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   onSuccess,
   user,
 }) => {
-  const userLevel = user.testlevel;
+  const userLevel = user.test_level_name || user.assignment?.test_level_name;
   const testLevelId =
-    user.test_level_id?.toString() || user.testlevel_id?.toString();
+    user.test_level_id?.toString() ||
+    user.assignment?.test_level_id?.toString();
 
   const [papers, setPapers] = useState<PaperSetup[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -142,16 +143,22 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       setIsInitialized(false);
       fetchDepartments();
 
-      // Pre-fill if assignment already exists (Edit Mode)
+      // Pre-fill department and paper
       if (user.assignment?.is_assigned) {
-        if (user.assignment.department_id) {
-          setSelectedDepartment(user.assignment.department_id.toString());
+        const deptId = user.assignment.department_id || user.department_id;
+        if (deptId) {
+          setSelectedDepartment(deptId.toString());
         }
         if (user.assignment.paper_id) {
           setSelectedPaper(user.assignment.paper_id.toString());
         }
+      } else if (user.department_id) {
+        // Default to user's assigned department for new assignments
+        setSelectedDepartment(user.department_id.toString());
+        setSelectedPaper("");
+        setPapers([]);
       } else {
-        // Reset state for new assignment
+        // Pure fresh state
         setSelectedDepartment("");
         setSelectedPaper("");
         setPapers([]);

@@ -1,7 +1,8 @@
 "use client";
 
-import { Eye, Phone } from "lucide-react";
+import { Eye, Phone, Mail } from "lucide-react";
 import Link from "next/link";
+import { Avatar } from "@components/ui-elements/Avatar";
 import {
   Table,
   TableHeader,
@@ -106,21 +107,21 @@ export function ResultTableView({
                 }
               >
                 {visibleColumns.includes("candidate") && (
-                  <TableCell>
+                  <TableCell className="align-middle py-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-brand-primary font-bold shadow-inner">
-                        {item.username?.[0]?.toUpperCase() || "A"}
-                      </div>
-                      <div className="space-y-1">
+                      <Avatar name={item.username} variant="brand" size="sm" />
+                      <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <Typography variant="body3" className="font-bold">
+                          <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
                             {item.username || "Anonymous"}
-                          </Typography>
+                          </span>
                           {item.is_reattempt ? (
                             <Badge
                               variant="outline"
                               color="violet"
                               animate="pulse"
+                              shape="square"
+                              className="text-[9px] font-bold"
                             >
                               RE-ATTEMPT
                             </Badge>
@@ -129,18 +130,17 @@ export function ResultTableView({
                               color="success"
                               variant="outline"
                               animate="pulse"
+                              shape="square"
+                              className="text-[9px] font-bold"
                             >
                               NEW
                             </Badge>
                           )}
                         </div>
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground flex items-center gap-1.5"
-                        >
-                          <Phone size={11} className="opacity-60" />
-                          {item.mobile}
-                        </Typography>
+                        <div className="flex items-center gap-1.5 text-slate-500 font-medium opacity-70">
+                          <Phone size={11} />
+                          <span className="text-[11px]">{item.mobile}</span>
+                        </div>
                       </div>
                     </div>
                   </TableCell>

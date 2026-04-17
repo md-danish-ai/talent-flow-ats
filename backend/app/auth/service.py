@@ -5,29 +5,10 @@ from app.auth.utils import hash_password, verify_password, generate_jwt
 from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
 from app.users.models import User
-from sqlalchemy.orm import Session
-
-from app.classifications.models import Classification
 from app.paper_assignments.models import PaperAssignment
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
 
-
-def _get_level_mapping(db: Session) -> dict[str, int]:
-    """Helper to get a dictionary of classification name/code mapping to IDs."""
-    classifications = (
-        db.query(Classification)
-        .filter(Classification.type == "exam_level", Classification.is_active)
-        .all()
-    )
-    mapping = {}
-    for c in classifications:
-        mapping[c.code] = c.id
-        mapping[c.name] = c.id
-        # Also handle uppercase variations for robustness
-        mapping[c.code.upper()] = c.id
-        mapping[c.name.upper()] = c.id
-    return mapping
 
 
 def signup_user(data):
@@ -49,7 +30,8 @@ def signup_user(data):
             mobile=data.mobile,
             email=data.email,
             password=hashed_password,
-            testlevel=data.testLevel.value,
+            test_level_id=data.test_level_id,
+            department_id=data.department_id,
             role="user",
             is_active=True,
             created_by=None,
@@ -62,6 +44,7 @@ def signup_user(data):
             "id": new_user.id,
             "username": new_user.username,
             "role": new_user.role,
+            "department_id": new_user.department_id,
         }
         token = generate_jwt(user_data)
         return {"access_token": token, "user": user_data}
@@ -127,8 +110,8 @@ def signin_user(data):
                 detail=f"Access denied: Your account is not authorized for the {data.role.value} role.",
             )
 
-        user_data = {"id": user.id,
-                     "username": user.username, "role": user.role}
+        user_data = {"id": user.id, "username": user.username,
+                     "role": user.role, "department_id": user.department_id}
         token = generate_jwt(user_data)
         return {
             "access_token": token,
@@ -193,16 +176,16 @@ def get_user_by_id(user_id):
         if not user_obj:
             return None
 
-        level_mapping = _get_level_mapping(db_session)
         user = {
             "id": user_obj.id,
             "username": user_obj.username,
             "mobile": user_obj.mobile,
             "email": user_obj.email,
             "role": user_obj.role,
-            "testlevel": user_obj.testlevel,
-            "testlevel_id": level_mapping.get(user_obj.testlevel),
-            "test_level_id": level_mapping.get(user_obj.testlevel),
+            "test_level_id": user_obj.test_level_id,
+            "test_level_name": user_obj.test_level.name if user_obj.test_level else None,
+            "department_id": user_obj.department_id,
+            "department_name": user_obj.department.name if user_obj.department else None,
             "created_at": user_obj.created_at,
         }
 
@@ -242,7 +225,7 @@ def get_user_by_id(user_id):
 def get_users_by_role(role: str, date: str = None, date_from: str = None, date_to: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func, or_, Integer
+        from sqlalchemy import func, or_
 
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()
@@ -254,29 +237,40 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
         from app.papers.models import Paper
         from app.departments.models import Department
         from app.classifications.models import Classification as Cls
+        from sqlalchemy.orm import aliased
 
-        # Fix duplication by using subqueries for assignments and attempts
-        # (One user might have 2 assignments or 2 attempts on same day - we only show 1)
+        UserDept = aliased(Department)
+
+        # Get latest paper assignment for each user
         assignment_subq = (
             db_session.query(
                 PaperAssignment.user_id,
-                func.max(PaperAssignment.paper_id).label("paper_id"),
-                func.max(PaperAssignment.department_id).label("department_id"),
-                func.max(PaperAssignment.test_level_id).label("test_level_id"),
-                func.max(func.cast(PaperAssignment.is_attempted, Integer)).label("is_attempted")
+                PaperAssignment.paper_id,
+                PaperAssignment.department_id,
+                PaperAssignment.test_level_id,
+                PaperAssignment.is_attempted,
+                func.row_number()
+                .over(
+                    partition_by=PaperAssignment.user_id,
+                    order_by=PaperAssignment.id.desc(),
+                )
+                .label("rn"),
             )
-            .filter(PaperAssignment.assigned_date == target_date)
-            .group_by(PaperAssignment.user_id)
             .subquery()
         )
 
+        # Get latest interview attempt for each user
         attempt_subq = (
             db_session.query(
                 InterviewRecord.user_id,
-                func.max(InterviewRecord.id).label("id")
+                InterviewRecord.id,
+                func.row_number()
+                .over(
+                    partition_by=InterviewRecord.user_id,
+                    order_by=InterviewRecord.id.desc(),
+                )
+                .label("rn"),
             )
-            .filter(func.date(InterviewRecord.created_at) == target_date)
-            .group_by(InterviewRecord.user_id)
             .subquery()
         )
 
@@ -288,19 +282,27 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                 assignment_subq.c.test_level_id.label("asgn_level_id"),
                 assignment_subq.c.is_attempted.label("asgn_is_attempted"),
                 Paper.paper_name,
-                Department.name.label("dept_name"),
+                Department.name.label("asgn_dept_name"),
                 Cls.name.label("level_name"),
+                UserDept.name.label("user_dept_name"),
                 attempt_subq.c.id.label("attempt_id"),
                 UserDetail.is_submitted,
                 UserDetail.is_interview_submitted,
                 UserDetail.is_reinterview,
                 UserDetail.reinterview_date,
             )
-            .outerjoin(assignment_subq, User.id == assignment_subq.c.user_id)
+            .outerjoin(
+                assignment_subq,
+                (User.id == assignment_subq.c.user_id) & (assignment_subq.c.rn == 1),
+            )
             .outerjoin(Paper, assignment_subq.c.paper_id == Paper.id)
             .outerjoin(Department, assignment_subq.c.department_id == Department.id)
+            .outerjoin(UserDept, User.department_id == UserDept.id)
             .outerjoin(Cls, assignment_subq.c.test_level_id == Cls.id)
-            .outerjoin(attempt_subq, User.id == attempt_subq.c.user_id)
+            .outerjoin(
+                attempt_subq,
+                (User.id == attempt_subq.c.user_id) & (attempt_subq.c.rn == 1),
+            )
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
         )
@@ -323,7 +325,6 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
 
         results = results.order_by(User.id.desc()).all()
 
-        level_mapping = _get_level_mapping(db_session)
         return [
             {
                 "id": row.User.id,
@@ -331,9 +332,10 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                 "mobile": row.User.mobile,
                 "email": row.User.email,
                 "role": row.User.role,
-                "testlevel": row.User.testlevel,
-                "testlevel_id": level_mapping.get(row.User.testlevel),
-                "test_level_id": level_mapping.get(row.User.testlevel),
+                "test_level_id": row.User.test_level_id,
+                "test_level_name": row.User.test_level.name if row.User.test_level else None,
+                "department_id": row.User.department_id,
+                "department_name": row.User.department.name if row.User.department else None,
                 "is_active": row.User.is_active,
                 "is_details_submitted": row.is_submitted if row.is_submitted is not None else False,
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
@@ -345,7 +347,7 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                     "paper_id": row.asgn_paper_id,
                     "paper_name": row.paper_name,
                     "department_id": row.asgn_dept_id,
-                    "department_name": row.dept_name,
+                    "department_name": row.asgn_dept_name,
                     "test_level_id": row.asgn_level_id,
                     "test_level_name": row.level_name,
                     "is_attempted": bool(row.asgn_is_attempted),
@@ -407,6 +409,51 @@ def delete_user(user_id: int):
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
             detail="An internal server error occurred.",
+        )
+    finally:
+        db_session.close()
+
+
+def update_user_basic_info(user_id: int, data):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+
+        if data.name is not None:
+            user.username = data.name
+        if data.mobile is not None:
+            # Check for conflict if mobile is changing
+            if data.mobile != user.mobile:
+                conflicting_user = db_session.query(User).filter(
+                    User.mobile == data.mobile).first()
+                if conflicting_user:
+                    raise HTTPException(
+                        status_code=StatusCode.CONFLICT,
+                        detail="This mobile number is already registered.",
+                    )
+                user.mobile = data.mobile
+        if data.email is not None:
+            user.email = data.email
+        if data.test_level_id is not None:
+            user.test_level_id = data.test_level_id
+        if data.department_id is not None:
+            user.department_id = data.department_id
+
+        db_session.commit()
+        db_session.refresh(user)
+        return {"message": "User basic info updated successfully", "user_id": user.id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=str(e),
         )
     finally:
         db_session.close()

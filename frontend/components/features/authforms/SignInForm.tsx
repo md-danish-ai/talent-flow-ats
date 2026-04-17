@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 import { toast } from "@lib/toast";
 import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
 import { useSignIn } from "@lib/react-query/user/use-auth";
@@ -56,6 +57,8 @@ export function SignInForm() {
   const signInMutation = useSignIn();
 
   const form = useForm({
+    // @ts-expect-error - validatorAdapter types mismatch in this version
+    validatorAdapter: zodValidator(),
     defaultValues: {
       mobile: "",
       email: "",

@@ -72,6 +72,11 @@ export interface UserDetails {
   is_submitted: boolean;
   is_interview_submitted: boolean;
   username?: string;
+  mobile?: string;
+  email?: string;
+  test_level_id?: number | string;
+  test_level_name?: string;
+  department_id?: number | string;
   personalDetails: PersonalDetails;
   familyDetails: FamilyDetail[];
   sourceOfInformation: SourceOfInformation;

@@ -8,6 +8,7 @@ from app.auth.service import (
     toggle_user_status,
     delete_user,
     get_user_by_id,
+    update_user_basic_info
 )
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
@@ -85,3 +86,13 @@ async def toggle_status(user_id: int):
 async def delete_user_route(user_id: int):
     data = delete_user(user_id)
     return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
+
+
+@router.put("/update-basic-info/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+async def update_basic_info(user_id: int, data: SignUpSchema):
+    """
+    Update basic user info (username, mobile, email, testlevel, department_id).
+    We reuse SignUpSchema fields for this.
+    """
+    result = update_user_basic_info(user_id, data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
