@@ -11,8 +11,226 @@ from app.questions import repository as question_repository
 from app.users.models import User
 from app.utils.status_codes import StatusCode
 
-from .models import PaperAssignment
-from .schemas import PaperAssignmentCreate
+from sqlalchemy import func
+from .models import PaperAssignment, AutoAssignmentRule
+from .schemas import (
+    PaperAssignmentCreate,
+    AutoAssignmentRuleCreate,
+    AutoAssignmentRuleUpdate,
+)
+from app.departments.models import Department
+
+
+def create_auto_assignment_rule(
+    db: Session, payload: AutoAssignmentRuleCreate, created_by: int
+) -> AutoAssignmentRule:
+    # Check for existing rule to prevent UniqueConstraint violation
+    existing = (
+        db.query(AutoAssignmentRule)
+        .filter(
+            AutoAssignmentRule.department_id == payload.department_id,
+            AutoAssignmentRule.test_level_id == payload.test_level_id,
+            AutoAssignmentRule.assigned_date == payload.assigned_date,
+        )
+        .first()
+    )
+
+    if existing:
+        existing.paper_ids = payload.paper_ids
+        existing.is_active = payload.is_active
+        existing.created_by = created_by
+    else:
+        existing = AutoAssignmentRule(
+            **payload.model_dump(),
+            created_by=created_by,
+        )
+        db.add(existing)
+
+    db.commit()
+    db.refresh(existing)
+    return get_auto_assignment_rule(db, existing.id)
+
+
+def get_auto_assignment_rule(db: Session, rule_id: int) -> AutoAssignmentRule | None:
+    result = (
+        db.query(
+            AutoAssignmentRule,
+            Department.name.label("department_name"),
+            Classification.name.label("test_level_name"),
+        )
+        .join(Department, AutoAssignmentRule.department_id == Department.id)
+        .join(Classification, AutoAssignmentRule.test_level_id == Classification.id)
+        .filter(AutoAssignmentRule.id == rule_id)
+        .first()
+    )
+
+    if not result:
+        return None
+
+    rule, dept_name, level_name = result
+    rule.department_name = dept_name
+    rule.test_level_name = level_name
+    
+    # Fetch paper names
+    if rule.paper_ids:
+        papers = db.query(Paper.paper_name).filter(Paper.id.in_(rule.paper_ids)).all()
+        rule.paper_names = [p.paper_name for p in papers]
+    else:
+        rule.paper_names = []
+        
+    return rule
+
+
+def get_auto_assignment_rules(
+    db: Session, assigned_date: date | None = None
+) -> list[AutoAssignmentRule]:
+    query = db.query(
+        AutoAssignmentRule,
+        Department.name.label("department_name"),
+        Classification.name.label("test_level_name"),
+    ).join(Department, AutoAssignmentRule.department_id == Department.id).join(
+        Classification, AutoAssignmentRule.test_level_id == Classification.id
+    )
+
+    if assigned_date:
+        query = query.filter(AutoAssignmentRule.assigned_date == assigned_date)
+
+    results = query.order_by(AutoAssignmentRule.id.desc()).all()
+
+    # Pre-fetch all relevant paper names to avoid N+1 queries
+    all_paper_ids = []
+    for rule, _, _ in results:
+        if rule.paper_ids:
+            all_paper_ids.extend(rule.paper_ids)
+    
+    paper_map = {}
+    if all_paper_ids:
+        papers = db.query(Paper.id, Paper.paper_name).filter(Paper.id.in_(list(set(all_paper_ids)))).all()
+        paper_map = {p.id: p.paper_name for p in papers}
+
+    final_rules = []
+    for rule, dept_name, level_name in results:
+        rule.department_name = dept_name
+        rule.test_level_name = level_name
+        rule.paper_names = [paper_map.get(p_id, f"#{p_id}") for p_id in (rule.paper_ids or [])]
+        final_rules.append(rule)
+
+    return final_rules
+
+
+def update_auto_assignment_rule(
+    db: Session, rule_id: int, payload: AutoAssignmentRuleUpdate
+) -> AutoAssignmentRule:
+    rule = (
+        db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
+    )
+    if not rule:
+        raise HTTPException(
+            status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
+        )
+
+    for key, value in payload.model_dump(exclude_unset=True).items():
+        setattr(rule, key, value)
+
+    db.commit()
+    db.refresh(rule)
+    return get_auto_assignment_rule(db, rule.id)
+
+
+def delete_auto_assignment_rule(db: Session, rule_id: int) -> dict:
+    rule = (
+        db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
+    )
+    if not rule:
+        raise HTTPException(
+            status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
+        )
+
+    db.delete(rule)
+    db.commit()
+    return {"message": "Rule deleted successfully"}
+
+
+def assign_best_paper(
+    db: Session, 
+    user_id: int, 
+    department_id: int, 
+    test_level_id: int, 
+    assigned_date: date
+) -> PaperAssignment | None:
+    # 1. Find the active rule for this Dept/Level on this Date
+    rule = (
+        db.query(AutoAssignmentRule)
+        .filter(
+            AutoAssignmentRule.department_id == department_id,
+            AutoAssignmentRule.test_level_id == test_level_id,
+            AutoAssignmentRule.assigned_date == assigned_date,
+            AutoAssignmentRule.is_active.is_(True),
+        )
+        .first()
+    )
+
+    if not rule or not rule.paper_ids:
+        return None
+
+    # 2. Sequential/Round-robin: Check assignment counts for papers in the pool
+    # We want the paper with the MINIMUM number of assignments today
+    paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
+    
+    if not paper_ids:
+        return None
+
+    # Subquery to get counts for these specific papers today
+    counts = (
+        db.query(
+            PaperAssignment.paper_id, 
+            func.count(PaperAssignment.id).label("total")
+        )
+        .filter(
+            PaperAssignment.assigned_date == assigned_date,
+            PaperAssignment.paper_id.in_(paper_ids)
+        )
+        .group_by(PaperAssignment.paper_id)
+        .all()
+    )
+
+    count_map = {p_id: 0 for p_id in paper_ids}
+    for p_id, total in counts:
+        count_map[p_id] = total
+
+    # Sort paper_ids by their current count (ascending) to pick the one with the least assignments
+    best_paper_id = sorted(paper_ids, key=lambda p: count_map.get(p, 0))[0]
+
+    # 3. Check if user already has an assignment for today
+    existing = (
+        db.query(PaperAssignment)
+        .filter(
+            PaperAssignment.user_id == user_id,
+            PaperAssignment.assigned_date == assigned_date
+        )
+        .first()
+    )
+
+    if existing:
+        return existing
+
+    # 4. Create the assignment
+    assignment = PaperAssignment(
+        user_id=user_id,
+        paper_id=best_paper_id,
+        department_id=department_id,
+        test_level_id=test_level_id,
+        assigned_date=assigned_date,
+        assigned_by=rule.created_by, # Rule creator is the 'assigner'
+        assignment_source="AUTO",
+        auto_rule_id=rule.id
+    )
+
+    db.add(assignment)
+    db.commit()
+    db.refresh(assignment)
+
+    return get_assignment_by_user_and_date(db, user_id, assigned_date)
 
 
 def _build_assignment_query(db: Session):

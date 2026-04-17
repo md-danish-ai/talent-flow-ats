@@ -51,7 +51,7 @@ export function useAutoAssign(id: number) {
     (subjCode: string) => {
       const typeReqs = requirements[subjCode] || {};
       let total = 0;
-      Object.entries(typeReqs).forEach(([typeCode, markMap]) => {
+      Object.values(typeReqs).forEach((markMap) => {
         Object.entries(markMap).forEach(([marksStr, qty]) => {
           total += parseInt(marksStr) * qty;
         });

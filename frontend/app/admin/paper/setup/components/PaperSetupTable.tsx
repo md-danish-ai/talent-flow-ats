@@ -22,7 +22,6 @@ interface PaperSetupTableProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (paper: Partial<PaperSetup>) => void;
-  // onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
   visibleColumns: string[];
 }
@@ -38,7 +37,6 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  // onDelete,
   onViewDetails,
   visibleColumns,
 }) => {
@@ -97,7 +95,6 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
                   togglingId={togglingId}
                   onToggleStatus={onToggleStatus}
                   onEdit={onEdit}
-                  // onDelete={onDelete}
                   onViewDetails={onViewDetails}
                   visibleColumns={visibleColumns}
                 />

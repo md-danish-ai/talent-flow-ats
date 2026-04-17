@@ -3,20 +3,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check, Loader2 } from "lucide-react";
+import { ChevronDown, Check, Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 
-export interface SelectOption {
+export interface MultiSelectOption {
   id: string | number;
   label: string;
 }
 
-export interface SelectDropdownProps {
-  options: SelectOption[];
-  value: string | number | undefined;
-  onChange: (value: string | number) => void;
+export interface MultiSelectDropdownProps {
+  options: MultiSelectOption[];
+  value: (string | number)[];
+  onChange: (value: (string | number)[]) => void;
   placeholder?: string;
   placement?: "top" | "bottom";
   className?: string;
@@ -27,11 +27,11 @@ export interface SelectDropdownProps {
   emptyMessage?: string;
 }
 
-export function SelectDropdown({
+export function MultiSelectDropdown({
   options,
-  value,
+  value = [],
   onChange,
-  placeholder = "Select an option",
+  placeholder = "Select options",
   placement = "bottom",
   className,
   wrapperClassName,
@@ -39,7 +39,7 @@ export function SelectDropdown({
   disabled = false,
   isLoading = false,
   emptyMessage = "No options available",
-}: SelectDropdownProps) {
+}: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({
@@ -51,10 +51,6 @@ export function SelectDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // We initialize mounting lazily to avoid cascading renders on initial page load.
-  // This satisfies the "Calling setState synchronously within an effect" warning.
-
-  // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -93,7 +89,6 @@ export function SelectDropdown({
     setIsOpen(!isOpen);
   };
 
-  // Update coords on resize/scroll if open
   useEffect(() => {
     if (isOpen) {
       window.addEventListener("scroll", updateCoords, true);
@@ -105,9 +100,19 @@ export function SelectDropdown({
     };
   }, [isOpen]);
 
-  const selectedOption = options.find(
-    (opt) => String(opt.id) === String(value),
-  );
+  const toggleOption = (optionId: string | number) => {
+    const newValue = value.includes(optionId)
+      ? value.filter((id) => id !== optionId)
+      : [...value, optionId];
+    onChange(newValue);
+  };
+
+  const selectedOptions = options.filter((opt) => value.includes(opt.id));
+
+  const removeOption = (e: React.MouseEvent, optionId: string | number) => {
+    e.stopPropagation();
+    onChange(value.filter((id) => id !== optionId));
+  };
 
   const menuNode = (
     <AnimatePresence>
@@ -160,37 +165,48 @@ export function SelectDropdown({
                   </Typography>
                 </div>
               ) : (
-                options.map((option) => (
-                  <Button
-                    key={option.id}
-                    type="button"
-                    variant="ghost"
-                    color="default"
-                    onClick={() => {
-                      onChange(option.id);
-                      setIsOpen(false);
-                    }}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
-                      String(value) === String(option.id)
-                        ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
-                        : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
-                    )}
-                  >
-                    <Typography
-                      variant="body4"
-                      weight="semibold"
-                      as="span"
-                      color="inherit"
-                      className="flex-1 text-left leading-tight pr-4"
+                options.map((option) => {
+                  const isSelected = value.includes(option.id);
+                  return (
+                    <Button
+                      key={option.id}
+                      type="button"
+                      variant="ghost"
+                      color="default"
+                      onClick={() => toggleOption(option.id)}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
+                        isSelected
+                          ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+                          : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
+                      )}
                     >
-                      {option.label}
-                    </Typography>
-                    {String(value) === String(option.id) && (
-                      <Check className="h-4 w-4 flex-shrink-0" />
-                    )}
-                  </Button>
-                ))
+                      <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                        <div
+                          className={cn(
+                            "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                            isSelected
+                              ? "bg-brand-primary border-brand-primary"
+                              : "border-border bg-transparent",
+                          )}
+                        >
+                          {isSelected && (
+                            <Check className="h-3 w-3 text-white" />
+                          )}
+                        </div>
+                        <Typography
+                          variant="body4"
+                          weight="semibold"
+                          as="span"
+                          color="inherit"
+                          className="flex-1 truncate"
+                        >
+                          {option.label}
+                        </Typography>
+                      </div>
+                    </Button>
+                  );
+                })
               )}
             </div>
           </motion.div>
@@ -210,7 +226,7 @@ export function SelectDropdown({
         onClick={toggleDropdown}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
+          "flex w-full items-center justify-between rounded-md border bg-input py-2 px-4 min-h-[52px] text-left text-medium outline-none transition-all hover:bg-input/80",
           "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
@@ -220,20 +236,34 @@ export function SelectDropdown({
             "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
-        <div className="flex w-full items-center justify-between gap-2">
-          <Typography
-            variant="body4"
-            weight="medium"
-            as="span"
-            className={cn(
-              "truncate transition-colors",
-              selectedOption
-                ? "text-foreground"
-                : "text-muted-foreground/60 dark:text-white/40",
+        <div className="flex w-full items-center justify-between gap-2 overflow-hidden">
+          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 py-1">
+            {selectedOptions.length > 0 ? (
+              selectedOptions.map((opt) => (
+                <div
+                  key={opt.id}
+                  className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-primary/10 text-brand-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-sm border border-brand-primary/20 whitespace-nowrap group/chip"
+                >
+                  <span className="max-w-[150px] truncate leading-none">
+                    {opt.label}
+                  </span>
+                  <X
+                    className="h-3.5 w-3.5 cursor-pointer shrink-0 text-brand-primary/40 group-hover/chip:text-brand-primary transition-colors"
+                    onClick={(e) => removeOption(e, opt.id)}
+                  />
+                </div>
+              ))
+            ) : (
+              <Typography
+                variant="body4"
+                weight="medium"
+                as="span"
+                className="text-muted-foreground/60 dark:text-white/40"
+              >
+                {placeholder}
+              </Typography>
             )}
-          >
-            {selectedOption ? selectedOption.label : placeholder}
-          </Typography>
+          </div>
           <ChevronDown
             className={cn(
               "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",

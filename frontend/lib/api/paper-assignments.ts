@@ -88,4 +88,57 @@ export const paperAssignmentsApi = {
         : "/paper-assignments/my-interview-paper",
       options,
     ),
+
+  // Auto Assignment Rules
+  getAutoRules: (
+    assignedDate?: string,
+    options?: Pick<ApiRequestOptions, "cookies">,
+  ) =>
+    api.get<AutoAssignmentRuleResponse[]>(
+      assignedDate
+        ? `/paper-assignments/auto-rules?assigned_date=${encodeURIComponent(assignedDate)}`
+        : "/paper-assignments/auto-rules",
+      options,
+    ),
+
+  createAutoRule: (payload: AutoAssignmentRulePayload) =>
+    api.post<AutoAssignmentRuleResponse>(
+      "/paper-assignments/auto-rules",
+      payload,
+    ),
+
+  updateAutoRule: (
+    ruleId: number,
+    payload: Partial<AutoAssignmentRulePayload>,
+  ) =>
+    api.patch<AutoAssignmentRuleResponse>(
+      `/paper-assignments/auto-rules/${ruleId}`,
+      payload,
+    ),
+
+  deleteAutoRule: (ruleId: number) =>
+    api.delete<{ message: string }>(`/paper-assignments/auto-rules/${ruleId}`),
 };
+
+export interface AutoAssignmentRulePayload {
+  department_id: number;
+  test_level_id: number;
+  assigned_date: string;
+  paper_ids: number[];
+  is_active?: boolean;
+}
+
+export interface AutoAssignmentRuleResponse {
+  id: number;
+  department_id: number;
+  department_name: string;
+  test_level_id: number;
+  test_level_name: string;
+  assigned_date: string;
+  paper_ids: number[];
+  paper_names: string[];
+  is_active: boolean;
+  created_by: number;
+  created_at: string;
+  updated_at: string;
+}

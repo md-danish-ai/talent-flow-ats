@@ -1,23 +1,14 @@
 import React from "react";
-import {
-  Loader2,
-  Edit as EditIcon,
-  Trash2,
-  Settings,
-  Eye,
-  Wand2,
-} from "lucide-react";
+import { Loader2, Edit as EditIcon, Settings, Eye, Wand2 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableRow } from "@components/ui-elements/Table";
 import { PaperSetup } from "@lib/api/papers";
 import { GradeSettingsModal } from "./GradeSettingsModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -27,7 +18,6 @@ interface PaperSetupRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (paper: Partial<PaperSetup>) => void;
-  // onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
   visibleColumns: string[];
 }
@@ -40,7 +30,6 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  // onDelete,
   onViewDetails,
   visibleColumns,
 }) => {
@@ -172,15 +161,6 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             >
               <EditIcon size={16} />
             </TableIconButton>
-
-            {/* <TableIconButton
-              iconColor="red"
-              animate="scale"
-              title="Delete Paper"
-              onClick={() => onDelete(row.id!)}
-            >
-              <Trash2 size={16} />
-            </TableIconButton> */}
           </div>
         </TableCell>
       )}

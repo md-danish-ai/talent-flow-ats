@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Checkbox } from "@components/ui-elements/Checkbox";
-import { resultsApi, type AdminUserResultDetail } from "@lib/api/results";
+import { resultsApi, type AdminUserResultDetail, ApiError } from "@lib/api";
 import { UserListResponse } from "@lib/api/auth";
 import { toast } from "@lib/toast";
 import {
@@ -35,29 +35,38 @@ export function ResetSubjectsModal({
   const [resetting, setResetting] = useState(false);
   const [data, setData] = useState<AdminUserResultDetail | null>(null);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const lastFetchedUserId = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (isOpen && user.id) {
-      fetchAttemptDetail();
-    } else {
-      setData(null);
-      setSelectedSubjects([]);
-    }
-  }, [isOpen, user.id]);
-
-  const fetchAttemptDetail = async () => {
+  const fetchAttemptDetail = useCallback(async () => {
     try {
       setLoading(true);
-      // We need the subjects from the latest attempt
       const detail = await resultsApi.getUserResultDetail(user.id);
       setData(detail);
-    } catch (error) {
+    } catch (error: unknown) {
+      // If no attempt is found (404), fail silently as the UI handles the empty state
+      if (error instanceof ApiError && error.status === 404) {
+        setData(null);
+        return;
+      }
       console.error("Failed to fetch attempt detail:", error);
       toast.error("Failed to load subjects for this user.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    if (isOpen && user.id) {
+      if (lastFetchedUserId.current !== user.id) {
+        lastFetchedUserId.current = user.id;
+        fetchAttemptDetail();
+      }
+    } else {
+      lastFetchedUserId.current = null;
+      setData(null);
+      setSelectedSubjects([]);
+    }
+  }, [isOpen, user.id, fetchAttemptDetail]);
 
   const handleToggleSubject = (subjectName: string) => {
     setSelectedSubjects((prev) =>
@@ -101,7 +110,7 @@ export function ResetSubjectsModal({
       );
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to reset subjects:", error);
       toast.error("An error occurred while resetting subjects.");
     } finally {

@@ -220,19 +220,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
               </Typography>
             </div>
           </div>
-          <div className="hidden md:block">
-            <Button
-              variant="primary"
-              color="primary"
-              size="sm"
-              shadow
-              animate="scale"
-              startIcon={<FileStack size={16} />}
-              className="font-black text-[10px] tracking-widest uppercase border-none px-6"
-            >
-              VIEW FULL PAPER SET
-            </Button>
-          </div>
         </div>
 
         <div className="p-8 space-y-8">

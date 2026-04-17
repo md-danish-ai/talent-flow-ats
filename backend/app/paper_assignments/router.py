@@ -69,3 +69,74 @@ def get_my_interview_paper(
         ResponseMessage.FETCHED,
         data=schemas.AssignedInterviewPaperResponse.model_validate(data).model_dump(),
     )
+
+
+# --- AUTO ASSIGNMENT RULES ---
+
+@router.post(
+    "/auto-rules",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+def create_auto_rule(
+    payload: schemas.AutoAssignmentRuleCreate,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(authenticate_user),
+):
+    rule = repository.create_auto_assignment_rule(
+        db=db, payload=payload, created_by=current_user
+    )
+    return api_response(
+        StatusCode.CREATED,
+        "Auto-assignment rule configured successfully",
+        data=schemas.AutoAssignmentRuleResponse.model_validate(rule).model_dump(),
+    )
+
+
+@router.get(
+    "/auto-rules",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+def list_auto_rules(
+    assigned_date: date | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    rules = repository.get_auto_assignment_rules(db=db, assigned_date=assigned_date)
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.FETCHED,
+        data=[
+            schemas.AutoAssignmentRuleResponse.model_validate(r).model_dump()
+            for r in rules
+        ],
+    )
+
+
+@router.patch(
+    "/auto-rules/{rule_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+def update_auto_rule(
+    rule_id: int,
+    payload: schemas.AutoAssignmentRuleUpdate,
+    db: Session = Depends(get_db),
+):
+    rule = repository.update_auto_assignment_rule(
+        db=db, rule_id=rule_id, payload=payload
+    )
+    return api_response(
+        StatusCode.OK,
+        "Auto-assignment rule updated successfully",
+        data=schemas.AutoAssignmentRuleResponse.model_validate(rule).model_dump(),
+    )
+
+
+@router.delete(
+    "/auto-rules/{rule_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
+def delete_auto_rule(
+    rule_id: int,
+    db: Session = Depends(get_db),
+):
+    result = repository.delete_auto_assignment_rule(db=db, rule_id=rule_id)
+    return api_response(StatusCode.OK, result["message"])

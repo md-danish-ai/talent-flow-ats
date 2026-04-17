@@ -3,7 +3,6 @@ import { Edit as EditIcon, FileText } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@lib/api/questions";

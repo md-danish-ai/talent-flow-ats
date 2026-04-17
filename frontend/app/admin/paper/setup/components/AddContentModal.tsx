@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Badge } from "@components/ui-elements/Badge";
-import { Alert } from "@components/ui-elements/Alert";
 import {
   Table,
   TableBody,
@@ -18,14 +17,10 @@ import {
   Loader2,
   Search,
   RotateCw,
-  Wand2,
-  ListFilter,
-  AlertCircle,
 } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-import { toast } from "@lib/toast";
 
 interface AddContentModalProps {
   subjectName: string;
@@ -60,6 +55,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
     Record<number, number>
   >(initialSelectedMarksMap || {});
   const [isLoading, setIsLoading] = useState(false);
+  const initializedRef = useRef(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,7 +76,10 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         console.error("Failed to fetch data:", error);
       }
     };
-    fetchData();
+    if (!initializedRef.current) {
+      fetchData();
+      initializedRef.current = true;
+    }
   }, []);
 
   // Fetch Questions
@@ -117,12 +116,18 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
   ]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedType, selectedMarks]);
-
-  useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
+
+  const handleTypeChange = (val: string) => {
+    setSelectedType(val);
+    setCurrentPage(1);
+  };
+
+  const handleMarksChange = (val: string) => {
+    setSelectedMarks(val);
+    setCurrentPage(1);
+  };
 
   const handleToggleQuestion = (id: number, marks: number) => {
     setSelectedQuestions((prev) => {
@@ -312,7 +317,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             </Typography>
             <SelectDropdown
               value={selectedType}
-              onChange={(val) => setSelectedType(String(val))}
+              onChange={(val) => handleTypeChange(String(val))}
               placeholder="All Types"
               options={[
                 { id: "", label: "All Question Types" },
@@ -331,7 +336,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             </Typography>
             <SelectDropdown
               value={selectedMarks}
-              onChange={(val) => setSelectedMarks(String(val))}
+              onChange={(val) => handleMarksChange(String(val))}
               placeholder="All Marks"
               options={[
                 { id: "", label: "All Marks" },

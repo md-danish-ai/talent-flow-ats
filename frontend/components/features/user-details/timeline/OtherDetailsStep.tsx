@@ -141,7 +141,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                         </span>
                       }
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(val) => field.handleChange(val)}
                       onBlur={field.handleBlur}
                       error={
                         field.state.meta.isTouched &&
