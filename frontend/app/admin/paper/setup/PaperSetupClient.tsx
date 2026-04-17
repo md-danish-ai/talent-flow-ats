@@ -131,17 +131,6 @@ export function PaperSetupClient() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this paper?")) return;
-    try {
-      await papersApi.deletePaper(id);
-      toast.success("Paper deleted successfully");
-      fetchPapers();
-    } catch {
-      // toast.error("Failed to delete paper");
-    }
-  };
-
   const handleEditClick = (id: number) => {
     router.push(`/admin/paper/setup/edit/${id}`);
   };
@@ -216,7 +205,6 @@ export function PaperSetupClient() {
             togglingId={togglingId}
             onToggleStatus={handleToggleStatus}
             onEdit={(paper) => handleEditClick(paper.id!)}
-            // onDelete={handleDelete}
             onViewDetails={handleViewDetails}
             visibleColumns={visibleColumns}
           />

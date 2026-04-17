@@ -117,7 +117,7 @@ export const paperAssignmentsApi = {
     ),
 
   deleteAutoRule: (ruleId: number) =>
-    api.delete<any>(`/paper-assignments/auto-rules/${ruleId}`),
+    api.delete<{ message: string }>(`/paper-assignments/auto-rules/${ruleId}`),
 };
 
 export interface AutoAssignmentRulePayload {

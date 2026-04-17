@@ -16,7 +16,6 @@ import {
   endOfMonth,
   addMonths,
   subMonths,
-  startOfToday,
   isSameDay,
   startOfDay,
   eachDayOfInterval,

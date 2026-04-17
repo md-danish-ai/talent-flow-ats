@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { Button } from "@components/ui-elements/Button";
-import { Plus, RefreshCcw, Filter, Calendar } from "lucide-react";
+import { Plus, RefreshCcw } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { RuleTable } from "./components/RuleTable";
 import { RuleModal } from "./components/RuleModal";
@@ -25,21 +25,21 @@ export default function AutoAssignmentDashboard() {
     new Date().toISOString().split("T")[0],
   );
 
-  const fetchRules = async () => {
+  const fetchRules = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await paperAssignmentsApi.getAutoRules(selectedDate);
       setRules(response);
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch rules");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDate]);
 
   useEffect(() => {
     fetchRules();
-  }, [selectedDate]);
+  }, [fetchRules]);
 
   const handleEdit = (rule: AutoAssignmentRuleResponse) => {
     setEditingRule(rule);

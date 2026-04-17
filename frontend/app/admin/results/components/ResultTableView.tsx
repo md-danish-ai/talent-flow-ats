@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Phone, Mail } from "lucide-react";
+import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@components/ui-elements/Avatar";
 import {
@@ -12,7 +12,6 @@ import {
   TableCell,
   TableCollapsibleRow,
 } from "@components/ui-elements/Table";
-import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { AdminUserResultListItem } from "@lib/api/results";

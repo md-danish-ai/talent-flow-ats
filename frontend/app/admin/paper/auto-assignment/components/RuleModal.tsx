@@ -17,7 +17,7 @@ import {
 } from "@lib/api/paper-assignments";
 import { papersApi, type PaperSetup } from "@lib/api/papers";
 import { toast } from "@lib/toast";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Alert } from "@components/ui-elements/Alert";
 
 interface RuleModalProps {

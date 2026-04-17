@@ -20,7 +20,6 @@ import {
   Mail,
   BookOpen,
   Layers,
-  Briefcase,
 } from "lucide-react";
 
 interface AssignPaperModalProps {
@@ -154,7 +153,15 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       initializedRef.current = false;
       setIsInitialized(false);
     }
-  }, [isOpen, user.id, user.department_id, fetchDepartments]);
+  }, [
+    isOpen,
+    user.id,
+    user.department_id,
+    user.assignment?.department_id,
+    user.assignment?.is_assigned,
+    user.assignment?.paper_id,
+    fetchDepartments,
+  ]);
 
   // Fetch papers when department changes
   useEffect(() => {

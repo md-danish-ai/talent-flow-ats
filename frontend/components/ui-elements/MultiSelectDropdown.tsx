@@ -7,7 +7,6 @@ import { ChevronDown, Check, Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
-import { Badge } from "@components/ui-elements/Badge";
 
 export interface MultiSelectOption {
   id: string | number;

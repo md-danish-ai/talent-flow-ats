@@ -20,12 +20,7 @@ import {
 } from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
-const isAutoSaveQuestionType = (type: InterviewQuestion["type"]) =>
-  type === "MULTIPLE_CHOICE" ||
-  type === "IMAGE_MULTIPLE_CHOICE" ||
-  type === "CONTACT_DETAILS" ||
-  type === "LEAD_GENERATION" ||
-  type === "TYPING_TEST";
+
 
 const buildSavedAnswersMap = (
   savedResponses: {
@@ -343,6 +338,7 @@ export function InterviewTestClient() {
       lockedSections,
       totalSections,
       finalizeInterview,
+      persistSubjectAnswers,
     ],
   );
 
@@ -409,12 +405,9 @@ export function InterviewTestClient() {
 
     void advanceSection();
   }, [
-    attemptId,
-    currentQuestion,
-    currentSection,
     lockAndMoveToNextSection,
-    persistSubjectAnswers,
     sectionIndex,
+    currentSection,
   ]);
 
   useEffect(() => {
@@ -517,14 +510,11 @@ export function InterviewTestClient() {
     lockAndMoveToNextSection(sectionIndex);
   }, [
     currentQuestion,
-    persistSubjectAnswers,
     isLastQuestionInSection,
     sections,
     lockedSections,
-    attemptId,
     lockAndMoveToNextSection,
     sectionIndex,
-    persistSubjectAnswers,
   ]);
 
   const handleConfirmSectionChange = () => {

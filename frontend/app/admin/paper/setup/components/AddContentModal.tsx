@@ -4,7 +4,6 @@ import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Badge } from "@components/ui-elements/Badge";
-import { Alert } from "@components/ui-elements/Alert";
 import {
   Table,
   TableBody,
@@ -18,14 +17,10 @@ import {
   Loader2,
   Search,
   RotateCw,
-  Wand2,
-  ListFilter,
-  AlertCircle,
 } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
-import { toast } from "@lib/toast";
 
 interface AddContentModalProps {
   subjectName: string;

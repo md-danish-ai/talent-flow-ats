@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -37,9 +37,26 @@ export function ResetSubjectsModal({
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const lastFetchedUserId = useRef<number | null>(null);
 
+  const fetchAttemptDetail = useCallback(async () => {
+    try {
+      setLoading(true);
+      const detail = await resultsApi.getUserResultDetail(user.id);
+      setData(detail);
+    } catch (error: unknown) {
+      // If no attempt is found (404), fail silently as the UI handles the empty state
+      if (error instanceof ApiError && error.status === 404) {
+        setData(null);
+        return;
+      }
+      console.error("Failed to fetch attempt detail:", error);
+      toast.error("Failed to load subjects for this user.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user.id]);
+
   useEffect(() => {
     if (isOpen && user.id) {
-      // Only fetch if we haven't fetched for this specific user yet in this session
       if (lastFetchedUserId.current !== user.id) {
         lastFetchedUserId.current = user.id;
         fetchAttemptDetail();
@@ -49,26 +66,7 @@ export function ResetSubjectsModal({
       setData(null);
       setSelectedSubjects([]);
     }
-  }, [isOpen, user.id]);
-
-  const fetchAttemptDetail = async () => {
-    try {
-      setLoading(true);
-      const detail = await resultsApi.getUserResultDetail(user.id);
-      setData(detail);
-    } catch (error: unknown) {
-      const apiErr = error as ApiError;
-      // If no attempt is found (404), fail silently as the UI handles the empty state
-      if (apiErr?.status === 404) {
-        setData(null);
-        return;
-      }
-      console.error("Failed to fetch attempt detail:", error);
-      toast.error("Failed to load subjects for this user.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isOpen, user.id, fetchAttemptDetail]);
 
   const handleToggleSubject = (subjectName: string) => {
     setSelectedSubjects((prev) =>

@@ -39,7 +39,7 @@ export function RuleTable({
       await paperAssignmentsApi.deleteAutoRule(ruleId);
       toast.success("Rule deleted successfully");
       onRefresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete rule");
     }
   };

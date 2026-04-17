@@ -1,6 +1,5 @@
-"use client";
-
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
@@ -23,6 +22,14 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   closeOnOutsideClick = false,
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    React.startTransition(() => {
+      setMounted(true);
+    });
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -40,15 +47,15 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overflow-hidden pointer-events-none">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
             onClick={handleBackdropClick}
           />
 
@@ -60,7 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
               duration: 0.3,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className={`relative z-10 w-full max-w-4xl bg-card rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden ${className}`}
+            className={`relative z-[1000] w-full max-w-4xl bg-card rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden pointer-events-auto ${className}`}
           >
             {title && (
               <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0 bg-card">
@@ -89,4 +96,8 @@ export const Modal: React.FC<ModalProps> = ({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(modalContent, document.body);
 };

@@ -12,9 +12,7 @@ import {
 import {
   ClipboardCheck,
   Users,
-  Phone,
   Mail,
-  User,
   Filter,
   RotateCcw,
   Search,
