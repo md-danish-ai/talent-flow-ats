@@ -8,6 +8,8 @@ from app.users.models import User
 from app.paper_assignments.models import PaperAssignment
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
+from app.paper_assignments.repository import assign_best_paper
+from datetime import date as dt_date
 
 
 
@@ -39,6 +41,19 @@ def signup_user(data):
         db_session.add(new_user)
         db_session.commit()
         db_session.refresh(new_user)
+
+        # Trigger Auto-Assignment immediately after signup
+        try:
+            assign_best_paper(
+                db=db_session,
+                user_id=new_user.id,
+                department_id=new_user.department_id,
+                test_level_id=new_user.test_level_id,
+                assigned_date=dt_date.today()
+            )
+        except Exception as e:
+            # Log error but don't fail signup. 
+            print(f"Auto-assignment failed for user {new_user.id}: {str(e)}")
 
         user_data = {
             "id": new_user.id,
@@ -109,6 +124,19 @@ def signin_user(data):
                 status_code=StatusCode.UNAUTHORIZED,
                 detail=f"Access denied: Your account is not authorized for the {data.role.value} role.",
             )
+
+        # For regular users, check/trigger auto-assignment on login if not already assigned
+        if user.role == "user":
+            try:
+                assign_best_paper(
+                    db=db_session,
+                    user_id=user.id,
+                    department_id=user.department_id,
+                    test_level_id=user.test_level_id,
+                    assigned_date=dt_date.today()
+                )
+            except Exception as e:
+                print(f"Auto-assignment during login failed for user {user.id}: {str(e)}")
 
         user_data = {"id": user.id, "username": user.username,
                      "role": user.role, "department_id": user.department_id}

@@ -99,9 +99,24 @@ export function PaperSetupClient() {
     }
   }, [currentPage, pageSize, deptFilter, levelFilter, searchQuery]);
 
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+  };
+
+  const handleDeptChange = (val: string) => {
+    setDeptFilter(val);
+    setCurrentPage(1);
+  };
+
+  const handleLevelChange = (val: string) => {
+    setLevelFilter(val);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     fetchPapers();
-  }, [fetchPapers, deptFilter, levelFilter, searchQuery]);
+  }, [fetchPapers]);
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
@@ -232,10 +247,7 @@ export function PaperSetupClient() {
                   placeholder="Paper name..."
                   className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
             </div>
@@ -253,10 +265,7 @@ export function PaperSetupClient() {
               <SelectDropdown
                 options={deptOptions}
                 value={deptFilter}
-                onChange={(val) => {
-                  setDeptFilter(String(val));
-                  setCurrentPage(1);
-                }}
+                onChange={(val) => handleDeptChange(String(val))}
                 placeholder="Select Department"
                 isLoading={allDepartments.length === 0}
               />
@@ -275,10 +284,7 @@ export function PaperSetupClient() {
               <SelectDropdown
                 options={levelOptions}
                 value={levelFilter}
-                onChange={(val) => {
-                  setLevelFilter(String(val));
-                  setCurrentPage(1);
-                }}
+                onChange={(val) => handleLevelChange(String(val))}
                 placeholder="Select Level"
                 isLoading={classificationQuery.isLoading}
               />

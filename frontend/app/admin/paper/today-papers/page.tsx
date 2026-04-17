@@ -4,6 +4,9 @@ import { TodayUserListing } from "./components/TodayUserListing";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 import { cookies } from "next/headers";
 import { PageHeader } from "@components/ui-elements/PageHeader";
+import { Button } from "@components/ui-elements/Button";
+import Link from "next/link";
+import { Settings } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +56,19 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
       <PageHeader
         title="Daily Papers"
         description="Overview of papers scheduled and active for today."
+        action={
+          <Link href="/admin/paper/auto-assignment">
+            <Button
+              variant="outline"
+              color="secondary"
+              animate="scale"
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Auto-Assignment Rules
+            </Button>
+          </Link>
+        }
       />
       <TodayUserListing initialData={initialData} initialLabel={initialLabel} />
     </PageContainer>

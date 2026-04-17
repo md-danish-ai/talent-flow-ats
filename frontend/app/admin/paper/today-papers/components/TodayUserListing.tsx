@@ -308,7 +308,7 @@ export function TodayUserListing({
                           {row.department_name ||
                           row.assignment?.department_name ? (
                             <Badge
-                              color="primary"
+                              color="secondary"
                               animate="pulse"
                               shape="square"
                               variant="outline"
@@ -327,7 +327,7 @@ export function TodayUserListing({
                           <Badge
                             variant="outline"
                             shape="square"
-                            color="default"
+                            color="primary"
                           >
                             {row.assignment?.test_level_name ||
                               row.test_level_name ||
@@ -352,8 +352,8 @@ export function TodayUserListing({
                                 </Badge>
                               ) : (
                                 <Badge
-                                  variant="fill"
-                                  color="warning"
+                                  variant="outline"
+                                  color="violet"
                                   animate="pulse"
                                   shape="square"
                                 >
@@ -365,7 +365,7 @@ export function TodayUserListing({
                             <Badge
                               variant="outline"
                               shape="square"
-                              color="default"
+                              color="warning"
                             >
                               PENDING ASSIGNMENT
                             </Badge>

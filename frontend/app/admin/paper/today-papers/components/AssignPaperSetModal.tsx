@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { Alert } from "@components/ui-elements/Alert";
+import { Badge } from "@components/ui-elements/Badge";
 import { UserListResponse } from "@lib/api/auth";
 import { papersApi, PaperSetup } from "@lib/api/papers";
 import { departmentsApi, Department } from "@lib/api/departments";
@@ -46,6 +48,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const initializedRef = useRef(false);
 
   const fetchDepartments = useCallback(async () => {
     try {
@@ -76,7 +79,6 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       const papersList = (response.data || []) as PaperSetup[];
 
       // Filter papers that meet the "Total Selected Questions" condition
-      // 1. Collect all unique question IDs from all papers to fetch their subject info
       const allQuestionIds = Array.from(
         new Set(papersList.flatMap((p) => p.question_id || [])),
       );
@@ -86,7 +88,6 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
         return;
       }
 
-      // 2. Fetch question details for mapping
       const questionsList =
         await questionsApi.getQuestionsByIds(allQuestionIds);
       const questionIdToSubjectMap = new Map<number, number>();
@@ -97,28 +98,17 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
         }
       });
 
-      // 3. Filter the papersList
       const readyPapers = papersList.filter((paper) => {
-        // Must be active
         if (!paper.is_active) return false;
-
         const subjects = paper.subject_ids_data || [];
         const selectedSubjects = subjects.filter((s) => s.is_selected);
-
-        // A valid paper must have at least one selected subject
         if (selectedSubjects.length === 0) return false;
-
-        // ALL selected subjects must have their required question count met
         return selectedSubjects.every((subjectConfig) => {
           const requiredCount = subjectConfig.question_count;
           const assignedIds = paper.question_id || [];
-
-          // Count questions in this paper that belong to this subject
           const actualCount = assignedIds.filter(
             (id) => questionIdToSubjectMap.get(id) === subjectConfig.subject_id,
           ).length;
-
-          // Condition: actual count must match the required count (Green status)
           return actualCount === requiredCount && requiredCount > 0;
         });
       });
@@ -134,45 +124,41 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      console.log(
-        "Modal opened for user:",
-        user.id,
-        "Assignment:",
-        user.assignment,
-      );
-      setIsInitialized(false);
-      fetchDepartments();
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        fetchDepartments();
 
-      // Pre-fill department and paper
-      if (user.assignment?.is_assigned) {
-        const deptId = user.assignment.department_id || user.department_id;
-        if (deptId) {
-          setSelectedDepartment(deptId.toString());
+        // Pre-fill department and paper
+        if (user.assignment?.is_assigned) {
+          const deptId = user.assignment.department_id || user.department_id;
+          if (deptId) {
+            setSelectedDepartment(deptId.toString());
+          }
+          if (user.assignment.paper_id) {
+            setSelectedPaper(user.assignment.paper_id.toString());
+          }
+        } else if (user.department_id) {
+          setSelectedDepartment(user.department_id.toString());
+          setSelectedPaper("");
+          setPapers([]);
+        } else {
+          setSelectedDepartment("");
+          setSelectedPaper("");
+          setPapers([]);
         }
-        if (user.assignment.paper_id) {
-          setSelectedPaper(user.assignment.paper_id.toString());
-        }
-      } else if (user.department_id) {
-        // Default to user's assigned department for new assignments
-        setSelectedDepartment(user.department_id.toString());
-        setSelectedPaper("");
-        setPapers([]);
-      } else {
-        // Pure fresh state
-        setSelectedDepartment("");
-        setSelectedPaper("");
-        setPapers([]);
+
+        // Mark as initialized after a short delay
+        setTimeout(() => setIsInitialized(true), 100);
       }
-
-      // Mark as initialized after a short delay to allow states to settle
-      const timer = setTimeout(() => setIsInitialized(true), 100);
-      return () => clearTimeout(timer);
+    } else {
+      initializedRef.current = false;
+      setIsInitialized(false);
     }
-  }, [isOpen, user.id, user.assignment, fetchDepartments]);
+  }, [isOpen, user.id, user.department_id, fetchDepartments]);
 
   // Fetch papers when department changes
   useEffect(() => {
-    if (isOpen && selectedDepartment) {
+    if (isOpen && selectedDepartment && isInitialized) {
       fetchPapers();
     } else if (isOpen && !selectedDepartment && isInitialized) {
       setPapers([]);
@@ -226,53 +212,81 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
     >
       <div className="space-y-6">
         <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                <User size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <User size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <Typography
+                    variant="h5"
+                    weight="black"
+                    className="text-slate-800 dark:text-white capitalize leading-tight"
+                  >
+                    {user.username}
+                  </Typography>
+                  <div className="flex items-center gap-3">
+                    <Typography
+                      variant="body5"
+                      weight="medium"
+                      className="text-muted-foreground/70 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded"
+                    >
+                      ID: #{user.id}
+                    </Typography>
+                  </div>
+                </div>
+
+                {userLevel && (
+                  <Badge
+                    variant="outline"
+                    color="primary"
+                    shape="square"
+                    className="font-black text-[9px] px-2.5 py-1 border-brand-primary/20 uppercase tracking-widest"
+                  >
+                    {userLevel}
+                  </Badge>
+                )}
               </div>
-              <div>
-                <Typography variant="body3" weight="semibold">
-                  {user.username}
-                </Typography>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Briefcase size={12} />
-                  <Typography variant="body4" className="text-xs">
-                    User ID: #{user.id}
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+                <div className="flex items-center gap-2 text-slate-500">
+                  <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <Phone size={14} className="text-brand-primary" />
+                  </div>
+                  <Typography variant="body4" weight="semibold" className="text-slate-600 dark:text-slate-300">
+                    {user.mobile || "N/A"}
                   </Typography>
                 </div>
+                
+                {user.email && (
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Mail size={14} className="text-brand-primary" />
+                    </div>
+                    <Typography variant="body4" weight="medium" className="text-slate-500 dark:text-slate-400 italic">
+                      {user.email}
+                    </Typography>
+                  </div>
+                )}
               </div>
             </div>
-            {userLevel && (
-              <div className="px-2.5 py-1 rounded-lg bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                <Typography
-                  variant="body4"
-                  weight="bold"
-                  className="uppercase tracking-wider text-[10px]"
-                >
-                  {userLevel}
-                </Typography>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Phone size={14} />
-              <Typography variant="body4" className="text-xs">
-                {user.mobile}
-              </Typography>
-            </div>
-            {user.email && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail size={14} />
-                <Typography variant="body4" className="truncate text-xs">
-                  {user.email}
-                </Typography>
-              </div>
-            )}
           </div>
         </div>
+
+        <Alert
+          variant="warning"
+          className="mb-5 border-amber-200 bg-amber-50/50 dark:bg-amber-900/10"
+          description={
+            <Typography
+              variant="body5"
+              className="text-amber-800 dark:text-amber-200"
+            >
+              Note: To assign a paper for a different department or exam level,
+              please update the candidate&apos;s information first.
+            </Typography>
+          }
+        />
 
         <div className="space-y-5">
           <div className="space-y-2">
@@ -293,13 +307,14 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
               value={selectedDepartment}
               onChange={(val) => {
                 setSelectedDepartment(val.toString());
-                setSelectedPaper(""); // Clear paper when dept changes manually
+                setSelectedPaper("");
               }}
-              disabled={isSubmitting}
+              disabled={true} // Locked to user's registered department
+              className="bg-muted/50 cursor-not-allowed"
             />
           </div>
 
-          <div className="space-y-2 border-t border-border/50 pt-5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Typography
                 variant="body4"

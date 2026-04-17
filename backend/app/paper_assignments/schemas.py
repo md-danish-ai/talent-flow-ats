@@ -74,3 +74,53 @@ class AssignedInterviewPaperResponse(BaseModel):
     total_questions: int
     overall_duration_minutes: int
     sections: list[InterviewPaperSectionResponse]
+
+
+# Auto Assignment Rule Schemas
+
+class AutoAssignmentRuleBase(BaseModel):
+    department_id: int
+    test_level_id: int
+    assigned_date: date
+    paper_ids: list[int]
+    is_active: bool = True
+
+    @field_validator("assigned_date", mode="before")
+    @classmethod
+    def parse_assigned_date(cls, value):
+        if isinstance(value, str):
+            return date.fromisoformat(value)
+        return value
+
+
+class AutoAssignmentRuleCreate(AutoAssignmentRuleBase):
+    pass
+
+
+class AutoAssignmentRuleUpdate(BaseModel):
+    department_id: int | None = None
+    test_level_id: int | None = None
+    assigned_date: date | None = None
+    paper_ids: list[int] | None = None
+    is_active: bool | None = None
+
+    @field_validator("assigned_date", mode="before")
+    @classmethod
+    def parse_assigned_date(cls, value):
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return date.fromisoformat(value)
+        return value
+
+
+class AutoAssignmentRuleResponse(AutoAssignmentRuleBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+    department_name: str | None = None
+    test_level_name: str | None = None
+    paper_names: list[str] = []
+
+    model_config = ConfigDict(from_attributes=True)

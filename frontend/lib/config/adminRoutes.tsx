@@ -56,6 +56,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     items: [
       { label: "Paper Setup", href: "/admin/paper/setup" },
       { label: "Set Today's Papers", href: "/admin/paper/today-papers" },
+      { label: "Auto-Assignment", href: "/admin/paper/auto-assignment" },
       { label: "Reset User Status", href: "/admin/paper/reset-status" },
     ],
   },

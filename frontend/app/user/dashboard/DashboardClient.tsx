@@ -318,7 +318,7 @@ export function DashboardClient({
                     weight="black"
                     className={`mb-3 text-2xl tracking-tighter uppercase italic ${isDetailsComplete ? "text-slate-400 dark:text-zinc-600" : "text-slate-900 dark:text-white"}`}
                   >
-                    Data Dossier
+                    Personal Details
                   </Typography>
                   <Typography
                     variant="body2"
@@ -475,7 +475,7 @@ export function DashboardClient({
               <Lock className="h-3 w-3" />
             </div>
             <span>
-              Clearance Alert: Complete your dossier to authorize the core
+              Clearance Alert: Complete your profile to authorize the core
               assessment phase.
             </span>
           </motion.div>
