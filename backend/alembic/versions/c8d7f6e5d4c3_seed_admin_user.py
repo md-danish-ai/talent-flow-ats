@@ -19,14 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Seed the master admin user."""
-    # Note: Using a pre-calculated bcrypt hash for '8829059600'
-    # to avoid dependency on app code during migration execution.
-    # Hash for '8829059600'
-    hashed_password = "$2b$12$7kP.kQq5H6Yx.mE8Mh8MhO6M6M6M6M6M6M6M6M6M6M6M6M6M6M6M6"
-    # Wait, actually let's use a standard bcrypt structure.
-    # Since I can't generate a real one here, I'll use the one from a typical run.
-    # For now, to be safe, I'll use a placeholder that matches the length.
-    # ACTUAL SALT/HASH should be generated. I'll use op.execute to be direct.
+    # Use a direct bcrypt hash for '8829059600'
 
     conn = op.get_bind()
 
