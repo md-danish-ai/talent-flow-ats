@@ -16,6 +16,7 @@ export const signUpSchema = z.object({
     .regex(/^\d+$/, "The mobile number must contain only digits."),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   testLevel: z.enum(TEST_LEVELS),
+  department_id: z.string().min(1, "Please select a department"),
   role: z.enum(ROLES),
 });
 

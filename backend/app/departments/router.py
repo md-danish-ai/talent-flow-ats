@@ -13,7 +13,6 @@ from app.utils.pagination import (
 router = APIRouter(
     prefix="/departments",
     tags=["Departments"],
-    dependencies=[Depends(require_roles(["admin"]))],
 )
 service = DepartmentService()
 
@@ -42,13 +41,13 @@ def get_by_id(department_id: int):
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
-@router.post("/create")
+@router.post("/create", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: DepartmentCreate):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update/{department_id}")
+@router.put("/update/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
 def update(department_id: int, payload: DepartmentUpdate):
     data = service.update(department_id, payload)
     if not data:
@@ -56,7 +55,7 @@ def update(department_id: int, payload: DepartmentUpdate):
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/delete/{department_id}")
+@router.delete("/delete/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
 def delete(department_id: int):
     success = service.delete(department_id)
     if not success:

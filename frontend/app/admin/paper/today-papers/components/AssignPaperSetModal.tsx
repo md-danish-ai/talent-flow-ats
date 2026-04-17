@@ -142,16 +142,22 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
       setIsInitialized(false);
       fetchDepartments();
 
-      // Pre-fill if assignment already exists (Edit Mode)
+      // Pre-fill department and paper
       if (user.assignment?.is_assigned) {
-        if (user.assignment.department_id) {
-          setSelectedDepartment(user.assignment.department_id.toString());
+        const deptId = user.assignment.department_id || user.department_id;
+        if (deptId) {
+          setSelectedDepartment(deptId.toString());
         }
         if (user.assignment.paper_id) {
           setSelectedPaper(user.assignment.paper_id.toString());
         }
+      } else if (user.department_id) {
+        // Default to user's assigned department for new assignments
+        setSelectedDepartment(user.department_id.toString());
+        setSelectedPaper("");
+        setPapers([]);
       } else {
-        // Reset state for new assignment
+        // Pure fresh state
         setSelectedDepartment("");
         setSelectedPaper("");
         setPapers([]);

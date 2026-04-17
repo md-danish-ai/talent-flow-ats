@@ -3,6 +3,7 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { getUserDetailsById } from "@lib/api/user-details";
 import { cookies } from "next/headers";
 import { UserForm } from "@features/user-details/UserForm";
+import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -38,14 +39,25 @@ export default async function UpdateUserDetailsPage({
         </Link>
       </div>
 
-      {!details ? (
-        <div className="bg-card rounded-2xl p-12 text-center border ring-1 ring-border">
-          <p className="text-muted-foreground">
-            User details not found or not submitted yet.
+      <UpdateAccountInfoForm
+        userId={id}
+        initialData={{
+          username: details?.username,
+          mobile: details?.mobile,
+          email: details?.email,
+          testlevel: details?.testlevel,
+          department_id: details?.department_id,
+        }}
+      />
+
+      {details && details.personalDetails ? (
+        <UserForm initialData={details} userId={id} isAdmin={true} />
+      ) : (
+        <div className="bg-card rounded-2xl p-12 text-center border ring-1 ring-border mt-6">
+          <p className="text-muted-foreground uppercase tracking-wider font-bold text-sm">
+            Recruitment details not submitted yet.
           </p>
         </div>
-      ) : (
-        <UserForm initialData={details} userId={id} isAdmin={true} />
       )}
     </PageContainer>
   );

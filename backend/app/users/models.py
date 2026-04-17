@@ -25,6 +25,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
 
     testlevel = Column(String(50), nullable=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
     role = Column(String(50), nullable=False, server_default=text("'user'"))
 
     is_active = Column(Boolean, nullable=False, server_default=text("true"))

@@ -16,6 +16,7 @@ export interface AuthResponse {
     email?: string;
     mobile?: string;
     role: string;
+    department_id?: number | null;
   };
 }
 
@@ -28,6 +29,7 @@ export interface SignUpResponse {
     email?: string;
     mobile?: string;
     role: string;
+    department_id?: number | null;
   };
 }
 
@@ -80,6 +82,8 @@ export interface UserListResponse {
   mobile: string;
   email: string | null;
   role: string;
+  department_id?: number | null;
+  department_name?: string | null;
   testlevel?: string;
   testlevel_id?: number | string;
   test_level_id?: number | string;
@@ -148,6 +152,19 @@ export async function deleteUser(
 ): Promise<{ id: number; message: string }> {
   return api.delete<{ id: number; message: string }>(
     `/auth/delete/${userId}`,
+    options,
+  );
+}
+
+// PUT /auth/update-basic-info/{user_id} - Update basic user info
+export async function updateBasicInfo(
+  userId: number | string,
+  data: SignUpFormValues,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ message: string; user_id: number }> {
+  return api.put<{ message: string; user_id: number }>(
+    `/auth/update-basic-info/${userId}`,
+    data,
     options,
   );
 }

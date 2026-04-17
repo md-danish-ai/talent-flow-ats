@@ -25,9 +25,30 @@ class SignUpSchema(BaseModel):
     name: str
     mobile: str
     testLevel: TestLevelEnum
+    department_id: int
     email: Optional[EmailStr] = None
 
     @validator("email", pre=True)
+    def empty_to_none(cls, field_value):
+        if field_value == "":
+            return None
+        return field_value
+
+    @validator("department_id", pre=True)
+    def validate_dept_id(cls, value):
+        if value == "":
+            return None
+        return value
+
+
+class UpdateUserSchema(BaseModel):
+    name: Optional[str] = None
+    mobile: Optional[str] = None
+    email: Optional[EmailStr] = None
+    testLevel: Optional[TestLevelEnum] = None
+    department_id: Optional[int] = None
+
+    @validator("email", "department_id", pre=True)
     def empty_to_none(cls, field_value):
         if field_value == "":
             return None

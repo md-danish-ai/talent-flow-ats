@@ -11,25 +11,38 @@ import {
   type SignUpFormValues,
   TEST_LEVELS,
 } from "@lib/validations/auth";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 import { useSignUp } from "@lib/react-query/user/use-auth";
+import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { getErrorMessage } from "@lib/utils";
 
-export function SignUpForm() {
+export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signUpMutation = useSignUp();
+  const { data: departments, isLoading: isLoadingDepts } = useDepartments({
+    is_active: true,
+  });
+
+  const deptOptions = (departments || []).map((d) => ({
+    id: String(d.id),
+    label: d.name,
+  }));
 
   const form = useForm({
+    // @ts-expect-error - validatorAdapter types mismatch in this version
+    validatorAdapter: zodValidator(),
     defaultValues: {
       name: "",
       mobile: "",
       email: "",
       testLevel: "FRESHER",
+      department_id: "",
       role: "user",
     } as SignUpFormValues,
     validators: {
@@ -40,15 +53,19 @@ export function SignUpForm() {
       try {
         const response = await signUpMutation.mutateAsync(value);
 
+        if (onSuccess) {
+          onSuccess();
+          return;
+        }
+
         // Store auth token and role in cookies
         document.cookie = `role=${response.user?.role ?? "user"}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
 
         router.push("/user/dashboard");
       } catch (err: unknown) {
-        const error = err as { message?: string };
         setServerError(
-          error.message ?? "Registration failed. Please try again.",
+          getErrorMessage(err) || "Registration failed. Please try again.",
         );
       }
     },
@@ -206,10 +223,49 @@ export function SignUpForm() {
                 options={levels}
                 value={field.state.value}
                 onChange={(val) =>
-                  field.handleChange(val as (typeof TEST_LEVELS)[number])
+                  field.handleChange(
+                    val as (typeof TEST_LEVELS)[number],
+                  )
                 }
                 placement="top"
               />
+            </div>
+          )}
+        </form.Field>
+
+        <form.Field name="department_id">
+          {(field) => (
+            <div className="group">
+              <Typography
+                as="label"
+                variant="h6"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Select Department
+              </Typography>
+              <div className="relative">
+                <SelectDropdown
+                  options={deptOptions}
+                  value={field.state.value}
+                  onChange={(val) => field.handleChange(String(val))}
+                  placeholder={
+                    isLoadingDepts
+                      ? "Loading Departments..."
+                      : "Choose Department"
+                  }
+                  disabled={isLoadingDepts}
+                  placement="top"
+                />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-medium text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+              </div>
             </div>
           )}
         </form.Field>
