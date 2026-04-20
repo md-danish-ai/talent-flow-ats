@@ -14,6 +14,7 @@ export interface AdminUserLatestAttempt {
   unattempted_count: number;
   obtained_marks?: number | null;
   total_marks?: number;
+  overall_grade?: string;
   typing_stats?: {
     wpm: number;
     accuracy: number;

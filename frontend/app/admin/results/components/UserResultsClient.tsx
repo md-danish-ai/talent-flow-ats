@@ -55,34 +55,33 @@ export function UserResultsClient() {
   const availableColumns = useMemo(() => {
     const baseColumns = [
       { id: "candidate", label: "Candidate", pinned: true },
-      { id: "date", label: "Interview Date" },
-      { id: "paper", label: "Paper" },
-      { id: "marks", label: "Marks" },
+      { id: "paper", label: "Assigned Paper" },
+      { id: "attempts", label: "Attempts" },
+      { id: "marks", label: "Score" },
+      { id: "grade", label: "Grade" },
     ];
-
-    const subjectColumns = allSubjects.map((s) => ({
-      id: `subject_${s}`,
-      label: s,
-    }));
 
     const endColumns = [
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
+      { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
     ];
 
-    return [...baseColumns, ...subjectColumns, ...endColumns];
-  }, [allSubjects]);
+    return [...baseColumns, ...endColumns];
+  }, []);
 
   const DEFAULT_VISIBLE_COLUMNS = useMemo(() => {
     return [
       "candidate",
-      "date",
       "paper",
+      "attempts",
       "marks",
+      "grade",
       "typing_wpm",
       "status",
+      "date",
       "actions",
     ];
   }, []);

@@ -21,6 +21,7 @@ import {
   Mail,
   FileText,
   UserCog,
+  Copy,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
@@ -45,6 +46,7 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
 
 interface UserListingProps {
   initialData?: UserListResponse[];
@@ -295,19 +297,27 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                                 </Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5 text-slate-500 font-medium italic opacity-70 mt-0.5">
+                            <CopyableText 
+                              value={row.email || "-"}
+                              className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                              title="Copy Email"
+                            >
                               <Mail size={11} />
                               <span className="text-[11px] truncate max-w-[150px]">
                                 {row.email || "-"}
                               </span>
-                            </div>
+                            </CopyableText>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="align-middle py-3">
-                        <span className="text-[12px] font-normal tracking-tight text-slate-800 dark:text-slate-200">
-                          {row.mobile}
-                        </span>
+                        <CopyableText 
+                          value={row.mobile}
+                          className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
+                          title="Copy Phone Number"
+                        >
+                          <span className="mb-[1px]">{row.mobile}</span>
+                        </CopyableText>
                       </TableCell>
                       <TableCell className="align-middle py-3">
                         <Badge
@@ -319,7 +329,6 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                               : "default"
                           }
                           shape="square"
-                          className="font-bold text-[9px] px-2 h-5 flex items-center justify-center w-fit border-slate-300 bg-slate-50 dark:bg-slate-900/40 uppercase"
                         >
                           {row.department_name ||
                             row.assignment?.department_name ||

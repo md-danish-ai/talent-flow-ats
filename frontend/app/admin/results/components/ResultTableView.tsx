@@ -1,9 +1,10 @@
 "use client";
 
-import { Eye, Phone } from "lucide-react";
+import { Eye, Phone, Copy } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
 import { ResultTableSkeleton } from "@components/ui-skeleton/ResultTableSkeleton";
 import {
   Table,
@@ -45,14 +46,14 @@ export function ResultTableView({
                 Candidate
               </TableHead>
             )}
-            {visibleColumns.includes("date") && (
-              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
-                Date
+            {visibleColumns.includes("paper") && (
+              <TableHead className="min-w-[140px] whitespace-nowrap text-left font-bold text-foreground/80">
+                Assigned Paper
               </TableHead>
             )}
-            {visibleColumns.includes("paper") && (
-              <TableHead className="min-w-[140px] whitespace-nowrap text-center font-bold text-foreground/80">
-                Assigned Paper
+            {visibleColumns.includes("attempts") && (
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+                Total Attempts
               </TableHead>
             )}
             {visibleColumns.includes("marks") && (
@@ -60,17 +61,10 @@ export function ResultTableView({
                 Marks
               </TableHead>
             )}
-
-            {/* Dynamic Subjects */}
-            {allSubjects.map((s) =>
-              visibleColumns.includes(`subject_${s}`) ? (
-                <TableHead
-                  key={s}
-                  className="text-center min-w-[130px] whitespace-nowrap font-bold text-foreground/80"
-                >
-                  {s}
-                </TableHead>
-              ) : null,
+            {visibleColumns.includes("grade") && (
+              <TableHead className="text-center min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+                Overall Grade
+              </TableHead>
             )}
 
             {visibleColumns.includes("typing_wpm") && (
@@ -86,6 +80,11 @@ export function ResultTableView({
             {visibleColumns.includes("status") && (
               <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80">
                 Latest Status
+              </TableHead>
+            )}
+            {visibleColumns.includes("date") && (
+              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+                Date
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
@@ -163,31 +162,22 @@ export function ResultTableView({
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 text-slate-500 font-medium opacity-70">
-                            <Phone size={11} />
-                            <span className="text-[11px]">{item.mobile}</span>
-                          </div>
+                          <CopyableText 
+                            value={item.mobile}
+                            className="text-slate-500 dark:text-slate-300 font-medium"
+                            title="Copy Phone Number"
+                          >
+                            <Phone size={11} className="w-[11px] h-[11px]" />
+                            <span className="text-[11px] font-medium tracking-tight">
+                              {item.mobile}
+                            </span>
+                          </CopyableText>
                         </div>
                       </div>
                     </TableCell>
                   )}
-                  {visibleColumns.includes("date") && (
-                    <TableCell className="text-muted-foreground">
-                      {interviewDate ? (
-                        new Date(interviewDate).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "2-digit",
-                        })
-                      ) : (
-                        <span className="text-muted-foreground/60 font-medium">
-                          N/A
-                        </span>
-                      )}
-                    </TableCell>
-                  )}
                   {visibleColumns.includes("paper") && (
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-muted-foreground font-medium text-left">
                       {latest?.paper_name ? (
                         latest.paper_name
                       ) : (
@@ -197,18 +187,39 @@ export function ResultTableView({
                       )}
                     </TableCell>
                   )}
+                  {visibleColumns.includes("attempts") && (
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="fill"
+                        color={item.attempts_count > 1 ? "warning" : "default"}
+                        shape="square"
+                        className="font-bold text-[11px] px-2.5 py-0.5"
+                      >
+                        {item.attempts_count > 0 ? item.attempts_count : 0} {item.attempts_count > 1 ? "Attempts" : "Attempt"}
+                      </Badge>
+                    </TableCell>
+                  )}
                   {visibleColumns.includes("marks") && (
                     <TableCell className="text-center">
                       {latest?.total_marks ? (
-                        <div className="flex flex-col items-center">
-                          <div className="px-3 py-1.5 rounded-xl bg-muted/30 border border-border/40 inline-flex items-center gap-2 shadow-sm min-w-[70px] justify-center">
-                            <span className="font-black text-brand-primary leading-none text-sm">
+                        <div className="flex flex-col items-center justify-center mx-auto gap-[5px] w-max min-w-[64px]">
+                          <div className="flex items-baseline justify-center gap-1 w-full">
+                            <span className="text-[15px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
                               {latest.obtained_marks || 0}
                             </span>
-                            <span className="h-3 w-[1px] bg-border/60" />
-                            <span className="text-[11px] font-bold text-muted-foreground/60">
-                              {latest.total_marks}
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-none">
+                              / {latest.total_marks}
                             </span>
+                          </div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 80 ? 'bg-emerald-500' :
+                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 60 ? 'bg-brand-primary' :
+                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                              }`} 
+                              style={{ width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%` }}
+                            ></div>
                           </div>
                         </div>
                       ) : (
@@ -218,38 +229,32 @@ export function ResultTableView({
                       )}
                     </TableCell>
                   )}
-
-                  {/* Subject Grade Cells */}
-                  {allSubjects.map((s) => {
-                    if (!visibleColumns.includes(`subject_${s}`)) return null;
-                    const subRes = latest?.subject_results?.find(
-                      (sr) => sr.section_name === s,
-                    );
-                    return (
-                      <TableCell key={s} className="text-center">
-                        {subRes ? (
-                          <Badge
-                            variant="outline"
-                            color={
-                              subRes.grade === "Excellent" ||
-                              subRes.grade === "Good"
-                                ? "success"
-                                : subRes.grade === "Average"
-                                  ? "warning"
-                                  : "error"
-                            }
-                            className="rounded-lg font-bold text-[10px] px-2 h-6 border-none"
-                          >
-                            {subRes.grade}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground/60 font-medium">
-                            N/A
-                          </span>
-                        )}
-                      </TableCell>
-                    );
-                  })}
+                  {visibleColumns.includes("grade") && (
+                    <TableCell className="text-center">
+                      {latest?.overall_grade &&
+                      latest?.overall_grade !== "N/A" ? (
+                        <Badge
+                          variant="outline"
+                          color={
+                            latest.overall_grade === "Excellent" ||
+                            latest.overall_grade === "Good"
+                              ? "success"
+                              : latest.overall_grade === "Average"
+                                ? "warning"
+                                : "error"
+                          }
+                          shape="square"
+                          animate="pulse"
+                        >
+                          {latest.overall_grade}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
 
                   {visibleColumns.includes("typing_wpm") && (
                     <TableCell className="text-center font-medium">
@@ -287,10 +292,37 @@ export function ResultTableView({
                               ? "default"
                               : "warning"
                         }
-                        className="px-3 rounded-lg font-bold text-[10px]"
+                        shape="square"
+                        animate="pulse"
                       >
                         {latest?.status?.replace("_", " ") || "Not started"}
                       </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("date") && (
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {interviewDate ? (
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 text-[13px]">
+                            {new Date(interviewDate).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/80 font-medium">
+                            {new Date(interviewDate).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
                     </TableCell>
                   )}
                   {visibleColumns.includes("actions") && (
