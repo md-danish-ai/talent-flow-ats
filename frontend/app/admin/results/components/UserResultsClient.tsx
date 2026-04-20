@@ -386,7 +386,11 @@ export function UserResultsClient() {
                 </Button>
               </Tooltip>
               <Tooltip
-                content={activeFilterCount > 0 ? `Filters (${activeFilterCount} active)` : "Open Filters"}
+                content={
+                  activeFilterCount > 0
+                    ? `Filters (${activeFilterCount} active)`
+                    : "Open Filters"
+                }
                 side="bottom"
               >
                 <Button
