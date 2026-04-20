@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
 import { TodayUserListingSkeleton } from "@components/ui-skeleton/TodayUserListingSkeleton";
 import {
   ClipboardCheck,

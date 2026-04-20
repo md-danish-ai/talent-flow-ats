@@ -272,18 +272,20 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             </Table>
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize) || 1}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0 border-t"
-          />
+          {totalItems > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalItems / pageSize) || 1}
+              onPageChange={setCurrentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              className="mt-auto shrink-0 border-t"
+            />
+          )}
         </div>
       </MainCard>
 

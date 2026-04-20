@@ -1,7 +1,6 @@
 import React from "react";
 import { TableRow, TableCell } from "@components/ui-elements/Table";
 import { Skeleton } from "@components/ui-elements/Skeleton";
-import { cn } from "@lib/utils";
 
 interface UserListingSkeletonProps {
   rowCount?: number;

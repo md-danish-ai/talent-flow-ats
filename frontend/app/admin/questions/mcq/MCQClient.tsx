@@ -12,16 +12,14 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -372,18 +370,20 @@ export function MCQClient({
             </Table>
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0"
-          />
+          {!isLoading && data.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              className="mt-auto shrink-0"
+            />
+          )}
         </div>
 
         <MCQFilters

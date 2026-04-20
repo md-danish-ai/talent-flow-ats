@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, MailOpen, Loader2 } from "lucide-react";
+import { Bell, Mail, MailOpen } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -231,7 +230,7 @@ export function NotificationsClient() {
             </Table>
           </div>
 
-          {!loading && (
+          {!loading && notifications.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

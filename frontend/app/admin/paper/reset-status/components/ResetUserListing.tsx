@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
 import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";

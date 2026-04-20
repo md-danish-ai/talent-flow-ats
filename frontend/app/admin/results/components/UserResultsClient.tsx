@@ -27,15 +27,7 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 
 import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
-import { ResultTableSkeleton } from "@components/ui-skeleton/ResultTableSkeleton";
 import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableRow,
-  TableHead,
-} from "@components/ui-elements/Table";
 
 export function UserResultsClient() {
   const [items, setItems] = useState<AdminUserResultListItem[]>([]);
@@ -387,21 +379,4 @@ export function UserResultsClient() {
       </MainCard>
     </PageContainer>
   );
-}
-
-function LoadingSkeleton({
-  viewMode,
-  visibleColumns,
-  limit,
-}: {
-  viewMode: "card" | "table";
-  visibleColumns: string[];
-  limit: number;
-}) {
-  if (viewMode === "card") {
-    return <ResultCardSkeleton rowCount={limit} />;
-  }
-
-  // Table mode loading is now handled inside the TableBody in the main render
-  return null;
 }

@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
 import { UserListingSkeleton } from "@components/ui-skeleton/UserListingSkeleton";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import {

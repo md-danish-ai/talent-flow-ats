@@ -3,7 +3,6 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -99,15 +98,17 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
         </Table>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={Math.ceil(totalItems / pageSize) || 1}
-        onPageChange={onPageChange}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageSizeChange={onPageSizeChange}
-        className="mt-auto border-t border-border"
-      />
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalItems / pageSize) || 1}
+          onPageChange={onPageChange}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+          className="mt-auto border-t border-border"
+        />
+      )}
     </div>
   );
 };

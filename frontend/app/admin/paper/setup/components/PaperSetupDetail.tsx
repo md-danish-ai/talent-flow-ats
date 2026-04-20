@@ -22,7 +22,6 @@ import {
   Layers,
   Trophy,
   Clock,
-  FileStack,
   Trash2,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";

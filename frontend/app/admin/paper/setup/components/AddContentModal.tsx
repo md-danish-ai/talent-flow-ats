@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { EmptyState } from "@components/ui-elements/EmptyState";
-import { X, Loader2, Search, RotateCw } from "lucide-react";
+import { X, Loader2, RotateCw } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -460,15 +460,17 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         {/* Footer */}
         <div className="px-8 py-4 border-t border-border bg-slate-50/50 dark:bg-slate-800/30">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={Math.ceil(totalRecords / pageSize) || 1}
-              onPageChange={setCurrentPage}
-              totalItems={totalRecords}
-              pageSize={pageSize}
-              onPageSizeChange={setPageSize}
-              className="border-none py-0"
-            />
+            {totalRecords > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalRecords / pageSize) || 1}
+                onPageChange={setCurrentPage}
+                totalItems={totalRecords}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                className="border-none py-0"
+              />
+            )}
 
             <div className="flex gap-2 ml-auto">
               <Button
