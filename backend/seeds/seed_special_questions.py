@@ -15,6 +15,8 @@ os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")
 from app.users.models import User
 from app.answer.models import QuestionAnswer
 from app.questions.models import Question
+from app.classifications.models import Classification
+from app.departments.models import Department
 from app.database.db import SessionLocal
 
 
