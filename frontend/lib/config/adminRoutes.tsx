@@ -81,11 +81,9 @@ export const ADMIN_ROUTES: NavSection[] = [
   {
     title: "System Config",
     icon: <Settings className="w-5 h-5" />,
-    type: "collapsible",
-    items: [
-      { label: "Auth Rules", href: "/admin/settings/auth" },
-      { label: "Notification Center", href: "/admin/notifications" },
-    ],
+    type: "item",
+    href: "/admin/notifications",
+    items: [],
   },
   ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
     ? [

@@ -10,6 +10,8 @@ import {
 } from "@components/ui-elements/Table";
 import { PaperSetup } from "@lib/api/papers";
 import { PaperSetupRow } from "./PaperSetupRow";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { PaperSetupSkeleton } from "@components/ui-skeleton/PaperSetupSkeleton";
 
 interface PaperSetupTableProps {
   data: Partial<PaperSetup>[];
@@ -67,23 +69,16 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  Loading papers...
-                </TableCell>
-              </TableRow>
+              <PaperSetupSkeleton
+                visibleColumns={visibleColumns}
+                rowCount={pageSize}
+              />
             ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No papers found.
-                </TableCell>
-              </TableRow>
+              <EmptyState
+                colSpan={visibleColumns.length}
+                title="No papers found"
+                description="We couldn't find any test papers matching your filters. Try adding a new paper or adjusting your search."
+              />
             ) : (
               data.map((row, index) => (
                 <PaperSetupRow

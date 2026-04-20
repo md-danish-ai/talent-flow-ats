@@ -13,19 +13,21 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditTypingTestModal from "./components/EditTypingTestModal";
-import { AddTypingTestModal } from "./components/AddTypingTestModal";
+import EditQuestionModal from "./components/EditTypingTestModal";
+import { AddTypingTestModal as AddQuestionModal } from "./components/AddTypingTestModal";
 import { TypingTestFilters } from "./components/TypingTestFilters";
 import { TypingTestRow } from "./components/TypingTestRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 export function TypingTestClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -125,7 +127,7 @@ export function TypingTestClient() {
         setTotalItems(response.pagination.total_records);
       }
     } catch (error) {
-      console.error("Failed to fetch typing tests:", error);
+      console.error("Failed to fetch questions:", error);
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +181,7 @@ export function TypingTestClient() {
       await fetchData();
       toast.success("Status updated successfully");
     } catch (error) {
-      console.error("Failed to toggle typing test status:", error);
+      console.error("Failed to toggle question status:", error);
       toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
@@ -194,7 +196,7 @@ export function TypingTestClient() {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
-            Typing Tests
+            Typing Test Questions
           </>
         }
         className="mb-6 flex flex-col"
@@ -239,7 +241,7 @@ export function TypingTestClient() {
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
-              Add Typing Test
+              Add Question
             </Button>
           </div>
         }
@@ -250,11 +252,6 @@ export function TypingTestClient() {
             isFilterOpen && "border-r border-border",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
           <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -296,16 +293,18 @@ export function TypingTestClient() {
               </TableHeader>
 
               <TableBody>
-                {data.length === 0 && !isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No typing tests found. Click &quot;Add Typing Test&quot;
-                      to create one.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <QuestionTableSkeleton
+                    visibleColumns={visibleColumns}
+                    rowCount={pageSize}
+                  />
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any typing test questions matching your criteria. Try adjusting your filters or adding a new question."
+                  />
                 ) : (
                   data.map((row, index) => (
                     <TypingTestRow
@@ -327,7 +326,7 @@ export function TypingTestClient() {
 
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.ceil(totalItems / pageSize) || 1}
             onPageChange={setCurrentPage}
             totalItems={totalItems}
             pageSize={pageSize}
@@ -378,14 +377,14 @@ export function TypingTestClient() {
       </MainCard>
 
       {/* Modals */}
-      <AddTypingTestModal
+      <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onSuccess={fetchData}
       />
 
       {editingQuestion && (
-        <EditTypingTestModal
+        <EditQuestionModal
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}

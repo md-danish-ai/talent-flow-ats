@@ -23,9 +23,19 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 
 import { resultsApi, type AdminUserResultListItem } from "@lib/api/results";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
+import { ResultTableSkeleton } from "@components/ui-skeleton/ResultTableSkeleton";
+import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
+import {
+  Table,
+  TableBody,
+  TableHeader,
+  TableRow,
+  TableHead,
+} from "@components/ui-elements/Table";
 
 export function UserResultsClient() {
   const [items, setItems] = useState<AdminUserResultListItem[]>([]);
@@ -341,17 +351,25 @@ export function UserResultsClient() {
             <Alert variant="error" description={error} className="mb-6" />
           )}
 
-          {loading ? (
-            <LoadingSkeleton />
-          ) : items.length === 0 ? (
-            <EmptyState search={search} onClear={() => setSearch("")} />
-          ) : viewMode === "card" ? (
-            <ResultCardView items={items} />
+          {viewMode === "card" ? (
+            loading ? (
+              <ResultCardSkeleton rowCount={limit} />
+            ) : items.length === 0 ? (
+              <EmptyState
+                variant="search"
+                title="No results found"
+                description={`We couldn't find any candidates matching your criteria${search ? ` for "${search}"` : ""}. Try adjusting your search or filters.`}
+              />
+            ) : (
+              <ResultCardView items={items} />
+            )
           ) : (
             <ResultTableView
               items={items}
               allSubjects={allSubjects}
               visibleColumns={visibleColumns}
+              isLoading={loading}
+              limit={limit}
             />
           )}
 
@@ -371,48 +389,19 @@ export function UserResultsClient() {
   );
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="p-6">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-pulse">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="h-44 bg-muted rounded-2xl border border-border"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EmptyState({
-  search,
-  onClear,
+function LoadingSkeleton({
+  viewMode,
+  visibleColumns,
+  limit,
 }: {
-  search: string;
-  onClear: () => void;
+  viewMode: "card" | "table";
+  visibleColumns: string[];
+  limit: number;
 }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border">
-      <div className="p-4 bg-muted/20 mb-4">
-        <Users size={40} className="text-muted-foreground/40" />
-      </div>
-      <Typography variant="h4" className="font-bold">
-        No results found
-      </Typography>
-      <Typography
-        variant="body4"
-        className="text-muted-foreground mt-2 text-center max-w-sm"
-      >
-        We couldn&apos;t find any candidates matching &quot;{search}&quot;. Try
-        searching with a different name or phone number.
-      </Typography>
-      {search ? (
-        <Button variant="outline" size="sm" className="mt-5" onClick={onClear}>
-          Clear Search
-        </Button>
-      ) : null}
-    </div>
-  );
+  if (viewMode === "card") {
+    return <ResultCardSkeleton rowCount={limit} />;
+  }
+
+  // Table mode loading is now handled inside the TableBody in the main render
+  return null;
 }

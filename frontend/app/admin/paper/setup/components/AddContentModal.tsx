@@ -12,12 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import {
-  X,
-  Loader2,
-  Search,
-  RotateCw,
-} from "lucide-react";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { X, Loader2, Search, RotateCw } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi, Question } from "@lib/api/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -378,25 +374,11 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
               </Typography>
             </div>
           ) : questions.length === 0 ? (
-            <div className="h-[300px] flex flex-col items-center justify-center text-center p-8">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                <Search size={24} className="text-slate-400" />
-              </div>
-              <Typography
-                variant="h4"
-                weight="bold"
-                className="text-slate-800 dark:text-slate-200 text-sm"
-              >
-                No Questions Found
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground mt-2 max-w-xs uppercase tracking-widest text-[10px]"
-              >
-                Try adjusting your filters or check if questions exist for this
-                subject.
-              </Typography>
-            </div>
+            <EmptyState
+              variant="search"
+              title="No Questions Found"
+              description="Try adjusting your filters or check if questions exist for this subject."
+            />
           ) : (
             <Table>
               <TableHeader>

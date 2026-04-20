@@ -20,8 +20,6 @@ import {
 } from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
-
-
 const buildSavedAnswersMap = (
   savedResponses: {
     question_id: number;
@@ -404,11 +402,7 @@ export function InterviewTestClient() {
     };
 
     void advanceSection();
-  }, [
-    lockAndMoveToNextSection,
-    sectionIndex,
-    currentSection,
-  ]);
+  }, [lockAndMoveToNextSection, sectionIndex, currentSection]);
 
   useEffect(() => {
     if (!hasStarted || isCompleted) return;

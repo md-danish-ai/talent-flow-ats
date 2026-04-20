@@ -3,6 +3,8 @@
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@components/ui-elements/Avatar";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { ResultTableSkeleton } from "@components/ui-skeleton/ResultTableSkeleton";
 import {
   Table,
   TableHeader,
@@ -21,12 +23,16 @@ interface ResultTableViewProps {
   items: AdminUserResultListItem[];
   allSubjects: string[];
   visibleColumns: string[];
+  isLoading?: boolean;
+  limit?: number;
 }
 
 export function ResultTableView({
   items,
   allSubjects,
   visibleColumns,
+  isLoading,
+  limit = 10,
 }: ResultTableViewProps) {
   return (
     <div className="overflow-x-auto">
@@ -90,198 +96,219 @@ export function ResultTableView({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => {
-            const latest = item.latest_attempt;
-            const interviewDate = latest?.submitted_at || latest?.started_at;
-            const detailHref = `/admin/results/${item.user_id}`;
-            return (
-              <TableCollapsibleRow
-                key={latest?.attempt_id ?? item.user_id}
-                colSpan={visibleColumns.length + 1}
-                expandedContent={
-                  <CollapsibleResultDetail
-                    latest={latest}
-                    attempts_count={item.attempts_count}
-                  />
-                }
-              >
-                {visibleColumns.includes("candidate") && (
-                  <TableCell className="align-middle py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={item.username} variant="brand" size="sm" />
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                            {item.username || "Anonymous"}
-                          </span>
-                          {item.is_reattempt ? (
-                            <Badge
-                              variant="outline"
-                              color="violet"
-                              animate="pulse"
-                              shape="square"
-                              className="text-[9px] font-bold"
-                            >
-                              RE-ATTEMPT
-                            </Badge>
-                          ) : (
-                            <Badge
-                              color="success"
-                              variant="outline"
-                              animate="pulse"
-                              shape="square"
-                              className="text-[9px] font-bold"
-                            >
-                              NEW
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-slate-500 font-medium opacity-70">
-                          <Phone size={11} />
-                          <span className="text-[11px]">{item.mobile}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                )}
-                {visibleColumns.includes("date") && (
-                  <TableCell className="text-muted-foreground">
-                    {interviewDate ? (
-                      new Date(interviewDate).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "2-digit",
-                      })
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("paper") && (
-                  <TableCell className="text-muted-foreground">
-                    {latest?.paper_name ? (
-                      latest.paper_name
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("marks") && (
-                  <TableCell className="text-center">
-                    {latest?.total_marks ? (
-                      <div className="flex flex-col items-center">
-                        <div className="px-3 py-1.5 rounded-xl bg-muted/30 border border-border/40 inline-flex items-center gap-2 shadow-sm min-w-[70px] justify-center">
-                          <span className="font-black text-brand-primary leading-none text-sm">
-                            {latest.obtained_marks || 0}
-                          </span>
-                          <span className="h-3 w-[1px] bg-border/60" />
-                          <span className="text-[11px] font-bold text-muted-foreground/60">
-                            {latest.total_marks}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
+          {isLoading && (
+            <ResultTableSkeleton
+              visibleColumns={visibleColumns}
+              rowCount={limit}
+            />
+          )}
 
-                {/* Subject Grade Cells */}
-                {allSubjects.map((s) => {
-                  if (!visibleColumns.includes(`subject_${s}`)) return null;
-                  const subRes = latest?.subject_results?.find(
-                    (sr) => sr.section_name === s,
-                  );
-                  return (
-                    <TableCell key={s} className="text-center">
-                      {subRes ? (
-                        <Badge
-                          variant="outline"
-                          color={
-                            subRes.grade === "Excellent" ||
-                            subRes.grade === "Good"
-                              ? "success"
-                              : subRes.grade === "Average"
-                                ? "warning"
-                                : "error"
-                          }
-                          className="rounded-lg font-bold text-[10px] px-2 h-6 border-none"
-                        >
-                          {subRes.grade}
-                        </Badge>
+          {!isLoading && items.length === 0 && (
+            <EmptyState
+              colSpan={visibleColumns.length + 1}
+              variant="search"
+              title="No results found"
+              description="No results found matching your criteria. Try adjusting your search or filters."
+            />
+          )}
+
+          {!isLoading &&
+            items.map((item) => {
+              const latest = item.latest_attempt;
+              const interviewDate = latest?.submitted_at || latest?.started_at;
+              const detailHref = `/admin/results/${item.user_id}`;
+              return (
+                <TableCollapsibleRow
+                  key={latest?.attempt_id ?? item.user_id}
+                  colSpan={visibleColumns.length + 1}
+                  expandedContent={
+                    <CollapsibleResultDetail
+                      latest={latest}
+                      attempts_count={item.attempts_count}
+                    />
+                  }
+                >
+                  {visibleColumns.includes("candidate") && (
+                    <TableCell className="align-middle py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          name={item.username}
+                          variant="brand"
+                          size="sm"
+                        />
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                              {item.username || "Anonymous"}
+                            </span>
+                            {item.is_reattempt ? (
+                              <Badge
+                                variant="outline"
+                                color="violet"
+                                animate="pulse"
+                                shape="square"
+                                className="text-[9px] font-bold"
+                              >
+                                RE-ATTEMPT
+                              </Badge>
+                            ) : (
+                              <Badge
+                                color="success"
+                                variant="outline"
+                                animate="pulse"
+                                shape="square"
+                                className="text-[9px] font-bold"
+                              >
+                                NEW
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-500 font-medium opacity-70">
+                            <Phone size={11} />
+                            <span className="text-[11px]">{item.mobile}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("date") && (
+                    <TableCell className="text-muted-foreground">
+                      {interviewDate ? (
+                        new Date(interviewDate).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "2-digit",
+                        })
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
                           N/A
                         </span>
                       )}
                     </TableCell>
-                  );
-                })}
+                  )}
+                  {visibleColumns.includes("paper") && (
+                    <TableCell className="text-muted-foreground">
+                      {latest?.paper_name ? (
+                        latest.paper_name
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableCell className="text-center">
+                      {latest?.total_marks ? (
+                        <div className="flex flex-col items-center">
+                          <div className="px-3 py-1.5 rounded-xl bg-muted/30 border border-border/40 inline-flex items-center gap-2 shadow-sm min-w-[70px] justify-center">
+                            <span className="font-black text-brand-primary leading-none text-sm">
+                              {latest.obtained_marks || 0}
+                            </span>
+                            <span className="h-3 w-[1px] bg-border/60" />
+                            <span className="text-[11px] font-bold text-muted-foreground/60">
+                              {latest.total_marks}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
 
-                {visibleColumns.includes("typing_wpm") && (
-                  <TableCell className="text-center font-medium">
-                    {latest?.typing_stats &&
-                    typeof latest.typing_stats.wpm === "number" ? (
-                      latest.typing_stats.wpm
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("typing_acc") && (
-                  <TableCell className="text-center font-medium">
-                    {latest?.typing_stats &&
-                    typeof latest.typing_stats.accuracy === "number" ? (
-                      `${latest.typing_stats.accuracy}%`
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("status") && (
-                  <TableCell>
-                    <Badge
-                      variant="fill"
-                      color={
-                        latest?.status === "submitted" ||
-                        latest?.status === "completed"
-                          ? "success"
-                          : latest?.status === "not_started"
-                            ? "default"
-                            : "warning"
-                      }
-                      className="px-3 rounded-lg font-bold text-[10px]"
-                    >
-                      {latest?.status?.replace("_", " ") || "Not started"}
-                    </Badge>
-                  </TableCell>
-                )}
-                {visibleColumns.includes("actions") && (
-                  <TableCell className="text-right">
-                    <Link href={detailHref}>
-                      <TableIconButton
-                        iconColor="brand"
-                        animate="scale"
-                        title="View Result"
+                  {/* Subject Grade Cells */}
+                  {allSubjects.map((s) => {
+                    if (!visibleColumns.includes(`subject_${s}`)) return null;
+                    const subRes = latest?.subject_results?.find(
+                      (sr) => sr.section_name === s,
+                    );
+                    return (
+                      <TableCell key={s} className="text-center">
+                        {subRes ? (
+                          <Badge
+                            variant="outline"
+                            color={
+                              subRes.grade === "Excellent" ||
+                              subRes.grade === "Good"
+                                ? "success"
+                                : subRes.grade === "Average"
+                                  ? "warning"
+                                  : "error"
+                            }
+                            className="rounded-lg font-bold text-[10px] px-2 h-6 border-none"
+                          >
+                            {subRes.grade}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground/60 font-medium">
+                            N/A
+                          </span>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+
+                  {visibleColumns.includes("typing_wpm") && (
+                    <TableCell className="text-center font-medium">
+                      {latest?.typing_stats &&
+                      typeof latest.typing_stats.wpm === "number" ? (
+                        latest.typing_stats.wpm
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("typing_acc") && (
+                    <TableCell className="text-center font-medium">
+                      {latest?.typing_stats &&
+                      typeof latest.typing_stats.accuracy === "number" ? (
+                        `${latest.typing_stats.accuracy}%`
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <TableCell>
+                      <Badge
+                        variant="fill"
+                        color={
+                          latest?.status === "submitted" ||
+                          latest?.status === "completed"
+                            ? "success"
+                            : latest?.status === "not_started"
+                              ? "default"
+                              : "warning"
+                        }
+                        className="px-3 rounded-lg font-bold text-[10px]"
                       >
-                        <Eye size={16} />
-                      </TableIconButton>
-                    </Link>
-                  </TableCell>
-                )}
-              </TableCollapsibleRow>
-            );
-          })}
+                        {latest?.status?.replace("_", " ") || "Not started"}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <TableCell className="text-right">
+                      <Link href={detailHref}>
+                        <TableIconButton
+                          iconColor="brand"
+                          animate="scale"
+                          title="View Result"
+                        >
+                          <Eye size={16} />
+                        </TableIconButton>
+                      </Link>
+                    </TableCell>
+                  )}
+                </TableCollapsibleRow>
+              );
+            })}
         </TableBody>
       </Table>
     </div>

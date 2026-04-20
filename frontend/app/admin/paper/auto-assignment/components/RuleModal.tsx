@@ -96,7 +96,7 @@ export function RuleModal({
       // Prevent redundant calls if params haven't changed
       const currentParams = `${formData.department_id}-${formData.test_level_id}`;
       if (lastFetchedParamsRef.current === currentParams) return;
-      
+
       lastFetchedParamsRef.current = currentParams;
       setIsLoadingPapers(true);
       try {

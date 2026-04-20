@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
+import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
+import { TodayUserListingSkeleton } from "@components/ui-skeleton/TodayUserListingSkeleton";
 import {
   ClipboardCheck,
   Users,
@@ -37,8 +39,8 @@ import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
 import { DateRangeHeaderActions } from "./DateRangeHeaderActions";
 import { getUsersByRole } from "@lib/api/auth";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 import { toast } from "@lib/toast";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 interface TodayUserListingProps {
   initialData?: UserListResponse[];
@@ -242,13 +244,16 @@ export function TodayUserListing({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {!Array.isArray(paginatedUsers) ||
-                  paginatedUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
-                        No users found.
-                      </TableCell>
-                    </TableRow>
+                  {loading ? (
+                    <TodayUserListingSkeleton rowCount={pageSize} />
+                  ) : !Array.isArray(paginatedUsers) ||
+                    paginatedUsers.length === 0 ? (
+                    <EmptyState
+                      colSpan={7}
+                      variant="search"
+                      title="No candidates found"
+                      description="There are no candidates found for the selected criteria. Try adjusting your filters or date range."
+                    />
                   ) : (
                     paginatedUsers.map((row, idx) => (
                       <TableRow key={row.id}>

@@ -13,19 +13,21 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditContactDetailsModal from "./components/EditContactDetailsModal";
-import { AddContactDetailsModal } from "./components/AddContactDetailsModal";
+import EditQuestionModal from "./components/EditContactDetailsModal";
+import { AddContactDetailsModal as AddQuestionModal } from "./components/AddContactDetailsModal";
 import { ContactDetailsFilters } from "./components/ContactDetailsFilters";
 import { ContactDetailsRow } from "./components/ContactDetailsRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 export function ContactDetailsClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -60,26 +62,26 @@ export function ContactDetailsClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "websiteUrl", label: "WebSiteURL", pinned: true },
+    { id: "websiteUrl", label: "WebSiteURL" },
     { id: "companyName", label: "CompanyName" },
-    { id: "streetAddress", label: "StreetAddress" },
-    { id: "city", label: "City" },
-    { id: "state", label: "State" },
-    { id: "zipCode", label: "ZipCode" },
-    { id: "companyPhoneNumber", label: "CompanyPhoneNumber" },
-    { id: "generalEmail", label: "GeneralEmail" },
-    { id: "facebookPage", label: "FacebookPage" },
+    { id: "name", label: "Name" },
+    { id: "title", label: "Title" },
+    { id: "primaryEmail", label: "Primary Email Address" },
+    { id: "secondaryEmail", label: "Secondary Email Address" },
+    { id: "linkedInUrl", label: "LinkedIn URL" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
+    { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "websiteUrl",
+    "name",
     "companyName",
+    "primaryEmail",
     "subject",
     "examLevel",
     "marks",
@@ -133,7 +135,7 @@ export function ContactDetailsClient() {
         setTotalItems(response.pagination.total_records);
       }
     } catch (error) {
-      console.error("Failed to fetch contact details questions:", error);
+      console.error("Failed to fetch questions:", error);
     } finally {
       setIsLoading(false);
     }
@@ -187,7 +189,7 @@ export function ContactDetailsClient() {
       await fetchData();
       toast.success("Status updated successfully");
     } catch (error) {
-      console.error("Failed to toggle contact details question status:", error);
+      console.error("Failed to toggle question status:", error);
       toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
@@ -258,11 +260,6 @@ export function ContactDetailsClient() {
             isFilterOpen && "border-r border-border",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
           <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -279,26 +276,20 @@ export function ContactDetailsClient() {
                   {visibleColumns.includes("companyName") && (
                     <TableHead>CompanyName</TableHead>
                   )}
-                  {visibleColumns.includes("streetAddress") && (
-                    <TableHead>StreetAddress</TableHead>
+                  {visibleColumns.includes("name") && (
+                    <TableHead>Name</TableHead>
                   )}
-                  {visibleColumns.includes("city") && (
-                    <TableHead>City</TableHead>
+                  {visibleColumns.includes("title") && (
+                    <TableHead>Title</TableHead>
                   )}
-                  {visibleColumns.includes("state") && (
-                    <TableHead>State</TableHead>
+                  {visibleColumns.includes("primaryEmail") && (
+                    <TableHead>Primary Email Address</TableHead>
                   )}
-                  {visibleColumns.includes("zipCode") && (
-                    <TableHead>ZipCode</TableHead>
+                  {visibleColumns.includes("secondaryEmail") && (
+                    <TableHead>Secondary Email Address</TableHead>
                   )}
-                  {visibleColumns.includes("companyPhoneNumber") && (
-                    <TableHead>CompanyPhoneNumber</TableHead>
-                  )}
-                  {visibleColumns.includes("generalEmail") && (
-                    <TableHead>GeneralEmail</TableHead>
-                  )}
-                  {visibleColumns.includes("facebookPage") && (
-                    <TableHead>FacebookPage</TableHead>
+                  {visibleColumns.includes("linkedInUrl") && (
+                    <TableHead>LinkedIn URL</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
@@ -328,16 +319,18 @@ export function ContactDetailsClient() {
               </TableHeader>
 
               <TableBody>
-                {data.length === 0 && !isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No contact details questions found. Click &quot;Add
-                      Company Contact Details&quot; to create one.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <QuestionTableSkeleton
+                    visibleColumns={visibleColumns}
+                    rowCount={pageSize}
+                  />
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any contact details matching your criteria. Try adjusting your filters or adding a new entry."
+                  />
                 ) : (
                   data.map((row, index) => (
                     <ContactDetailsRow
@@ -359,7 +352,7 @@ export function ContactDetailsClient() {
 
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.ceil(totalItems / pageSize) || 1}
             onPageChange={setCurrentPage}
             totalItems={totalItems}
             pageSize={pageSize}
@@ -410,14 +403,14 @@ export function ContactDetailsClient() {
       </MainCard>
 
       {/* Modals */}
-      <AddContactDetailsModal
+      <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onSuccess={fetchData}
       />
 
       {editingQuestion && (
-        <EditContactDetailsModal
+        <EditQuestionModal
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}

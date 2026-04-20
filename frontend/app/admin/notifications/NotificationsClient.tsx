@@ -22,6 +22,8 @@ import {
 } from "@lib/api";
 import { NotificationSummary } from "./components/NotificationSummary";
 import { NotificationRow } from "./components/NotificationRow";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 const getDateStr = (dateStr: string) => {
   const tzDate = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
@@ -171,12 +173,6 @@ export function NotificationsClient() {
             onFilterChange={onFilterChange}
           />
 
-          {loading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
-
           <div className="overflow-x-auto w-full">
             <Table>
               <TableHeader>
@@ -209,15 +205,14 @@ export function NotificationsClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!loading && notifications.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      No notifications available.
-                    </TableCell>
-                  </TableRow>
+                {loading ? (
+                  <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
+                ) : notifications.length === 0 ? (
+                  <EmptyState
+                    colSpan={9}
+                    title="All caught up!"
+                    description="You have no new notifications right now. We'll alert you when something important happens."
+                  />
                 ) : (
                   notifications.map((notif, idx) => (
                     <NotificationRow

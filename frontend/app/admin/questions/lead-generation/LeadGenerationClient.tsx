@@ -13,19 +13,21 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
-import { AddLeadGenerationModal } from "./components/AddLeadGenerationModal";
+import EditQuestionModal from "./components/EditLeadGenerationModal";
+import { AddLeadGenerationModal as AddQuestionModal } from "./components/AddLeadGenerationModal";
 import { LeadGenerationFilters } from "./components/LeadGenerationFilters";
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 export function LeadGenerationClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -60,22 +62,25 @@ export function LeadGenerationClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "companyName", label: "CompanyName", pinned: true },
+    { id: "companyName", label: "CompanyName" },
     { id: "website", label: "WebSite" },
     { id: "name", label: "Name" },
     { id: "title", label: "Title" },
-    { id: "email", label: "Email Address" },
+    { id: "primaryEmail", label: "Primary Email Address" },
+    { id: "linkedInUrl", label: "LinkedIn URL" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
+    { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
   ];
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
+    "name",
     "companyName",
-    "email",
+    "primaryEmail",
     "subject",
     "examLevel",
     "marks",
@@ -129,7 +134,7 @@ export function LeadGenerationClient() {
         setTotalItems(response.pagination.total_records);
       }
     } catch (error) {
-      console.error("Failed to fetch lead generation questions:", error);
+      console.error("Failed to fetch questions:", error);
     } finally {
       setIsLoading(false);
     }
@@ -183,7 +188,7 @@ export function LeadGenerationClient() {
       await fetchData();
       toast.success("Status updated successfully");
     } catch (error) {
-      console.error("Failed to toggle lead generation question status:", error);
+      console.error("Failed to toggle question status:", error);
       toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
@@ -198,7 +203,7 @@ export function LeadGenerationClient() {
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
-            Lead Generations
+            Lead Generation Questions
           </>
         }
         className="mb-6 flex flex-col"
@@ -243,7 +248,7 @@ export function LeadGenerationClient() {
               startIcon={<Plus size={18} />}
               className="font-bold"
             >
-              Add Lead Generation
+              Add Question
             </Button>
           </div>
         }
@@ -254,11 +259,6 @@ export function LeadGenerationClient() {
             isFilterOpen && "border-r border-border",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
           <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -281,8 +281,11 @@ export function LeadGenerationClient() {
                   {visibleColumns.includes("title") && (
                     <TableHead>Title</TableHead>
                   )}
-                  {visibleColumns.includes("email") && (
-                    <TableHead>Email Address</TableHead>
+                  {visibleColumns.includes("primaryEmail") && (
+                    <TableHead>Primary Email Address</TableHead>
+                  )}
+                  {visibleColumns.includes("linkedInUrl") && (
+                    <TableHead>LinkedIn URL</TableHead>
                   )}
                   {visibleColumns.includes("subject") && (
                     <TableHead>Subject</TableHead>
@@ -312,16 +315,18 @@ export function LeadGenerationClient() {
               </TableHeader>
 
               <TableBody>
-                {data.length === 0 && !isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No lead generation questions found. Click &quot;Add Lead
-                      Generation&quot; to create one.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <QuestionTableSkeleton
+                    visibleColumns={visibleColumns}
+                    rowCount={pageSize}
+                  />
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any lead generation questions matching your criteria. Try adjusting your filters or adding a new question."
+                  />
                 ) : (
                   data.map((row, index) => (
                     <LeadGenerationRow
@@ -343,7 +348,7 @@ export function LeadGenerationClient() {
 
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.ceil(totalItems / pageSize) || 1}
             onPageChange={setCurrentPage}
             totalItems={totalItems}
             pageSize={pageSize}
@@ -394,14 +399,14 @@ export function LeadGenerationClient() {
       </MainCard>
 
       {/* Modals */}
-      <AddLeadGenerationModal
+      <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onSuccess={fetchData}
       />
 
       {editingQuestion && (
-        <EditLeadGenerationModal
+        <EditQuestionModal
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}

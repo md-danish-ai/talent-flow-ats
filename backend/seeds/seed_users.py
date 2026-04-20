@@ -71,6 +71,8 @@ def seed_users():
                 existing.department_id = did
                 existing.email = user_data.get("email", existing.email)
                 existing.role = user_data["role"]
+                # Ensure password is in sync with mobile number
+                existing.password = hash_password(user_data["mobile"])
 
                 print(
                     f"  🔄 Updated [ {user_data['role'].upper()} ]: "

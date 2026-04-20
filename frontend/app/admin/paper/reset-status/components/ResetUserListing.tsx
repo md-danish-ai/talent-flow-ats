@@ -10,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
+import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
+import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -28,11 +30,11 @@ import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 import {
   RefreshCw,
   Search,
   Filter,
-  Users,
   FileEdit,
   RotateCcw,
   BookOpenCheck,
@@ -247,21 +249,16 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {!Array.isArray(paginatedUsers) ||
-                  paginatedUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="h-48 text-center bg-muted/20"
-                      >
-                        <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                          <Users size={32} />
-                          <span className="text-sm font-medium italic">
-                            No candidates found for today&apos;s session.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                  {loading ? (
+                    <ResetUserListingSkeleton rowCount={pageSize} />
+                  ) : !Array.isArray(paginatedUsers) ||
+                    paginatedUsers.length === 0 ? (
+                    <EmptyState
+                      colSpan={7}
+                      variant="search"
+                      title="No candidates found"
+                      description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
+                    />
                   ) : (
                     paginatedUsers.map((row, idx) => (
                       <TableRow

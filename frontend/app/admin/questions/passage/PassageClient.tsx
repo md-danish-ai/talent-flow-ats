@@ -13,8 +13,9 @@ import {
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -26,6 +27,7 @@ import { AddQuestionModal } from "./components/AddQuestionModal";
 import { PassageFilters } from "./components/PassageFilters";
 import { PassageRow } from "./components/PassageRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 export function PassageClient() {
   const [data, setData] = useState<Question[]>([]);
@@ -250,11 +252,6 @@ export function PassageClient() {
             isFilterOpen && "border-r border-border",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
           <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -296,16 +293,18 @@ export function PassageClient() {
               </TableHeader>
 
               <TableBody>
-                {data.length === 0 && !isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No passage questions found. Click &quot;Add Question&quot;
-                      to create one.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <QuestionTableSkeleton
+                    visibleColumns={visibleColumns}
+                    rowCount={pageSize}
+                  />
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any passage-based questions matching your criteria. Try adjusting your filters or adding a new question."
+                  />
                 ) : (
                   data.map((row, index) => (
                     <PassageRow
@@ -327,7 +326,7 @@ export function PassageClient() {
 
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.ceil(totalItems / pageSize) || 1}
             onPageChange={setCurrentPage}
             totalItems={totalItems}
             pageSize={pageSize}

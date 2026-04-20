@@ -20,6 +20,8 @@ import {
 } from "@lib/api/auth";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface AdminListingProps {
   initialData?: UserListResponse[];
@@ -110,17 +112,23 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
+                  <SimpleTableSkeleton
+                    columnCount={5}
+                    columnWidths={[
+                      "w-[80px] text-center",
+                      "",
+                      "",
+                      "",
+                      "text-center",
+                    ]}
+                    rowCount={10}
+                  />
                 ) : !Array.isArray(users) || users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No admins found.
-                    </TableCell>
-                  </TableRow>
+                  <EmptyState
+                    colSpan={5}
+                    title="No admins found"
+                    description="There are currently no administrative accounts registered in the system."
+                  />
                 ) : (
                   users.map((row, idx) => (
                     <TableRow key={row.id}>

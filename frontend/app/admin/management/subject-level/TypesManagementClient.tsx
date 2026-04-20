@@ -25,6 +25,7 @@ import {
   type Classification,
 } from "@/lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 interface BaseType {
   id: number;
@@ -340,14 +341,12 @@ export function TypesManagementClient({
             </TableHeader>
             <TableBody>
               {paginatedData.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={activeTab === "subjects" ? 6 : 5}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    No {activeTab} found.
-                  </TableCell>
-                </TableRow>
+                <EmptyState
+                  colSpan={activeTab === "subjects" ? 7 : 5}
+                  variant="database"
+                  title={`No ${activeTab} found`}
+                  description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
+                />
               ) : (
                 paginatedData.map((item, idx) => (
                   <TableRow key={item.id}>
@@ -377,11 +376,17 @@ export function TypesManagementClient({
                     {activeTab === "subjects" && (
                       <TableCell className="text-center">
                         {item.metadata?.is_exclusive ? (
-                          <Badge variant="outline" color="primary">
+                          <Badge
+                            variant="outline"
+                            color="success"
+                            shape="square"
+                          >
                             Yes
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <Badge variant="outline" color="error" shape="square">
+                            No
+                          </Badge>
                         )}
                       </TableCell>
                     )}

@@ -23,6 +23,8 @@ import {
 } from "@/lib/api/departments";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface DepartmentListingProps {
   initialData?: PaginatedDepartmentsResponse;
@@ -168,11 +170,6 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         }
       >
         <div className="flex flex-col min-w-0 relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
           <div className="overflow-x-auto w-full">
             <Table>
               <TableHeader>
@@ -190,15 +187,26 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {departments.length === 0 && !isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="h-24 text-center text-muted-foreground font-medium"
-                    >
-                      No departments found.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <SimpleTableSkeleton
+                    rowCount={pageSize}
+                    columnCount={6}
+                    columnWidths={[
+                      "w-[80px] text-center",
+                      "font-semibold text-foreground",
+                      "text-center",
+                      "text-muted-foreground text-sm",
+                      "text-muted-foreground text-sm",
+                      "text-center w-[100px]",
+                    ]}
+                  />
+                ) : departments.length === 0 ? (
+                  <EmptyState
+                    colSpan={6}
+                    variant="database"
+                    title="No departments found"
+                    description="You haven't added any departments yet. Click on the 'Add Department' button to get started."
+                  />
                 ) : (
                   departments.map((dept, idx) => (
                     <TableRow key={dept.id}>

@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
+import { TableSkeleton } from "@components/ui-elements/TableSkeleton";
+import { UserListingSkeleton } from "@components/ui-skeleton/UserListingSkeleton";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import {
   Users,
@@ -43,6 +45,7 @@ import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 interface UserListingProps {
   initialData?: UserListResponse[];
@@ -242,30 +245,14 @@ export function UserListing({ initialData = [] }: UserListingProps) {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-48 text-center">
-                      <div className="flex items-center justify-center gap-3 text-muted-foreground opacity-50">
-                        <RotateCcw className="animate-spin" />
-                        <span className="font-bold italic">
-                          Loading candidates...
-                        </span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <UserListingSkeleton rowCount={pageSize} />
                 ) : paginatedUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-48 text-center bg-muted/10"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2 opacity-40">
-                        <Users size={32} />
-                        <span className="text-sm font-bold italic uppercase tracking-widest">
-                          No candidates found
-                        </span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <EmptyState
+                    colSpan={7}
+                    variant="search"
+                    title="No candidates found"
+                    description="We couldn't find any candidates matching your current filters. Try adjusting your search or filters."
+                  />
                 ) : (
                   paginatedUsers.map((row, idx) => (
                     <TableRow
