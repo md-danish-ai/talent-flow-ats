@@ -16,9 +16,9 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
-import { Button } from "@components/ui-elements/Button";
 import { resultsApi, type AdminUserResultDetail } from "@lib/api/results";
 import { motion, AnimatePresence } from "framer-motion";
+import { AttemptDetailSkeleton } from "@components/ui-skeleton/AttemptDetailSkeleton";
 
 // Components
 import { ProfileSummaryStrip } from "./components/ProfileSummaryStrip";
@@ -32,6 +32,7 @@ import {
   parseQuestionOptions,
   getCanonicalImageUrl,
 } from "./utils";
+import { Button } from "@/components/ui-elements/Button";
 
 interface AttemptDetailClientProps {
   userId: number;
@@ -49,9 +50,7 @@ export function AttemptDetailClient({
   const [manualMarksApplied, setManualMarksApplied] = useState<
     Record<string, string>
   >({});
-  const [expandedSections, setExpandedSections] = useState<
-    Record<string, boolean>
-  >({});
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -123,23 +122,13 @@ export function AttemptDetailClient({
   };
 
   const toggleSection = (section: string) => {
-    setExpandedSections((previous) => ({
-      ...previous,
-      [section]: !previous[section],
-    }));
+    setActiveSection((previous) => (previous === section ? null : section));
   };
 
   if (loading) {
     return (
-      <PageContainer className="py-8 space-y-8 animate-pulse">
-        <div className="h-10 w-48 bg-muted rounded-lg" />
-        <div className="h-32 w-full bg-muted rounded-2xl" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-muted rounded-2xl" />
-          ))}
-        </div>
-        <div className="h-96 w-full bg-muted rounded-2xl" />
+      <PageContainer className="py-8 max-w-7xl mx-auto">
+        <AttemptDetailSkeleton />
       </PageContainer>
     );
   }
@@ -531,9 +520,7 @@ export function AttemptDetailClient({
                   <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
                     <motion.div
                       animate={{
-                        rotate: expandedSections[subject.section_name]
-                          ? 0
-                          : 180,
+                        rotate: activeSection === subject.section_name ? 0 : 180,
                       }}
                       transition={{ duration: 0.4 }}
                     >
@@ -544,7 +531,7 @@ export function AttemptDetailClient({
               </button>
 
               <AnimatePresence initial={false}>
-                {expandedSections[subject.section_name] && (
+                {activeSection === subject.section_name && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}

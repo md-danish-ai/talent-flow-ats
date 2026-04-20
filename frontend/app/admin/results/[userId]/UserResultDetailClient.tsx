@@ -18,12 +18,9 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import {
-  resultsApi,
-  type AdminUserAttemptHistoryItem,
-  type AdminUserAttemptsResponse,
-} from "@lib/api/results";
+import { resultsApi, type AdminUserAttemptHistoryItem, type AdminUserAttemptsResponse } from "@lib/api/results";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 
 interface UserResultDetailClientProps {
   userId: number;
@@ -76,17 +73,8 @@ export function UserResultDetailClient({
 
   if (loadingAttempts) {
     return (
-      <PageContainer className="py-8 space-y-8">
-        <div className="flex flex-col gap-4 animate-pulse">
-          <div className="h-10 w-48 bg-muted rounded-lg" />
-          <div className="h-32 w-full bg-muted rounded-2xl" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 bg-muted rounded-2xl" />
-            ))}
-          </div>
-          <div className="h-64 w-full bg-muted rounded-2xl" />
-        </div>
+      <PageContainer className="py-6 max-w-7xl mx-auto">
+        <UserResultDetailSkeleton />
       </PageContainer>
     );
   }
