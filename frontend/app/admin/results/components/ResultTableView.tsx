@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Phone, Copy } from "lucide-react";
+import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
@@ -162,7 +162,7 @@ export function ResultTableView({
                               </Badge>
                             )}
                           </div>
-                          <CopyableText 
+                          <CopyableText
                             value={item.mobile}
                             className="text-slate-500 dark:text-slate-300 font-medium"
                             title="Copy Phone Number"
@@ -195,7 +195,8 @@ export function ResultTableView({
                         shape="square"
                         className="font-bold text-[11px] px-2.5 py-0.5"
                       >
-                        {item.attempts_count > 0 ? item.attempts_count : 0} {item.attempts_count > 1 ? "Attempts" : "Attempt"}
+                        {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
+                        {item.attempts_count > 1 ? "Attempts" : "Attempt"}
                       </Badge>
                     </TableCell>
                   )}
@@ -212,13 +213,28 @@ export function ResultTableView({
                             </span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
-                            <div 
+                            <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 80 ? 'bg-emerald-500' :
-                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 60 ? 'bg-brand-primary' :
-                                ((latest.obtained_marks || 0) / latest.total_marks) * 100 >= 40 ? 'bg-amber-500' : 'bg-rose-500'
-                              }`} 
-                              style={{ width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%` }}
+                                ((latest.obtained_marks || 0) /
+                                  latest.total_marks) *
+                                  100 >=
+                                80
+                                  ? "bg-emerald-500"
+                                  : ((latest.obtained_marks || 0) /
+                                        latest.total_marks) *
+                                        100 >=
+                                      60
+                                    ? "bg-brand-primary"
+                                    : ((latest.obtained_marks || 0) /
+                                          latest.total_marks) *
+                                          100 >=
+                                        40
+                                      ? "bg-amber-500"
+                                      : "bg-rose-500"
+                              }`}
+                              style={{
+                                width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
@@ -304,18 +320,24 @@ export function ResultTableView({
                       {interviewDate ? (
                         <div className="flex flex-col">
                           <span className="font-semibold text-slate-700 dark:text-slate-300 text-[13px]">
-                            {new Date(interviewDate).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {new Date(interviewDate).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
                           </span>
                           <span className="text-[11px] text-muted-foreground/80 font-medium">
-                            {new Date(interviewDate).toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })}
+                            {new Date(interviewDate).toLocaleTimeString(
+                              "en-US",
+                              {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              },
+                            )}
                           </span>
                         </div>
                       ) : (

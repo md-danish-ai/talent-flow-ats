@@ -202,9 +202,11 @@ export function InterviewTestClient() {
       if (answersToBatch.length === 0) return;
 
       try {
-        await interviewAttemptsApi.saveAnswersBatch(attemptId, {
-          answers: answersToBatch,
-        });
+        await interviewAttemptsApi.saveAnswersBatch(
+          attemptId,
+          { answers: answersToBatch },
+          { silentSuccess: true },
+        );
       } catch (error) {
         console.error("Failed to batch save answers:", error);
         throw error;
@@ -306,6 +308,7 @@ export function InterviewTestClient() {
             await interviewAttemptsApi.skipSection(
               attemptId,
               currentSection.title,
+              { silentSuccess: true },
             );
           }
         } catch {
@@ -680,6 +683,7 @@ export function InterviewTestClient() {
               timerZone={timerZone}
               answeredCount={answeredCount}
               notAttemptedCount={notAttemptedCount}
+              questionIndex={questionIndex}
             />
           </div>
         </div>

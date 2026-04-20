@@ -21,7 +21,6 @@ import {
   Mail,
   FileText,
   UserCog,
-  Copy,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
@@ -297,7 +296,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                                 </Badge>
                               )}
                             </div>
-                            <CopyableText 
+                            <CopyableText
                               value={row.email || "-"}
                               className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
                               title="Copy Email"
@@ -311,7 +310,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                         </div>
                       </TableCell>
                       <TableCell className="align-middle py-3">
-                        <CopyableText 
+                        <CopyableText
                           value={row.mobile}
                           className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
                           title="Copy Phone Number"
