@@ -34,7 +34,10 @@ export function UserResultDetailSkeleton() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="min-h-[9rem] bg-muted/30 rounded-2xl border border-border/50 p-6 flex flex-col gap-4">
+          <div
+            key={i}
+            className="min-h-[9rem] bg-muted/30 rounded-2xl border border-border/50 p-6 flex flex-col gap-4"
+          >
             <Skeleton className="h-12 w-12 rounded-xl" />
             <div className="space-y-3">
               <Skeleton className="h-4 w-24 rounded opacity-60" />
@@ -62,21 +65,24 @@ export function UserResultDetailSkeleton() {
 
         <div className="space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="min-h-[14rem] w-full bg-muted/20 rounded-2xl border border-border/40 p-6 flex flex-col gap-6">
-               <div className="flex justify-between items-start">
-                 <div className="flex gap-4">
-                   <Skeleton className="h-16 w-16 rounded-full" />
-                   <div className="space-y-2">
-                     <Skeleton className="h-6 w-48 rounded" />
-                     <div className="flex gap-2">
-                       <Skeleton className="h-5 w-20 rounded-full" />
-                       <Skeleton className="h-5 w-16 rounded-full" />
-                     </div>
-                   </div>
-                 </div>
-                 <Skeleton className="h-16 w-64 rounded-xl" />
-               </div>
-               <Skeleton className="h-16 w-full rounded-xl mt-auto" />
+            <div
+              key={i}
+              className="min-h-[14rem] w-full bg-muted/20 rounded-2xl border border-border/40 p-6 flex flex-col gap-6"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex gap-4">
+                  <Skeleton className="h-16 w-16 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-48 rounded" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+                <Skeleton className="h-16 w-64 rounded-xl" />
+              </div>
+              <Skeleton className="h-16 w-full rounded-xl mt-auto" />
             </div>
           ))}
         </div>

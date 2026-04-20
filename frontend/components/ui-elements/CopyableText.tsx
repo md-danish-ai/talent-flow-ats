@@ -33,9 +33,12 @@ export function CopyableText({
     };
 
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(value).then(doCopy).catch(() => {
-        toast.error("Failed to copy to clipboard.");
-      });
+      navigator.clipboard
+        .writeText(value)
+        .then(doCopy)
+        .catch(() => {
+          toast.error("Failed to copy to clipboard.");
+        });
     } else {
       // Fallback for non-secure contexts
       const textArea = document.createElement("textarea");

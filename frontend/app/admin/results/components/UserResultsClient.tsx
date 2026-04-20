@@ -11,6 +11,9 @@ import {
   Filter,
   Search,
   RotateCcw,
+  Trophy,
+  BadgeCheck,
+  Target,
 } from "lucide-react";
 import { cn } from "@lib/utils";
 
@@ -28,7 +31,11 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
-import { resultsApi, type AdminUserResultListItem } from "@lib/api/results";
+import {
+  resultsApi,
+  type AdminUserResultListItem,
+  type PaginatedUserResults,
+} from "@lib/api/results";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { toast } from "@lib/toast";
 
@@ -104,28 +111,21 @@ export function UserResultsClient() {
     ];
   }, []);
 
-  const DEFAULT_VISIBLE_COLUMNS = useMemo(
-    () => [
-      "candidate",
-      "paper",
-      "attempts",
-      "marks",
-      "grade",
-      "typing_wpm",
-      "status",
-      "date",
-      "actions",
-    ],
-    [],
+  const DEFAULT_VISIBLE_COLUMNS = [
+    "candidate",
+    "paper",
+    "attempts",
+    "marks",
+    "grade",
+    "typing_wpm",
+    "status",
+    "date",
+    "actions",
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    DEFAULT_VISIBLE_COLUMNS,
   );
-
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (visibleColumns.length === 0 && DEFAULT_VISIBLE_COLUMNS.length > 0) {
-      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
-    }
-  }, [DEFAULT_VISIBLE_COLUMNS, visibleColumns.length]);
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -154,6 +154,9 @@ export function UserResultsClient() {
         setItems(data.items);
         setTotalItems(data.total);
         setTotalPages(data.total_pages);
+        if (data.summary_stats) {
+          setSummaryStatsData(data.summary_stats);
+        }
         if (isRefresh) {
           toast.success(`${data.total} results loaded successfully.`, {
             title: "Data Refreshed",
@@ -214,46 +217,101 @@ export function UserResultsClient() {
     gradeFilter !== "all" ? gradeFilter : "",
   ].filter(Boolean).length;
 
-  const stats = useMemo(() => {
-    const completed = items.filter((item) =>
-      ["submitted", "auto_submitted"].includes(
-        item.latest_attempt?.status || "",
-      ),
-    ).length;
-    const active = items.filter(
-      (item) => item.latest_attempt?.status === "started",
-    ).length;
+  const [summaryStatsData, setSummaryStatsData] =
+    useState<PaginatedUserResults["summary_stats"]>(undefined);
 
+  const summaryStats = useMemo(() => {
     return [
       {
-        label: "Total Candidates (Filtered)",
-        value: totalItems,
+        id: "total",
+        label: "Total Candidates",
+        value: summaryStatsData?.total || 0,
         icon: <Users size={20} />,
         color: "text-brand-primary",
         bg: "bg-brand-primary/10",
         border: "border-brand-primary/20",
-        trend: "Latest records",
+        trend: "Overall batch",
+        filter: { type: "reset", value: "all" },
       },
       {
+        id: "active",
         label: "Active Attempts",
-        value: active,
+        value: summaryStatsData?.active || 0,
         icon: <UserCheck size={20} />,
         color: "text-emerald-600",
         bg: "bg-emerald-500/10",
         border: "border-emerald-500/20",
         trend: "Currently started",
+        filter: { type: "status", value: "started" },
       },
       {
+        id: "completed",
         label: "Completed Results",
-        value: completed,
-        icon: <UserX size={20} />,
+        value: summaryStatsData?.completed || 0,
+        icon: <BadgeCheck size={20} />,
         color: "text-amber-600",
         bg: "bg-amber-500/10",
         border: "border-amber-500/20",
         trend: "Submitted records",
+        filter: { type: "status", value: "submitted" },
       },
     ];
-  }, [items, totalItems]);
+  }, [summaryStatsData]);
+
+  const gradeStats = useMemo(() => {
+    return [
+      {
+        id: "excellent",
+        label: "Excellent",
+        value: summaryStatsData?.excellent || 0,
+        color: "text-emerald-600",
+        bg: "bg-emerald-600/10",
+        border: "border-emerald-600/20",
+        icon: <Trophy size={18} />,
+      },
+      {
+        id: "good",
+        label: "Good Performance",
+        value: summaryStatsData?.good || 0,
+        color: "text-blue-500",
+        bg: "bg-blue-500/10",
+        border: "border-blue-500/20",
+        icon: <BadgeCheck size={18} />,
+      },
+      {
+        id: "average",
+        label: "Average Results",
+        value: summaryStatsData?.average || 0,
+        color: "text-amber-500",
+        bg: "bg-amber-500/10",
+        border: "border-amber-500/20",
+        icon: <Target size={18} />,
+      },
+      {
+        id: "poor",
+        label: "Poor Performance",
+        value: summaryStatsData?.poor || 0,
+        color: "text-rose-500",
+        bg: "bg-rose-500/10",
+        border: "border-rose-500/20",
+        icon: <UserX size={18} />,
+      },
+    ];
+  }, [summaryStatsData]);
+
+  const handleStatClick = (filterObj: { type: string; value: string }) => {
+    if (filterObj.type === "reset") {
+      resetAllFilters();
+    } else if (filterObj.type === "status") {
+      setStatusFilter(filterObj.value);
+      setGradeFilter("all");
+    } else if (filterObj.type === "grade") {
+      setGradeFilter(filterObj.value);
+      setStatusFilter("all");
+    }
+    setPage(1);
+    setIsFilterOpen(false);
+  };
 
   return (
     <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
@@ -263,54 +321,125 @@ export function UserResultsClient() {
           <Typography variant="h2" className="font-black tracking-tight">
             Interview Results
           </Typography>
-          <Typography
-            variant="body4"
-            className="text-muted-foreground max-w-md"
-          >
-            Manage candidate performance, track interview progress, and generate
-            detailed assessment reports.
-          </Typography>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Summary Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {stats.map((stat, idx) => (
+        {summaryStats.map((stat, idx) => (
           <div
             key={idx}
-            className={`group relative overflow-hidden rounded-2xl border ${stat.border} bg-card p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1`}
+            onClick={() => handleStatClick(stat.filter)}
+            className={cn(
+              "group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1 cursor-pointer",
+              stat.border,
+              statusFilter === stat.filter.value &&
+                "ring-2 ring-brand-primary ring-offset-2 dark:ring-offset-slate-900",
+            )}
           >
             <div className="relative z-10 flex items-center gap-4">
               <div
-                className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center transition-transform group-hover:scale-110`}
+                className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                  stat.bg,
+                  stat.color,
+                )}
               >
                 {stat.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <Typography
                   variant="body5"
-                  className="font-bold uppercase tracking-wider text-muted-foreground/80 truncate"
+                  className="font-extrabold uppercase tracking-widest text-muted-foreground/80 truncate"
                 >
                   {stat.label}
                 </Typography>
                 <div className="flex items-baseline gap-2 mt-0.5">
-                  <Typography variant="h2" className="font-black leading-none">
-                    {stat.value}
-                  </Typography>
-                  <Typography
-                    variant="body5"
-                    className="text-muted-foreground font-medium truncate"
-                  >
-                    {stat.trend}
-                  </Typography>
+                  {loading ? (
+                    <div className="h-8 w-16 bg-muted animate-pulse rounded mt-1" />
+                  ) : (
+                    <>
+                      <Typography
+                        variant="h2"
+                        className="font-black leading-none"
+                      >
+                        {stat.value}
+                      </Typography>
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground font-medium truncate"
+                      >
+                        {stat.trend}
+                      </Typography>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
             <div
-              className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full ${stat.bg} blur-2xl opacity-40 transition-opacity group-hover:opacity-60`}
+              className={cn(
+                "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-40 transition-opacity group-hover:opacity-60",
+                stat.bg,
+              )}
             />
           </div>
         ))}
+      </div>
+
+      {/* Grade Quick Filters Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {gradeStats.map((stat, idx) => {
+          const gradeValue =
+            stat.id === "excellent"
+              ? "Excellent"
+              : stat.id === "good"
+                ? "Good"
+                : stat.id === "average"
+                  ? "Average"
+                  : "Poor";
+          return (
+            <div
+              key={idx}
+              onClick={() =>
+                handleStatClick({ type: "grade", value: gradeValue })
+              }
+              className={cn(
+                "group relative flex items-center gap-4 p-4 rounded-xl border bg-card/50 transition-all hover:-translate-y-1 cursor-pointer hover:shadow-sm",
+                stat.border,
+                gradeFilter === gradeValue &&
+                  "ring-2 ring-brand-primary ring-offset-2 dark:ring-offset-slate-900 bg-card",
+              )}
+            >
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+                  stat.bg,
+                  stat.color,
+                )}
+              >
+                {stat.icon}
+              </div>
+              <div>
+                <Typography
+                  variant="body5"
+                  className="font-bold uppercase tracking-widest text-muted-foreground/60 text-[9px] truncate"
+                >
+                  {stat.label}
+                </Typography>
+                {loading ? (
+                  <div className="h-6 w-10 bg-muted animate-pulse rounded mt-1" />
+                ) : (
+                  <Typography
+                    variant="h3"
+                    className="font-black leading-none mt-1"
+                  >
+                    {stat.value}
+                  </Typography>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Main Content — MCQ-style layout */}
@@ -328,13 +457,17 @@ export function UserResultsClient() {
         action={
           <div className="flex items-center gap-3">
             {/* Results count badge */}
-            <Badge
-              variant="outline"
-              color="default"
-              className="font-black text-[10px] h-9 px-3 bg-card"
-            >
-              {totalItems} RESULTS
-            </Badge>
+            {loading ? (
+              <div className="h-9 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-black text-[10px] h-9 px-3 bg-card"
+              >
+                {totalItems} RESULTS
+              </Badge>
+            )}
 
             {viewMode === "table" && (
               <>

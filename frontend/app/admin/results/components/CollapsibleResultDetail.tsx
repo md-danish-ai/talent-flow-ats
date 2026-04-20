@@ -80,14 +80,18 @@ export function CollapsibleResultDetail({
                     / {res.total_marks}
                   </span>
                 </div>
-                
+
                 {/* Mini Progress Bar */}
                 <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shrink-0">
-                  <div 
+                  <div
                     className={`h-full rounded-full transition-all duration-1000 ${
-                      res.percentage >= 80 ? 'bg-emerald-500' :
-                      res.percentage >= 60 ? 'bg-brand-primary' :
-                      res.percentage >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+                      res.percentage >= 80
+                        ? "bg-emerald-500"
+                        : res.percentage >= 60
+                          ? "bg-brand-primary"
+                          : res.percentage >= 40
+                            ? "bg-amber-500"
+                            : "bg-rose-500"
                     }`}
                     style={{ width: `${Math.min(res.percentage || 0, 100)}%` }}
                   />

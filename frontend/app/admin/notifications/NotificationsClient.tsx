@@ -173,61 +173,82 @@ export function NotificationsClient() {
           />
 
           <div className="overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center px-6">
-                    <div className="flex justify-center items-center">
-                      <Checkbox
-                        checked={
-                          notifications.length > 0 &&
-                          notifications.every((item) =>
-                            selectedIds.includes(item.id),
-                          )
-                        }
-                        onChange={toggleAll}
-                      />
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Alert Type</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>New User</TableHead>
-                  <TableHead>Matched User</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+            {loading ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center px-6"></TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead>Alert Type</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>New User</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
-                ) : notifications.length === 0 ? (
-                  <EmptyState
-                    colSpan={9}
-                    title="All caught up!"
-                    description="You have no new notifications right now. We'll alert you when something important happens."
-                  />
-                ) : (
-                  notifications.map((notif, idx) => (
-                    <NotificationRow
-                      key={notif.id}
-                      notification={notif}
-                      index={startItemIndex + idx + 1}
-                      isSelected={selectedIds.includes(notif.id)}
-                      isExpanded={!!expandedRows[notif.id]}
-                      onSelect={toggleSelection}
-                      onExpand={toggleRow}
-                      getDateStr={getDateStr}
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center px-6">
+                      <div className="flex justify-center items-center">
+                        <Checkbox
+                          checked={
+                            notifications.length > 0 &&
+                            notifications.every((item) =>
+                              selectedIds.includes(item.id),
+                            )
+                          }
+                          onChange={toggleAll}
+                        />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead>Alert Type</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>New User</TableHead>
+                    <TableHead>Matched User</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {notifications.length === 0 ? (
+                    <EmptyState
+                      colSpan={9}
+                      title="All caught up!"
+                      description="You have no new notifications right now. We'll alert you when something important happens."
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    notifications.map((notif, idx) => (
+                      <NotificationRow
+                        key={notif.id}
+                        notification={notif}
+                        index={startItemIndex + idx + 1}
+                        isSelected={selectedIds.includes(notif.id)}
+                        isExpanded={!!expandedRows[notif.id]}
+                        onSelect={toggleSelection}
+                        onExpand={toggleRow}
+                        getDateStr={getDateStr}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
           {!loading && notifications.length > 0 && (

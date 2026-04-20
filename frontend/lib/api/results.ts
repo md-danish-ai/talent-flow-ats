@@ -40,6 +40,15 @@ export interface PaginatedUserResults {
   page: number;
   limit: number;
   total_pages: number;
+  summary_stats?: {
+    total: number;
+    active: number;
+    completed: number;
+    excellent: number;
+    good: number;
+    average: number;
+    poor: number;
+  };
 }
 
 export interface AdminUserResultAnswer {
@@ -173,8 +182,10 @@ export const resultsApi = {
     if (startDate) params.append("start_date", startDate);
     if (endDate) params.append("end_date", endDate);
     if (status && status !== "all") params.append("status", status);
-    if (completionReason && completionReason !== "all") params.append("completion_reason", completionReason);
-    if (overallGrade && overallGrade !== "all") params.append("overall_grade", overallGrade);
+    if (completionReason && completionReason !== "all")
+      params.append("completion_reason", completionReason);
+    if (overallGrade && overallGrade !== "all")
+      params.append("overall_grade", overallGrade);
 
     return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
   },

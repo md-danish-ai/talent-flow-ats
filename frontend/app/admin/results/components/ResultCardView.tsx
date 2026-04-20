@@ -43,7 +43,10 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                     <>
                       <div className="h-1 w-1 rounded-full bg-border" />
                       <div className="flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
-                        <CalendarDays size={13} className="text-brand-primary/60" />
+                        <CalendarDays
+                          size={13}
+                          className="text-brand-primary/60"
+                        />
                         {new Date(interviewDate).toLocaleDateString("en-GB", {
                           day: "2-digit",
                           month: "short",
@@ -61,7 +64,8 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                   shape="square"
                   className="font-bold text-[10px] px-2 py-0.5 mt-1"
                 >
-                  {item.attempts_count > 0 ? item.attempts_count : 0} {item.attempts_count > 1 ? "Attempts" : "Attempt"}
+                  {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
+                  {item.attempts_count > 1 ? "Attempts" : "Attempt"}
                 </Badge>
               }
               metrics={[
@@ -81,9 +85,10 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                 },
                 {
                   label: "Overall Grade",
-                  value: latest?.overall_grade && latest.overall_grade !== "N/A" 
-                    ? latest.overall_grade
-                    : "N/A",
+                  value:
+                    latest?.overall_grade && latest.overall_grade !== "N/A"
+                      ? latest.overall_grade
+                      : "N/A",
                   icon: Award,
                   color: "text-amber-500",
                 },

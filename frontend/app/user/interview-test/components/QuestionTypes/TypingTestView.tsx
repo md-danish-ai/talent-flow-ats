@@ -318,7 +318,10 @@ export const TypingTestView = memo(function TypingTestView({
             variant="body4"
             className="text-amber-500 font-bold leading-relaxed italic"
           >
-            <strong className="text-amber-600 uppercase tracking-wider text-[11px] mr-1">Note:</strong> Type Complete Paragraph and Click on{" "}
+            <strong className="text-amber-600 uppercase tracking-wider text-[11px] mr-1">
+              Note:
+            </strong>{" "}
+            Type Complete Paragraph and Click on{" "}
             <span className="font-black underline decoration-2 underline-offset-4">
               &quot;Save &amp; Next&quot;
             </span>

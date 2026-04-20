@@ -520,7 +520,8 @@ export function AttemptDetailClient({
                   <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
                     <motion.div
                       animate={{
-                        rotate: activeSection === subject.section_name ? 0 : 180,
+                        rotate:
+                          activeSection === subject.section_name ? 0 : 180,
                       }}
                       transition={{ duration: 0.4 }}
                     >

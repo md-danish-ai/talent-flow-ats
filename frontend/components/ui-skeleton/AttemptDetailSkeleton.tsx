@@ -29,7 +29,10 @@ export function AttemptDetailSkeleton() {
       {/* Performance Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="min-h-[9rem] bg-muted/30 rounded-2xl border border-border/50 p-6 flex flex-col gap-4">
+          <div
+            key={i}
+            className="min-h-[9rem] bg-muted/30 rounded-2xl border border-border/50 p-6 flex flex-col gap-4"
+          >
             <Skeleton className="h-10 w-10 rounded-xl" />
             <div className="space-y-3">
               <Skeleton className="h-3 w-20 rounded opacity-60" />
@@ -47,7 +50,10 @@ export function AttemptDetailSkeleton() {
         <Skeleton className="h-6 w-48 rounded shrink-0" />
         <div className="flex flex-wrap gap-3 w-full">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-10 flex-1 min-w-[140px] rounded-xl" />
+            <Skeleton
+              key={i}
+              className="h-10 flex-1 min-w-[140px] rounded-xl"
+            />
           ))}
         </div>
       </div>
@@ -55,24 +61,27 @@ export function AttemptDetailSkeleton() {
       {/* Result Breakdown Banner Skeleton */}
       <div className="space-y-6">
         <div className="min-h-[5rem] w-full bg-card rounded-3xl border border-border/50 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-           <div className="flex items-center gap-4">
-             <Skeleton className="h-12 w-12 rounded-xl" />
-             <div className="space-y-2">
-               <Skeleton className="h-6 w-40 rounded" />
-               <Skeleton className="h-3 w-48 rounded opacity-60" />
-             </div>
-           </div>
-           <div className="flex flex-wrap gap-2">
-             <Skeleton className="h-8 w-24 rounded-xl" />
-             <Skeleton className="h-8 w-24 rounded-xl" />
-             <Skeleton className="h-8 w-24 rounded-xl" />
-           </div>
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-40 rounded" />
+              <Skeleton className="h-3 w-48 rounded opacity-60" />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-8 w-24 rounded-xl" />
+            <Skeleton className="h-8 w-24 rounded-xl" />
+            <Skeleton className="h-8 w-24 rounded-xl" />
+          </div>
         </div>
 
         {/* Section Accordions Skeleton */}
         <div className="space-y-5">
           {[1, 2].map((i) => (
-            <div key={i} className="min-h-[6rem] bg-card rounded-3xl border border-border/50 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div
+              key={i}
+              className="min-h-[6rem] bg-card rounded-3xl border border-border/50 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6"
+            >
               <div className="flex items-center gap-4">
                 <Skeleton className="h-12 w-12 rounded-2xl" />
                 <div className="space-y-2">

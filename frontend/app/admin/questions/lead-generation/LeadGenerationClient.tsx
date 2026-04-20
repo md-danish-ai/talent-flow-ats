@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { Badge } from "@components/ui-elements/Badge";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
@@ -33,7 +34,7 @@ export function LeadGenerationClient() {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -209,6 +210,18 @@ export function LeadGenerationClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {totalItems} QUESTIONS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
@@ -259,90 +272,127 @@ export function LeadGenerationClient() {
           )}
         >
           <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("companyName") && (
-                    <TableHead>CompanyName</TableHead>
-                  )}
-                  {visibleColumns.includes("website") && (
-                    <TableHead>WebSite</TableHead>
-                  )}
-                  {visibleColumns.includes("name") && (
-                    <TableHead>Name</TableHead>
-                  )}
-                  {visibleColumns.includes("title") && (
-                    <TableHead>Title</TableHead>
-                  )}
-                  {visibleColumns.includes("primaryEmail") && (
-                    <TableHead>Primary Email Address</TableHead>
-                  )}
-                  {visibleColumns.includes("linkedInUrl") && (
-                    <TableHead>LinkedIn URL</TableHead>
-                  )}
-                  {visibleColumns.includes("subject") && (
-                    <TableHead>Subject</TableHead>
-                  )}
-                  {visibleColumns.includes("examLevel") && (
-                    <TableHead>Exam Level</TableHead>
-                  )}
-                  {visibleColumns.includes("marks") && (
-                    <TableHead className="w-[80px] text-center">
-                      Marks
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("createdDate") && (
-                    <TableHead>Created Date</TableHead>
-                  )}
-                  {visibleColumns.includes("status") && (
-                    <TableHead className="w-[100px] text-center">
-                      Status
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">
-                      Action
-                    </TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {isLoading ? (
+            {isLoading ? (
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("name") && (
+                      <TableHead>Name</TableHead>
+                    )}
+                    {visibleColumns.includes("companyName") && (
+                      <TableHead>CompanyName</TableHead>
+                    )}
+                    {visibleColumns.includes("primaryEmail") && (
+                      <TableHead>Primary Email Address</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   <QuestionTableSkeleton
                     visibleColumns={visibleColumns}
                     rowCount={pageSize}
                   />
-                ) : data.length === 0 ? (
-                  <EmptyState
-                    colSpan={visibleColumns.length + 1}
-                    variant="search"
-                    title="No questions found"
-                    description="We couldn't find any lead generation questions matching your criteria. Try adjusting your filters or adding a new question."
-                  />
-                ) : (
-                  data.map((row, index) => (
-                    <LeadGenerationRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      currentPage={currentPage}
-                      pageSize={pageSize}
-                      visibleColumns={visibleColumns}
-                      togglingId={togglingId}
-                      onToggleStatus={handleToggleStatus}
-                      onEdit={setEditingQuestion}
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("companyName") && (
+                      <TableHead>CompanyName</TableHead>
+                    )}
+                    {visibleColumns.includes("website") && (
+                      <TableHead>WebSite</TableHead>
+                    )}
+                    {visibleColumns.includes("name") && (
+                      <TableHead>Name</TableHead>
+                    )}
+                    {visibleColumns.includes("title") && (
+                      <TableHead>Title</TableHead>
+                    )}
+                    {visibleColumns.includes("primaryEmail") && (
+                      <TableHead>Primary Email Address</TableHead>
+                    )}
+                    {visibleColumns.includes("linkedInUrl") && (
+                      <TableHead>LinkedIn URL</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("examLevel") && (
+                      <TableHead>Exam Level</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableHead>Created Date</TableHead>
+                    )}
+                    {visibleColumns.includes("status") && (
+                      <TableHead className="w-[100px] text-center">
+                        Status
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.length === 0 ? (
+                    <EmptyState
+                      colSpan={visibleColumns.length + 1}
+                      variant="search"
+                      title="No questions found"
+                      description="We couldn't find any lead generation questions matching your criteria. Try adjusting your filters or adding a new question."
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    data.map((row, index) => (
+                      <LeadGenerationRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        visibleColumns={visibleColumns}
+                        togglingId={togglingId}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={setEditingQuestion}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
           {!isLoading && data.length > 0 && (

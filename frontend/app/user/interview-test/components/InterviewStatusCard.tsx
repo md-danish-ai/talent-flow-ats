@@ -63,7 +63,7 @@ export function InterviewStatusCard({
         showIcon={true}
       />
 
-      <div 
+      <div
         ref={scrollContainerRef}
         className="space-y-3 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar scroll-smooth"
       >

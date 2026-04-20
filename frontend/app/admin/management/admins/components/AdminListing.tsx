@@ -30,7 +30,7 @@ interface AdminListingProps {
 export function AdminListing({ initialData = [] }: AdminListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(!initialData.length);
+  const [loading, setLoading] = useState(true);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const fetchUsers = React.useCallback(async () => {
@@ -80,6 +80,18 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            {loading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {users.length} ADMINS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
               color="primary"
@@ -98,20 +110,20 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
       >
         <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
           <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+            {loading ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Mobile</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   <SimpleTableSkeleton
                     columnCount={5}
                     columnWidths={[
@@ -123,43 +135,68 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
                     ]}
                     rowCount={10}
                   />
-                ) : !Array.isArray(users) || users.length === 0 ? (
-                  <EmptyState
-                    colSpan={5}
-                    title="No admins found"
-                    description="There are currently no administrative accounts registered in the system."
-                  />
-                ) : (
-                  users.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="font-medium text-center">
-                        {idx + 1}
-                      </TableCell>
-                      <TableCell>{row.username || "-"}</TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell>{row.email || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={row.is_active}
-                            onChange={() => handleToggleStatus(row)}
-                            size="sm"
-                            disabled={togglingId === row.id}
-                          />
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color={row.is_active ? "success" : "error"}
-                          >
-                            {row.is_active ? "Activate" : "Deactivate"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Mobile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Email
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {!Array.isArray(users) || users.length === 0 ? (
+                    <EmptyState
+                      colSpan={5}
+                      title="No admins found"
+                      description="There are currently no administrative accounts registered in the system."
+                    />
+                  ) : (
+                    users.map((row, idx) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="font-medium text-center">
+                          {idx + 1}
+                        </TableCell>
+                        <TableCell>{row.username || "-"}</TableCell>
+                        <TableCell>{row.mobile}</TableCell>
+                        <TableCell>{row.email || "-"}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={row.is_active}
+                              onChange={() => handleToggleStatus(row)}
+                              size="sm"
+                              disabled={togglingId === row.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={row.is_active ? "success" : "error"}
+                            >
+                              {row.is_active ? "Activate" : "Deactivate"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </div>
       </MainCard>

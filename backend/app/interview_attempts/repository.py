@@ -816,7 +816,31 @@ def get_admin_user_results(
             .join(Paper, Paper.id == InterviewRecord.paper_id)
         )
 
-        # Apply post-subquery filters on the actual record columns
+        # 1. Calculate global breakdown stats based on current search/date filters
+        # but BEFORE status/grade filters so cards stay stable
+        stats_data = db.query(
+            InterviewRecord.status,
+            InterviewRecord.overall_grade,
+            func.count(InterviewRecord.id)
+        ).join(
+            latest_record_ids, 
+            latest_record_ids.c.latest_record_id == InterviewRecord.id
+        ).group_by(
+            InterviewRecord.status, 
+            InterviewRecord.overall_grade
+        ).all()
+
+        summary_stats = {
+            "total": sum(s[2] for s in stats_data),
+            "active": sum(s[2] for s in stats_data if s[0] == "started"),
+            "completed": sum(s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]),
+            "excellent": sum(s[2] for s in stats_data if s[1] == "Excellent"),
+            "good": sum(s[2] for s in stats_data if s[1] == "Good"),
+            "average": sum(s[2] for s in stats_data if s[1] == "Average"),
+            "poor": sum(s[2] for s in stats_data if s[1] == "Poor"),
+        }
+
+        # 2. Apply post-subquery filters on the actual record columns for LISTING ONLY
         if status and status != "all":
             records_query = records_query.filter(InterviewRecord.status == status)
         if completion_reason and completion_reason != "all":
@@ -888,6 +912,7 @@ def get_admin_user_results(
             "page": page,
             "limit": limit,
             "total_pages": total_pages,
+            "summary_stats": summary_stats,
         }
     finally:
         db.close()

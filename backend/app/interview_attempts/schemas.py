@@ -82,5 +82,24 @@ class AnswerEntry(BaseModel):
     is_auto_saved: bool = False
 
 
+class SummaryStats(BaseModel):
+    total: int
+    active: int
+    completed: int
+    excellent: int
+    good: int
+    average: int
+    poor: int
+
+
+class AdminResultsResponse(BaseModel):
+    items: list[dict]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+    summary_stats: Optional[SummaryStats] = None
+
+
 class BatchSaveAnswersRequest(BaseModel):
     answers: list[AnswerEntry]
