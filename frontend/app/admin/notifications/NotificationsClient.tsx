@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, MailOpen, Loader2 } from "lucide-react";
+import { Bell, Mail, MailOpen } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -22,6 +21,8 @@ import {
 } from "@lib/api";
 import { NotificationSummary } from "./components/NotificationSummary";
 import { NotificationRow } from "./components/NotificationRow";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 const getDateStr = (dateStr: string) => {
   const tzDate = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
@@ -171,72 +172,86 @@ export function NotificationsClient() {
             onFilterChange={onFilterChange}
           />
 
-          {loading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
-
           <div className="overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center px-6">
-                    <div className="flex justify-center items-center">
-                      <Checkbox
-                        checked={
-                          notifications.length > 0 &&
-                          notifications.every((item) =>
-                            selectedIds.includes(item.id),
-                          )
-                        }
-                        onChange={toggleAll}
-                      />
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Alert Type</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>New User</TableHead>
-                  <TableHead>Matched User</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {!loading && notifications.length === 0 ? (
+            {loading ? (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      No notifications available.
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center px-6"></TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead>Alert Type</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>New User</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  notifications.map((notif, idx) => (
-                    <NotificationRow
-                      key={notif.id}
-                      notification={notif}
-                      index={startItemIndex + idx + 1}
-                      isSelected={selectedIds.includes(notif.id)}
-                      isExpanded={!!expandedRows[notif.id]}
-                      onSelect={toggleSelection}
-                      onExpand={toggleRow}
-                      getDateStr={getDateStr}
+                </TableHeader>
+                <TableBody>
+                  <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center px-6">
+                      <div className="flex justify-center items-center">
+                        <Checkbox
+                          checked={
+                            notifications.length > 0 &&
+                            notifications.every((item) =>
+                              selectedIds.includes(item.id),
+                            )
+                          }
+                          onChange={toggleAll}
+                        />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead>Alert Type</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>New User</TableHead>
+                    <TableHead>Matched User</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {notifications.length === 0 ? (
+                    <EmptyState
+                      colSpan={9}
+                      title="All caught up!"
+                      description="You have no new notifications right now. We'll alert you when something important happens."
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    notifications.map((notif, idx) => (
+                      <NotificationRow
+                        key={notif.id}
+                        notification={notif}
+                        index={startItemIndex + idx + 1}
+                        isSelected={selectedIds.includes(notif.id)}
+                        isExpanded={!!expandedRows[notif.id]}
+                        onSelect={toggleSelection}
+                        onExpand={toggleRow}
+                        getDateStr={getDateStr}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
-          {!loading && (
+          {!loading && notifications.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

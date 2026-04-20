@@ -15,6 +15,8 @@ os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")
 from app.database.db import SessionLocal
 from app.questions.models import Question
 from app.users.models import User
+from app.classifications.models import Classification
+from app.departments.models import Department
 
 
 def update_images():

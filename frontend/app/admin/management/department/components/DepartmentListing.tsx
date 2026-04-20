@@ -23,6 +23,8 @@ import {
 } from "@/lib/api/departments";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface DepartmentListingProps {
   initialData?: PaginatedDepartmentsResponse;
@@ -33,7 +35,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [departments, setDepartments] = useState<Department[]>(
     initialData?.data || [],
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(
     initialData?.pagination?.total_records || 0,
   );
@@ -141,6 +143,18 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         bodyClassName="p-0 flex flex-col items-stretch w-full"
         action={
           <div className="flex items-center gap-4">
+            {isLoading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {totalItems} DEPTS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -168,114 +182,158 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         }
       >
         <div className="flex flex-col min-w-0 relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
           <div className="overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Department Name</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Updated At</TableHead>
-                  <TableHead className="text-center w-[100px]">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {departments.length === 0 && !isLoading ? (
+            {isLoading ? (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="h-24 text-center text-muted-foreground font-medium"
-                    >
-                      No departments found.
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center uppercase text-[11px] font-bold">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="uppercase text-[11px] font-bold">
+                      Department Name
+                    </TableHead>
+                    <TableHead className="text-center uppercase text-[11px] font-bold">
+                      Status
+                    </TableHead>
+                    <TableHead className="uppercase text-[11px] font-bold">
+                      Created At
+                    </TableHead>
+                    <TableHead className="uppercase text-[11px] font-bold">
+                      Updated At
+                    </TableHead>
+                    <TableHead className="text-center w-[100px] uppercase text-[11px] font-bold">
+                      Action
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  departments.map((dept, idx) => (
-                    <TableRow key={dept.id}>
-                      <TableCell className="font-medium text-center">
-                        {(currentPage - 1) * pageSize + idx + 1}
-                      </TableCell>
-                      <TableCell className="font-semibold text-foreground">
-                        {dept.name}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={dept.is_active}
-                            onChange={() => handleToggleStatus(dept)}
-                            size="sm"
-                            disabled={togglingId === dept.id}
-                          />
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color={dept.is_active ? "success" : "error"}
-                          >
-                            {dept.is_active ? "Activate" : "Deactivate"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {dept.created_at
-                          ? new Date(dept.created_at).toLocaleString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {dept.updated_at
-                          ? new Date(dept.updated_at).toLocaleString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <TableIconButton
-                            iconColor="blue"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={() => handleOpenModal(dept)}
-                            title="Edit Department"
-                          >
-                            <Edit size={16} />
-                          </TableIconButton>
-                          <TableIconButton
-                            iconColor="red"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={() => handleDeleteClick(dept.id)}
-                            title="Delete Department"
-                          >
-                            <Trash2 size={16} />
-                          </TableIconButton>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  <SimpleTableSkeleton
+                    rowCount={pageSize}
+                    columnCount={6}
+                    columnWidths={[
+                      "w-[80px] text-center",
+                      "font-semibold text-foreground",
+                      "text-center",
+                      "text-muted-foreground text-sm",
+                      "text-muted-foreground text-sm",
+                      "text-center w-[100px]",
+                    ]}
+                  />
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Department Name
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Created At
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Updated At
+                    </TableHead>
+                    <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {departments.length === 0 ? (
+                    <EmptyState
+                      colSpan={6}
+                      variant="database"
+                      title="No departments found"
+                      description="You haven't added any departments yet. Click on the 'Add Department' button to get started."
+                    />
+                  ) : (
+                    departments.map((dept, idx) => (
+                      <TableRow key={dept.id}>
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="font-semibold text-foreground">
+                          {dept.name}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={dept.is_active}
+                              onChange={() => handleToggleStatus(dept)}
+                              size="sm"
+                              disabled={togglingId === dept.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={dept.is_active ? "success" : "error"}
+                            >
+                              {dept.is_active ? "Activate" : "Deactivate"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {dept.created_at
+                            ? new Date(dept.created_at).toLocaleString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {dept.updated_at
+                            ? new Date(dept.updated_at).toLocaleString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1">
+                            <TableIconButton
+                              iconColor="blue"
+                              btnSize="sm"
+                              animate="scale"
+                              onClick={() => handleOpenModal(dept)}
+                              title="Edit Department"
+                            >
+                              <Edit size={16} />
+                            </TableIconButton>
+                            <TableIconButton
+                              iconColor="red"
+                              btnSize="sm"
+                              animate="scale"
+                              onClick={() => handleDeleteClick(dept.id)}
+                              title="Delete Department"
+                            >
+                              <Trash2 size={16} />
+                            </TableIconButton>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize) || 1}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0 border-t"
-          />
+          {totalItems > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalItems / pageSize) || 1}
+              onPageChange={setCurrentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              className="mt-auto shrink-0 border-t"
+            />
+          )}
         </div>
       </MainCard>
 

@@ -13,14 +13,7 @@ import { departmentsApi, Department } from "@lib/api/departments";
 import { questionsApi } from "@lib/api/questions";
 import { paperAssignmentsApi } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
-import {
-  Loader2,
-  User,
-  Phone,
-  Mail,
-  BookOpen,
-  Layers,
-} from "lucide-react";
+import { Loader2, User, Phone, Mail, BookOpen, Layers } from "lucide-react";
 
 interface AssignPaperModalProps {
   isOpen: boolean;
@@ -261,17 +254,25 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
                   <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                     <Phone size={14} className="text-brand-primary" />
                   </div>
-                  <Typography variant="body4" weight="semibold" className="text-slate-600 dark:text-slate-300">
+                  <Typography
+                    variant="body4"
+                    weight="semibold"
+                    className="text-slate-600 dark:text-slate-300"
+                  >
                     {user.mobile || "N/A"}
                   </Typography>
                 </div>
-                
+
                 {user.email && (
                   <div className="flex items-center gap-2 text-slate-500">
                     <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                       <Mail size={14} className="text-brand-primary" />
                     </div>
-                    <Typography variant="body4" weight="medium" className="text-slate-500 dark:text-slate-400 italic">
+                    <Typography
+                      variant="body4"
+                      weight="medium"
+                      className="text-slate-500 dark:text-slate-400 italic"
+                    >
                       {user.email}
                     </Typography>
                   </div>

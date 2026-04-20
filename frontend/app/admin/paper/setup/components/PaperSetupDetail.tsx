@@ -12,6 +12,7 @@ import {
   TableRow,
   TableCollapsibleRow,
 } from "@components/ui-elements/Table";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 import {
   ArrowLeft,
   FileText,
@@ -21,7 +22,6 @@ import {
   Layers,
   Trophy,
   Clock,
-  FileStack,
   Trash2,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
@@ -462,14 +462,11 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                   </TableRow>
                                 ))
                             ) : (
-                              <TableRow>
-                                <TableCell
-                                  colSpan={5}
-                                  className="text-center py-8 text-muted-foreground italic"
-                                >
-                                  No questions assigned to this subject yet.
-                                </TableCell>
-                              </TableRow>
+                              <EmptyState
+                                colSpan={5}
+                                title="No questions assigned"
+                                description="No questions assigned to this subject yet. Click 'Add Content' to start."
+                              />
                             )}
                           </TableBody>
                         </Table>

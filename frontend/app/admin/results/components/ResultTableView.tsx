@@ -3,6 +3,9 @@
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@components/ui-elements/Avatar";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
+import { ResultTableSkeleton } from "@components/ui-skeleton/ResultTableSkeleton";
 import {
   Table,
   TableHeader,
@@ -21,13 +24,74 @@ interface ResultTableViewProps {
   items: AdminUserResultListItem[];
   allSubjects: string[];
   visibleColumns: string[];
+  isLoading?: boolean;
+  limit?: number;
 }
 
 export function ResultTableView({
   items,
   allSubjects,
   visibleColumns,
+  isLoading,
+  limit = 10,
 }: ResultTableViewProps) {
+  if (isLoading) {
+    return (
+      <div className="overflow-x-auto">
+        <Table className="w-full border-collapse">
+          <TableHeader>
+            <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
+              <TableHead className="w-[40px]"></TableHead>
+              {visibleColumns.includes("candidate") && (
+                <TableHead className="min-w-[200px]">Candidate</TableHead>
+              )}
+              {visibleColumns.includes("paper") && (
+                <TableHead className="min-w-[140px]">Assigned Paper</TableHead>
+              )}
+              {visibleColumns.includes("attempts") && (
+                <TableHead className="text-center min-w-[90px]">
+                  Attempts
+                </TableHead>
+              )}
+              {visibleColumns.includes("marks") && (
+                <TableHead className="text-center min-w-[90px]">
+                  Score
+                </TableHead>
+              )}
+              {visibleColumns.includes("grade") && (
+                <TableHead className="text-center min-w-[100px]">
+                  Grade
+                </TableHead>
+              )}
+              {visibleColumns.includes("typing_wpm") && (
+                <TableHead className="text-center min-w-[110px]">
+                  Typing WPM
+                </TableHead>
+              )}
+              {visibleColumns.includes("status") && (
+                <TableHead className="min-w-[120px]">Status</TableHead>
+              )}
+              {visibleColumns.includes("date") && (
+                <TableHead className="min-w-[100px]">Date</TableHead>
+              )}
+              {visibleColumns.includes("actions") && (
+                <TableHead className="text-right min-w-[80px]">
+                  Actions
+                </TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <ResultTableSkeleton
+              visibleColumns={visibleColumns}
+              rowCount={limit}
+            />
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
@@ -39,14 +103,14 @@ export function ResultTableView({
                 Candidate
               </TableHead>
             )}
-            {visibleColumns.includes("date") && (
-              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
-                Date
+            {visibleColumns.includes("paper") && (
+              <TableHead className="min-w-[140px] whitespace-nowrap text-left font-bold text-foreground/80">
+                Assigned Paper
               </TableHead>
             )}
-            {visibleColumns.includes("paper") && (
-              <TableHead className="min-w-[140px] whitespace-nowrap text-center font-bold text-foreground/80">
-                Assigned Paper
+            {visibleColumns.includes("attempts") && (
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+                Total Attempts
               </TableHead>
             )}
             {visibleColumns.includes("marks") && (
@@ -54,17 +118,10 @@ export function ResultTableView({
                 Marks
               </TableHead>
             )}
-
-            {/* Dynamic Subjects */}
-            {allSubjects.map((s) =>
-              visibleColumns.includes(`subject_${s}`) ? (
-                <TableHead
-                  key={s}
-                  className="text-center min-w-[130px] whitespace-nowrap font-bold text-foreground/80"
-                >
-                  {s}
-                </TableHead>
-              ) : null,
+            {visibleColumns.includes("grade") && (
+              <TableHead className="text-center min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+                Overall Grade
+              </TableHead>
             )}
 
             {visibleColumns.includes("typing_wpm") && (
@@ -82,6 +139,11 @@ export function ResultTableView({
                 Latest Status
               </TableHead>
             )}
+            {visibleColumns.includes("date") && (
+              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+                Date
+              </TableHead>
+            )}
             {visibleColumns.includes("actions") && (
               <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky z-10 font-bold text-foreground/80">
                 Actions
@@ -90,130 +152,167 @@ export function ResultTableView({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => {
-            const latest = item.latest_attempt;
-            const interviewDate = latest?.submitted_at || latest?.started_at;
-            const detailHref = `/admin/results/${item.user_id}`;
-            return (
-              <TableCollapsibleRow
-                key={latest?.attempt_id ?? item.user_id}
-                colSpan={visibleColumns.length + 1}
-                expandedContent={
-                  <CollapsibleResultDetail
-                    latest={latest}
-                    attempts_count={item.attempts_count}
-                  />
-                }
-              >
-                {visibleColumns.includes("candidate") && (
-                  <TableCell className="align-middle py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={item.username} variant="brand" size="sm" />
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                            {item.username || "Anonymous"}
-                          </span>
-                          {item.is_reattempt ? (
-                            <Badge
-                              variant="outline"
-                              color="violet"
-                              animate="pulse"
-                              shape="square"
-                              className="text-[9px] font-bold"
-                            >
-                              RE-ATTEMPT
-                            </Badge>
-                          ) : (
-                            <Badge
-                              color="success"
-                              variant="outline"
-                              animate="pulse"
-                              shape="square"
-                              className="text-[9px] font-bold"
-                            >
-                              NEW
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-slate-500 font-medium opacity-70">
-                          <Phone size={11} />
-                          <span className="text-[11px]">{item.mobile}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                )}
-                {visibleColumns.includes("date") && (
-                  <TableCell className="text-muted-foreground">
-                    {interviewDate ? (
-                      new Date(interviewDate).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "2-digit",
-                      })
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("paper") && (
-                  <TableCell className="text-muted-foreground">
-                    {latest?.paper_name ? (
-                      latest.paper_name
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("marks") && (
-                  <TableCell className="text-center">
-                    {latest?.total_marks ? (
-                      <div className="flex flex-col items-center">
-                        <div className="px-3 py-1.5 rounded-xl bg-muted/30 border border-border/40 inline-flex items-center gap-2 shadow-sm min-w-[70px] justify-center">
-                          <span className="font-black text-brand-primary leading-none text-sm">
-                            {latest.obtained_marks || 0}
-                          </span>
-                          <span className="h-3 w-[1px] bg-border/60" />
-                          <span className="text-[11px] font-bold text-muted-foreground/60">
-                            {latest.total_marks}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
+          {items.length === 0 && (
+            <EmptyState
+              colSpan={visibleColumns.length + 1}
+              variant="search"
+              title="No results found"
+              description="No results found matching your criteria. Try adjusting your search or filters."
+            />
+          )}
 
-                {/* Subject Grade Cells */}
-                {allSubjects.map((s) => {
-                  if (!visibleColumns.includes(`subject_${s}`)) return null;
-                  const subRes = latest?.subject_results?.find(
-                    (sr) => sr.section_name === s,
-                  );
-                  return (
-                    <TableCell key={s} className="text-center">
-                      {subRes ? (
+          {!isLoading &&
+            items.map((item) => {
+              const latest = item.latest_attempt;
+              const interviewDate = latest?.submitted_at || latest?.started_at;
+              const detailHref = `/admin/results/${item.user_id}`;
+              return (
+                <TableCollapsibleRow
+                  key={latest?.attempt_id ?? item.user_id}
+                  colSpan={visibleColumns.length + 1}
+                  expandedContent={
+                    <CollapsibleResultDetail
+                      latest={latest}
+                      attempts_count={item.attempts_count}
+                    />
+                  }
+                >
+                  {visibleColumns.includes("candidate") && (
+                    <TableCell className="align-middle py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          name={item.username}
+                          variant="brand"
+                          size="sm"
+                        />
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                              {item.username || "Anonymous"}
+                            </span>
+                            {item.is_reattempt ? (
+                              <Badge
+                                variant="outline"
+                                color="violet"
+                                animate="pulse"
+                                shape="square"
+                                className="text-[9px] font-bold"
+                              >
+                                RE-ATTEMPT
+                              </Badge>
+                            ) : (
+                              <Badge
+                                color="success"
+                                variant="outline"
+                                animate="pulse"
+                                shape="square"
+                                className="text-[9px] font-bold"
+                              >
+                                NEW
+                              </Badge>
+                            )}
+                          </div>
+                          <CopyableText
+                            value={item.mobile}
+                            className="text-slate-500 dark:text-slate-300 font-medium"
+                            title="Copy Phone Number"
+                          >
+                            <Phone size={11} className="w-[11px] h-[11px]" />
+                            <span className="text-[11px] font-medium tracking-tight">
+                              {item.mobile}
+                            </span>
+                          </CopyableText>
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("paper") && (
+                    <TableCell className="text-muted-foreground font-medium text-left">
+                      {latest?.paper_name ? (
+                        latest.paper_name
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("attempts") && (
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="fill"
+                        color={item.attempts_count > 1 ? "warning" : "default"}
+                        shape="square"
+                        className="font-bold text-[11px] px-2.5 py-0.5"
+                      >
+                        {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
+                        {item.attempts_count > 1 ? "Attempts" : "Attempt"}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableCell className="text-center">
+                      {latest?.total_marks ? (
+                        <div className="flex flex-col items-center justify-center mx-auto gap-[5px] w-max min-w-[64px]">
+                          <div className="flex items-baseline justify-center gap-1 w-full">
+                            <span className="text-[15px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                              {latest.obtained_marks || 0}
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-none">
+                              / {latest.total_marks}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                ((latest.obtained_marks || 0) /
+                                  latest.total_marks) *
+                                  100 >=
+                                80
+                                  ? "bg-emerald-500"
+                                  : ((latest.obtained_marks || 0) /
+                                        latest.total_marks) *
+                                        100 >=
+                                      60
+                                    ? "bg-brand-primary"
+                                    : ((latest.obtained_marks || 0) /
+                                          latest.total_marks) *
+                                          100 >=
+                                        40
+                                      ? "bg-amber-500"
+                                      : "bg-rose-500"
+                              }`}
+                              style={{
+                                width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("grade") && (
+                    <TableCell className="text-center">
+                      {latest?.overall_grade &&
+                      latest?.overall_grade !== "N/A" ? (
                         <Badge
                           variant="outline"
                           color={
-                            subRes.grade === "Excellent" ||
-                            subRes.grade === "Good"
+                            latest.overall_grade === "Excellent" ||
+                            latest.overall_grade === "Good"
                               ? "success"
-                              : subRes.grade === "Average"
+                              : latest.overall_grade === "Average"
                                 ? "warning"
                                 : "error"
                           }
-                          className="rounded-lg font-bold text-[10px] px-2 h-6 border-none"
+                          shape="square"
+                          animate="pulse"
                         >
-                          {subRes.grade}
+                          {latest.overall_grade}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
@@ -221,67 +320,99 @@ export function ResultTableView({
                         </span>
                       )}
                     </TableCell>
-                  );
-                })}
+                  )}
 
-                {visibleColumns.includes("typing_wpm") && (
-                  <TableCell className="text-center font-medium">
-                    {latest?.typing_stats &&
-                    typeof latest.typing_stats.wpm === "number" ? (
-                      latest.typing_stats.wpm
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("typing_acc") && (
-                  <TableCell className="text-center font-medium">
-                    {latest?.typing_stats &&
-                    typeof latest.typing_stats.accuracy === "number" ? (
-                      `${latest.typing_stats.accuracy}%`
-                    ) : (
-                      <span className="text-muted-foreground/60 font-medium">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                )}
-                {visibleColumns.includes("status") && (
-                  <TableCell>
-                    <Badge
-                      variant="fill"
-                      color={
-                        latest?.status === "submitted" ||
-                        latest?.status === "completed"
-                          ? "success"
-                          : latest?.status === "not_started"
-                            ? "default"
-                            : "warning"
-                      }
-                      className="px-3 rounded-lg font-bold text-[10px]"
-                    >
-                      {latest?.status?.replace("_", " ") || "Not started"}
-                    </Badge>
-                  </TableCell>
-                )}
-                {visibleColumns.includes("actions") && (
-                  <TableCell className="text-right">
-                    <Link href={detailHref}>
-                      <TableIconButton
-                        iconColor="brand"
-                        animate="scale"
-                        title="View Result"
+                  {visibleColumns.includes("typing_wpm") && (
+                    <TableCell className="text-center font-medium">
+                      {latest?.typing_stats &&
+                      typeof latest.typing_stats.wpm === "number" ? (
+                        latest.typing_stats.wpm
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("typing_acc") && (
+                    <TableCell className="text-center font-medium">
+                      {latest?.typing_stats &&
+                      typeof latest.typing_stats.accuracy === "number" ? (
+                        `${latest.typing_stats.accuracy}%`
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <TableCell>
+                      <Badge
+                        variant="fill"
+                        color={
+                          latest?.status === "submitted" ||
+                          latest?.status === "completed"
+                            ? "success"
+                            : latest?.status === "not_started"
+                              ? "default"
+                              : "warning"
+                        }
+                        shape="square"
+                        animate="pulse"
                       >
-                        <Eye size={16} />
-                      </TableIconButton>
-                    </Link>
-                  </TableCell>
-                )}
-              </TableCollapsibleRow>
-            );
-          })}
+                        {latest?.status?.replace("_", " ") || "Not started"}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("date") && (
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {interviewDate ? (
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 text-[13px]">
+                            {new Date(interviewDate).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/80 font-medium">
+                            {new Date(interviewDate).toLocaleTimeString(
+                              "en-US",
+                              {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              },
+                            )}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <TableCell className="text-right">
+                      <Link href={detailHref}>
+                        <TableIconButton
+                          iconColor="brand"
+                          animate="scale"
+                          title="View Result"
+                        >
+                          <Eye size={16} />
+                        </TableIconButton>
+                      </Link>
+                    </TableCell>
+                  )}
+                </TableCollapsibleRow>
+              );
+            })}
         </TableBody>
       </Table>
     </div>

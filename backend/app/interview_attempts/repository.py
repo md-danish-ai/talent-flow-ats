@@ -772,6 +772,9 @@ def get_admin_user_results(
     search: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    status: str | None = None,
+    completion_reason: str | None = None,
+    overall_grade: str | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict:
@@ -812,6 +815,38 @@ def get_admin_user_results(
             .join(User, User.id == InterviewRecord.user_id)
             .join(Paper, Paper.id == InterviewRecord.paper_id)
         )
+
+        # 1. Calculate global breakdown stats based on current search/date filters
+        # but BEFORE status/grade filters so cards stay stable
+        stats_data = db.query(
+            InterviewRecord.status,
+            InterviewRecord.overall_grade,
+            func.count(InterviewRecord.id)
+        ).join(
+            latest_record_ids, 
+            latest_record_ids.c.latest_record_id == InterviewRecord.id
+        ).group_by(
+            InterviewRecord.status, 
+            InterviewRecord.overall_grade
+        ).all()
+
+        summary_stats = {
+            "total": sum(s[2] for s in stats_data),
+            "active": sum(s[2] for s in stats_data if s[0] == "started"),
+            "completed": sum(s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]),
+            "excellent": sum(s[2] for s in stats_data if s[1] == "Excellent"),
+            "good": sum(s[2] for s in stats_data if s[1] == "Good"),
+            "average": sum(s[2] for s in stats_data if s[1] == "Average"),
+            "poor": sum(s[2] for s in stats_data if s[1] == "Poor"),
+        }
+
+        # 2. Apply post-subquery filters on the actual record columns for LISTING ONLY
+        if status and status != "all":
+            records_query = records_query.filter(InterviewRecord.status == status)
+        if completion_reason and completion_reason != "all":
+            records_query = records_query.filter(InterviewRecord.completion_reason == completion_reason)
+        if overall_grade and overall_grade != "all":
+            records_query = records_query.filter(InterviewRecord.overall_grade == overall_grade)
 
         total_items = records_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
@@ -877,6 +912,7 @@ def get_admin_user_results(
             "page": page,
             "limit": limit,
             "total_pages": total_pages,
+            "summary_stats": summary_stats,
         }
     finally:
         db.close()

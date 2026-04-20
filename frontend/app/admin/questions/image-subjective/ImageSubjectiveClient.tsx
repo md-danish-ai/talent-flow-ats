@@ -1,20 +1,21 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { Badge } from "@components/ui-elements/Badge";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
@@ -27,13 +28,14 @@ import { ImageSubjectiveFilters } from "./components/ImageSubjectiveFilters";
 import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
 import ImageLightbox from "../image-mcq/components/ImageLightbox";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 
 export function ImageSubjectiveClient() {
   const [data, setData] = useState<Question[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -205,6 +207,18 @@ export function ImageSubjectiveClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {totalItems} QUESTIONS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
@@ -254,99 +268,135 @@ export function ImageSubjectiveClient() {
             isFilterOpen && "border-r border-border",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
           <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("image") && (
-                    <TableHead className="w-[80px] text-center">
-                      Image
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("question") && (
-                    <TableHead>Question</TableHead>
-                  )}
-                  {visibleColumns.includes("subject") && (
-                    <TableHead>Subject</TableHead>
-                  )}
-                  {visibleColumns.includes("examLevel") && (
-                    <TableHead>Exam Level</TableHead>
-                  )}
-                  {visibleColumns.includes("marks") && (
-                    <TableHead className="w-[80px] text-center">
-                      Marks
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("createdDate") && (
-                    <TableHead>Created Date</TableHead>
-                  )}
-                  {visibleColumns.includes("status") && (
-                    <TableHead className="w-[100px] text-center">
-                      Status
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">
-                      Action
-                    </TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {data.length === 0 && !isLoading ? (
+            {isLoading ? (
+              <Table>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No image subjective questions found. Click &quot;Add
-                      Question&quot; to create one.
-                    </TableCell>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("image") && (
+                      <TableHead className="w-[80px] text-center">
+                        Image
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("question") && (
+                      <TableHead>Question</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
                   </TableRow>
-                ) : (
-                  data.map((row, index) => (
-                    <ImageSubjectiveRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      currentPage={currentPage}
-                      pageSize={pageSize}
-                      visibleColumns={visibleColumns}
-                      togglingId={togglingId}
-                      onToggleStatus={handleToggleStatus}
-                      onEdit={setEditingQuestion}
-                      onImageClick={setLightboxUrl}
+                </TableHeader>
+                <TableBody>
+                  <QuestionTableSkeleton
+                    visibleColumns={visibleColumns}
+                    rowCount={pageSize}
+                    hasImage
+                  />
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("image") && (
+                      <TableHead className="w-[80px] text-center">
+                        Image
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("question") && (
+                      <TableHead>Question</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("examLevel") && (
+                      <TableHead>Exam Level</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableHead>Created Date</TableHead>
+                    )}
+                    {visibleColumns.includes("status") && (
+                      <TableHead className="w-[100px] text-center">
+                        Status
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.length === 0 ? (
+                    <EmptyState
+                      colSpan={visibleColumns.length + 1}
+                      variant="search"
+                      title="No questions found"
+                      description="We couldn't find any image-based subjective questions matching your criteria. Try adjusting your filters or adding a new question."
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    data.map((row, index) => (
+                      <ImageSubjectiveRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        visibleColumns={visibleColumns}
+                        togglingId={togglingId}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={setEditingQuestion}
+                        onImageClick={setLightboxUrl}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0"
-          />
+          {!isLoading && data.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalItems / pageSize) || 1}
+              onPageChange={setCurrentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              className="mt-auto shrink-0"
+            />
+          )}
         </div>
 
         <ImageSubjectiveFilters

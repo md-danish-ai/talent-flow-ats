@@ -23,6 +23,8 @@ import {
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
 } from "@lib/api/results";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 
 interface UserResultDetailClientProps {
   userId: number;
@@ -75,17 +77,8 @@ export function UserResultDetailClient({
 
   if (loadingAttempts) {
     return (
-      <PageContainer className="py-8 space-y-8">
-        <div className="flex flex-col gap-4 animate-pulse">
-          <div className="h-10 w-48 bg-muted rounded-lg" />
-          <div className="h-32 w-full bg-muted rounded-2xl" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 bg-muted rounded-2xl" />
-            ))}
-          </div>
-          <div className="h-64 w-full bg-muted rounded-2xl" />
-        </div>
+      <PageContainer className="py-6 max-w-7xl mx-auto">
+        <UserResultDetailSkeleton />
       </PageContainer>
     );
   }
@@ -334,23 +327,11 @@ export function UserResultDetailClient({
         </div>
 
         {attemptData.attempts.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-muted/5 p-12 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <CircleAlert size={32} className="text-muted-foreground" />
-            </div>
-            <Typography
-              variant="h4"
-              className="font-bold text-muted-foreground"
-            >
-              No attempts found
-            </Typography>
-            <Typography
-              variant="body4"
-              className="text-muted-foreground/60 mt-2"
-            >
-              This candidate has not started any interview sessions yet.
-            </Typography>
-          </div>
+          <EmptyState
+            variant="database"
+            title="No attempts found"
+            description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
+          />
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {attemptData.attempts.map((attempt, index) => (

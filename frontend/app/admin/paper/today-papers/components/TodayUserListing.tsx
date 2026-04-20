@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
+import { TodayUserListingSkeleton } from "@components/ui-skeleton/TodayUserListingSkeleton";
 import {
   ClipboardCheck,
   Users,
@@ -16,6 +17,7 @@ import {
   Filter,
   RotateCcw,
   Search,
+  Copy,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
@@ -37,8 +39,9 @@ import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
 import { DateRangeHeaderActions } from "./DateRangeHeaderActions";
 import { getUsersByRole } from "@lib/api/auth";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 import { toast } from "@lib/toast";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
 
 interface TodayUserListingProps {
   initialData?: UserListResponse[];
@@ -51,11 +54,16 @@ export function TodayUserListing({
 }: TodayUserListingProps) {
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Sync with initialData whenever it changes (e.g. on URL change)
   useEffect(() => {
-    setUsers(initialData);
+    if (initialData && initialData.length > 0) {
+      setUsers(initialData);
+      setLoading(false);
+    } else {
+      handleRefresh();
+    }
   }, [initialData]);
 
   // Manual API refresh function
@@ -190,6 +198,18 @@ export function TodayUserListing({
         }
         action={
           <div className="flex items-center gap-3">
+            {loading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {filteredUsers.length} USERS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Tooltip content="Reload Candidate List">
               <Button
                 variant="action"
@@ -227,191 +247,233 @@ export function TodayUserListing({
         >
           <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
             <div className="flex-1 overflow-x-auto w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead>Candidate Name</TableHead>
-                    <TableHead>Contact Info</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Test Level</TableHead>
-                    <TableHead>Assigned Paper</TableHead>
-                    <TableHead className="text-center">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {!Array.isArray(paginatedUsers) ||
-                  paginatedUsers.length === 0 ? (
+              {loading ? (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
-                        No users found.
-                      </TableCell>
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                      <TableHead>Candidate</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Level</TableHead>
+                      <TableHead>Paper</TableHead>
+                      <TableHead className="text-center">Action</TableHead>
                     </TableRow>
-                  ) : (
-                    paginatedUsers.map((row, idx) => (
-                      <TableRow key={row.id}>
-                        <TableCell className="font-medium text-center align-middle py-3">
-                          {(currentPage - 1) * pageSize + idx + 1}
-                        </TableCell>
-                        <TableCell className="align-middle py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar
-                              name={row.username}
-                              variant="brand"
-                              size="sm"
-                            />
-                            <div className="flex flex-col">
-                              <div className="flex items-center gap-3">
-                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                                  {row.username || "Unnamed Candidate"}
+                  </TableHeader>
+                  <TableBody>
+                    <TodayUserListingSkeleton rowCount={pageSize} />
+                  </TableBody>
+                </Table>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                        Sr. No.
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Candidate Name
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Contact Info
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Department
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Test Level
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Assigned Paper
+                      </TableHead>
+                      <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                        Action
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {!Array.isArray(paginatedUsers) ||
+                    paginatedUsers.length === 0 ? (
+                      <EmptyState
+                        colSpan={7}
+                        variant="search"
+                        title="No candidates found"
+                        description="There are no candidates found for the selected criteria. Try adjusting your filters or date range."
+                      />
+                    ) : (
+                      paginatedUsers.map((row, idx) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="font-medium text-center align-middle py-3">
+                            {(currentPage - 1) * pageSize + idx + 1}
+                          </TableCell>
+                          <TableCell className="align-middle py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar
+                                name={row.username}
+                                variant="brand"
+                                size="sm"
+                              />
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-3">
+                                  <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                                    {row.username || "Unnamed Candidate"}
+                                  </span>
+                                  {row.is_reinterview ? (
+                                    <Badge
+                                      variant="outline"
+                                      color="violet"
+                                      animate="pulse"
+                                      shape="square"
+                                    >
+                                      RETURNING
+                                    </Badge>
+                                  ) : (
+                                    <Badge
+                                      variant="outline"
+                                      color="success"
+                                      animate="pulse"
+                                      shape="square"
+                                    >
+                                      NEW
+                                    </Badge>
+                                  )}
+                                </div>
+                                <CopyableText
+                                  value={row.email || "-"}
+                                  className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                                  title="Copy Email"
+                                >
+                                  <Mail size={11} />
+                                  <span className="text-[11px] truncate max-w-[150px]">
+                                    {row.email || "-"}
+                                  </span>
+                                </CopyableText>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-middle py-3">
+                            <CopyableText
+                              value={row.mobile}
+                              className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary hover:text-brand-primary dark:hover:text-brand-primary transition-colors"
+                              title="Copy Phone Number"
+                            >
+                              <span className="mb-[1px]">{row.mobile}</span>
+                            </CopyableText>
+                          </TableCell>
+
+                          <TableCell className="align-middle py-3 text-center">
+                            {row.department_name ||
+                            row.assignment?.department_name ? (
+                              <Badge
+                                color="secondary"
+                                animate="pulse"
+                                shape="square"
+                                variant="outline"
+                              >
+                                {row.department_name ||
+                                  row.assignment?.department_name}
+                              </Badge>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 italic">
+                                No Dept
+                              </span>
+                            )}
+                          </TableCell>
+
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color="primary"
+                            >
+                              {row.assignment?.test_level_name ||
+                                row.test_level_name ||
+                                "N/A"}
+                            </Badge>
+                          </TableCell>
+
+                          <TableCell className="align-middle py-3">
+                            {row.assignment?.paper_name ? (
+                              <div className="flex flex-col gap-1.5 items-start">
+                                <span className="text-[13px] font-extrabold text-slate-900 dark:text-slate-100">
+                                  {row.assignment.paper_name}
                                 </span>
-                                {row.is_reinterview ? (
-                                  <Badge
-                                    variant="outline"
-                                    color="violet"
-                                    animate="pulse"
-                                    shape="square"
-                                  >
-                                    RETURNING
-                                  </Badge>
-                                ) : (
+                                {row.assignment.is_attempted ? (
                                   <Badge
                                     variant="outline"
                                     color="success"
                                     animate="pulse"
                                     shape="square"
                                   >
-                                    NEW
+                                    COMPLETED
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    color="violet"
+                                    animate="pulse"
+                                    shape="square"
+                                  >
+                                    IN PROGRESS
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1.5 text-slate-500 font-medium italic opacity-70 mt-0.5">
-                                <Mail size={11} />
-                                <span className="text-[11px] truncate max-w-[150px]">
-                                  {row.email || "-"}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="align-middle py-3">
-                          <span className="text-[12px] font-normal tracking-tight text-slate-800 dark:text-slate-200">
-                            {row.mobile}
-                          </span>
-                        </TableCell>
-
-                        <TableCell className="align-middle py-3 text-center">
-                          {row.department_name ||
-                          row.assignment?.department_name ? (
-                            <Badge
-                              color="secondary"
-                              animate="pulse"
-                              shape="square"
-                              variant="outline"
-                            >
-                              {row.department_name ||
-                                row.assignment?.department_name}
-                            </Badge>
-                          ) : (
-                            <span className="text-[10px] text-slate-400 italic">
-                              No Dept
-                            </span>
-                          )}
-                        </TableCell>
-
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color="primary"
-                          >
-                            {row.assignment?.test_level_name ||
-                              row.test_level_name ||
-                              "N/A"}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell className="align-middle py-3">
-                          {row.assignment?.paper_name ? (
-                            <div className="flex flex-col gap-1.5 items-start">
-                              <span className="text-[13px] font-extrabold text-slate-900 dark:text-slate-100">
-                                {row.assignment.paper_name}
-                              </span>
-                              {row.assignment.is_attempted ? (
-                                <Badge
-                                  variant="outline"
-                                  color="success"
-                                  animate="pulse"
-                                  shape="square"
-                                >
-                                  COMPLETED
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  color="violet"
-                                  animate="pulse"
-                                  shape="square"
-                                >
-                                  IN PROGRESS
-                                </Badge>
-                              )}
-                            </div>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              shape="square"
-                              color="warning"
-                            >
-                              PENDING ASSIGNMENT
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center align-middle py-3">
-                          <div className="flex items-center justify-center">
-                            <Tooltip
-                              content={
-                                row.assignment?.is_attempted
-                                  ? "Assessment Already Completed"
-                                  : "Assign Fresh Paper Set"
-                              }
-                            >
-                              <Button
-                                variant={
-                                  row.assignment?.is_attempted
-                                    ? "ghost"
-                                    : "primary"
-                                }
-                                color={
-                                  row.assignment?.is_attempted
-                                    ? "success"
-                                    : "primary"
-                                }
-                                size="icon"
-                                animate="scale"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsModalOpen(true);
-                                }}
-                                className={`h-9 w-9 rounded-xl ${
-                                  row.assignment?.is_attempted
-                                    ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed opacity-90 shadow-inner"
-                                    : "text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10"
-                                }`}
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                shape="square"
+                                color="warning"
                               >
-                                <ClipboardCheck size={18} />
-                              </Button>
-                            </Tooltip>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                                PENDING ASSIGNMENT
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center align-middle py-3">
+                            <div className="flex items-center justify-center">
+                              <Tooltip
+                                content={
+                                  row.assignment?.is_attempted
+                                    ? "Assessment Already Completed"
+                                    : "Assign Fresh Paper Set"
+                                }
+                              >
+                                <Button
+                                  variant={
+                                    row.assignment?.is_attempted
+                                      ? "ghost"
+                                      : "primary"
+                                  }
+                                  color={
+                                    row.assignment?.is_attempted
+                                      ? "success"
+                                      : "primary"
+                                  }
+                                  size="icon"
+                                  animate="scale"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(row);
+                                    setIsModalOpen(true);
+                                  }}
+                                  className={`h-9 w-9 rounded-xl ${
+                                    row.assignment?.is_attempted
+                                      ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 cursor-not-allowed opacity-90 shadow-inner"
+                                      : "text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10"
+                                  }`}
+                                >
+                                  <ClipboardCheck size={18} />
+                                </Button>
+                              </Tooltip>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </div>
             {totalItems > 0 && (
               <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">

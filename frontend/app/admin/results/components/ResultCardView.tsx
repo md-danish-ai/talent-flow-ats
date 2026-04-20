@@ -3,11 +3,13 @@
 import {
   Phone,
   ArrowRight,
-  History as HistoryIcon,
-  CheckCircle2,
-  CircleAlert,
   User2,
+  FileText,
+  Target,
+  Award,
+  CalendarDays,
 } from "lucide-react";
+import { Badge } from "@components/ui-elements/Badge";
 import { ResultCard } from "@components/ui-cards/ResultCard";
 import { AdminUserResultListItem } from "@lib/api/results";
 
@@ -21,6 +23,7 @@ export function ResultCardView({ items }: ResultCardViewProps) {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {items.map((item) => {
           const latest = item.latest_attempt;
+          const interviewDate = latest?.submitted_at || latest?.started_at;
           const detailHref = `/admin/results/${item.user_id}`;
 
           return (
@@ -36,33 +39,58 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                     <Phone size={13} className="text-brand-primary/60" />
                     {item.mobile}
                   </div>
-                  <div className="h-1 w-1 rounded-full bg-border" />
-                  <div className="flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
-                    <HistoryIcon size={13} className="text-brand-primary/60" />
-                    {item.attempts_count} Sessions
-                  </div>
+                  {interviewDate && (
+                    <>
+                      <div className="h-1 w-1 rounded-full bg-border" />
+                      <div className="flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
+                        <CalendarDays
+                          size={13}
+                          className="text-brand-primary/60"
+                        />
+                        {new Date(interviewDate).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
+              }
+              metadataBadges={
+                <Badge
+                  variant="fill"
+                  color={item.attempts_count > 1 ? "warning" : "default"}
+                  shape="square"
+                  className="font-bold text-[10px] px-2 py-0.5 mt-1"
+                >
+                  {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
+                  {item.attempts_count > 1 ? "Attempts" : "Attempt"}
+                </Badge>
               }
               metrics={[
                 {
-                  label: "Total Questions",
-                  value: latest?.total_questions || "N/A",
-                  icon: HistoryIcon,
+                  label: "Assigned Paper",
+                  value: latest?.paper_name || "N/A",
+                  icon: FileText,
                   color: "text-brand-primary",
                 },
                 {
-                  label: "Completion",
-                  value: latest
-                    ? `${latest.attempted_count}/${latest.total_questions}`
-                    : "0/0",
-                  icon: CheckCircle2,
+                  label: "Score",
+                  value: latest?.total_marks
+                    ? `${latest.obtained_marks || 0} / ${latest.total_marks}`
+                    : "N/A",
+                  icon: Target,
                   color: "text-emerald-500",
                 },
                 {
-                  label: "Missed",
-                  value: latest?.unattempted_count || 0,
-                  icon: CircleAlert,
-                  color: "text-rose-500",
+                  label: "Overall Grade",
+                  value:
+                    latest?.overall_grade && latest.overall_grade !== "N/A"
+                      ? latest.overall_grade
+                      : "N/A",
+                  icon: Award,
+                  color: "text-amber-500",
                 },
               ]}
               actionHref={detailHref}

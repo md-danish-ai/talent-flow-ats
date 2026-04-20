@@ -1,9 +1,11 @@
+import { useEffect, useRef } from "react";
 import { CheckCircle2, Clock3, Lock } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import type { InterviewSection, TimerZone } from "../types";
+import { cn } from "@lib/utils";
 
 interface InterviewStatusCardProps {
   sections: InterviewSection[];
@@ -12,6 +14,7 @@ interface InterviewStatusCardProps {
   timerZone: TimerZone;
   answeredCount: number;
   notAttemptedCount: number;
+  questionIndex: number;
 }
 
 export function InterviewStatusCard({
@@ -21,7 +24,26 @@ export function InterviewStatusCard({
   timerZone,
   answeredCount,
   notAttemptedCount,
+  questionIndex,
 }: InterviewStatusCardProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const activeElement = document.getElementById(`section-${sectionIndex}`);
+    if (activeElement && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const elementTop = activeElement.offsetTop;
+      const elementHeight = activeElement.offsetHeight;
+      const containerHeight = container.offsetHeight;
+
+      // Scroll so that active element is positioned nicely
+      container.scrollTo({
+        top: elementTop - containerHeight / 2 + elementHeight / 2,
+        behavior: "smooth",
+      });
+    }
+  }, [sectionIndex]);
+
   return (
     <MainCard title="Interview Status" bodyClassName="space-y-4">
       <Alert
@@ -41,7 +63,10 @@ export function InterviewStatusCard({
         showIcon={true}
       />
 
-      <div className="space-y-3">
+      <div
+        ref={scrollContainerRef}
+        className="space-y-3 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar scroll-smooth"
+      >
         {sections.map((section, index) => {
           const isCurrent = index === sectionIndex;
           const isLocked = lockedSections[index];
@@ -49,40 +74,60 @@ export function InterviewStatusCard({
           return (
             <div
               key={section.id}
-              className={`group flex flex-col gap-2 rounded-xl border p-3 transition-all duration-300 ${
+              id={`section-${index}`}
+              className={cn(
+                "group flex flex-col gap-2 rounded-xl border transition-all duration-300",
                 isCurrent
                   ? timerZone === "danger"
-                    ? "border-red-500 bg-red-500/10 shadow-sm animate-[pulse_0.8s_infinite]"
+                    ? "border-red-500 bg-red-500/10 shadow-sm animate-[pulse_0.8s_infinite] p-3"
                     : timerZone === "warn"
-                      ? "border-yellow-500 bg-yellow-500/10 shadow-sm animate-pulse"
-                      : "border-brand-primary bg-brand-primary/10 shadow-sm"
+                      ? "border-yellow-500 bg-yellow-500/10 shadow-sm animate-pulse p-3"
+                      : "border-brand-primary bg-brand-primary/10 shadow-sm p-3"
                   : isLocked
-                    ? "border-emerald-500/30 bg-emerald-500/5 opacity-80"
-                    : "border-border bg-muted/5 opacity-60"
-              }`}
+                    ? "border-emerald-500/30 bg-emerald-500/5 opacity-80 p-2.5"
+                    : "border-border bg-muted/5 opacity-60 p-2.5",
+              )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <Typography
-                    variant="body4"
+                    variant={isCurrent ? "body4" : "body5"}
                     weight={isCurrent ? "bold" : "semibold"}
-                    className={
+                    className={cn(
+                      "transition-all duration-300",
                       isCurrent
                         ? timerZone === "danger"
                           ? "text-red-600"
                           : timerZone === "warn"
                             ? "text-yellow-600"
                             : "text-brand-primary"
-                        : "text-foreground"
-                    }
+                        : "text-foreground opacity-90",
+                    )}
                   >
                     {section.title}
                   </Typography>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/20 px-1.5 py-0.5 rounded border border-border/50">
-                      <Clock3 size={10} />
-                      <span>{section.durationMinutes} Mins Allotted</span>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      color={isCurrent ? "primary" : "default"}
+                      icon={<Clock3 size={11} />}
+                      className={cn(
+                        "text-[10px] py-0.5 px-2 font-bold",
+                        !isCurrent && "opacity-70",
+                      )}
+                    >
+                      {section.durationMinutes} Mins Allotted
+                    </Badge>
+
+                    {isCurrent && (
+                      <Badge
+                        variant="fill"
+                        color="warning"
+                        className="text-[10px] py-0.5 px-2 font-black shadow-sm"
+                      >
+                        QUESTION {questionIndex + 1}/{section.questions.length}
+                      </Badge>
+                    )}
                   </div>
                 </div>
 

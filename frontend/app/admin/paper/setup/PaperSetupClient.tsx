@@ -14,6 +14,7 @@ import { TableColumnToggle } from "@components/ui-elements/Table";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { useClassifications } from "@lib/react-query/classifications/use-classifications";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import { Filter, RotateCcw, Search } from "lucide-react";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
@@ -24,7 +25,7 @@ export function PaperSetupClient() {
   const router = useRouter();
   const [papers, setPapers] = useState<Partial<PaperSetup>[]>([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -155,6 +156,14 @@ export function PaperSetupClient() {
         }
         action={
           <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge variant="outline" color="default" className="font-bold border-border/50 bg-card">
+                {totalItems} PAPERS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
               visibleColumns={visibleColumns}

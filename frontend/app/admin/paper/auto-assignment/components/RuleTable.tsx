@@ -18,6 +18,8 @@ import {
   paperAssignmentsApi,
 } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface RuleTableProps {
   rules: AutoAssignmentRuleResponse[];
@@ -70,25 +72,14 @@ export function RuleTable({
       </TableHeader>
       <TableBody>
         {isLoading ? (
-          <TableRow>
-            <TableCell colSpan={6} className="h-32 text-center">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
-                Fetching rules...
-              </div>
-            </TableCell>
-          </TableRow>
+          <SimpleTableSkeleton columnCount={6} rowCount={5} />
         ) : rules.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="h-48 text-center bg-muted/5">
-              <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                <Layers size={32} />
-                <Typography variant="body4" weight="medium" className="italic">
-                  No auto-assignment rules found for the selected date.
-                </Typography>
-              </div>
-            </TableCell>
-          </TableRow>
+          <EmptyState
+            colSpan={6}
+            variant="database"
+            title="No auto-assignment rules found"
+            description="You haven't created any auto-assignment rules for the selected date. Add a new rule to automate paper distribution."
+          />
         ) : (
           rules.map((row, idx) => (
             <TableRow

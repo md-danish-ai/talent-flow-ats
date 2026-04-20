@@ -3,9 +3,9 @@ import {
   HelpCircle,
   FileText,
   BarChart3,
-  Settings,
   Package,
   Building2,
+  Bell,
 } from "lucide-react";
 
 export interface NavItem {
@@ -79,13 +79,11 @@ export const ADMIN_ROUTES: NavSection[] = [
     ],
   },
   {
-    title: "System Config",
-    icon: <Settings className="w-5 h-5" />,
-    type: "collapsible",
-    items: [
-      { label: "Auth Rules", href: "/admin/settings/auth" },
-      { label: "Notification Center", href: "/admin/notifications" },
-    ],
+    title: "Notifications",
+    icon: <Bell className="w-5 h-5" />,
+    type: "item",
+    href: "/admin/notifications",
+    items: [],
   },
   ...(process.env.NEXT_PUBLIC_APP_ENV === "dev"
     ? [

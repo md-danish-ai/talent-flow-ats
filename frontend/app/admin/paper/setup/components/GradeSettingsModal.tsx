@@ -15,6 +15,7 @@ import {
   TableBody,
   TableCell,
 } from "@components/ui-elements/Table";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 import { papersApi, GradeSetting } from "@lib/api/papers";
 import { toast } from "@lib/toast";
 import { Trash2, Edit2, Loader2 } from "lucide-react";
@@ -248,14 +249,11 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                   </TableCell>
                 </TableRow>
               ) : grades.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="h-24 text-center text-muted-foreground italic"
-                  >
-                    No grading rules defined yet. Add your first range above.
-                  </TableCell>
-                </TableRow>
+                <EmptyState
+                  colSpan={5}
+                  title="No grading rules defined"
+                  description="No grading rules defined yet. Add your first range above."
+                />
               ) : (
                 grades.map((grade, idx) => (
                   <TableRow

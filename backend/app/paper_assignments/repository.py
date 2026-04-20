@@ -48,6 +48,10 @@ def create_auto_assignment_rule(
 
     db.commit()
     db.refresh(existing)
+    
+    # Backfill for existing users if rule is created for Today
+    backfill_assignments_for_rule(db, existing)
+    
     return get_auto_assignment_rule(db, existing.id)
 
 
@@ -134,6 +138,10 @@ def update_auto_assignment_rule(
 
     db.commit()
     db.refresh(rule)
+    
+    # Backfill for existing users if rule is updated
+    backfill_assignments_for_rule(db, rule)
+    
     return get_auto_assignment_rule(db, rule.id)
 
 
@@ -151,12 +159,99 @@ def delete_auto_assignment_rule(db: Session, rule_id: int) -> dict:
     return {"message": "Rule deleted successfully"}
 
 
+def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
+    """
+    Optimized Bulk Backfill:
+    Finds all unassigned users matching the rule and assigns them papers
+    in a single transaction using in-memory distribution logic.
+    """
+    if not rule.is_active or not rule.paper_ids:
+        return
+
+    # 1. Find all users matching Dept/Level
+    matching_users = (
+        db.query(User.id)
+        .filter(
+            User.department_id == rule.department_id,
+            User.test_level_id == rule.test_level_id,
+            User.role == "user",
+            User.is_active.is_(True),
+        )
+        .all()
+    )
+    user_ids = [u.id for u in matching_users]
+    if not user_ids:
+        return
+
+    # 2. Filter out users who ALREADY have an assignment for this date
+    existing_assignments = (
+        db.query(PaperAssignment.user_id)
+        .filter(
+            PaperAssignment.assigned_date == rule.assigned_date,
+            PaperAssignment.user_id.in_(user_ids),
+        )
+        .all()
+    )
+    already_assigned_user_ids = {a.user_id for a in existing_assignments}
+    pending_user_ids = [uid for uid in user_ids if uid not in already_assigned_user_ids]
+
+    if not pending_user_ids:
+        return
+
+    # 3. Bulk Distribution Logic
+    paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
+    if not paper_ids:
+        return
+
+    # Get current counts for papers today
+    counts = (
+        db.query(
+            PaperAssignment.paper_id, func.count(PaperAssignment.id).label("total")
+        )
+        .filter(
+            PaperAssignment.assigned_date == rule.assigned_date,
+            PaperAssignment.paper_id.in_(paper_ids),
+        )
+        .group_by(PaperAssignment.paper_id)
+        .all()
+    )
+
+    count_map = {p_id: 0 for p_id in paper_ids}
+    for p_id, total in counts:
+        count_map[p_id] = total
+
+    new_assignments = []
+    for uid in pending_user_ids:
+        # Pick paper with minimum current/simulated assignments
+        best_paper_id = sorted(paper_ids, key=lambda p: count_map[p])[0]
+        
+        assignment = PaperAssignment(
+            user_id=uid,
+            paper_id=best_paper_id,
+            department_id=rule.department_id,
+            test_level_id=rule.test_level_id,
+            assigned_date=rule.assigned_date,
+            assigned_by=rule.created_by,
+            assignment_source="AUTO",
+            auto_rule_id=rule.id,
+        )
+        new_assignments.append(assignment)
+        
+        # Increment counter in-memory to ensure even distribution during this loop
+        count_map[best_paper_id] += 1
+
+    # 4. One Single Transaction for all assignments
+    if new_assignments:
+        db.add_all(new_assignments)
+        db.commit()
+
+
 def assign_best_paper(
-    db: Session, 
-    user_id: int, 
-    department_id: int, 
-    test_level_id: int, 
-    assigned_date: date
+    db: Session,
+    user_id: int,
+    department_id: int,
+    test_level_id: int,
+    assigned_date: date,
 ) -> PaperAssignment | None:
     # 1. Find the active rule for this Dept/Level on this Date
     rule = (
@@ -176,19 +271,18 @@ def assign_best_paper(
     # 2. Sequential/Round-robin: Check assignment counts for papers in the pool
     # We want the paper with the MINIMUM number of assignments today
     paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
-    
+
     if not paper_ids:
         return None
 
     # Subquery to get counts for these specific papers today
     counts = (
         db.query(
-            PaperAssignment.paper_id, 
-            func.count(PaperAssignment.id).label("total")
+            PaperAssignment.paper_id, func.count(PaperAssignment.id).label("total")
         )
         .filter(
             PaperAssignment.assigned_date == assigned_date,
-            PaperAssignment.paper_id.in_(paper_ids)
+            PaperAssignment.paper_id.in_(paper_ids),
         )
         .group_by(PaperAssignment.paper_id)
         .all()
@@ -206,7 +300,7 @@ def assign_best_paper(
         db.query(PaperAssignment)
         .filter(
             PaperAssignment.user_id == user_id,
-            PaperAssignment.assigned_date == assigned_date
+            PaperAssignment.assigned_date == assigned_date,
         )
         .first()
     )
@@ -221,9 +315,9 @@ def assign_best_paper(
         department_id=department_id,
         test_level_id=test_level_id,
         assigned_date=assigned_date,
-        assigned_by=rule.created_by, # Rule creator is the 'assigner'
+        assigned_by=rule.created_by,  # Rule creator is the 'assigner'
         assignment_source="AUTO",
-        auto_rule_id=rule.id
+        auto_rule_id=rule.id,
     )
 
     db.add(assignment)

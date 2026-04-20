@@ -28,7 +28,7 @@ export const MainCard: React.FC<MainCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors",
+        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
         className,
       )}
     >
@@ -56,7 +56,13 @@ export const MainCard: React.FC<MainCardProps> = ({
         )}
       </div>
 
-      <div className={cn("p-5 flex-1 flex flex-col", bodyClassName)}>
+      <div
+        className={cn(
+          "flex-1 flex flex-col overflow-hidden rounded-b-xl",
+          bodyClassName,
+          !bodyClassName.includes("p-") && "p-5",
+        )}
+      >
         {children}
       </div>
     </div>

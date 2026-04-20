@@ -89,6 +89,9 @@ async def get_admin_user_results(
     search: str | None = Query(default=None),
     start_date: str | None = Query(default=None),
     end_date: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    completion_reason: str | None = Query(default=None),
+    overall_grade: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=100),
 ):
@@ -96,6 +99,9 @@ async def get_admin_user_results(
         search=search,
         start_date=start_date,
         end_date=end_date,
+        status=status,
+        completion_reason=completion_reason,
+        overall_grade=overall_grade,
         page=page,
         limit=limit,
     )

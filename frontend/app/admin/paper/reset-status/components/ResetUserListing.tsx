@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
+import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -28,15 +29,17 @@ import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@lib/react-query/departments/use-departments";
 import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
 import {
   RefreshCw,
   Search,
   Filter,
-  Users,
   FileEdit,
   RotateCcw,
   BookOpenCheck,
   Mail,
+  Copy,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
@@ -50,10 +53,16 @@ interface ResetUserListingProps {
 
 export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
   const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUsers(initialData);
+    if (initialData && initialData.length > 0) {
+      setUsers(initialData);
+      setLoading(false);
+    } else {
+      // If no initial data, trigger a refresh to load it
+      handleRefresh();
+    }
   }, [initialData]);
 
   const handleRefresh = async () => {
@@ -174,7 +183,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
                 All Candidates
               </h2>
-              <p className="text-[11px] text-muted-foreground -mt-1 font-medium italic opacity-70">
+              <p className="text-[11px] text-muted-foreground dark:text-slate-300 -mt-1 font-medium italic">
                 Registered candidates listed from newest to oldest
               </p>
             </div>
@@ -184,6 +193,14 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            {loading ? (
+              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+            ) : (
+              <Badge variant="outline" color="default" className="font-bold border-border/50 bg-card">
+                {filteredUsers.length} USERS
+              </Badge>
+            )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Tooltip content="Reload Candidate List">
               <Button
                 variant="action"
@@ -220,49 +237,59 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         >
           <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
             <div className="flex-1 overflow-x-auto w-full">
-              <Table>
-                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Candidate Profile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Contact Info
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Department
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Test Level
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Status
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Action
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {!Array.isArray(paginatedUsers) ||
-                  paginatedUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="h-48 text-center bg-muted/20"
-                      >
-                        <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                          <Users size={32} />
-                          <span className="text-sm font-medium italic">
-                            No candidates found for today&apos;s session.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
+                {loading ? (
+                  <Table>
+                    <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+                      <TableRow>
+                        <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">Sr. No.</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">Candidate Profile</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">Contact Info</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Department</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Test Level</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Status</TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <ResetUserListingSkeleton rowCount={pageSize} />
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Table>
+                    <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+                      <TableRow>
+                        <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
+                          Sr. No.
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                          Candidate Profile
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                          Contact Info
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                          Department
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                          Test Level
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                          Status
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                          Action
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(!Array.isArray(paginatedUsers) || paginatedUsers.length === 0) ? (
+                        <EmptyState
+                          colSpan={7}
+                          variant="search"
+                          title="No candidates found"
+                          description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
+                        />
+                      ) : (
                     paginatedUsers.map((row, idx) => (
                       <TableRow
                         key={row.id}
@@ -305,19 +332,27 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1.5 text-slate-500 font-medium italic opacity-70 mt-0.5">
+                              <CopyableText 
+                                value={row.email || "-"}
+                                className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                                title="Copy Email"
+                              >
                                 <Mail size={11} />
                                 <span className="text-[11px] truncate max-w-[150px]">
                                   {row.email || "-"}
                                 </span>
-                              </div>
+                              </CopyableText>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="align-middle py-3">
-                          <span className="text-[12px] font-normal tracking-tight text-slate-800 dark:text-slate-200">
-                            {row.mobile}
-                          </span>
+                          <CopyableText 
+                            value={row.mobile}
+                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
+                            title="Copy Phone Number"
+                          >
+                            <span className="mb-[1px]">{row.mobile}</span>
+                          </CopyableText>
                         </TableCell>
                         <TableCell className="align-middle py-3 text-center">
                           {row.department_name ||
@@ -456,7 +491,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                   )}
                 </TableBody>
               </Table>
-            </div>
+            )}
           </div>
           {totalItems > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
@@ -471,6 +506,8 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
             </div>
           )}
         </div>
+
+      </div>
 
         {/* Filter Drawer - Now Inside MainCard for Side-by-Side Layout */}
         <InlineDrawer

@@ -30,8 +30,8 @@ def upgrade() -> None:
     if not res:
         # We'll use a plain text password or a hardcoded hash that the app expects.
         # Since the app uses bcrypt, I'll use a real bcrypt hash for '8829059600'
-        # $2b$12$N9qo8uLOickgx2ZMRZoMyeIjZAgNo3GDuG8K.z6B9J20H.1Yw9R.G (This is '8829059600')
-        admin_pass = "$2b$12$N9qo8uLOickgx2ZMRZoMyeIjZAgNo3GDuG8K.z6B9J20H.1Yw9R.G"
+        # $2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u (This is '8829059600')
+        admin_pass = "$2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u"
 
         conn.execute(
             sa.text(

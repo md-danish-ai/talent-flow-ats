@@ -14,6 +14,7 @@ export interface AdminUserLatestAttempt {
   unattempted_count: number;
   obtained_marks?: number | null;
   total_marks?: number;
+  overall_grade?: string;
   typing_stats?: {
     wpm: number;
     accuracy: number;
@@ -39,6 +40,15 @@ export interface PaginatedUserResults {
   page: number;
   limit: number;
   total_pages: number;
+  summary_stats?: {
+    total: number;
+    active: number;
+    completed: number;
+    excellent: number;
+    good: number;
+    average: number;
+    poor: number;
+  };
 }
 
 export interface AdminUserResultAnswer {
@@ -161,6 +171,9 @@ export const resultsApi = {
     limit: number = 10,
     startDate?: string,
     endDate?: string,
+    status?: string,
+    completionReason?: string,
+    overallGrade?: string,
   ) => {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
@@ -168,6 +181,11 @@ export const resultsApi = {
     params.append("limit", String(limit));
     if (startDate) params.append("start_date", startDate);
     if (endDate) params.append("end_date", endDate);
+    if (status && status !== "all") params.append("status", status);
+    if (completionReason && completionReason !== "all")
+      params.append("completion_reason", completionReason);
+    if (overallGrade && overallGrade !== "all")
+      params.append("overall_grade", overallGrade);
 
     return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
   },

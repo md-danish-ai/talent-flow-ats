@@ -46,32 +46,57 @@ export function CollapsibleResultDetail({
           {latest?.subject_results?.map((res, ridx) => (
             <div
               key={ridx}
-              className="bg-card p-4 rounded-2xl border border-border/40 flex items-center justify-between shadow-sm"
+              className="group relative bg-card p-5 rounded-2xl border border-border/50 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-brand-primary/30 transition-all duration-300"
             >
-              <div>
+              <div className="flex items-start justify-between gap-3">
                 <Typography
-                  variant="body5"
-                  className="font-medium text-muted-foreground mb-1"
+                  variant="body4"
+                  className="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-2"
                 >
                   {res.section_name}
                 </Typography>
-                <Typography variant="body2" className="font-bold">
-                  {res.obtained_marks} / {res.total_marks}
-                </Typography>
+                <Badge
+                  variant="fill"
+                  shape="square"
+                  color={
+                    res.grade === "Excellent" || res.grade === "Good"
+                      ? "success"
+                      : res.grade === "Average"
+                        ? "warning"
+                        : "error"
+                  }
+                  className="text-[9px] px-1.5 py-0 h-5 shrink-0 font-bold tracking-wider"
+                >
+                  {res.grade}
+                </Badge>
               </div>
-              <Badge
-                variant="fill"
-                color={
-                  res.grade === "Excellent" || res.grade === "Good"
-                    ? "success"
-                    : res.grade === "Average"
-                      ? "warning"
-                      : "error"
-                }
-                className="rounded-lg font-bold text-[10px] px-2 h-6"
-              >
-                {res.grade}
-              </Badge>
+
+              <div className="flex flex-col gap-2 mt-auto">
+                <div className="flex items-end gap-1.5">
+                  <span className="text-xl font-black text-brand-primary leading-none">
+                    {res.obtained_marks}
+                  </span>
+                  <span className="text-[11px] font-bold text-muted-foreground/80 mb-[2px]">
+                    / {res.total_marks}
+                  </span>
+                </div>
+
+                {/* Mini Progress Bar */}
+                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shrink-0">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${
+                      res.percentage >= 80
+                        ? "bg-emerald-500"
+                        : res.percentage >= 60
+                          ? "bg-brand-primary"
+                          : res.percentage >= 40
+                            ? "bg-amber-500"
+                            : "bg-rose-500"
+                    }`}
+                    style={{ width: `${Math.min(res.percentage || 0, 100)}%` }}
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>
