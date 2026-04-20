@@ -772,6 +772,9 @@ def get_admin_user_results(
     search: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    status: str | None = None,
+    completion_reason: str | None = None,
+    overall_grade: str | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict:
@@ -812,6 +815,14 @@ def get_admin_user_results(
             .join(User, User.id == InterviewRecord.user_id)
             .join(Paper, Paper.id == InterviewRecord.paper_id)
         )
+
+        # Apply post-subquery filters on the actual record columns
+        if status and status != "all":
+            records_query = records_query.filter(InterviewRecord.status == status)
+        if completion_reason and completion_reason != "all":
+            records_query = records_query.filter(InterviewRecord.completion_reason == completion_reason)
+        if overall_grade and overall_grade != "all":
+            records_query = records_query.filter(InterviewRecord.overall_grade == overall_grade)
 
         total_items = records_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0

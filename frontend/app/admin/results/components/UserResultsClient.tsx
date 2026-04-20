@@ -2,14 +2,17 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  Search,
   Users,
   RefreshCcw,
   LayoutGrid,
   List,
   UserCheck,
   UserX,
+  Filter,
+  Search,
+  RotateCcw,
 } from "lucide-react";
+import { cn } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
@@ -21,13 +24,39 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 import { resultsApi, type AdminUserResultListItem } from "@lib/api/results";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { toast } from "@lib/toast";
 
 import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
 import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
+
+// ── Static filter option sets ──────────────────────────────────────────
+const STATUS_OPTIONS = [
+  { id: "all", label: "All Statuses" },
+  { id: "started", label: "Started" },
+  { id: "submitted", label: "Submitted (Manual)" },
+  { id: "auto_submitted", label: "Auto Submitted" },
+];
+
+const COMPLETION_REASON_OPTIONS = [
+  { id: "all", label: "All Reasons" },
+  { id: "manual", label: "Manual" },
+  { id: "time_over", label: "Time Over" },
+];
+
+const GRADE_OPTIONS = [
+  { id: "all", label: "All Grades" },
+  { id: "Excellent", label: "Excellent" },
+  { id: "Good", label: "Good" },
+  { id: "Average", label: "Average" },
+  { id: "Poor", label: "Poor" },
+];
 
 export function UserResultsClient() {
   const [items, setItems] = useState<AdminUserResultListItem[]>([]);
@@ -40,6 +69,14 @@ export function UserResultsClient() {
   const [endDate, setEndDate] = useState("");
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [completionReasonFilter, setCompletionReasonFilter] = useState("all");
+  const [gradeFilter, setGradeFilter] = useState("all");
+
+  // Drawer
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   // Dynamic Subjects from data
   const allSubjects = useMemo(() => {
     const subjects = new Set<string>();
@@ -51,29 +88,24 @@ export function UserResultsClient() {
     return Array.from(subjects).sort();
   }, [items]);
 
-  // Column Visibility State for Table
+  // Column Visibility
   const availableColumns = useMemo(() => {
-    const baseColumns = [
+    return [
       { id: "candidate", label: "Candidate", pinned: true },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
       { id: "marks", label: "Score" },
       { id: "grade", label: "Grade" },
-    ];
-
-    const endColumns = [
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
       { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
     ];
-
-    return [...baseColumns, ...endColumns];
   }, []);
 
-  const DEFAULT_VISIBLE_COLUMNS = useMemo(() => {
-    return [
+  const DEFAULT_VISIBLE_COLUMNS = useMemo(
+    () => [
       "candidate",
       "paper",
       "attempts",
@@ -83,12 +115,12 @@ export function UserResultsClient() {
       "status",
       "date",
       "actions",
-    ];
-  }, []);
+    ],
+    [],
+  );
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
 
-  // Initialize visible columns when they change or first load
   useEffect(() => {
     if (visibleColumns.length === 0 && DEFAULT_VISIBLE_COLUMNS.length > 0) {
       setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
@@ -115,29 +147,72 @@ export function UserResultsClient() {
           limit,
           startDate || undefined,
           endDate || undefined,
+          statusFilter !== "all" ? statusFilter : undefined,
+          completionReasonFilter !== "all" ? completionReasonFilter : undefined,
+          gradeFilter !== "all" ? gradeFilter : undefined,
         );
         setItems(data.items);
         setTotalItems(data.total);
         setTotalPages(data.total_pages);
+        if (isRefresh) {
+          toast.success(`${data.total} results loaded successfully.`, {
+            title: "Data Refreshed",
+            duration: 2500,
+          });
+        }
       } catch {
         setError("Failed to fetch user results. Please try again.");
       } finally {
         if (!isRefresh) setLoading(false);
       }
     },
-    [search, page, limit, startDate, endDate],
+    [
+      search,
+      page,
+      limit,
+      startDate,
+      endDate,
+      statusFilter,
+      completionReasonFilter,
+      gradeFilter,
+    ],
   );
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1); // Reset to page 1 on new search/date
+      setPage(1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [search, startDate, endDate]);
+  }, [
+    search,
+    startDate,
+    endDate,
+    statusFilter,
+    completionReasonFilter,
+    gradeFilter,
+  ]);
 
   useEffect(() => {
     void fetchItems();
   }, [fetchItems]);
+
+  const resetAllFilters = () => {
+    setSearch("");
+    setStartDate("");
+    setEndDate("");
+    setStatusFilter("all");
+    setCompletionReasonFilter("all");
+    setGradeFilter("all");
+    setPage(1);
+  };
+
+  const activeFilterCount = [
+    search,
+    startDate,
+    statusFilter !== "all" ? statusFilter : "",
+    completionReasonFilter !== "all" ? completionReasonFilter : "",
+    gradeFilter !== "all" ? gradeFilter : "",
+  ].filter(Boolean).length;
 
   const stats = useMemo(() => {
     const completed = items.filter((item) =>
@@ -182,7 +257,7 @@ export function UserResultsClient() {
 
   return (
     <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
-      {/* Dynamic Header */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <Typography variant="h2" className="font-black tracking-tight">
@@ -198,7 +273,7 @@ export function UserResultsClient() {
         </div>
       </div>
 
-      {/* Modern Stats Section */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {stats.map((stat, idx) => (
           <div
@@ -238,20 +313,29 @@ export function UserResultsClient() {
         ))}
       </div>
 
-      {/* Main Content & Search */}
+      {/* Main Content — MCQ-style layout */}
       <MainCard
         title={
-          <div className="flex items-center gap-3">
+          <>
             <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
-            <span className="font-black tracking-tight">
-              Candidates Results
-            </span>
-          </div>
+            Candidates Results
+          </>
         }
+        className="mb-6 flex flex-col"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            {/* Results count badge */}
+            <Badge
+              variant="outline"
+              color="default"
+              className="font-black text-[10px] h-9 px-3 bg-card"
+            >
+              {totalItems} RESULTS
+            </Badge>
+
             {viewMode === "table" && (
               <>
                 <div className="h-6 w-px bg-border mx-1" />
@@ -263,59 +347,158 @@ export function UserResultsClient() {
                 />
               </>
             )}
+
+            {/* All 4 icon buttons — same style, grouped */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={viewMode === "card"}
-                onClick={() => setViewMode("card")}
-                title="Grid View"
+              <Tooltip content="Switch to Card View" side="bottom">
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  isActive={viewMode === "card"}
+                  animate="scale"
+                  onClick={() => setViewMode("card")}
+                >
+                  <LayoutGrid size={18} />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Switch to Table View" side="bottom">
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  isActive={viewMode === "table"}
+                  animate="scale"
+                  onClick={() => setViewMode("table")}
+                >
+                  <List size={18} />
+                </Button>
+              </Tooltip>
+
+              <div className="h-6 w-px bg-border mx-1" />
+
+              <Tooltip content="Refresh Data" side="bottom">
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  animate="scale"
+                  onClick={() => void fetchItems(true)}
+                >
+                  <RefreshCcw size={18} />
+                </Button>
+              </Tooltip>
+              <Tooltip
+                content={activeFilterCount > 0 ? `Filters (${activeFilterCount} active)` : "Open Filters"}
+                side="bottom"
               >
-                <LayoutGrid size={18} />
-              </Button>
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={viewMode === "table"}
-                onClick={() => setViewMode("table")}
-                title="Table View"
-              >
-                <List size={18} />
-              </Button>
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  isActive={isFilterOpen}
+                  animate="scale"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                >
+                  {activeFilterCount > 0 ? (
+                    <span className="relative">
+                      <Filter size={18} />
+                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none">
+                        {activeFilterCount}
+                      </span>
+                    </span>
+                  ) : (
+                    <Filter size={18} />
+                  )}
+                </Button>
+              </Tooltip>
             </div>
-
-            <div className="h-6 w-px bg-border mx-1" />
-
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              className="font-bold shadow-sm"
-              onClick={() => void fetchItems(true)}
-              startIcon={<RefreshCcw size={16} />}
-            >
-              Refresh
-            </Button>
           </div>
         }
-        bodyClassName="p-0 overflow-visible"
       >
-        <div className="flex flex-col w-full">
-          {/* Filters Bar */}
-          <div className="p-4 border-b border-border/50 flex flex-col md:flex-row items-center justify-between gap-4 bg-muted/5">
-            <div className="w-full md:w-96 relative">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search candidates..."
-                className="rounded-xl border border-border/60 bg-card shadow-sm h-11"
-                startIcon={
-                  <Search size={18} className="text-muted-foreground" />
-                }
+        {/* Table column — sits next to InlineDrawer */}
+        <div
+          className={cn(
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
+            isFilterOpen && "border-r border-border",
+          )}
+        >
+          {error && (
+            <Alert variant="error" description={error} className="m-4" />
+          )}
+
+          <div className="flex-1 overflow-x-auto w-full min-h-0">
+            {viewMode === "card" ? (
+              loading ? (
+                <ResultCardSkeleton rowCount={limit} />
+              ) : items.length === 0 ? (
+                <EmptyState
+                  variant="search"
+                  title="No results found"
+                  description={`We couldn't find any candidates matching your criteria${search ? ` for "${search}"` : ""}. Try adjusting your search or filters.`}
+                />
+              ) : (
+                <ResultCardView items={items} />
+              )
+            ) : (
+              <ResultTableView
+                items={items}
+                allSubjects={allSubjects}
+                visibleColumns={visibleColumns}
+                isLoading={loading}
+                limit={limit}
               />
+            )}
+          </div>
+
+          {!loading && items.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={limit}
+              onPageChange={setPage}
+              onPageSizeChange={setLimit}
+              className="mt-auto shrink-0"
+            />
+          )}
+        </div>
+
+        {/* Filter Drawer — renders inside MainCard body, exactly like MCQFilters */}
+        <InlineDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          title="Filters"
+        >
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
+            {/* Search */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Search Candidates
+              </Typography>
+              <div className="relative group">
+                <Search
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
+                  size={18}
+                />
+                <Input
+                  placeholder="Search by name, mobile..."
+                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Date Range */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Date Range
+              </Typography>
               <DateRangePicker
                 onRangeChange={(range) => {
                   if (range) {
@@ -328,53 +511,90 @@ export function UserResultsClient() {
                 }}
                 initialLabel="All Time"
               />
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-black text-[10px] h-9 px-3 bg-card"
+            </div>
+
+            {/* Status */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                {totalItems} RESULTS
-              </Badge>
+                Attempt Status
+              </Typography>
+              <SelectDropdown
+                options={STATUS_OPTIONS}
+                value={statusFilter}
+                onChange={(val) => {
+                  setStatusFilter(val as string);
+                  setPage(1);
+                }}
+                placeholder="All Statuses"
+                className="h-12 border-border/60 hover:border-border bg-muted/20"
+              />
+            </div>
+
+            {/* Completion Reason */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Completion Reason
+              </Typography>
+              <SelectDropdown
+                options={COMPLETION_REASON_OPTIONS}
+                value={completionReasonFilter}
+                onChange={(val) => {
+                  setCompletionReasonFilter(val as string);
+                  setPage(1);
+                }}
+                placeholder="All Reasons"
+                className="h-12 border-border/60 hover:border-border bg-muted/20"
+              />
+            </div>
+
+            {/* Overall Grade */}
+            <div className="space-y-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Overall Grade
+              </Typography>
+              <SelectDropdown
+                options={GRADE_OPTIONS}
+                value={gradeFilter}
+                onChange={(val) => {
+                  setGradeFilter(val as string);
+                  setPage(1);
+                }}
+                placeholder="All Grades"
+                className="h-12 border-border/60 hover:border-border bg-muted/20"
+                placement="top"
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                color="primary"
+                size="md"
+                shadow
+                animate="scale"
+                iconAnimation="rotate-360"
+                startIcon={<RotateCcw size={18} />}
+                onClick={resetAllFilters}
+                className="font-bold w-full"
+                title="Reset Filters"
+              >
+                Reset Filters
+              </Button>
             </div>
           </div>
-
-          {error && (
-            <Alert variant="error" description={error} className="mb-6" />
-          )}
-
-          {viewMode === "card" ? (
-            loading ? (
-              <ResultCardSkeleton rowCount={limit} />
-            ) : items.length === 0 ? (
-              <EmptyState
-                variant="search"
-                title="No results found"
-                description={`We couldn't find any candidates matching your criteria${search ? ` for "${search}"` : ""}. Try adjusting your search or filters.`}
-              />
-            ) : (
-              <ResultCardView items={items} />
-            )
-          ) : (
-            <ResultTableView
-              items={items}
-              allSubjects={allSubjects}
-              visibleColumns={visibleColumns}
-              isLoading={loading}
-              limit={limit}
-            />
-          )}
-
-          {!loading && items.length > 0 && (
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              pageSize={limit}
-              onPageChange={setPage}
-              onPageSizeChange={setLimit}
-            />
-          )}
-        </div>
+        </InlineDrawer>
       </MainCard>
     </PageContainer>
   );

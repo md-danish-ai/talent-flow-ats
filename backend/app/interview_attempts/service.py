@@ -87,6 +87,9 @@ class InterviewAttemptService:
         search: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        status: str | None = None,
+        completion_reason: str | None = None,
+        overall_grade: str | None = None,
         page: int = 1,
         limit: int = 10,
     ):
@@ -95,6 +98,9 @@ class InterviewAttemptService:
                 search=search,
                 start_date=start_date,
                 end_date=end_date,
+                status=status,
+                completion_reason=completion_reason,
+                overall_grade=overall_grade,
                 page=page,
                 limit=limit,
             )

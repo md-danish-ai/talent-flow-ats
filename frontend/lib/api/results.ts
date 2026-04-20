@@ -162,6 +162,9 @@ export const resultsApi = {
     limit: number = 10,
     startDate?: string,
     endDate?: string,
+    status?: string,
+    completionReason?: string,
+    overallGrade?: string,
   ) => {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
@@ -169,6 +172,9 @@ export const resultsApi = {
     params.append("limit", String(limit));
     if (startDate) params.append("start_date", startDate);
     if (endDate) params.append("end_date", endDate);
+    if (status && status !== "all") params.append("status", status);
+    if (completionReason && completionReason !== "all") params.append("completion_reason", completionReason);
+    if (overallGrade && overallGrade !== "all") params.append("overall_grade", overallGrade);
 
     return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
   },
