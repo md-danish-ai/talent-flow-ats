@@ -159,7 +159,11 @@ export function PaperSetupClient() {
             {isLoading ? (
               <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
             ) : (
-              <Badge variant="outline" color="default" className="font-bold border-border/50 bg-card">
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
                 {totalItems} PAPERS
               </Badge>
             )}

@@ -312,8 +312,17 @@ export function TypesManagementClient({
             {isFetching ? (
               <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
             ) : (
-              <Badge variant="outline" color="default" className="font-bold border-border/50 bg-card">
-                {totalItems} {totalItems === 1 ? currentEntityName.toUpperCase() : (activeTab === "subjects" ? "SUBJECTS" : "LEVELS")}
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
+                {totalItems}{" "}
+                {totalItems === 1
+                  ? currentEntityName.toUpperCase()
+                  : activeTab === "subjects"
+                    ? "SUBJECTS"
+                    : "LEVELS"}
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
@@ -335,148 +344,130 @@ export function TypesManagementClient({
         }
       >
         <div className="overflow-x-auto w-full">
-          {isFetching ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
-                  <TableHead>
-                    {activeTab === "subjects" ? "Subject Name" : "Level Name"}
-                  </TableHead>
-                  {activeTab === "subjects" && <TableHead>Subject Code</TableHead>}
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-center w-[100px]">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                <TableHead>
+                  {activeTab === "subjects" ? "Subject Name" : "Level Name"}
+                </TableHead>
+                {activeTab === "subjects" && (
+                  <TableHead>Subject Code</TableHead>
+                )}
+                <TableHead>Description</TableHead>
+                {activeTab === "subjects" && (
+                  <TableHead className="text-center">Exclusive</TableHead>
+                )}
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center w-[100px]">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isFetching ? (
                 <SimpleTableSkeleton
-                  columnCount={activeTab === "subjects" ? 6 : 5}
+                  columnCount={activeTab === "subjects" ? 7 : 5}
                   rowCount={pageSize}
                 />
-              </TableBody>
-            </Table>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
-                  <TableHead>
-                    {activeTab === "subjects" ? "Subject Name" : "Level Name"}
-                  </TableHead>
-                  {activeTab === "subjects" && (
-                    <TableHead>Subject Code</TableHead>
-                  )}
-                  <TableHead>Description</TableHead>
-                  {activeTab === "subjects" && (
-                    <TableHead className="text-center">Exclusive</TableHead>
-                  )}
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-center w-[100px]">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.length === 0 ? (
-                  <EmptyState
-                    colSpan={activeTab === "subjects" ? 7 : 5}
-                    variant="database"
-                    title={`No ${activeTab} found`}
-                    description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
-                  />
-                ) : (
-                  paginatedData.map((item, idx) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium text-center">
-                        {(currentPage - 1) * pageSize + idx + 1}
-                      </TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      {activeTab === "subjects" && (
-                        <TableCell>
-                          {item.code ? (
-                            <Badge
-                              variant="outline"
-                              shape="square"
-                              color="primary"
-                              className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest"
-                            >
-                              {item.code}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-xs italic">
-                              —
-                            </span>
-                          )}
-                        </TableCell>
-                      )}
-                      <TableCell>{item.description}</TableCell>
-                      {activeTab === "subjects" && (
-                        <TableCell className="text-center">
-                          {item.metadata?.is_exclusive ? (
-                            <Badge
-                              variant="outline"
-                              color="success"
-                              shape="square"
-                            >
-                              Yes
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" color="error" shape="square">
-                              No
-                            </Badge>
-                          )}
-                        </TableCell>
-                      )}
+              ) : paginatedData.length === 0 ? (
+                <EmptyState
+                  colSpan={activeTab === "subjects" ? 7 : 5}
+                  variant="database"
+                  title={`No ${activeTab} found`}
+                  description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
+                />
+              ) : (
+                paginatedData.map((item, idx) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium text-center">
+                      {(currentPage - 1) * pageSize + idx + 1}
+                    </TableCell>
+                    <TableCell>{item.name}</TableCell>
+                    {activeTab === "subjects" && (
                       <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={item.is_active}
-                            onChange={() => handleToggleStatus(item)}
-                            size="sm"
-                            disabled={togglingId === item.id}
-                          />
+                        {item.code ? (
                           <Badge
                             variant="outline"
                             shape="square"
-                            color={item.is_active ? "success" : "error"}
+                            color="primary"
+                            className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest"
                           >
-                            {item.is_active ? "Activate" : "Deactivate"}
+                            {item.code}
                           </Badge>
-                        </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs italic">
+                            —
+                          </span>
+                        )}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <TableIconButton
-                            iconColor="blue"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleOpenModal(item);
-                            }}
-                            title={`Edit ${currentEntityName}`}
+                    )}
+                    <TableCell>{item.description}</TableCell>
+                    {activeTab === "subjects" && (
+                      <TableCell className="text-center">
+                        {item.metadata?.is_exclusive ? (
+                          <Badge
+                            variant="outline"
+                            color="success"
+                            shape="square"
                           >
-                            <Edit size={16} />
-                          </TableIconButton>
-                          <TableIconButton
-                            iconColor="red"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleDeleteClick(item.id);
-                            }}
-                            title={`Delete ${currentEntityName}`}
-                          >
-                            <Trash2 size={16} />
-                          </TableIconButton>
-                        </div>
+                            Yes
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" color="error" shape="square">
+                            No
+                          </Badge>
+                        )}
                       </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          )}
+                    )}
+                    <TableCell>
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <Switch
+                          checked={item.is_active}
+                          onChange={() => handleToggleStatus(item)}
+                          size="sm"
+                          disabled={togglingId === item.id}
+                        />
+                        <Badge
+                          variant="outline"
+                          shape="square"
+                          color={item.is_active ? "success" : "error"}
+                        >
+                          {item.is_active ? "Activate" : "Deactivate"}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        <TableIconButton
+                          iconColor="blue"
+                          btnSize="sm"
+                          animate="scale"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenModal(item);
+                          }}
+                          title={`Edit ${currentEntityName}`}
+                        >
+                          <Edit size={16} />
+                        </TableIconButton>
+                        <TableIconButton
+                          iconColor="red"
+                          btnSize="sm"
+                          animate="scale"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDeleteClick(item.id);
+                          }}
+                          title={`Delete ${currentEntityName}`}
+                        >
+                          <Trash2 size={16} />
+                        </TableIconButton>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
         {totalItems > 0 && (
           <Pagination

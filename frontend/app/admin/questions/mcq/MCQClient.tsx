@@ -310,112 +310,77 @@ export function MCQClient({
           )}
         >
           <div className="flex-1 overflow-x-auto w-full min-h-0">
-            {isLoading ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
-                    {visibleColumns.includes("srNo") && (
-                      <TableHead className="w-[80px] text-center">
-                        Sr.
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableHead>Subject</TableHead>
-                    )}
-                    {visibleColumns.includes("examLevel") && (
-                      <TableHead>Level</TableHead>
-                    )}
-                    {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
-                        Marks
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("actions") && (
-                      <TableHead className="w-[140px] text-center">
-                        Action
-                      </TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
+                  {visibleColumns.includes("srNo") && (
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("question") && (
+                    <TableHead>Question</TableHead>
+                  )}
+                  {visibleColumns.includes("subject") && (
+                    <TableHead>Subject</TableHead>
+                  )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("createdBy") && (
+                    <TableHead>Created By</TableHead>
+                  )}
+                  {visibleColumns.includes("createdDate") && (
+                    <TableHead>Created Date</TableHead>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
                   <QuestionTableSkeleton
                     visibleColumns={visibleColumns}
                     rowCount={pageSize}
                   />
-                </TableBody>
-              </Table>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
-                    {visibleColumns.includes("srNo") && (
-                      <TableHead className="w-[80px] text-center">
-                        Sr. No.
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableHead>Subject</TableHead>
-                    )}
-                    {visibleColumns.includes("examLevel") && (
-                      <TableHead>Exam Level</TableHead>
-                    )}
-                    {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
-                        Marks
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableHead>Created By</TableHead>
-                    )}
-                    {visibleColumns.includes("createdDate") && (
-                      <TableHead>Created Date</TableHead>
-                    )}
-                    {visibleColumns.includes("status") && (
-                      <TableHead className="w-[100px] text-center">
-                        Status
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("actions") && (
-                      <TableHead className="w-[140px] text-center">
-                        Action
-                      </TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.length === 0 ? (
-                    <EmptyState
-                      colSpan={visibleColumns.length + 1}
-                      variant="search"
-                      title="No questions found"
-                      description="We couldn't find any questions matching your criteria. Try adjusting your filters or adding a new question."
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any questions matching your criteria. Try adjusting your filters or adding a new question."
+                  />
+                ) : (
+                  data.map((row, index) => (
+                    <MCQRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
                     />
-                  ) : (
-                    data.map((row, index) => (
-                      <MCQRow
-                        key={row.id}
-                        row={row}
-                        index={index}
-                        currentPage={currentPage}
-                        pageSize={pageSize}
-                        visibleColumns={visibleColumns}
-                        togglingId={togglingId}
-                        onToggleStatus={handleToggleStatus}
-                        onEdit={setEditingQuestion}
-                      />
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
 
           {!isLoading && data.length > 0 && (

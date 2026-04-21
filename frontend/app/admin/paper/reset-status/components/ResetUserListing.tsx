@@ -39,7 +39,6 @@ import {
   RotateCcw,
   BookOpenCheck,
   Mail,
-  Copy,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
@@ -193,7 +192,11 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
             {loading ? (
               <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
             ) : (
-              <Badge variant="outline" color="default" className="font-bold border-border/50 bg-card">
+              <Badge
+                variant="outline"
+                color="default"
+                className="font-bold border-border/50 bg-card"
+              >
                 {filteredUsers.length} USERS
               </Badge>
             )}
@@ -234,59 +237,44 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         >
           <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
             <div className="flex-1 overflow-x-auto w-full">
-                {loading ? (
-                  <Table>
-                    <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
-                      <TableRow>
-                        <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">Sr. No.</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">Candidate Profile</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">Contact Info</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Department</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Test Level</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Status</TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <ResetUserListingSkeleton rowCount={pageSize} />
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <Table>
-                    <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
-                      <TableRow>
-                        <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-                          Sr. No.
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                          Candidate Profile
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                          Contact Info
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                          Department
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                          Test Level
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                          Status
-                        </TableHead>
-                        <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                          Action
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(!Array.isArray(paginatedUsers) || paginatedUsers.length === 0) ? (
-                        <EmptyState
-                          colSpan={7}
-                          variant="search"
-                          title="No candidates found"
-                          description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
-                        />
-                      ) : (
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Candidate Profile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      Contact Info
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Department
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Test Level
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Status
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <ResetUserListingSkeleton rowCount={pageSize} />
+                  ) : !Array.isArray(paginatedUsers) ||
+                    paginatedUsers.length === 0 ? (
+                    <EmptyState
+                      colSpan={7}
+                      variant="search"
+                      title="No candidates found"
+                      description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
+                    />
+                  ) : (
                     paginatedUsers.map((row, idx) => (
                       <TableRow
                         key={row.id}
@@ -329,7 +317,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                                   </Badge>
                                 )}
                               </div>
-                              <CopyableText 
+                              <CopyableText
                                 value={row.email || "-"}
                                 className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
                                 title="Copy Email"
@@ -343,7 +331,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                           </div>
                         </TableCell>
                         <TableCell className="align-middle py-3">
-                          <CopyableText 
+                          <CopyableText
                             value={row.mobile}
                             className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
                             title="Copy Phone Number"
@@ -488,7 +476,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                   )}
                 </TableBody>
               </Table>
-            )}
+            </div>
           </div>
           {totalItems > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
@@ -503,8 +491,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
             </div>
           )}
         </div>
-
-      </div>
 
         {/* Filter Drawer - Now Inside MainCard for Side-by-Side Layout */}
         <InlineDrawer

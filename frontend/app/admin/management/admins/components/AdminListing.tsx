@@ -109,28 +109,28 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
       >
         <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
           <div className="flex-1 overflow-x-auto w-full">
-            {loading ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Name
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Mobile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Email
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                    Sr. No.
+                  </TableHead>
+                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    Name
+                  </TableHead>
+                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    Mobile
+                  </TableHead>
+                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    Email
+                  </TableHead>
+                  <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    Status
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
                   <SimpleTableSkeleton
                     columnCount={5}
                     columnWidths={[
@@ -142,68 +142,43 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
                     ]}
                     rowCount={10}
                   />
-                </TableBody>
-              </Table>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Name
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Mobile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Email
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {!Array.isArray(users) || users.length === 0 ? (
-                    <EmptyState
-                      colSpan={5}
-                      title="No admins found"
-                      description="There are currently no administrative accounts registered in the system."
-                    />
-                  ) : (
-                    users.map((row, idx) => (
-                      <TableRow key={row.id}>
-                        <TableCell className="font-medium text-center">
-                          {idx + 1}
-                        </TableCell>
-                        <TableCell>{row.username || "-"}</TableCell>
-                        <TableCell>{row.mobile}</TableCell>
-                        <TableCell>{row.email || "-"}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <Switch
-                              checked={row.is_active}
-                              onChange={() => handleToggleStatus(row)}
-                              size="sm"
-                              disabled={togglingId === row.id}
-                            />
-                            <Badge
-                              variant="outline"
-                              shape="square"
-                              color={row.is_active ? "success" : "error"}
-                            >
-                              {row.is_active ? "Activate" : "Deactivate"}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+                ) : !Array.isArray(users) || users.length === 0 ? (
+                  <EmptyState
+                    colSpan={5}
+                    title="No admins found"
+                    description="There are currently no administrative accounts registered in the system."
+                  />
+                ) : (
+                  users.map((row, idx) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-medium text-center">
+                        {idx + 1}
+                      </TableCell>
+                      <TableCell>{row.username || "-"}</TableCell>
+                      <TableCell>{row.mobile}</TableCell>
+                      <TableCell>{row.email || "-"}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Switch
+                            checked={row.is_active}
+                            onChange={() => handleToggleStatus(row)}
+                            size="sm"
+                            disabled={togglingId === row.id}
+                          />
+                          <Badge
+                            variant="outline"
+                            shape="square"
+                            color={row.is_active ? "success" : "error"}
+                          >
+                            {row.is_active ? "Activate" : "Deactivate"}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </MainCard>
