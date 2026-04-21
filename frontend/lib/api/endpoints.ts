@@ -7,7 +7,7 @@ export const ENDPOINTS = {
   AUTH: {
     SIGN_IN: "/auth/sign-in-user",
     SIGN_UP: "/auth/sign-up-user",
-    ME: "/auth/get-current-user",
+    ME: "/auth/me",
     CREATE_ADMIN: "/auth/create-admin-account",
     CREATE_PROJECT_LEAD: "/auth/create-project-lead-account",
     GET_ALL_USERS: "/auth/get-all-system-users",

@@ -9,6 +9,7 @@ import {
   getUserDetailsById,
   type UserDetails,
 } from "@lib/api/user-details";
+import { ENDPOINTS } from "@lib/api/endpoints";
 
 export const userDetailsKeys = {
   me: ["user-details", "me"] as const,
@@ -19,7 +20,7 @@ export function useUserDetails() {
     queryKey: userDetailsKeys.me,
     queryFn: async () => {
       // 1. Get current user to get the ID
-      const user = await api.get<CurrentUser>("/auth/me");
+      const user = await api.get<CurrentUser>(ENDPOINTS.AUTH.ME);
       if (!user?.id) {
         throw new Error("User ID not found");
       }

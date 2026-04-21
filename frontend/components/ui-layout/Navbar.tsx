@@ -13,6 +13,7 @@ import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 import { api, type NotificationItem, getAllNotifications } from "@lib/api";
+import { ENDPOINTS } from "@lib/api/endpoints";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -34,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
     // Client-side session check for testing visibility in Network tab
     const checkSession = async () => {
       try {
-        await api.get("/auth/me");
+        await api.get(ENDPOINTS.AUTH.ME);
       } catch (error) {
         console.error("Session check failed:", error);
       }

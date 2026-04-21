@@ -29,7 +29,7 @@ async def get_users(
 
 
 
-@router.get("/get-current-user")
+@router.get("/me")
 async def get_me(user_id: int = Depends(authenticate_user)):
     user = get_user_by_id(user_id)
     if not user:
