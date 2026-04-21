@@ -2,11 +2,9 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  ADMIN_ROUTES,
-  PROJECT_LEAD_ROUTES,
-  NavSection,
-} from "@lib/config/adminRoutes";
+import { NavSection } from "@lib/routes/types";
+import { ADMIN_ROUTES } from "@lib/routes/admin";
+import { PROJECT_LEAD_ROUTES } from "@lib/routes/project-lead";
 import { Button } from "@components/ui-elements/Button";
 
 import { useSidebar } from "./SidebarProvider";

@@ -5,7 +5,7 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
-import { departmentsApi, Department } from "@/lib/api/departments";
+import { departmentsApi, Department } from "lib/api/departments";
 
 interface ManageDepartmentModalProps {
   isOpen: boolean;

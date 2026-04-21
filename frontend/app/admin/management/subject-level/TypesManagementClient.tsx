@@ -24,7 +24,7 @@ import { Switch } from "@components/ui-elements/Switch";
 import {
   classificationsApi,
   type Classification,
-} from "@/lib/api/classifications";
+} from "lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 

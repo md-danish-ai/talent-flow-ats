@@ -7,21 +7,7 @@ import {
   Building2,
   Bell,
 } from "lucide-react";
-
-export interface NavItem {
-  label: string;
-  href: string;
-}
-
-export type NavSectionType = "item" | "collapsible";
-
-export interface NavSection {
-  title: string;
-  icon: React.ReactNode;
-  type: NavSectionType;
-  href?: string;
-  items: NavItem[];
-}
+import { NavSection, NavSectionType } from "./types";
 
 export const ADMIN_ROUTES: NavSection[] = [
   {
@@ -97,14 +83,4 @@ export const ADMIN_ROUTES: NavSection[] = [
         },
       ]
     : []),
-];
-
-export const PROJECT_LEAD_ROUTES: NavSection[] = [
-  {
-    title: "Dashboard",
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    type: "item",
-    href: "/project-lead/dashboard",
-    items: [],
-  },
 ];

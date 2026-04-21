@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography } from "@/components/ui-elements/Typography";
+import { Typography } from "@components/ui-elements/Typography";
 import { type MatchDetails } from "@lib/api";
 
 interface MatchBreakdownAnalysisProps {

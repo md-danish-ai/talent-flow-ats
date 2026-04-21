@@ -20,7 +20,7 @@ import {
   departmentsApi,
   Department,
   PaginatedDepartmentsResponse,
-} from "@/lib/api/departments";
+} from "@lib/api/departments";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";

@@ -1,7 +1,7 @@
 import React from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { ResetUserListing } from "@/app/admin/paper/reset-status/components/ResetUserListing";
+import { ResetUserListing } from "./components/ResetUserListing";
 import { getUsersByRole, UserListResponse } from "@lib/api/auth";
 import { cookies } from "next/headers";
 

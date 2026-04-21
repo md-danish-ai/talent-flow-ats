@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Plus, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { AddProjectLeadModal } from "@/app/admin/management/project-leads/components/AddProjectLeadModal";
+import { AddProjectLeadModal } from "./AddProjectLeadModal";
 import {
   getUsersByRole,
   UserListResponse,

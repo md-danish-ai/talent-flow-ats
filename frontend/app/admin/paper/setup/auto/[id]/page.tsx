@@ -1,5 +1,5 @@
 import React from "react";
-import { AutoAssignClient } from "@/app/admin/paper/setup/auto/[id]/AutoAssignClient";
+import { AutoAssignClient } from "./AutoAssignClient";
 
 export default async function AutoAssignPage({
   params,

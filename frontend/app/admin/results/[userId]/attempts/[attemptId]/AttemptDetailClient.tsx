@@ -32,7 +32,7 @@ import {
   parseQuestionOptions,
   getCanonicalImageUrl,
 } from "./utils";
-import { Button } from "@/components/ui-elements/Button";
+import { Button } from "@components/ui-elements/Button";
 
 interface AttemptDetailClientProps {
   userId: number;

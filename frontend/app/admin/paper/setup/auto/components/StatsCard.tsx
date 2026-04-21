@@ -1,6 +1,6 @@
 import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
-import { cn } from "@/lib/utils";
+import { cn } from "@lib/utils";
 
 export const StatsCard = ({
   icon,

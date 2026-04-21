@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 export const dynamic = "force-dynamic";
 
 import { TypesManagementClient } from "./TypesManagementClient";
-import { classificationsApi, Classification } from "@/lib/api/classifications";
+import { classificationsApi, Classification } from "lib/api/classifications";
 
 // This simulates server-side data fetching for both types
 async function getTypesData() {
