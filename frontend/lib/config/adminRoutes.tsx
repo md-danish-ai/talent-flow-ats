@@ -73,6 +73,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     type: "collapsible",
     items: [
       { label: "Admins", href: "/admin/management/admins" },
+      { label: "Project Leads", href: "/admin/management/project-leads" },
       { label: "Users", href: "/admin/management/users" },
       { label: "Departments", href: "/admin/management/department" },
       { label: "Subjects & Levels", href: "/admin/management/subject-level" },
@@ -96,4 +97,14 @@ export const ADMIN_ROUTES: NavSection[] = [
         },
       ]
     : []),
+];
+
+export const PROJECT_LEAD_ROUTES: NavSection[] = [
+  {
+    title: "Dashboard",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    type: "item",
+    href: "/project-lead/dashboard",
+    items: [],
+  },
 ];

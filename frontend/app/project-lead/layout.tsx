@@ -3,7 +3,7 @@ import { Sidebar, SidebarProvider } from "@components/ui-layout/sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
 import { getCurrentUser } from "@lib/auth/get-current-user";
 
-export default async function AdminLayout({
+export default async function ProjectLeadLayout({
   children,
 }: {
   children: React.ReactNode;

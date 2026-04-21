@@ -119,11 +119,7 @@ def signin_user(data):
                 detail="The password you entered is incorrect.",
             )
 
-        if user.role != data.role.value:
-            raise HTTPException(
-                status_code=StatusCode.UNAUTHORIZED,
-                detail=f"Access denied: Your account is not authorized for the {data.role.value} role.",
-            )
+        # Role is now auto-detected from the database record
 
         # For regular users, check/trigger auto-assignment on login if not already assigned
         if user.role == "user":
@@ -149,7 +145,7 @@ def signin_user(data):
         db_session.close()
 
 
-def create_admin(data):
+def _create_staff(data, role):
     db_session = SessionLocal()
     try:
         existing_user = (
@@ -163,23 +159,23 @@ def create_admin(data):
 
         hashed_password = hash_password(data.mobile)
 
-        new_admin = User(
+        new_user = User(
             username=data.name,
             mobile=data.mobile,
             email=data.email,
             password=hashed_password,
-            role="admin",
+            role=role,
             is_active=True,
             created_by=None,
         )
-        db_session.add(new_admin)
+        db_session.add(new_user)
         db_session.commit()
-        db_session.refresh(new_admin)
+        db_session.refresh(new_user)
 
         user_data = {
-            "id": new_admin.id,
-            "username": new_admin.username,
-            "role": new_admin.role,
+            "id": new_user.id,
+            "username": new_user.username,
+            "role": new_user.role,
         }
         token = generate_jwt(user_data)
         return {"access_token": token, "user": user_data}
@@ -194,6 +190,14 @@ def create_admin(data):
         )
     finally:
         db_session.close()
+
+
+def create_admin(data):
+    return _create_staff(data, "admin")
+
+
+def create_project_lead(data):
+    return _create_staff(data, "project_lead")
 
 
 def get_user_by_id(user_id):

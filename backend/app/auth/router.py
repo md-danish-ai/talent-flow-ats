@@ -4,6 +4,7 @@ from app.auth.service import (
     signup_user,
     signin_user,
     create_admin,
+    create_project_lead,
     get_users_by_role,
     toggle_user_status,
     delete_user,
@@ -65,6 +66,18 @@ async def signin(data: SignInSchema):
 @router.post("/create-admin")
 async def create_admin_user(data: CreateAdminSchema):
     result = create_admin(data)
+
+    if "error" in result:
+        return api_response(
+            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+        )
+
+    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+
+
+@router.post("/create-project-lead", dependencies=[Depends(require_roles(["admin"]))])
+async def create_project_lead_user(data: CreateAdminSchema):
+    result = create_project_lead(data)
 
     if "error" in result:
         return api_response(

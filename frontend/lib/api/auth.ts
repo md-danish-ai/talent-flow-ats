@@ -76,6 +76,18 @@ export async function createAdmin(
   return api.post<CreateAdminResponse>("/auth/create-admin", data, options);
 }
 
+// POST /auth/create-project-lead - Create a new project lead
+export async function createProjectLead(
+  data: CreateAdminFormValues,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<CreateAdminResponse> {
+  return api.post<CreateAdminResponse>(
+    "/auth/create-project-lead",
+    data,
+    options,
+  );
+}
+
 export interface UserListResponse {
   id: number;
   username: string;
