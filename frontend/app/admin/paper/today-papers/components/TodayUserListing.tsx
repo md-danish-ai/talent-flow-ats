@@ -58,11 +58,9 @@ export function TodayUserListing({
 
   // Sync with initialData whenever it changes (e.g. on URL change)
   useEffect(() => {
-    if (initialData && initialData.length > 0) {
+    if (initialData) {
       setUsers(initialData);
       setLoading(false);
-    } else {
-      handleRefresh();
     }
   }, [initialData]);
 
@@ -251,15 +249,27 @@ export function TodayUserListing({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
                         Sr. No.
                       </TableHead>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Level</TableHead>
-                      <TableHead>Paper</TableHead>
-                      <TableHead className="text-center">Action</TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Candidate Name
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Contact Info
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Department
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Test Level
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                        Assigned Paper
+                      </TableHead>
+                      <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                        Action
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

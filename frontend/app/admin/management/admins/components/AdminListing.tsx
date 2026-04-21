@@ -46,12 +46,11 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
   }, []);
 
   useEffect(() => {
-    if (!initialData.length) {
-      fetchUsers();
-    } else {
+    if (initialData) {
+      setUsers(initialData);
       setLoading(false);
     }
-  }, [initialData, fetchUsers]);
+  }, [initialData]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -114,13 +113,21 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center">
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
                       Sr. No.
                     </TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Mobile</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Mobile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Email
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

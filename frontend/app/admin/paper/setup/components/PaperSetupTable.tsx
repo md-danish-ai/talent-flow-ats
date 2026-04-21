@@ -51,13 +51,21 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
             <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-muted-foreground font-bold">
               <TableRow>
                 {isVisible("sr_no") && (
-                  <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                  <TableHead className="w-[80px] text-center">
+                    Sr. No.
+                  </TableHead>
                 )}
                 {isVisible("paper_name") && <TableHead>Test Paper</TableHead>}
                 {isVisible("department") && <TableHead>Department</TableHead>}
                 {isVisible("test_level") && <TableHead>Test Level</TableHead>}
+                {isVisible("description") && <TableHead>Description</TableHead>}
                 {isVisible("timing") && <TableHead>Timing</TableHead>}
                 {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}
+                {isVisible("active") && (
+                  <TableHead className="w-[100px] text-center">
+                    Status
+                  </TableHead>
+                )}
                 {isVisible("actions") && (
                   <TableHead className="text-center">Action</TableHead>
                 )}
@@ -75,7 +83,9 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
             <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-muted-foreground font-bold">
               <TableRow>
                 {isVisible("sr_no") && (
-                  <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                  <TableHead className="w-[80px] text-center">
+                    Sr. No.
+                  </TableHead>
                 )}
                 {isVisible("paper_name") && <TableHead>Test Paper</TableHead>}
                 {isVisible("department") && <TableHead>Department</TableHead>}
@@ -84,7 +94,9 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
                 {isVisible("timing") && <TableHead>Timing</TableHead>}
                 {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}
                 {isVisible("active") && (
-                  <TableHead className="w-[100px] text-center">Status</TableHead>
+                  <TableHead className="w-[100px] text-center">
+                    Status
+                  </TableHead>
                 )}
                 {isVisible("actions") && (
                   <TableHead className="text-center">Action</TableHead>

@@ -80,8 +80,12 @@ export function NotificationsClient() {
     [pageSize, statusFilter],
   );
 
+  const firstMountRef = React.useRef(true);
   useEffect(() => {
-    fetchNotifications(currentPage);
+    if (firstMountRef.current) {
+      firstMountRef.current = false;
+      fetchNotifications(currentPage);
+    }
 
     const handleUpdate = () => fetchNotifications(currentPage);
     window.addEventListener("notificationsUpdated", handleUpdate);
@@ -96,8 +100,8 @@ export function NotificationsClient() {
       } else {
         await markNotificationsUnread(ids);
       }
-      fetchNotifications(currentPage);
       setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+      // Dispatching this event will trigger the handleUpdate in useEffect above
       window.dispatchEvent(new CustomEvent("notificationsUpdated"));
     } catch (error) {
       console.error(`Failed to mark as ${action}:`, error);
@@ -184,7 +188,9 @@ export function NotificationsClient() {
                     <TableHead>Alert Type</TableHead>
                     <TableHead>Score</TableHead>
                     <TableHead>New User</TableHead>
+                    <TableHead>Matched User</TableHead>
                     <TableHead>Time</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-center w-[120px]">
                       Action
                     </TableHead>

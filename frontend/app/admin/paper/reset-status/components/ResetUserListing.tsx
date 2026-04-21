@@ -56,12 +56,9 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (initialData && initialData.length > 0) {
+    if (initialData) {
       setUsers(initialData);
       setLoading(false);
-    } else {
-      // If no initial data, trigger a refresh to load it
-      handleRefresh();
     }
   }, [initialData]);
 

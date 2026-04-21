@@ -107,12 +107,11 @@ export function UserListing({ initialData = [] }: UserListingProps) {
   }, []);
 
   useEffect(() => {
-    if (!initialData.length) {
-      fetchUsers();
-    } else {
+    if (initialData) {
+      setUsers(initialData);
       setLoading(false);
     }
-  }, [initialData, fetchUsers]);
+  }, [initialData]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);

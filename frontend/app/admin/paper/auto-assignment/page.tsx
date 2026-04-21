@@ -37,8 +37,12 @@ export default function AutoAssignmentDashboard() {
     }
   }, [selectedDate]);
 
+  const firstMountRef = React.useRef(true);
   useEffect(() => {
-    fetchRules();
+    if (firstMountRef.current) {
+      firstMountRef.current = false;
+      fetchRules();
+    }
   }, [fetchRules]);
 
   const handleEdit = (rule: AutoAssignmentRuleResponse) => {

@@ -177,9 +177,15 @@ export function ImageMCQClient({
     handleAuthError,
   ]);
 
+  const isFirstMount = React.useRef(true);
   useEffect(() => {
+    if (isFirstMount.current && initialData.length > 0) {
+      isFirstMount.current = false;
+      setIsLoading(false);
+      return;
+    }
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, initialData.length]);
 
   useEffect(() => {
     const fetchClassifications = async () => {

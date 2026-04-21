@@ -50,7 +50,8 @@ export function TypesManagementClient({
   const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
   const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const isFirstRender = React.useRef(true);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,8 +110,10 @@ export function TypesManagementClient({
 
   // Refetch when tab or status filter changes
   useEffect(() => {
-    // Skip initial fetch for the server-provided data if it's the first render
-    // But for simplicity and correctness with filters, we can just fetch
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     fetchData();
   }, [fetchData]);
 
