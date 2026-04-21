@@ -37,14 +37,6 @@ def get_all(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
 
-@router.get("/get/{classification_id}")
-def get_by_id(
-    classification_id: int,
-):
-    data = service.get_by_id(classification_id)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
-
-
 @router.post("/", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: ClassificationCreate):
     data = service.create(payload)

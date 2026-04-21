@@ -35,63 +35,6 @@ export function ResultTableView({
   isLoading,
   limit = 10,
 }: ResultTableViewProps) {
-  if (isLoading) {
-    return (
-      <div className="overflow-x-auto">
-        <Table className="w-full border-collapse">
-          <TableHeader>
-            <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
-              <TableHead className="w-[40px]"></TableHead>
-              {visibleColumns.includes("candidate") && (
-                <TableHead className="min-w-[200px]">Candidate</TableHead>
-              )}
-              {visibleColumns.includes("paper") && (
-                <TableHead className="min-w-[140px]">Assigned Paper</TableHead>
-              )}
-              {visibleColumns.includes("attempts") && (
-                <TableHead className="text-center min-w-[90px]">
-                  Attempts
-                </TableHead>
-              )}
-              {visibleColumns.includes("marks") && (
-                <TableHead className="text-center min-w-[90px]">
-                  Score
-                </TableHead>
-              )}
-              {visibleColumns.includes("grade") && (
-                <TableHead className="text-center min-w-[100px]">
-                  Grade
-                </TableHead>
-              )}
-              {visibleColumns.includes("typing_wpm") && (
-                <TableHead className="text-center min-w-[110px]">
-                  Typing WPM
-                </TableHead>
-              )}
-              {visibleColumns.includes("status") && (
-                <TableHead className="min-w-[120px]">Status</TableHead>
-              )}
-              {visibleColumns.includes("date") && (
-                <TableHead className="min-w-[100px]">Date</TableHead>
-              )}
-              {visibleColumns.includes("actions") && (
-                <TableHead className="text-right min-w-[80px]">
-                  Actions
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <ResultTableSkeleton
-              visibleColumns={visibleColumns}
-              rowCount={limit}
-            />
-          </TableBody>
-        </Table>
-      </div>
-    );
-  }
-
   return (
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
@@ -152,16 +95,19 @@ export function ResultTableView({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.length === 0 && (
+          {isLoading ? (
+            <ResultTableSkeleton
+              visibleColumns={visibleColumns}
+              rowCount={limit}
+            />
+          ) : items.length === 0 ? (
             <EmptyState
               colSpan={visibleColumns.length + 1}
               variant="search"
               title="No results found"
               description="No results found matching your criteria. Try adjusting your search or filters."
             />
-          )}
-
-          {!isLoading &&
+          ) : (
             items.map((item) => {
               const latest = item.latest_attempt;
               const interviewDate = latest?.submitted_at || latest?.started_at;
@@ -412,7 +358,8 @@ export function ResultTableView({
                   )}
                 </TableCollapsibleRow>
               );
-            })}
+            })
+          )}
         </TableBody>
       </Table>
     </div>

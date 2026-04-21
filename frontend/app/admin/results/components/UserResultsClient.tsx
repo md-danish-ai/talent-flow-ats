@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
   Users,
   RefreshCcw,
@@ -181,7 +181,13 @@ export function UserResultsClient() {
     ],
   );
 
+  const firstMountRef = useRef(true);
+
   useEffect(() => {
+    if (firstMountRef.current) {
+      firstMountRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       setPage(1);
     }, 500);

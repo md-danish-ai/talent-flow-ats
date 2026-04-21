@@ -273,130 +273,92 @@ export function ContactDetailsClient() {
           )}
         >
           <div className="flex-1 overflow-x-auto w-full">
-            {isLoading ? (
-              <Table>
-                <TableHeader className="bg-muted/30">
-                  <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
-                    {visibleColumns.includes("srNo") && (
-                      <TableHead className="w-[80px] text-center">
-                        Sr. No.
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("name") && (
-                      <TableHead>Name</TableHead>
-                    )}
-                    {visibleColumns.includes("companyName") && (
-                      <TableHead>CompanyName</TableHead>
-                    )}
-                    {visibleColumns.includes("primaryEmail") && (
-                      <TableHead>Primary Email Address</TableHead>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableHead>Subject</TableHead>
-                    )}
-                    {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
-                        Marks
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("actions") && (
-                      <TableHead className="w-[140px] text-center">
-                        Action
-                      </TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
+                  {visibleColumns.includes("srNo") && (
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("websiteUrl") && (
+                    <TableHead>WebSiteURL</TableHead>
+                  )}
+                  {visibleColumns.includes("companyName") && (
+                    <TableHead>CompanyName</TableHead>
+                  )}
+                  {visibleColumns.includes("name") && (
+                    <TableHead>Name</TableHead>
+                  )}
+                  {visibleColumns.includes("title") && (
+                    <TableHead>Title</TableHead>
+                  )}
+                  {visibleColumns.includes("primaryEmail") && (
+                    <TableHead>Primary Email Address</TableHead>
+                  )}
+                  {visibleColumns.includes("secondaryEmail") && (
+                    <TableHead>Secondary Email Address</TableHead>
+                  )}
+                  {visibleColumns.includes("linkedInUrl") && (
+                    <TableHead>LinkedIn URL</TableHead>
+                  )}
+                  {visibleColumns.includes("subject") && (
+                    <TableHead>Subject</TableHead>
+                  )}
+                  {visibleColumns.includes("examLevel") && (
+                    <TableHead>Exam Level</TableHead>
+                  )}
+                  {visibleColumns.includes("marks") && (
+                    <TableHead className="w-[80px] text-center">
+                      Marks
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("createdDate") && (
+                    <TableHead>Created Date</TableHead>
+                  )}
+                  {visibleColumns.includes("status") && (
+                    <TableHead className="w-[100px] text-center">
+                      Status
+                    </TableHead>
+                  )}
+                  {visibleColumns.includes("actions") && (
+                    <TableHead className="w-[140px] text-center">
+                      Action
+                    </TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
                   <QuestionTableSkeleton
                     visibleColumns={visibleColumns}
                     rowCount={pageSize}
                   />
-                </TableBody>
-              </Table>
-            ) : (
-              <Table>
-                <TableHeader className="bg-muted/30">
-                  <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
-                    {visibleColumns.includes("srNo") && (
-                      <TableHead className="w-[80px] text-center">
-                        Sr. No.
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("websiteUrl") && (
-                      <TableHead>WebSiteURL</TableHead>
-                    )}
-                    {visibleColumns.includes("companyName") && (
-                      <TableHead>CompanyName</TableHead>
-                    )}
-                    {visibleColumns.includes("name") && (
-                      <TableHead>Name</TableHead>
-                    )}
-                    {visibleColumns.includes("title") && (
-                      <TableHead>Title</TableHead>
-                    )}
-                    {visibleColumns.includes("primaryEmail") && (
-                      <TableHead>Primary Email Address</TableHead>
-                    )}
-                    {visibleColumns.includes("secondaryEmail") && (
-                      <TableHead>Secondary Email Address</TableHead>
-                    )}
-                    {visibleColumns.includes("linkedInUrl") && (
-                      <TableHead>LinkedIn URL</TableHead>
-                    )}
-                    {visibleColumns.includes("subject") && (
-                      <TableHead>Subject</TableHead>
-                    )}
-                    {visibleColumns.includes("examLevel") && (
-                      <TableHead>Exam Level</TableHead>
-                    )}
-                    {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
-                        Marks
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("createdDate") && (
-                      <TableHead>Created Date</TableHead>
-                    )}
-                    {visibleColumns.includes("status") && (
-                      <TableHead className="w-[100px] text-center">
-                        Status
-                      </TableHead>
-                    )}
-                    {visibleColumns.includes("actions") && (
-                      <TableHead className="w-[140px] text-center">
-                        Action
-                      </TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.length === 0 ? (
-                    <EmptyState
-                      colSpan={visibleColumns.length + 1}
-                      variant="search"
-                      title="No questions found"
-                      description="We couldn't find any contact details matching your criteria. Try adjusting your filters or adding a new entry."
+                ) : data.length === 0 ? (
+                  <EmptyState
+                    colSpan={visibleColumns.length + 1}
+                    variant="search"
+                    title="No questions found"
+                    description="We couldn't find any contact details matching your criteria. Try adjusting your filters or adding a new entry."
+                  />
+                ) : (
+                  data.map((row, index) => (
+                    <ContactDetailsRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      visibleColumns={visibleColumns}
+                      togglingId={togglingId}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingQuestion}
                     />
-                  ) : (
-                    data.map((row, index) => (
-                      <ContactDetailsRow
-                        key={row.id}
-                        row={row}
-                        index={index}
-                        currentPage={currentPage}
-                        pageSize={pageSize}
-                        visibleColumns={visibleColumns}
-                        togglingId={togglingId}
-                        onToggleStatus={handleToggleStatus}
-                        onEdit={setEditingQuestion}
-                      />
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
 
           {!isLoading && data.length > 0 && (
