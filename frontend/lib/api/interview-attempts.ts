@@ -1,4 +1,5 @@
 import { apiClient, type ApiRequestOptions } from "./client";
+import { ENDPOINTS } from "./endpoints";
 
 export interface AttemptSavedResponse {
   question_id: number;
@@ -67,7 +68,7 @@ const api = {
 
 export const interviewAttemptsApi = {
   startAttempt: (paperId: number) =>
-    api.post<StartAttemptResponse>("/user/interview-attempts/start", {
+    api.post<StartAttemptResponse>(ENDPOINTS.INTERVIEW_ATTEMPTS.START, {
       paper_id: paperId,
     }),
 
@@ -78,27 +79,27 @@ export const interviewAttemptsApi = {
     payload: { answer_text?: string | null; is_auto_saved?: boolean },
   ) =>
     api.put<SaveAttemptAnswerResponse>(
-      `/user/interview-attempts/${attemptId}/answers/${questionId}`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.SAVE_ANSWER(attemptId, questionId),
       payload,
       { silentSuccess: true, silentError: true },
     ),
 
   submitAttempt: (attemptId: number) =>
     api.post<AttemptSummaryResponse>(
-      `/user/interview-attempts/${attemptId}/submit`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.SUBMIT(attemptId),
     ),
 
   // silentSuccess: triggered automatically by timer, not a user action
   autoSubmitAttempt: (attemptId: number) =>
     api.post<AttemptSummaryResponse>(
-      `/user/interview-attempts/${attemptId}/auto-submit`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.AUTO_SUBMIT(attemptId),
       undefined,
       { silentSuccess: true },
     ),
 
   getSummary: (attemptId: number) =>
     api.get<AttemptSummaryResponse>(
-      `/user/interview-attempts/${attemptId}/summary`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.SUMMARY(attemptId),
     ),
 
   skipSection: (
@@ -107,14 +108,14 @@ export const interviewAttemptsApi = {
     options?: ApiRequestOptions,
   ) =>
     api.post(
-      `/user/interview-attempts/${attemptId}/sections/${sectionName}/skip`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.SKIP_SECTION(attemptId, sectionName),
       undefined,
       options,
     ),
 
   getActiveStatus: (options?: ApiRequestOptions) =>
     api.get<ActiveStatusResponse>(
-      "/user/interview-attempts/active-status",
+      ENDPOINTS.INTERVIEW_ATTEMPTS.ACTIVE_STATUS,
       options,
     ),
 
@@ -130,7 +131,7 @@ export const interviewAttemptsApi = {
     options?: ApiRequestOptions,
   ) =>
     api.post<{ attempt_id: number; count: number; saved_at: string }>(
-      `/user/interview-attempts/${attemptId}/answers/batch`,
+      ENDPOINTS.INTERVIEW_ATTEMPTS.SAVE_BATCH(attemptId),
       payload,
       options,
     ),

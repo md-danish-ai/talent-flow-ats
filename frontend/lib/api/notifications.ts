@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 
 export type MatchDetails = {
   new_user: {
@@ -69,11 +70,11 @@ export const getAllNotifications = (params?: {
     query.append("is_read", params.is_read.toString());
 
   const queryString = query.toString() ? `?${query.toString()}` : "";
-  return api.get<NotificationResponse>(`/notifications/get${queryString}`);
+  return api.get<NotificationResponse>(`${ENDPOINTS.NOTIFICATIONS.GET}${queryString}`);
 };
 
 export const markNotificationsRead = (notification_ids: number[]) =>
-  api.post<{ message: string }>("/notifications/read", { notification_ids });
+  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.READ, { notification_ids });
 
 export const markNotificationsUnread = (notification_ids: number[]) =>
-  api.post<{ message: string }>("/notifications/unread", { notification_ids });
+  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.UNREAD, { notification_ids });

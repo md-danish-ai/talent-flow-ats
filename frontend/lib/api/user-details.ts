@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 
 export interface PersonalDetails {
@@ -86,12 +87,12 @@ export interface UserDetails {
 }
 
 export const addUserDetails = (data: UserDetails) =>
-  api.post<UserDetails>("/user-details/add", data);
+  api.post<UserDetails>(ENDPOINTS.USER_DETAILS.ADD, data);
 
 export const updateUserDetails = (data: UserDetails) =>
-  api.put<UserDetails>("/user-details/update", data);
+  api.put<UserDetails>(ENDPOINTS.USER_DETAILS.UPDATE, data);
 
 export const getUserDetailsById = (
   id: string | number,
   options?: Pick<ApiRequestOptions, "cookies">,
-) => api.get<UserDetails>(`/user-details/get/${id}`, options);
+) => api.get<UserDetails>(ENDPOINTS.USER_DETAILS.GET_BY_ID(id), options);

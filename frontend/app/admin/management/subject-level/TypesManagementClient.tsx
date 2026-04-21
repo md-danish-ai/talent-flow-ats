@@ -27,6 +27,7 @@ import {
 } from "lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { classificationSchema } from "@lib/validations/management";
 
 interface BaseType {
   id: number;
@@ -161,6 +162,14 @@ export function TypesManagementClient({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const result = classificationSchema.safeParse(formData);
+    if (!result.success) {
+      // In this component, we can use a Toast for validation errors since there's no inline error state currently
+      const errorMessage = result.error.errors[0].message;
+      return;
+    }
+
     setIsLoading(true);
     try {
       const metadataToSubmit: Record<string, unknown> = {

@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 
 export interface QuestionOption {
   option_label: string;
@@ -109,45 +110,45 @@ export const questionsApi = {
       });
     }
     const queryString = queryParams.toString();
-    const endpoint = `/questions/get${queryString ? `?${queryString}` : ""}`;
+    const endpoint = `${ENDPOINTS.QUESTIONS.GET}${queryString ? `?${queryString}` : ""}`;
     return api.get<PaginatedResponse<Question>>(endpoint);
   },
   getQuestion: async (id: number) => {
-    return api.get<Question>(`/questions/get/${id}`);
+    return api.get<Question>(ENDPOINTS.QUESTIONS.GET_BY_ID(id));
   },
   getQuestionsByIds: async (ids: number[]) => {
     return api.post<Question[]>(
-      "/questions/get-by-ids",
+      ENDPOINTS.QUESTIONS.GET_BY_IDS,
       { ids },
       { silentSuccess: true },
     );
   },
   autoGenerateQuestions: async (data: AutoGenerateRequest) => {
-    return api.post<AutoGenerateResponse>("/questions/auto-generate", data, {
+    return api.post<AutoGenerateResponse>(ENDPOINTS.QUESTIONS.AUTO_GENERATE, data, {
       silentSuccess: true,
     });
   },
   getQuestionTypeCounts: async (subject: string, examLevel: string) => {
     return api.get<{ type_code: string; marks: number; count: number }[]>(
-      `/questions/type-counts?subject=${subject}&exam_level=${examLevel}`,
+      `${ENDPOINTS.QUESTIONS.TYPE_COUNTS}?subject=${subject}&exam_level=${examLevel}`,
     );
   },
   createQuestion: async (data: QuestionCreate) => {
-    return api.post("/questions/create", data);
+    return api.post(ENDPOINTS.QUESTIONS.CREATE, data);
   },
   updateQuestion: async (id: number, data: Partial<QuestionCreate>) => {
-    return api.put(`/questions/update/${id}`, data);
+    return api.put(ENDPOINTS.QUESTIONS.UPDATE(id), data);
   },
   toggleQuestionStatus: async (id: number) => {
     return api.put<{ message: string; is_active: boolean }>(
-      `/questions/update-status/${id}`,
+      ENDPOINTS.QUESTIONS.UPDATE_STATUS(id),
       undefined,
       { silentSuccess: true },
     );
   },
   deleteQuestion: async (id: number) => {
     // Backend exposes DELETE /questions/{question_id}
-    return api.delete(`/questions/${id}`);
+    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id));
   },
   uploadImage: async (file: File) => {
     const formData = new FormData();
@@ -180,7 +181,7 @@ export const questionsApi = {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${BASE_URL}/questions/upload-image`, {
+    const response = await fetch(`${BASE_URL}${ENDPOINTS.QUESTIONS.UPLOAD_IMAGE}`, {
       method: "POST",
       body: formData,
       headers,

@@ -1,4 +1,5 @@
 import { api, type ApiRequestOptions } from "./index";
+import { ENDPOINTS } from "./endpoints";
 
 export interface Classification {
   id: number;
@@ -61,19 +62,19 @@ export const classificationsApi = {
       });
     }
     const queryString = queryParams.toString();
-    const endpoint = `/classifications/get${queryString ? `?${queryString}` : ""}`;
+    const endpoint = `${ENDPOINTS.CLASSIFICATIONS.GET}${queryString ? `?${queryString}` : ""}`;
     return api.get<PaginatedClassificationsResponse>(endpoint, options);
   },
 
   createClassification: async (data: ClassificationCreate) => {
-    return api.post<Classification>("/classifications/", data);
+    return api.post<Classification>(ENDPOINTS.CLASSIFICATIONS.CREATE, data);
   },
 
   updateClassification: async (id: number, data: ClassificationUpdate) => {
-    return api.put<Classification>(`/classifications/update/${id}`, data);
+    return api.put<Classification>(ENDPOINTS.CLASSIFICATIONS.UPDATE(id), data);
   },
 
   deleteClassification: async (id: number) => {
-    return api.delete<void>(`/classifications/delete/${id}`);
+    return api.delete<void>(ENDPOINTS.CLASSIFICATIONS.DELETE(id));
   },
 };

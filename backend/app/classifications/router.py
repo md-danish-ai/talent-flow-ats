@@ -17,7 +17,7 @@ router = APIRouter(
 service = ClassificationService()
 
 
-@router.get("/get")
+@router.get("/get-classifications")
 def get_all(
     type: Optional[str] = None,
     is_active: Optional[bool] = None,
@@ -37,13 +37,13 @@ def get_all(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
 
-@router.post("/", dependencies=[Depends(require_roles(["admin"]))])
+@router.post("/create-classification", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: ClassificationCreate):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.put("/update-classification/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
 def update(
     classification_id: int,
     payload: ClassificationUpdate,
@@ -52,7 +52,7 @@ def update(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/delete/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.delete("/remove-classification/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
 def delete(
     classification_id: int,
 ):

@@ -24,7 +24,7 @@ def get_db():
         db.close()
 
 
-@router.get("/get")
+@router.get("/get-papers")
 def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
     department_id: Optional[int] = Query(None),
@@ -50,7 +50,7 @@ def read_papers(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
 
-@router.get("/get/{paper_id}")
+@router.get("/paper-details/{paper_id}")
 def read_paper(paper_id: int, db: Session = Depends(get_db)):
     db_paper = repository.get_paper(db, paper_id=paper_id)
     if db_paper is None:
@@ -62,7 +62,7 @@ def read_paper(paper_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/create")
+@router.post("/create-paper")
 def create_paper(
     paper: schemas.PaperCreate,
     db: Session = Depends(get_db),
@@ -76,7 +76,7 @@ def create_paper(
     )
 
 
-@router.put("/update/{paper_id}")
+@router.put("/update-paper/{paper_id}")
 def update_paper(
     paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)
 ):
@@ -90,7 +90,7 @@ def update_paper(
     )
 
 
-@router.delete("/delete/{paper_id}")
+@router.delete("/remove-paper/{paper_id}")
 def delete_paper(paper_id: int, db: Session = Depends(get_db)):
     success = repository.delete_paper(db=db, paper_id=paper_id)
     if not success:

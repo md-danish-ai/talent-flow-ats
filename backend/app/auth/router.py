@@ -17,7 +17,7 @@ from app.utils.dependencies import require_roles, authenticate_user
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.get("/get-all-users", dependencies=[Depends(require_roles(["admin"]))])
+@router.get("/get-all-system-users", dependencies=[Depends(require_roles(["admin"]))])
 async def get_users(
     role: str = Query(..., description="Role to filter users by (e.g., admin, user)"),
     date: str = Query(None, description="Single date filter (YYYY-MM-DD)"),
@@ -29,7 +29,7 @@ async def get_users(
 
 
 
-@router.get("/me")
+@router.get("/get-current-user")
 async def get_me(user_id: int = Depends(authenticate_user)):
     user = get_user_by_id(user_id)
     if not user:
@@ -37,7 +37,7 @@ async def get_me(user_id: int = Depends(authenticate_user)):
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=user)
 
 
-@router.post("/signup")
+@router.post("/sign-up-user")
 async def signup(data: SignUpSchema):
     result = signup_user(data)
 
@@ -49,7 +49,7 @@ async def signup(data: SignUpSchema):
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
-@router.post("/signin")
+@router.post("/sign-in-user")
 async def signin(data: SignInSchema):
     result = signin_user(data)
 
@@ -63,7 +63,7 @@ async def signin(data: SignInSchema):
     return api_response(StatusCode.OK, ResponseMessage.LOGIN_SUCCESS, data=result)
 
 
-@router.post("/create-admin")
+@router.post("/create-admin-account")
 async def create_admin_user(data: CreateAdminSchema):
     result = create_admin(data)
 
@@ -75,7 +75,7 @@ async def create_admin_user(data: CreateAdminSchema):
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
-@router.post("/create-project-lead", dependencies=[Depends(require_roles(["admin"]))])
+@router.post("/create-project-lead-account", dependencies=[Depends(require_roles(["admin"]))])
 async def create_project_lead_user(data: CreateAdminSchema):
     result = create_project_lead(data)
 
@@ -88,20 +88,20 @@ async def create_project_lead_user(data: CreateAdminSchema):
 
 
 @router.put(
-    "/toggle-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
+    "/toggle-user-active-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
 )
 async def toggle_status(user_id: int):
     data = toggle_user_status(user_id)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/delete/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.delete("/remove-user-account/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
 async def delete_user_route(user_id: int):
     data = delete_user(user_id)
     return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
 
 
-@router.put("/update-basic-info/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.put("/update-user-profile/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
 async def update_basic_info(user_id: int, data: SignUpSchema):
     """
     Update basic user info (username, mobile, email, testlevel, department_id).

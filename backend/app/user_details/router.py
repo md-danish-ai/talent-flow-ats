@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.post("/add")
+@router.post("/save-user-details")
 def add_user_details(
     data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
 ):
@@ -23,7 +23,7 @@ def add_user_details(
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
-@router.put("/update")
+@router.put("/edit-user-details")
 def update_user_details(
     data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
 ):
@@ -34,7 +34,7 @@ def update_user_details(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
 
 
-@router.get("/get/{id}")
+@router.get("/get-user-details/{id}")
 def get_user_details_by_id(id: int):
     """
     Get user details by ID.

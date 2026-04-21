@@ -1,4 +1,5 @@
 import { api, type ApiRequestOptions } from "./index";
+import { ENDPOINTS } from "./endpoints";
 
 export interface PaperSubjectConfig {
   id?: number;
@@ -79,16 +80,16 @@ export const papersApi = {
       });
     }
     const queryString = queryParams.toString();
-    const endpoint = `/papers/get${queryString ? `?${queryString}` : ""}`;
+    const endpoint = `${ENDPOINTS.PAPERS.GET}${queryString ? `?${queryString}` : ""}`;
     return api.get<PaginatedPapersResponse>(endpoint, options);
   },
 
   getPaperById: async (id: number) => {
-    return api.get<PaperSetup>(`/papers/get/${id}`);
+    return api.get<PaperSetup>(ENDPOINTS.PAPERS.GET_BY_ID(id));
   },
 
   createPaper: async (data: PaperSetupCreate) => {
-    return api.post<PaperSetup>("/papers/create", data);
+    return api.post<PaperSetup>(ENDPOINTS.PAPERS.CREATE, data);
   },
 
   updatePaper: async (
@@ -96,18 +97,18 @@ export const papersApi = {
     data: Partial<PaperSetupCreate>,
     options?: ApiRequestOptions,
   ) => {
-    return api.put<PaperSetup>(`/papers/update/${id}`, data, options);
+    return api.put<PaperSetup>(ENDPOINTS.PAPERS.UPDATE(id), data, options);
   },
 
   deletePaper: async (id: number) => {
-    return api.delete<void>(`/papers/delete/${id}`);
+    return api.delete<void>(ENDPOINTS.PAPERS.DELETE(id));
   },
 
   togglePaperStatus: async (id: number, is_active: boolean) => {
-    return api.put<PaperSetup>(`/papers/update/${id}`, { is_active });
+    return api.put<PaperSetup>(ENDPOINTS.PAPERS.UPDATE(id), { is_active });
   },
 
   updateGradeSettings: async (id: number, grade_settings: GradeSetting[]) => {
-    return api.put<PaperSetup>(`/papers/grade-settings/${id}`, grade_settings);
+    return api.put<PaperSetup>(ENDPOINTS.PAPERS.GRADE_SETTINGS(id), grade_settings);
   },
 };

@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 import type {
   SignInFormValues,
@@ -48,7 +49,7 @@ export async function signUp(
   data: SignUpFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<SignUpResponse> {
-  return api.post<SignUpResponse>("/auth/signup", data, options);
+  return api.post<SignUpResponse>(ENDPOINTS.AUTH.SIGN_UP, data, options);
 }
 
 // POST /auth/signin - Authenticate a user and receive a token
@@ -56,12 +57,12 @@ export async function signIn(
   data: SignInFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<AuthResponse> {
-  return api.post<AuthResponse>("/auth/signin", data, options);
+  return api.post<AuthResponse>(ENDPOINTS.AUTH.SIGN_IN, data, options);
 }
 
 // GET /auth/me - Fetch the current authenticated user's profile and recruitment details
 export async function getMyDetails(): Promise<UserDetails> {
-  const user = await api.get<CurrentUser>("/auth/me");
+  const user = await api.get<CurrentUser>(ENDPOINTS.AUTH.ME);
   if (!user?.recruitment_details) {
     return { is_submitted: false } as UserDetails;
   }
@@ -73,7 +74,7 @@ export async function createAdmin(
   data: CreateAdminFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<CreateAdminResponse> {
-  return api.post<CreateAdminResponse>("/auth/create-admin", data, options);
+  return api.post<CreateAdminResponse>(ENDPOINTS.AUTH.CREATE_ADMIN, data, options);
 }
 
 // POST /auth/create-project-lead - Create a new project lead
@@ -82,7 +83,7 @@ export async function createProjectLead(
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<CreateAdminResponse> {
   return api.post<CreateAdminResponse>(
-    "/auth/create-project-lead",
+    ENDPOINTS.AUTH.CREATE_PROJECT_LEAD,
     data,
     options,
   );
@@ -139,7 +140,7 @@ export async function getUsersByRole(
   }
 
   return api.get<UserListResponse[]>(
-    `/auth/get-all-users?${queryParams.toString()}`,
+    `${ENDPOINTS.AUTH.GET_ALL_USERS}?${queryParams.toString()}`,
     apiOptions,
   );
 }
@@ -150,7 +151,7 @@ export async function toggleUserStatus(
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ id: number; is_active: boolean }> {
   return api.put<{ id: number; is_active: boolean }>(
-    `/auth/toggle-status/${userId}`,
+    ENDPOINTS.AUTH.TOGGLE_STATUS(userId),
     {},
     options,
   );
@@ -162,7 +163,7 @@ export async function deleteUser(
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ id: number; message: string }> {
   return api.delete<{ id: number; message: string }>(
-    `/auth/delete/${userId}`,
+    ENDPOINTS.AUTH.DELETE_USER(userId),
     options,
   );
 }
@@ -174,7 +175,7 @@ export async function updateBasicInfo(
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ message: string; user_id: number }> {
   return api.put<{ message: string; user_id: number }>(
-    `/auth/update-basic-info/${userId}`,
+    ENDPOINTS.AUTH.UPDATE_BASIC_INFO(userId),
     data,
     options,
   );

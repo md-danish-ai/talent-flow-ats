@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 import { GradeSetting } from "./papers";
 
 export interface AdminUserLatestAttempt {
@@ -187,37 +188,37 @@ export const resultsApi = {
     if (overallGrade && overallGrade !== "all")
       params.append("overall_grade", overallGrade);
 
-    return api.get<PaginatedUserResults>(`/admin/results?${params.toString()}`);
+    return api.get<PaginatedUserResults>(`${ENDPOINTS.RESULTS.GET_ALL}?${params.toString()}`);
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
     const query = attemptId ? `?attempt_id=${attemptId}` : "";
     return api.get<AdminUserResultDetail>(
-      `/admin/results/users/${userId}${query}`,
+      `${ENDPOINTS.RESULTS.USER_DETAIL(userId)}${query}`,
     );
   },
 
   getUserAttempts: async (userId: number) => {
     return api.get<AdminUserAttemptsResponse>(
-      `/admin/results/users/${userId}/attempts`,
+      ENDPOINTS.RESULTS.USER_ATTEMPTS(userId),
     );
   },
 
   resetUserStatus: async (userId: number) => {
     return api.post<{ message: string }>(
-      `/admin/results/users/${userId}/reset`,
+      ENDPOINTS.RESULTS.RESET_ATTEMPT(userId),
     );
   },
 
   resetUserDetails: async (userId: number) => {
     return api.post<{ message: string }>(
-      `/admin/results/users/${userId}/reset-details`,
+      ENDPOINTS.RESULTS.RESET_DETAILS(userId),
     );
   },
 
   enableReInterview: async (userId: number) => {
     return api.post<{ message: string; reinterview_date?: string }>(
-      `/admin/results/users/${userId}/enable-reinterview`,
+      ENDPOINTS.RESULTS.RE_INTERVIEW(userId),
     );
   },
 
@@ -227,7 +228,7 @@ export const resultsApi = {
     sectionNames: string[],
   ) => {
     return api.post<{ message: string }>(
-      `/admin/results/users/${userId}/reset-subjects`,
+      ENDPOINTS.RESULTS.RESET_SUBJECTS(userId),
       { attempt_id: attemptId, section_names: sectionNames },
     );
   },
@@ -243,7 +244,7 @@ export const resultsApi = {
       manual_marks: number;
       new_total_marks: number;
     }>(
-      `/admin/results/users/${userId}/attempts/${attemptId}/responses/${questionId}/manual-marks`,
+      ENDPOINTS.RESULTS.MANUAL_MARKS(userId, attemptId, questionId),
       { marks },
     );
   },
