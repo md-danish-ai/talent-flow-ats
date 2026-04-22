@@ -31,6 +31,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
 
   // Handle debounced search
   useEffect(() => {
+    // Skip if it's an initial empty search to avoid double fetching on mount
     if (!onSearch) return;
 
     const handler = setTimeout(() => {
@@ -57,7 +58,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       } as React.ChangeEvent<HTMLInputElement>;
       onChange(mockEvent);
     }
-    // If we have onSearch, trigger it immediately on clear
+
+    // Immediately trigger onSearch if provided, without waiting for debounce
     if (onSearch) {
       onSearch("");
     }
@@ -72,7 +74,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     >
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <svg
-          className="h-4 w-4 text-muted-foreground/60 group-focus-within:text-brand-primary transition-colors"
+          className="h-5 w-5 text-muted-foreground/60 group-focus-within:text-brand-primary transition-colors"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -91,7 +93,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         value={internalValue}
         onChange={handleChange}
         suppressHydrationWarning
-        className="block w-full pl-10 pr-10 py-2 border border-border rounded-md leading-5 bg-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:bg-card focus:ring-1 focus:ring-brand-primary focus:border-brand-primary sm:text-sm transition-all shadow-sm"
+        className="block w-full pl-10 pr-10 py-3.5 border border-border rounded-md leading-5 bg-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:bg-card focus:ring-1 focus:ring-brand-primary focus:border-brand-primary text-sm transition-all shadow-sm items-center"
       />
       {internalValue && (
         <button
@@ -100,7 +102,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground/60 hover:text-red-500 transition-colors"
         >
           <svg
-            className="h-4 w-4"
+            className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

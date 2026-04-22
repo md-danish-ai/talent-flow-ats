@@ -113,12 +113,19 @@ export function TodayUserListing({
   }, [currentPage, pageSize, searchQuery, searchParams]);
 
   useEffect(() => {
-    if (currentPage === 1 && searchQuery === "" && initialData?.data) {
-      // Skip initial fetch if we have initialData
-      return;
+    if (
+      initialData &&
+      initialData.data &&
+      currentPage === 1 &&
+      searchQuery === ""
+    ) {
+      setUsers(initialData.data);
+      setTotalItems(initialData.pagination?.total_records || 0);
+      setLoading(false);
+    } else {
+      fetchData();
     }
-    fetchData();
-  }, [fetchData]);
+  }, [initialData, fetchData, currentPage, searchQuery]);
 
   // Manual API refresh function
   const handleRefresh = async () => {

@@ -96,12 +96,19 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   }, [currentPage, pageSize, searchQuery]);
 
   useEffect(() => {
-    if (currentPage === 1 && searchQuery === "" && initialData?.data) {
-      // Skip initial fetch if we have initialData
-      return;
+    if (
+      initialData &&
+      initialData.data &&
+      currentPage === 1 &&
+      searchQuery === ""
+    ) {
+      setUsers(initialData.data);
+      setTotalItems(initialData.pagination?.total_records || 0);
+      setLoading(false);
+    } else {
+      fetchData();
     }
-    fetchData();
-  }, [fetchData]);
+  }, [initialData, fetchData, currentPage, searchQuery]);
 
   const handleRefresh = async () => {
     await fetchData();
