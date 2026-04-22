@@ -15,6 +15,7 @@ import {
   Users,
   Mail,
   Filter,
+  RefreshCcw,
   RotateCcw,
   Copy,
 } from "lucide-react";
@@ -189,6 +190,14 @@ export function TodayUserListing({
 
   const paginatedUsers = filteredUsers;
 
+  // Calculate active filter count
+  const activeFilterCount = [
+    searchQuery,
+    departmentFilter !== "all" ? departmentFilter : "",
+    levelFilter !== "all" ? levelFilter : "",
+    statusFilter !== "all" ? statusFilter : "",
+  ].filter(Boolean).length;
+
   return (
     <>
       <MainCard
@@ -214,7 +223,7 @@ export function TodayUserListing({
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Reload Candidate List">
+            <Tooltip content="Refresh Data" side="bottom">
               <Button
                 variant="action"
                 size="rounded-icon"
@@ -223,11 +232,17 @@ export function TodayUserListing({
                 disabled={loading}
               >
                 <div className={cn(loading && "animate-spin")}>
-                  <RotateCcw size={18} />
+                  <RefreshCcw size={18} />
                 </div>
               </Button>
             </Tooltip>
-            <Tooltip content="Filters & Searching">
+            <Tooltip
+              content={
+                activeFilterCount > 0
+                  ? `Filters (${activeFilterCount} active)`
+                  : "Filters & Searching"
+              }
+            >
               <Button
                 variant="action"
                 size="rounded-icon"
@@ -235,7 +250,16 @@ export function TodayUserListing({
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                <Filter size={18} />
+                {activeFilterCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFilterCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
               </Button>
             </Tooltip>
           </div>
@@ -577,16 +601,21 @@ export function TodayUserListing({
             <Button
               variant="outline"
               color="primary"
-              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
               onClick={() => {
                 setSearchQuery("");
                 setDepartmentFilter("all");
                 setLevelFilter("all");
                 setStatusFilter("all");
               }}
+              className="font-bold w-full mt-auto"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>

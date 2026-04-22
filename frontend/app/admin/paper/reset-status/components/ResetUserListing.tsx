@@ -36,6 +36,7 @@ import {
   Filter,
   FileEdit,
   RotateCcw,
+  RefreshCcw,
   BookOpenCheck,
   Mail,
 } from "lucide-react";
@@ -112,7 +113,9 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
 
   const handleRefresh = async () => {
     await fetchData();
-    toast.success("List Refreshed");
+    toast.success("Candidate list refreshed successfully", {
+      title: "Data Updated",
+    });
   };
 
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
@@ -177,6 +180,14 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   // Use directly filtered data (client side filters only now)
   const paginatedUsers = filteredUsers;
 
+  // Calculate active filter count
+  const activeFilterCount = [
+    searchQuery,
+    statusFilter !== "all" ? statusFilter : "",
+    departmentFilter !== "all" ? departmentFilter : "",
+    levelFilter !== "all" ? levelFilter : "",
+  ].filter(Boolean).length;
+
   return (
     <>
       <MainCard
@@ -211,7 +222,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Reload Candidate List">
+            <Tooltip content="Refresh Data" side="bottom">
               <Button
                 variant="action"
                 size="rounded-icon"
@@ -219,13 +230,18 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 onClick={handleRefresh}
                 disabled={loading}
               >
-                <RefreshCw
-                  size={18}
-                  className={loading ? "animate-spin" : ""}
-                />
+                <div className={cn(loading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
               </Button>
             </Tooltip>
-            <Tooltip content="Advanced Filters & Searching">
+            <Tooltip
+              content={
+                activeFilterCount > 0
+                  ? `Filters (${activeFilterCount} active)`
+                  : "Advanced Filters & Searching"
+              }
+            >
               <Button
                 variant="action"
                 size="rounded-icon"
@@ -233,7 +249,16 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                <Filter size={18} />
+                {activeFilterCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFilterCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
               </Button>
             </Tooltip>
           </div>
@@ -611,16 +636,21 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
             <Button
               variant="outline"
               color="primary"
-              className="w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
               onClick={() => {
                 setSearchQuery("");
                 setStatusFilter("all");
                 setDepartmentFilter("all");
                 setLevelFilter("all");
               }}
+              className="font-bold w-full"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>

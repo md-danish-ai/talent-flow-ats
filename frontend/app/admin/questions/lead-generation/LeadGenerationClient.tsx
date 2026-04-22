@@ -15,10 +15,11 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Filter, Upload } from "lucide-react";
+import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
 import { questionsApi, Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, Classification } from "@lib/api/classifications";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
@@ -95,7 +96,7 @@ export function LeadGenerationClient() {
   };
 
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     setIsLoading(true);
     try {
       const response = await questionsApi.getQuestions({
@@ -124,6 +125,11 @@ export function LeadGenerationClient() {
       setData(response.data || []);
       if (response.pagination) {
         setTotalItems(response.pagination.total_records);
+      }
+      if (isRefresh) {
+        toast.success("Question list refreshed successfully", {
+          title: "Data Updated",
+        });
       }
     } catch (error) {
       console.error("Failed to fetch questions:", error);
@@ -187,6 +193,15 @@ export function LeadGenerationClient() {
     }
   };
 
+  // Filter count logic
+  const activeFilterCount = [
+    searchQuery,
+    subjectFilter !== "all" ? subjectFilter : "",
+    examLevelFilter !== "all" ? examLevelFilter : "",
+    marksFilter !== "all" ? marksFilter : "",
+    statusFilter !== "all" ? statusFilter : "",
+  ].filter(Boolean).length;
+
   return (
     <PageContainer animate>
       <MainCard
@@ -220,6 +235,20 @@ export function LeadGenerationClient() {
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchData(true)}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
             <div className="h-6 w-px bg-border mx-1" />
             <Button
               variant="action"
@@ -231,16 +260,33 @@ export function LeadGenerationClient() {
             >
               <Upload size={18} />
             </Button>
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              title="Filter"
+            <Tooltip
+              content={
+                activeFilterCount > 0
+                  ? `Filters (${activeFilterCount} active)`
+                  : "Filter"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFilterCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFilterCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <Button
               variant="primary"
               color="primary"

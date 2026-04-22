@@ -10,7 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, RefreshCcw } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { toast } from "@lib/toast";
+import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { AddProjectLeadModal } from "./AddProjectLeadModal";
 import {
@@ -55,7 +58,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (isRefresh = false) => {
     try {
       setLoading(true);
       const response = await getUsersByRole("project_lead", {
@@ -65,6 +68,11 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
       });
       setUsers(response.data || []);
       setTotalItems(response.pagination?.total_records || 0);
+      if (isRefresh) {
+        toast.success("Project Lead list refreshed successfully", {
+          title: "Data Updated",
+        });
+      }
     } catch (error) {
       console.error("Failed to fetch project leads:", error);
     } finally {
@@ -126,6 +134,22 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                 {totalItems} LEADS
               </Badge>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchUsers(true)}
+                disabled={loading}
+              >
+                <div className={cn(loading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder="Search project leads..."

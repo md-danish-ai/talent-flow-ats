@@ -14,7 +14,10 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Layers, Gauge } from "lucide-react";
+import { Plus, Edit, Trash2, Layers, Gauge, RefreshCcw } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { toast } from "@lib/toast";
+import { cn } from "@lib/utils";
 import { Tabs, TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
@@ -104,7 +107,7 @@ export function TypesManagementClient({
   const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
   const currentData = activeTab === "subjects" ? subjects : levels;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     setIsFetching(true);
     try {
       const params: {
@@ -135,12 +138,28 @@ export function TypesManagementClient({
 
       setTargetData(formattedData);
       setTotalItems(response.pagination.total_records);
+      if (isRefresh) {
+        toast.success(
+          `${activeTab === "subjects" ? "Subject" : "Level"} list refreshed successfully`,
+          {
+            title: "Data Updated",
+          },
+        );
+      }
     } catch (error) {
       console.error("Failed to fetch classifications:", error);
     } finally {
       setIsFetching(false);
     }
-  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize, searchQuery]);
+  }, [
+    classificationType,
+    statusFilter,
+    setTargetData,
+    currentPage,
+    pageSize,
+    searchQuery,
+    activeTab,
+  ]);
 
   // Initial Sync from initialData
   useEffect(() => {
@@ -344,6 +363,22 @@ export function TypesManagementClient({
                     : "LEVELS"}
               </Badge>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchData(true)}
+                disabled={isFetching}
+              >
+                <div className={cn(isFetching && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder={`Search ${activeTab}...`}

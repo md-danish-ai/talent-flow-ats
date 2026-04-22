@@ -12,7 +12,10 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2 } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, RefreshCcw } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { toast } from "@lib/toast";
+import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -58,7 +61,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
 
-  const fetchDepartments = useCallback(async () => {
+  const fetchDepartments = useCallback(async (isRefresh = false) => {
     setIsLoading(true);
     try {
       const response = await departmentsApi.getDepartments({
@@ -69,6 +72,11 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       setDepartments(response.data || []);
       if (response.pagination) {
         setTotalItems(response.pagination.total_records);
+      }
+      if (isRefresh) {
+        toast.success("Department list refreshed successfully", {
+          title: "Data Updated",
+        });
       }
     } catch (error) {
       console.error("Failed to fetch departments:", error);
@@ -146,6 +154,22 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                 {totalItems} DEPTS
               </Badge>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchDepartments(true)}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder="Search departments..."

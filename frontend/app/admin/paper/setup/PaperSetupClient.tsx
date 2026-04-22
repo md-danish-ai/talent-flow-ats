@@ -16,10 +16,11 @@ import { useClassifications } from "@lib/react-query/classifications/use-classif
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
-import { Filter, RotateCcw } from "lucide-react";
+import { Filter, RotateCcw, RefreshCcw } from "lucide-react";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { cn } from "@lib/utils";
 import { SearchInput } from "@components/ui-elements/SearchInput";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export function PaperSetupClient() {
     );
   };
 
-  const fetchPapers = useCallback(async () => {
+  const fetchPapers = useCallback(async (isRefresh = false) => {
     setIsLoading(true);
     try {
       const response = await papersApi.getPapers({
@@ -93,6 +94,11 @@ export function PaperSetupClient() {
       });
       setPapers(response.data);
       setTotalItems(response.pagination.total_records);
+      if (isRefresh) {
+        toast.success("Paper list refreshed successfully", {
+          title: "Data Updated",
+        });
+      }
     } catch (error) {
       console.error("Failed to fetch papers:", error);
     } finally {
@@ -140,6 +146,13 @@ export function PaperSetupClient() {
     router.push(`/admin/paper/setup/detail/${id}`);
   };
 
+  // Calculate active filter count
+  const activeFilterCount = [
+    searchQuery,
+    deptFilter !== "all" ? deptFilter : "",
+    levelFilter !== "all" ? levelFilter : "",
+  ].filter(Boolean).length;
+
   return (
     <PageContainer animate>
       <PageHeader
@@ -173,15 +186,47 @@ export function PaperSetupClient() {
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
             />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchPapers(true)}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              content={
+                activeFilterCount > 0
+                  ? `Filters (${activeFilterCount} active)`
+                  : "Open Filters"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFilterCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFilterCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -283,16 +328,22 @@ export function PaperSetupClient() {
 
             <Button
               variant="outline"
-              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
               onClick={() => {
                 setSearchQuery("");
                 setDeptFilter("all");
                 setLevelFilter("all");
                 setCurrentPage(1);
               }}
+              className="font-bold w-full mt-auto"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>

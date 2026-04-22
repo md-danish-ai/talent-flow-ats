@@ -12,6 +12,7 @@ import {
 import {
   Users,
   Eye,
+  RefreshCcw,
   UserPlus,
   Filter,
   RotateCcw,
@@ -45,6 +46,8 @@ import { CopyableText } from "@components/ui-elements/CopyableText";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { toast } from "@lib/toast";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Skeleton } from "@components/ui-elements/Skeleton";
 
 interface UserListingProps {
@@ -82,19 +85,24 @@ export function UserListing({ initialData }: UserListingProps) {
   const [levelFilter, setLevelFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (isRefresh = false) => {
     try {
       setLoading(true);
       const response = await getUsersByRole("user", {
         page: currentPage,
         limit: pageSize,
         search: searchQuery,
-        department_id: departmentFilter === "all" ? undefined : Number(departmentFilter),
+        department_id:
+          departmentFilter === "all" ? undefined : Number(departmentFilter),
         test_level_id: levelFilter === "all" ? undefined : Number(levelFilter),
       });
       setUsers(response.data || []);
       setTotalItems(response.pagination?.total_records || 0);
+      if (isRefresh) {
+        toast.success(`Candidate list refreshed successfully`, {
+          title: "Data Updated",
+        });
+      }
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {
@@ -118,7 +126,14 @@ export function UserListing({ initialData }: UserListingProps) {
     } else {
       fetchUsers();
     }
-  }, [initialData, fetchUsers, currentPage, searchQuery, departmentFilter, levelFilter]);
+  }, [
+    initialData,
+    fetchUsers,
+    currentPage,
+    searchQuery,
+    departmentFilter,
+    levelFilter,
+  ]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -136,7 +151,14 @@ export function UserListing({ initialData }: UserListingProps) {
     setEditingUser(user);
     setIsEditModalOpen(true);
   };
-    
+
+  // Calculate active filter count
+  const activeFilterCount = [
+    searchQuery,
+    departmentFilter !== "all" ? departmentFilter : "",
+    levelFilter !== "all" ? levelFilter : "",
+  ].filter(Boolean).length;
+
   // Fetch departments and levels
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
   const classificationQuery = useClassifications({
@@ -160,7 +182,6 @@ export function UserListing({ initialData }: UserListingProps) {
       label: lvl.name,
     })),
   ];
-
 
   return (
     <>
@@ -194,24 +215,55 @@ export function UserListing({ initialData }: UserListingProps) {
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={() => fetchUsers(true)}
+                disabled={loading}
+              >
+                <div className={cn(loading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
+            <Tooltip
+              content={
+                activeFilterCount > 0
+                  ? `Filters (${activeFilterCount} active)`
+                  : "Open Filters"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFilterCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFilterCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
 
             <Button
-              size="sm"
-              variant="outline"
               color="primary"
               startIcon={<UserPlus size={16} />}
               onClick={() => setIsAddModalOpen(true)}
               animate="scale"
-              className="font-bold uppercase tracking-wider text-[11px]"
+              className="font-bold uppercase tracking-wider text-[11px] gap-2"
             >
               Add Candidate
             </Button>
@@ -518,16 +570,21 @@ export function UserListing({ initialData }: UserListingProps) {
             <Button
               variant="outline"
               color="primary"
-              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
               onClick={() => {
                 setSearchQuery("");
                 setDepartmentFilter("all");
                 setLevelFilter("all");
                 setCurrentPage(1);
               }}
+              className="font-bold w-full mt-auto"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>
