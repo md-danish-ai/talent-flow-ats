@@ -22,7 +22,7 @@ export function SimpleTableSkeleton({
               key={cIdx}
               className={columnWidths?.[cIdx] ? columnWidths[cIdx] : ""}
             >
-              <Skeleton className="h-6 w-full rounded opacity-70" />
+              <Skeleton className="h-8 w-full rounded opacity-70" />
             </TableCell>
           ))}
         </TableRow>

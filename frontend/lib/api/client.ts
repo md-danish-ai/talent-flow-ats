@@ -208,13 +208,19 @@ export async function apiClient<T>(
     toast.success(result.message);
   }
 
-  // Handle standard backend wrapper: { status, message, data }
+  // Handle standard backend wrapper: { status, message, data, pagination? }
   if (
     result &&
     typeof result === "object" &&
     "data" in result &&
     "status" in result
   ) {
+    if ("pagination" in result && result.pagination) {
+      return {
+        data: result.data,
+        pagination: result.pagination,
+      } as T;
+    }
     return result.data as T;
   }
 

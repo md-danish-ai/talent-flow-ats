@@ -105,6 +105,7 @@ def api_response(
     message: str,
     data: Optional[Any] = None,
     errors: Optional[Any] = None,
+    pagination: Optional[Any] = None,
 ) -> JSONResponse:
     body = {
         "status": status_code,
@@ -114,5 +115,7 @@ def api_response(
         body["data"] = serialize(data)
     if errors is not None:
         body["errors"] = serialize(errors)
+    if pagination is not None:
+        body["pagination"] = serialize(pagination)
 
     return JSONResponse(status_code=status_code, content=body)

@@ -46,10 +46,13 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
-      
+
       {visibleColumns.includes("websiteUrl") && (
         <TableCell>
-          <Typography variant="body4" className="truncate text-muted-foreground">
+          <Typography
+            variant="body4"
+            className="truncate text-muted-foreground"
+          >
             {(options.websiteUrl as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
@@ -57,7 +60,11 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
 
       {visibleColumns.includes("companyName") && (
         <TableCell>
-          <Typography variant="body4" weight="semibold" className="text-foreground group-hover/row:text-brand-primary transition-colors">
+          <Typography
+            variant="body4"
+            weight="semibold"
+            className="text-foreground group-hover/row:text-brand-primary transition-colors"
+          >
             {(options.companyName as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
@@ -81,7 +88,10 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
 
       {visibleColumns.includes("primaryEmail") && (
         <TableCell>
-          <Typography variant="body4" className="text-brand-primary font-medium">
+          <Typography
+            variant="body4"
+            className="text-brand-primary font-medium"
+          >
             {(options.generalEmail as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
@@ -97,7 +107,10 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
 
       {visibleColumns.includes("linkedInUrl") && (
         <TableCell>
-          <Typography variant="body4" className="text-blue-500 truncate max-w-[150px]">
+          <Typography
+            variant="body4"
+            className="text-blue-500 truncate max-w-[150px]"
+          >
             {(options.linkedInUrl as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>

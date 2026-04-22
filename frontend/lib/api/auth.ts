@@ -122,31 +122,57 @@ export interface UserListResponse {
   is_interview_submitted: boolean;
 }
 
-// GET /auth/get-all-users?role={role}&date={date}&date_from={date_from}&date_to={date_to}
+// GET /auth/get-all-users?role={role}&page={page}&limit={limit}&search={search}&date={date}&date_from={date_from}&date_to={date_to}
 export async function getUsersByRole(
   role: string,
   options?: Pick<ApiRequestOptions, "cookies"> & {
+    page?: number;
+    limit?: number;
+    search?: string;
     date?: string;
     date_from?: string;
     date_to?: string;
   },
-): Promise<UserListResponse[]> {
+): Promise<{
+  data: UserListResponse[];
+  pagination: {
+    total_records: number;
+    total_pages: number;
+    current_page: number;
+    per_page: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+}> {
   const queryParams = new URLSearchParams({ role });
+  if (options?.page) queryParams.append("page", options.page.toString());
+  if (options?.limit) queryParams.append("limit", options.limit.toString());
+  if (options?.search) queryParams.append("search", options.search);
   if (options?.date) queryParams.append("date", options.date);
   if (options?.date_from) queryParams.append("date_from", options.date_from);
   if (options?.date_to) queryParams.append("date_to", options.date_to);
 
   const apiOptions = options ? { ...options } : undefined;
   if (apiOptions) {
+    delete (apiOptions as { page?: number }).page;
+    delete (apiOptions as { limit?: number }).limit;
+    delete (apiOptions as { search?: string }).search;
     delete (apiOptions as { date?: string }).date;
     delete (apiOptions as { date_from?: string }).date_from;
     delete (apiOptions as { date_to?: string }).date_to;
   }
 
-  return api.get<UserListResponse[]>(
-    `${ENDPOINTS.AUTH.GET_ALL_USERS}?${queryParams.toString()}`,
-    apiOptions,
-  );
+  return api.get<{
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  }>(`${ENDPOINTS.AUTH.GET_ALL_USERS}?${queryParams.toString()}`, apiOptions);
 }
 
 // PUT /auth/toggle-status/{user_id} - Toggle user's active status

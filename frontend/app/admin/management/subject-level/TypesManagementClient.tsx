@@ -24,10 +24,12 @@ import { Switch } from "@components/ui-elements/Switch";
 import {
   classificationsApi,
   type Classification,
+  type PaginatedClassificationsResponse,
 } from "lib/api/classifications";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { classificationSchema } from "@lib/validations/management";
+import { Skeleton } from "@components/ui-elements/Skeleton";
 
 interface BaseType {
   id: number;
@@ -39,8 +41,8 @@ interface BaseType {
 }
 
 interface TypesManagementClientProps {
-  initialSubjectData: BaseType[];
-  initialLevelData: BaseType[];
+  initialSubjectData?: PaginatedClassificationsResponse;
+  initialLevelData?: PaginatedClassificationsResponse;
 }
 
 export function TypesManagementClient({
@@ -48,8 +50,30 @@ export function TypesManagementClient({
   initialLevelData,
 }: TypesManagementClientProps) {
   const [activeTab, setActiveTab] = useState("subjects");
-  const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
-  const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
+
+  // Data State
+  const [subjects, setSubjects] = useState<BaseType[]>(
+    initialSubjectData?.data.map((item) => ({
+      id: item.id,
+      name: item.name,
+      code: item.code || "",
+      description: (item.metadata?.description as string) || "",
+      is_active: item.is_active,
+      metadata: item.metadata,
+    })) || [],
+  );
+
+  const [levels, setLevels] = useState<BaseType[]>(
+    initialLevelData?.data.map((item) => ({
+      id: item.id,
+      name: item.name,
+      code: item.code || "",
+      description: (item.metadata?.description as string) || "",
+      is_active: item.is_active,
+      metadata: item.metadata,
+    })) || [],
+  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const isFirstRender = React.useRef(true);
@@ -57,6 +81,8 @@ export function TypesManagementClient({
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<BaseType | null>(null);
@@ -80,12 +106,14 @@ export function TypesManagementClient({
     setIsFetching(true);
     try {
       const params: {
-        type?: string;
+        type: string;
+        page: number;
+        limit: number;
         is_active?: boolean;
-        limit?: number;
       } = {
         type: classificationType,
-        limit: 100,
+        page: currentPage,
+        limit: pageSize,
       };
 
       if (statusFilter === "active") params.is_active = true;
@@ -102,18 +130,29 @@ export function TypesManagementClient({
       }));
 
       setTargetData(formattedData);
+      setTotalItems(response.pagination.total_records);
     } catch (error) {
       console.error("Failed to fetch classifications:", error);
     } finally {
       setIsFetching(false);
     }
-  }, [classificationType, statusFilter, setTargetData]);
+  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize]);
 
-  // Refetch when tab or status filter changes
+  // Initial Sync from initialData
+  useEffect(() => {
+    if (activeTab === "subjects" && initialSubjectData) {
+      setTotalItems(initialSubjectData.pagination.total_records);
+    } else if (activeTab === "levels" && initialLevelData) {
+      setTotalItems(initialLevelData.pagination.total_records);
+    }
+  }, [activeTab, initialSubjectData, initialLevelData]);
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return;
+      // If we have initial data for the current tab, don't fetch
+      if (activeTab === "subjects" && subjects.length > 0) return;
+      if (activeTab === "levels" && levels.length > 0) return;
     }
     fetchData();
   }, [fetchData]);
@@ -122,15 +161,6 @@ export function TypesManagementClient({
     { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
     { label: "Level", value: "levels", icon: <Gauge size={18} /> },
   ];
-
-  const totalItems = currentData.length;
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-  // Sliced data based on pagination
-  const paginatedData = currentData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
 
   const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
 
@@ -164,57 +194,30 @@ export function TypesManagementClient({
     e.preventDefault();
 
     const result = classificationSchema.safeParse(formData);
-    if (!result.success) {
-      // In this component, we can use a Toast for validation errors since there's no inline error state currently
-      const errorMessage = result.error.errors[0].message;
-      return;
-    }
+    if (!result.success) return;
 
     setIsLoading(true);
     try {
       const metadataToSubmit: Record<string, unknown> = {
         description: formData.description,
       };
-      // For Subjects, allow saving the is_exclusive flag inside the record metadata
       if (classificationType === "subject" && formData.is_exclusive) {
         metadataToSubmit.is_exclusive = true;
       }
 
       if (editingType) {
-        const response = await classificationsApi.updateClassification(
-          editingType.id,
-          {
-            name: formData.name,
-            metadata: metadataToSubmit,
-          },
-        );
-        const updatedItem = {
-          id: response.id,
-          name: response.name,
-          code: response.code || "",
-          description: (response.metadata?.description as string) || "",
-          is_active: response.is_active,
-          metadata: response.metadata,
-        };
-        setTargetData(
-          currentData.map((t) => (t.id === editingType.id ? updatedItem : t)),
-        );
+        await classificationsApi.updateClassification(editingType.id, {
+          name: formData.name,
+          metadata: metadataToSubmit,
+        });
       } else {
-        const response = await classificationsApi.createClassification({
+        await classificationsApi.createClassification({
           type: classificationType,
           name: formData.name,
           metadata: metadataToSubmit,
         });
-        const newItem = {
-          id: response.id,
-          name: response.name,
-          code: response.code || "",
-          description: (response.metadata?.description as string) || "",
-          is_active: response.is_active,
-          metadata: response.metadata,
-        };
-        setTargetData([...currentData, newItem]);
       }
+      fetchData();
       handleCloseModal();
     } catch {
       // Error toast is handled globally
@@ -233,7 +236,7 @@ export function TypesManagementClient({
       setIsLoading(true);
       try {
         await classificationsApi.deleteClassification(typeToDelete);
-        setTargetData(currentData.filter((t) => t.id !== typeToDelete));
+        fetchData();
         setIsDeleteModalOpen(false);
         setTypeToDelete(null);
       } catch {
@@ -247,16 +250,10 @@ export function TypesManagementClient({
   const handleToggleStatus = async (item: BaseType) => {
     setTogglingId(item.id);
     try {
-      const response = await classificationsApi.updateClassification(item.id, {
+      await classificationsApi.updateClassification(item.id, {
         is_active: !item.is_active,
       });
-      const updatedItem = {
-        ...item,
-        is_active: response.is_active,
-      };
-      setTargetData(
-        currentData.map((t) => (t.id === item.id ? updatedItem : t)),
-      );
+      fetchData();
     } catch {
       // Error toast is handled globally
     } finally {
@@ -277,7 +274,10 @@ export function TypesManagementClient({
           <Button
             variant={statusFilter === "all" ? "primary" : "ghost"}
             size="sm"
-            onClick={() => setStatusFilter("all")}
+            onClick={() => {
+              setStatusFilter("all");
+              setCurrentPage(1);
+            }}
             className="h-8 px-3 text-xs"
           >
             All
@@ -285,7 +285,10 @@ export function TypesManagementClient({
           <Button
             variant={statusFilter === "active" ? "primary" : "ghost"}
             size="sm"
-            onClick={() => setStatusFilter("active")}
+            onClick={() => {
+              setStatusFilter("active");
+              setCurrentPage(1);
+            }}
             className="h-8 px-3 text-xs"
           >
             Active
@@ -293,7 +296,10 @@ export function TypesManagementClient({
           <Button
             variant={statusFilter === "inactive" ? "primary" : "ghost"}
             size="sm"
-            onClick={() => setStatusFilter("inactive")}
+            onClick={() => {
+              setStatusFilter("inactive");
+              setCurrentPage(1);
+            }}
             className="h-8 px-3 text-xs"
           >
             Inactive
@@ -319,7 +325,7 @@ export function TypesManagementClient({
         action={
           <div className="flex items-center gap-3">
             {isFetching ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+              <Skeleton className="h-8 w-24 rounded-full" />
             ) : (
               <Badge
                 variant="outline"
@@ -354,30 +360,51 @@ export function TypesManagementClient({
       >
         <div className="overflow-x-auto w-full">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
-                <TableHead>
+                <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                  Sr. No.
+                </TableHead>
+                <TableHead className="font-bold text-slate-500 text-xs uppercase">
                   {activeTab === "subjects" ? "Subject Name" : "Level Name"}
                 </TableHead>
                 {activeTab === "subjects" && (
-                  <TableHead>Subject Code</TableHead>
+                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    Code
+                  </TableHead>
                 )}
-                <TableHead>Description</TableHead>
+                <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                  Description
+                </TableHead>
                 {activeTab === "subjects" && (
-                  <TableHead className="text-center">Exclusive</TableHead>
+                  <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    Exclusive
+                  </TableHead>
                 )}
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center w-[100px]">Action</TableHead>
+                <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                  Status
+                </TableHead>
+                <TableHead className="text-center w-[120px] font-bold text-slate-500 text-xs uppercase">
+                  Action
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isFetching ? (
                 <SimpleTableSkeleton
                   columnCount={activeTab === "subjects" ? 7 : 5}
+                  columnWidths={[
+                    "w-[80px] text-center py-5",
+                    "py-5",
+                    "py-5",
+                    "py-5",
+                    "text-center py-5",
+                    "text-center py-5",
+                    "text-center w-[120px] py-5",
+                  ]}
                   rowCount={pageSize}
                 />
-              ) : paginatedData.length === 0 ? (
+              ) : currentData.length === 0 ? (
                 <EmptyState
                   colSpan={activeTab === "subjects" ? 7 : 5}
                   variant="database"
@@ -385,12 +412,12 @@ export function TypesManagementClient({
                   description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
                 />
               ) : (
-                paginatedData.map((item, idx) => (
+                currentData.map((item, idx) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium text-center">
                       {(currentPage - 1) * pageSize + idx + 1}
                     </TableCell>
-                    <TableCell>{item.name}</TableCell>
+                    <TableCell className="font-semibold">{item.name}</TableCell>
                     {activeTab === "subjects" && (
                       <TableCell>
                         {item.code ? (
@@ -409,7 +436,9 @@ export function TypesManagementClient({
                         )}
                       </TableCell>
                     )}
-                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {item.description || "-"}
+                    </TableCell>
                     {activeTab === "subjects" && (
                       <TableCell className="text-center">
                         {item.metadata?.is_exclusive ? (
@@ -417,12 +446,18 @@ export function TypesManagementClient({
                             variant="outline"
                             color="success"
                             shape="square"
+                            className="text-[9px]"
                           >
-                            Yes
+                            YES
                           </Badge>
                         ) : (
-                          <Badge variant="outline" color="error" shape="square">
-                            No
+                          <Badge
+                            variant="outline"
+                            color="error"
+                            shape="square"
+                            className="text-[9px]"
+                          >
+                            NO
                           </Badge>
                         )}
                       </TableCell>
@@ -439,21 +474,19 @@ export function TypesManagementClient({
                           variant="outline"
                           shape="square"
                           color={item.is_active ? "success" : "error"}
+                          className="text-[9px] font-bold"
                         >
-                          {item.is_active ? "Activate" : "Deactivate"}
+                          {item.is_active ? "ACTIVE" : "INACTIVE"}
                         </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-2">
                         <TableIconButton
                           iconColor="blue"
                           btnSize="sm"
                           animate="scale"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleOpenModal(item);
-                          }}
+                          onClick={() => handleOpenModal(item)}
                           title={`Edit ${currentEntityName}`}
                         >
                           <Edit size={16} />
@@ -462,10 +495,7 @@ export function TypesManagementClient({
                           iconColor="red"
                           btnSize="sm"
                           animate="scale"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDeleteClick(item.id);
-                          }}
+                          onClick={() => handleDeleteClick(item.id)}
                           title={`Delete ${currentEntityName}`}
                         >
                           <Trash2 size={16} />
@@ -478,10 +508,10 @@ export function TypesManagementClient({
             </TableBody>
           </Table>
         </div>
-        {totalItems > 0 && (
+        {!isFetching && totalItems > 0 && (
           <Pagination
             currentPage={currentPage}
-            totalPages={totalPages}
+            totalPages={Math.ceil(totalItems / pageSize)}
             onPageChange={setCurrentPage}
             totalItems={totalItems}
             pageSize={pageSize}
@@ -510,6 +540,7 @@ export function TypesManagementClient({
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         description={`This ${currentEntityName} will be permanently removed from the database.`}
+        isLoading={isLoading}
       />
     </PageContainer>
   );

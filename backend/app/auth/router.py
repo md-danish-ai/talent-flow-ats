@@ -20,12 +20,23 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.get("/get-all-system-users", dependencies=[Depends(require_roles(["admin"]))])
 async def get_users(
     role: str = Query(..., description="Role to filter users by (e.g., admin, user)"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+    search: str = Query(None),
     date: str = Query(None, description="Single date filter (YYYY-MM-DD)"),
     date_from: str = Query(None, description="Range start date (YYYY-MM-DD)"),
     date_to: str = Query(None, description="Range end date (YYYY-MM-DD)"),
 ):
-    data = get_users_by_role(role, date=date, date_from=date_from, date_to=date_to)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    data = get_users_by_role(
+        role,
+        page=page,
+        limit=limit,
+        search=search,
+        date=date,
+        date_from=date_from,
+        date_to=date_to
+    )
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data["data"], pagination=data.get("pagination"))
 
 
 

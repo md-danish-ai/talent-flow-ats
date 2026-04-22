@@ -254,11 +254,10 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, date: str = None, date_from: str = None, date_to: str = None):
+def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None):
     db_session = SessionLocal()
     try:
         from sqlalchemy import func, or_
-
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()
 
@@ -272,6 +271,19 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
         from sqlalchemy.orm import aliased
 
         UserDept = aliased(Department)
+
+        # Base filter
+        base_query = db_session.query(User).filter(User.role == role)
+
+        # --- SEARCH LOGIC ---
+        if search:
+            base_query = base_query.filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.mobile.ilike(f"%{search}%")
+                )
+            )
 
         # Get latest paper assignment for each user
         assignment_subq = (
@@ -306,7 +318,7 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             .subquery()
         )
 
-        results = (
+        results_query = (
             db_session.query(
                 User,
                 assignment_subq.c.paper_id.label("asgn_paper_id"),
@@ -339,25 +351,39 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             .filter(User.role == role)
         )
 
-        # --- FILTERING LOGIC ---
+        # Re-apply search to results query if needed (or use base_query logic)
+        if search:
+            results_query = results_query.filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.mobile.ilike(f"%{search}%")
+                )
+            )
+
+        # --- OTHER FILTERS ---
         if range_from and range_to:
-            results = results.filter(
+            results_query = results_query.filter(
                 or_(
                     func.date(User.created_at).between(range_from, range_to),
                     UserDetail.reinterview_date.between(range_from, range_to),
                 )
             )
         elif date:
-            results = results.filter(
+            results_query = results_query.filter(
                 or_(
                     func.date(User.created_at) == target_date,
                     UserDetail.reinterview_date == target_date,
                 )
             )
 
-        results = results.order_by(User.id.desc()).all()
+        # --- TOTAL COUNT ---
+        total_records = results_query.count()
 
-        return [
+        # --- PAGINATION ---
+        results = results_query.order_by(User.id.desc()).offset((page - 1) * limit).limit(limit).all()
+
+        data = [
             {
                 "id": row.User.id,
                 "username": row.User.username,
@@ -367,7 +393,7 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                 "test_level_id": row.User.test_level_id,
                 "test_level_name": row.User.test_level.name if row.User.test_level else None,
                 "department_id": row.User.department_id,
-                "department_name": row.User.department.name if row.User.department else None,
+                "department_name": row.user_dept_name,
                 "is_active": row.User.is_active,
                 "is_details_submitted": row.is_submitted if row.is_submitted is not None else False,
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
@@ -389,10 +415,18 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             for row in results
         ]
 
-    except Exception:
+        from app.utils.pagination import create_paginated_response, PaginationParams
+        return create_paginated_response(
+            data=data,
+            total_records=total_records,
+            params=PaginationParams(page=page, limit=limit)
+        )
+
+    except Exception as e:
+        print(f"Error in get_users_by_role: {str(e)}")
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
-            detail="An internal server error occurred. Please try again later.",
+            detail=f"Internal server error: {str(e)}",
         )
     finally:
         db_session.close()

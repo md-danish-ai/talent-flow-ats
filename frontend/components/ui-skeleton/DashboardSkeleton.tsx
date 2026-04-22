@@ -49,7 +49,10 @@ export const InsightCardSkeleton = () => (
 export const ActivitySkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="p-1 space-y-1">
     {[...Array(count)].map((_, i) => (
-      <div key={i} className="flex items-start gap-4 p-4 rounded-2xl border border-transparent">
+      <div
+        key={i}
+        className="flex items-start gap-4 p-4 rounded-2xl border border-transparent"
+      >
         <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
         <div className="flex-1 space-y-3">
           <div className="flex justify-between items-center">
