@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
@@ -18,7 +18,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { AddProjectLeadModal } from "./AddProjectLeadModal";
 import {
   getUsersByRole,
-  UserListResponse,
+  type UserListResponse,
   toggleUserStatus,
 } from "@lib/api/auth";
 import { Badge } from "@components/ui-elements/Badge";
@@ -28,6 +28,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { Skeleton } from "@components/ui-elements/Skeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { SearchInput } from "@components/ui-elements/SearchInput";
+import { useListing } from "@hooks/useListing";
 
 interface ProjectLeadListingProps {
   initialData?: {
@@ -45,62 +46,35 @@ interface ProjectLeadListingProps {
 
 export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [users, setUsers] = useState<UserListResponse[]>(
-    initialData?.data || [],
-  );
-  const [loading, setLoading] = useState(true);
-  const [totalItems, setTotalItems] = useState(
-    initialData?.pagination?.total_records || 0,
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState("");
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
-
-  const fetchUsers = useCallback(async (isRefresh = false) => {
-    try {
-      setLoading(true);
-      const response = await getUsersByRole("project_lead", {
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery,
-      });
-      setUsers(response.data || []);
-      setTotalItems(response.pagination?.total_records || 0);
-      if (isRefresh) {
-        toast.success("Project Lead list refreshed successfully", {
-          title: "Data Updated",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch project leads:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, pageSize, searchQuery]);
-
-  useEffect(() => {
-    if (
-      initialData &&
-      initialData.data &&
-      initialData.data.length > 0 &&
-      currentPage === 1 &&
-      !searchQuery
-    ) {
-      setUsers(initialData.data);
-      setTotalItems(initialData.pagination?.total_records || 0);
-      setLoading(false);
-    } else {
-      fetchUsers();
-    }
-  }, [initialData, fetchUsers, currentPage, searchQuery]);
+  const {
+    data: users,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    refresh,
+    fetchItems,
+  } = useListing<UserListResponse, { search: string }>({
+    fetchFn: (params) => getUsersByRole("project_lead", params),
+    initialFilters: { search: "" },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    toastMessage: "Project Lead list refreshed successfully",
+  });
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      fetchUsers();
+      void fetchItems();
+      toast.success("Status updated successfully");
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -112,12 +86,12 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
     <>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <Users size={20} />
             </div>
             Project Leads
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-col items-stretch w-full"
@@ -141,7 +115,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={() => fetchUsers(true)}
+                onClick={refresh}
                 disabled={loading}
               >
                 <div className={cn(loading && "animate-spin")}>
@@ -153,11 +127,8 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder="Search project leads..."
-              value={searchQuery}
-              onSearch={(val) => {
-                setSearchQuery(val);
-                setCurrentPage(1);
-              }}
+              value={filters.search}
+              onSearch={(val) => handleFilterChange({ search: val })}
               className="w-64"
             />
             <Button
@@ -169,7 +140,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Project Lead
             </Button>
@@ -200,17 +171,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <SimpleTableSkeleton
-                    columnCount={5}
-                    columnWidths={[
-                      "w-[80px] text-center py-5",
-                      "py-5",
-                      "py-5",
-                      "py-5",
-                      "text-center py-5",
-                    ]}
-                    rowCount={pageSize}
-                  />
+                  <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
                 ) : !Array.isArray(users) || users.length === 0 ? (
                   <EmptyState
                     colSpan={5}
@@ -242,8 +203,9 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                             variant="outline"
                             shape="square"
                             color={row.is_active ? "success" : "error"}
+                            className="text-[9px] font-bold"
                           >
-                            {row.is_active ? "Activate" : "Deactivate"}
+                            {row.is_active ? "ACTIVE" : "INACTIVE"}
                           </Badge>
                         </div>
                       </TableCell>
@@ -257,14 +219,11 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
           {!loading && totalItems > 0 && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize) || 1}
-              onPageChange={setCurrentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
+              onPageSizeChange={handlePageSizeChange}
               className="mt-auto shrink-0 border-t"
             />
           )}
@@ -275,7 +234,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          fetchUsers();
+          void fetchItems();
         }}
       />
     </>

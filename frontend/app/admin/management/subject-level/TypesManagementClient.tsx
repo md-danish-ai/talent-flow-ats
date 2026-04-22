@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -16,9 +16,8 @@ import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Plus, Edit, Trash2, Layers, Gauge, RefreshCcw } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
-import { Tabs, TabItem } from "@components/ui-elements/Tabs";
+import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
@@ -34,6 +33,7 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { classificationSchema } from "@lib/validations/management";
 import { Skeleton } from "@components/ui-elements/Skeleton";
+import { useListing } from "@hooks/useListing";
 
 interface BaseType {
   id: number;
@@ -44,6 +44,12 @@ interface BaseType {
   metadata?: Record<string, unknown>;
 }
 
+interface TypesListingFilters {
+  type: string;
+  search: string;
+  status: "all" | "active" | "inactive";
+}
+
 interface TypesManagementClientProps {
   initialSubjectData?: PaginatedClassificationsResponse;
   initialLevelData?: PaginatedClassificationsResponse;
@@ -51,43 +57,59 @@ interface TypesManagementClientProps {
 
 export function TypesManagementClient({
   initialSubjectData,
-  initialLevelData,
 }: TypesManagementClientProps) {
   const [activeTab, setActiveTab] = useState("subjects");
 
-  // Data State
-  const [subjects, setSubjects] = useState<BaseType[]>(
-    initialSubjectData?.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      code: item.code || "",
-      description: (item.metadata?.description as string) || "",
-      is_active: item.is_active,
-      metadata: item.metadata,
-    })) || [],
-  );
+  const {
+    data: items,
+    isLoading: isFetching,
+    totalItems,
+    currentPage,
+    pageSize,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    refresh,
+    fetchItems,
+  } = useListing<Classification, TypesListingFilters>({
+    fetchFn: classificationsApi.getClassifications,
+    initialFilters: {
+      type: "subject",
+      search: "",
+      status: "all",
+    },
+    // We only use initialSubjectData if we are on the subjects tab
+    initialData: initialSubjectData?.data,
+    initialTotalItems: initialSubjectData?.pagination.total_records,
+    filterMapping: (f) => ({
+      type: f.type === "subjects" ? "subject" : "exam_level",
+      search: f.search || undefined,
+      is_active:
+        f.status === "active"
+          ? true
+          : f.status === "inactive"
+            ? false
+            : undefined,
+    }),
+    toastMessage: `${activeTab === "subjects" ? "Subject" : "Level"} list refreshed successfully`,
+  });
 
-  const [levels, setLevels] = useState<BaseType[]>(
-    initialLevelData?.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      code: item.code || "",
-      description: (item.metadata?.description as string) || "",
-      is_active: item.is_active,
-      metadata: item.metadata,
-    })) || [],
+  // Transform data for UI
+  const currentData = useMemo(
+    () =>
+      items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        code: item.code || "",
+        description: (item.metadata?.description as string) || "",
+        is_active: item.is_active,
+        metadata: item.metadata,
+      })),
+    [items],
   );
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const isFirstRender = React.useRef(true);
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<BaseType | null>(null);
@@ -98,87 +120,9 @@ export function TypesManagementClient({
     description: "",
     is_exclusive: false,
   });
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
 
   const classificationType =
     activeTab === "subjects" ? "subject" : "exam_level";
-  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
-  const currentData = activeTab === "subjects" ? subjects : levels;
-
-  const fetchData = useCallback(async (isRefresh = false) => {
-    setIsFetching(true);
-    try {
-      const params: {
-        type: string;
-        page: number;
-        limit: number;
-        is_active?: boolean;
-        search?: string;
-      } = {
-        type: classificationType,
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery,
-      };
-
-      if (statusFilter === "active") params.is_active = true;
-      if (statusFilter === "inactive") params.is_active = false;
-
-      const response = await classificationsApi.getClassifications(params);
-      const formattedData = response.data.map((item: Classification) => ({
-        id: item.id,
-        name: item.name,
-        code: item.code || "",
-        description: (item.metadata?.description as string) || "",
-        is_active: item.is_active,
-        metadata: item.metadata,
-      }));
-
-      setTargetData(formattedData);
-      setTotalItems(response.pagination.total_records);
-      if (isRefresh) {
-        toast.success(
-          `${activeTab === "subjects" ? "Subject" : "Level"} list refreshed successfully`,
-          {
-            title: "Data Updated",
-          },
-        );
-      }
-    } catch (error) {
-      console.error("Failed to fetch classifications:", error);
-    } finally {
-      setIsFetching(false);
-    }
-  }, [
-    classificationType,
-    statusFilter,
-    setTargetData,
-    currentPage,
-    pageSize,
-    searchQuery,
-    activeTab,
-  ]);
-
-  // Initial Sync from initialData
-  useEffect(() => {
-    if (activeTab === "subjects" && initialSubjectData) {
-      setTotalItems(initialSubjectData.pagination.total_records);
-    } else if (activeTab === "levels" && initialLevelData) {
-      setTotalItems(initialLevelData.pagination.total_records);
-    }
-  }, [activeTab, initialSubjectData, initialLevelData]);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      // If we have initial data for the current tab, don't fetch
-      if (activeTab === "subjects" && subjects.length > 0) return;
-      if (activeTab === "levels" && levels.length > 0) return;
-    }
-    fetchData();
-  }, [fetchData]);
 
   const tabs: TabItem[] = [
     { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
@@ -189,7 +133,7 @@ export function TypesManagementClient({
 
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
-    setCurrentPage(1); // Reset page on tab change
+    handleFilterChange({ type: newTab });
   };
 
   const handleOpenModal = (item?: BaseType) => {
@@ -215,7 +159,6 @@ export function TypesManagementClient({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const result = classificationSchema.safeParse(formData);
     if (!result.success) return;
 
@@ -240,7 +183,7 @@ export function TypesManagementClient({
           metadata: metadataToSubmit,
         });
       }
-      fetchData();
+      void fetchItems();
       handleCloseModal();
     } catch {
       // Error toast is handled globally
@@ -259,7 +202,7 @@ export function TypesManagementClient({
       setIsLoading(true);
       try {
         await classificationsApi.deleteClassification(typeToDelete);
-        fetchData();
+        void fetchItems();
         setIsDeleteModalOpen(false);
         setTypeToDelete(null);
       } catch {
@@ -276,7 +219,7 @@ export function TypesManagementClient({
       await classificationsApi.updateClassification(item.id, {
         is_active: !item.is_active,
       });
-      fetchData();
+      void fetchItems();
     } catch {
       // Error toast is handled globally
     } finally {
@@ -294,39 +237,17 @@ export function TypesManagementClient({
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
         <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-border shrink-0">
-          <Button
-            variant={statusFilter === "all" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("all");
-              setCurrentPage(1);
-            }}
-            className="h-8 px-3 text-xs"
-          >
-            All
-          </Button>
-          <Button
-            variant={statusFilter === "active" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("active");
-              setCurrentPage(1);
-            }}
-            className="h-8 px-3 text-xs"
-          >
-            Active
-          </Button>
-          <Button
-            variant={statusFilter === "inactive" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("inactive");
-              setCurrentPage(1);
-            }}
-            className="h-8 px-3 text-xs"
-          >
-            Inactive
-          </Button>
+          {(["all", "active", "inactive"] as const).map((status) => (
+            <Button
+              key={status}
+              variant={filters.status === status ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => handleFilterChange({ status: status })}
+              className="h-8 px-3 text-xs border-none"
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -370,7 +291,7 @@ export function TypesManagementClient({
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={() => fetchData(true)}
+                onClick={refresh}
                 disabled={isFetching}
               >
                 <div className={cn(isFetching && "animate-spin")}>
@@ -382,11 +303,8 @@ export function TypesManagementClient({
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder={`Search ${activeTab}...`}
-              value={searchQuery}
-              onSearch={(val) => {
-                setSearchQuery(val);
-                setCurrentPage(1);
-              }}
+              value={filters.search}
+              onSearch={(val) => handleFilterChange({ search: val })}
               className="w-64"
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
@@ -400,7 +318,7 @@ export function TypesManagementClient({
               onClick={() => handleOpenModal()}
               disabled={isLoading || isFetching}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add {activeTab === "subjects" ? "Subject" : "Level"}
             </Button>
@@ -442,15 +360,6 @@ export function TypesManagementClient({
               {isFetching ? (
                 <SimpleTableSkeleton
                   columnCount={activeTab === "subjects" ? 7 : 5}
-                  columnWidths={[
-                    "w-[80px] text-center py-5",
-                    "py-5",
-                    "py-5",
-                    "py-5",
-                    "text-center py-5",
-                    "text-center py-5",
-                    "text-center w-[120px] py-5",
-                  ]}
                   rowCount={pageSize}
                 />
               ) : currentData.length === 0 ? (
@@ -458,7 +367,7 @@ export function TypesManagementClient({
                   colSpan={activeTab === "subjects" ? 7 : 5}
                   variant="database"
                   title={`No ${activeTab} found`}
-                  description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
+                  description={`You haven't added any ${activeTab} yet.`}
                 />
               ) : (
                 currentData.map((item, idx) => (
@@ -561,13 +470,10 @@ export function TypesManagementClient({
           <Pagination
             currentPage={currentPage}
             totalPages={Math.ceil(totalItems / pageSize)}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
             totalItems={totalItems}
             pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
+            onPageSizeChange={handlePageSizeChange}
             className="mt-auto shrink-0 border-t border-border"
           />
         )}

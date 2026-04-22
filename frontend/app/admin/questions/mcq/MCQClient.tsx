@@ -24,17 +24,28 @@ import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { questionsApi } from "@lib/api/questions";
+import { questionsApi, type Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import {
+  classificationsApi,
+  type Classification,
+} from "@lib/api/classifications";
 import { ApiError } from "@lib/api/client";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
-import { Question } from "@lib/api/questions";
 import { MCQFilters } from "./components/MCQFilters";
 import { MCQRow } from "./components/MCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { useListing } from "@hooks/useListing";
+
+interface MCQListingFilters {
+  search: string;
+  subject: string;
+  examLevel: string;
+  marks: string;
+  status: string;
+}
 
 interface MCQClientProps {
   initialData?: Question[];
@@ -48,23 +59,7 @@ export function MCQClient({
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [examLevelFilter, setExamLevelFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<Question[]>(initialData);
-  const [totalItems, setTotalItems] = useState(initialTotalItems);
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -86,6 +81,45 @@ export function MCQClient({
     },
     [router],
   );
+
+  // Hook for standardized listing
+  const {
+    data: questions,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    fetchItems,
+    refresh,
+  } = useListing<Question, MCQListingFilters>({
+    fetchFn: questionsApi.getQuestions,
+    initialFilters: {
+      search: "",
+      subject: "all",
+      examLevel: "all",
+      marks: "all",
+      status: "all",
+    },
+    initialData,
+    initialTotalItems,
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? f.subject : undefined,
+      exam_level: f.examLevel !== "all" ? f.examLevel : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
+    toastMessage: "MCQ list refreshed successfully",
+    onError: handleAuthError,
+  });
 
   // Column Visibility State
   const availableColumns = [
@@ -111,74 +145,11 @@ export function MCQClient({
 
   const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
-
-
-  const fetchData = useCallback(async (isRefresh = false) => {
-    setIsLoading(true);
-    try {
-      const response = await questionsApi.getQuestions({
-        page: currentPage,
-        limit: pageSize,
-        question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
-        search: searchQuery,
-        subject:
-          subjectFilter && subjectFilter !== "all"
-            ? (subjectFilter as string)
-            : undefined,
-        exam_level:
-          examLevelFilter && examLevelFilter !== "all"
-            ? (examLevelFilter as string)
-            : undefined,
-        marks:
-          marksFilter && marksFilter !== "all"
-            ? Number(marksFilter)
-            : undefined,
-        is_active:
-          statusFilter && statusFilter !== "all"
-            ? statusFilter === "true"
-            : undefined,
-      });
-      setData(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-      if (isRefresh) {
-        toast.success("MCQ list refreshed successfully", {
-          title: "Data Updated",
-        });
-      }
-    } catch (error) {
-      if (handleAuthError(error)) {
-        return;
-      }
-      console.error("Error fetching questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    currentPage,
-    pageSize,
-    searchQuery,
-    subjectFilter,
-    examLevelFilter,
-    marksFilter,
-    statusFilter,
-    handleAuthError,
-  ]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   useEffect(() => {
     const fetchClassifications = async () => {
@@ -203,53 +174,41 @@ export function MCQClient({
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
-        if (handleAuthError(error)) {
-          return;
+        if (!handleAuthError(error)) {
+          console.error("Failed to fetch classifications:", error);
         }
-        console.error("Failed to fetch classifications:", error);
       }
     };
-    fetchClassifications();
+    void fetchClassifications();
   }, [handleAuthError]);
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      await fetchData();
+      void fetchItems();
       toast.success(
         `Question ${!currentStatus ? "activated" : "deactivated"} successfully`,
       );
     } catch (error) {
-      if (handleAuthError(error)) {
-        return;
+      if (!handleAuthError(error)) {
+        toast.error("Failed to update question status");
       }
-      toast.error("Failed to update question status");
-      console.error("Failed to toggle question status:", error);
     } finally {
       setTogglingId(null);
     }
   };
 
-  // Filter count logic
-  const activeFilterCount = [
-    searchQuery,
-    subjectFilter !== "all" ? subjectFilter : "",
-    examLevelFilter !== "all" ? examLevelFilter : "",
-    marksFilter !== "all" ? marksFilter : "",
-    statusFilter !== "all" ? statusFilter : "",
-  ].filter(Boolean).length;
-
   return (
     <PageContainer animate>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
             Multiple Choice Questions
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
@@ -279,7 +238,7 @@ export function MCQClient({
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={() => fetchData(true)}
+                onClick={refresh}
                 disabled={isLoading}
               >
                 <div className={cn(isLoading && "animate-spin")}>
@@ -300,8 +259,8 @@ export function MCQClient({
             </Button>
             <Tooltip
               content={
-                activeFilterCount > 0
-                  ? `Filters (${activeFilterCount} active)`
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
                   : "Filter"
               }
               side="bottom"
@@ -313,11 +272,11 @@ export function MCQClient({
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                {activeFilterCount > 0 ? (
+                {activeFiltersCount > 0 ? (
                   <span className="relative">
                     <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFilterCount}
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
                     </span>
                   </span>
                 ) : (
@@ -334,7 +293,7 @@ export function MCQClient({
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Question
             </Button>
@@ -344,7 +303,7 @@ export function MCQClient({
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
           <div className="flex-1 overflow-x-auto w-full min-h-0">
@@ -395,15 +354,15 @@ export function MCQClient({
                     visibleColumns={visibleColumns}
                     rowCount={pageSize}
                   />
-                ) : data.length === 0 ? (
+                ) : questions.length === 0 ? (
                   <EmptyState
                     colSpan={visibleColumns.length + 1}
                     variant="search"
                     title="No questions found"
-                    description="We couldn't find any questions matching your criteria. Try adjusting your filters or adding a new question."
+                    description="We couldn't find any MCQs matching your criteria."
                   />
                 ) : (
-                  data.map((row, index) => (
+                  questions.map((row, index) => (
                     <MCQRow
                       key={row.id}
                       row={row}
@@ -421,18 +380,15 @@ export function MCQClient({
             </Table>
           </div>
 
-          {!isLoading && data.length > 0 && (
+          {!isLoading && questions.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
-              className="mt-auto shrink-0"
+              onPageSizeChange={handlePageSizeChange}
+              className="mt-auto shrink-0 border-t"
             />
           )}
         </div>
@@ -440,38 +396,27 @@ export function MCQClient({
         <MCQFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          subjectFilter={subjectFilter}
-          onSubjectFilterChange={(val) => {
-            setSubjectFilter(val);
-            setCurrentPage(1);
-          }}
+          searchQuery={filters.search}
+          onSearchChange={(val) => handleFilterChange({ search: val })}
+          subjectFilter={filters.subject}
+          onSubjectFilterChange={(val) =>
+            handleFilterChange({ subject: val as string })
+          }
           subjects={subjects}
-          examLevelFilter={examLevelFilter}
-          onExamLevelFilterChange={(val) => {
-            setExamLevelFilter(val);
-            setCurrentPage(1);
-          }}
+          examLevelFilter={filters.examLevel}
+          onExamLevelFilterChange={(val) =>
+            handleFilterChange({ examLevel: val as string })
+          }
           examLevels={examLevels}
-          marksFilter={marksFilter}
-          onMarksFilterChange={(val) => {
-            setMarksFilter(val);
-            setCurrentPage(1);
-          }}
-          statusFilter={statusFilter}
-          onStatusFilterChange={(val) => {
-            setStatusFilter(val);
-            setCurrentPage(1);
-          }}
-          onReset={() => {
-            setSearchQuery("");
-            setSubjectFilter("all");
-            setExamLevelFilter("all");
-            setMarksFilter("all");
-            setStatusFilter("all");
-            setCurrentPage(1);
-          }}
+          marksFilter={filters.marks}
+          onMarksFilterChange={(val) =>
+            handleFilterChange({ marks: val as string })
+          }
+          statusFilter={filters.status}
+          onStatusFilterChange={(val) =>
+            handleFilterChange({ status: val as string })
+          }
+          onReset={resetFilters}
         />
       </MainCard>
 
@@ -479,7 +424,7 @@ export function MCQClient({
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          fetchData();
+          void fetchItems();
         }}
       />
 
@@ -489,7 +434,7 @@ export function MCQClient({
           questionData={editingQuestion}
           onClose={() => {
             setEditingQuestion(null);
-            fetchData();
+            void fetchItems();
           }}
         />
       )}
@@ -497,7 +442,7 @@ export function MCQClient({
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchItems()}
         questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
       />
     </PageContainer>

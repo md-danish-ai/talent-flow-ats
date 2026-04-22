@@ -2,7 +2,7 @@ import React from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { ResetUserListing } from "./components/ResetUserListing";
-import { getUsersByRole, UserListResponse } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";

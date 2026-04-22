@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
 import {
   getUsersByRole,
-  UserListResponse,
+  type UserListResponse,
   toggleUserStatus,
 } from "@lib/api/auth";
 import { Badge } from "@components/ui-elements/Badge";
@@ -46,9 +46,9 @@ import { CopyableText } from "@components/ui-elements/CopyableText";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
-import { toast } from "@lib/toast";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Skeleton } from "@components/ui-elements/Skeleton";
+import { useListing } from "@hooks/useListing";
 
 interface UserListingProps {
   initialData?: {
@@ -65,81 +65,56 @@ interface UserListingProps {
 }
 
 export function UserListing({ initialData }: UserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(
-    initialData?.data || [],
-  );
-  const [loading, setLoading] = useState(true);
-  const [totalItems, setTotalItems] = useState(
-    initialData?.pagination?.total_records || 0,
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // Hook for standardized listing
+  const {
+    data: users,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    fetchItems,
+    refresh,
+  } = useListing<
+    UserListResponse,
+    { search: string; department_id: string; test_level_id: string }
+  >({
+    // Adaptation for getUsersByRole
+    fetchFn: (params) => getUsersByRole("user", params),
+    initialFilters: {
+      search: "",
+      department_id: "all",
+      test_level_id: "all",
+    },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_id:
+        f.department_id === "all" ? undefined : Number(f.department_id),
+      test_level_id:
+        f.test_level_id === "all" ? undefined : Number(f.test_level_id),
+    }),
+    toastMessage: "Candidate list refreshed successfully",
+  });
+
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserListResponse | null>(null);
-
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [levelFilter, setLevelFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const fetchUsers = useCallback(async (isRefresh = false) => {
-    try {
-      setLoading(true);
-      const response = await getUsersByRole("user", {
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery,
-        department_id:
-          departmentFilter === "all" ? undefined : Number(departmentFilter),
-        test_level_id: levelFilter === "all" ? undefined : Number(levelFilter),
-      });
-      setUsers(response.data || []);
-      setTotalItems(response.pagination?.total_records || 0);
-      if (isRefresh) {
-        toast.success(`Candidate list refreshed successfully`, {
-          title: "Data Updated",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, pageSize, searchQuery, departmentFilter, levelFilter]);
-
-  useEffect(() => {
-    if (
-      initialData &&
-      initialData.data &&
-      initialData.data.length > 0 &&
-      currentPage === 1 &&
-      !searchQuery &&
-      departmentFilter === "all" &&
-      levelFilter === "all"
-    ) {
-      setUsers(initialData.data);
-      setTotalItems(initialData.pagination?.total_records || 0);
-      setLoading(false);
-    } else {
-      fetchUsers();
-    }
-  }, [
-    initialData,
-    fetchUsers,
-    currentPage,
-    searchQuery,
-    departmentFilter,
-    levelFilter,
-  ]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      fetchUsers();
+      void fetchItems();
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -151,13 +126,6 @@ export function UserListing({ initialData }: UserListingProps) {
     setEditingUser(user);
     setIsEditModalOpen(true);
   };
-
-  // Calculate active filter count
-  const activeFilterCount = [
-    searchQuery,
-    departmentFilter !== "all" ? departmentFilter : "",
-    levelFilter !== "all" ? levelFilter : "",
-  ].filter(Boolean).length;
 
   // Fetch departments and levels
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
@@ -209,7 +177,7 @@ export function UserListing({ initialData }: UserListingProps) {
               <Badge
                 variant="outline"
                 color="default"
-                className="font-bold border-border/50"
+                className="font-bold border-border/50 bg-card"
               >
                 {totalItems} USERS
               </Badge>
@@ -221,7 +189,7 @@ export function UserListing({ initialData }: UserListingProps) {
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={() => fetchUsers(true)}
+                onClick={refresh}
                 disabled={loading}
               >
                 <div className={cn(loading && "animate-spin")}>
@@ -232,8 +200,8 @@ export function UserListing({ initialData }: UserListingProps) {
 
             <Tooltip
               content={
-                activeFilterCount > 0
-                  ? `Filters (${activeFilterCount} active)`
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
                   : "Open Filters"
               }
               side="bottom"
@@ -245,11 +213,11 @@ export function UserListing({ initialData }: UserListingProps) {
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                {activeFilterCount > 0 ? (
+                {activeFiltersCount > 0 ? (
                   <span className="relative">
                     <Filter size={18} />
                     <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFilterCount}
+                      {activeFiltersCount}
                     </span>
                   </span>
                 ) : (
@@ -259,11 +227,12 @@ export function UserListing({ initialData }: UserListingProps) {
             </Tooltip>
 
             <Button
+              variant="primary"
               color="primary"
               startIcon={<UserPlus size={16} />}
               onClick={() => setIsAddModalOpen(true)}
               animate="scale"
-              className="font-bold uppercase tracking-wider text-[11px] gap-2"
+              className="font-bold border-none"
             >
               Add Candidate
             </Button>
@@ -483,18 +452,15 @@ export function UserListing({ initialData }: UserListingProps) {
               </TableBody>
             </Table>
           </div>
-          {!loading && totalItems > 0 && (
+          {!loading && users.length > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil(totalItems / pageSize)}
+                totalPages={totalPages}
                 totalItems={totalItems}
                 pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setCurrentPage(1);
-                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             </div>
           )}
@@ -517,11 +483,8 @@ export function UserListing({ initialData }: UserListingProps) {
               </Typography>
               <SearchInput
                 placeholder="Name, Mobile or Email..."
-                value={searchQuery}
-                onSearch={(val) => {
-                  setSearchQuery(val);
-                  setCurrentPage(1);
-                }}
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
               />
             </div>
 
@@ -537,11 +500,10 @@ export function UserListing({ initialData }: UserListingProps) {
               <SelectDropdown
                 placeholder="All Departments"
                 options={departmentOptions}
-                value={departmentFilter}
-                onChange={(val) => {
-                  setDepartmentFilter(val as string);
-                  setCurrentPage(1);
-                }}
+                value={filters.department_id}
+                onChange={(val) =>
+                  handleFilterChange({ department_id: String(val) })
+                }
                 isLoading={allDepartments.length === 0}
               />
             </div>
@@ -558,11 +520,10 @@ export function UserListing({ initialData }: UserListingProps) {
               <SelectDropdown
                 placeholder="All Levels"
                 options={levelOptions}
-                value={levelFilter}
-                onChange={(val) => {
-                  setLevelFilter(val as string);
-                  setCurrentPage(1);
-                }}
+                value={filters.test_level_id}
+                onChange={(val) =>
+                  handleFilterChange({ test_level_id: String(val) })
+                }
                 isLoading={allLevels.length === 0}
               />
             </div>
@@ -575,12 +536,7 @@ export function UserListing({ initialData }: UserListingProps) {
               animate="scale"
               iconAnimation="rotate-360"
               startIcon={<RotateCcw size={18} />}
-              onClick={() => {
-                setSearchQuery("");
-                setDepartmentFilter("all");
-                setLevelFilter("all");
-                setCurrentPage(1);
-              }}
+              onClick={resetFilters}
               className="font-bold w-full mt-auto"
               title="Reset Filters"
             >
@@ -599,7 +555,7 @@ export function UserListing({ initialData }: UserListingProps) {
           <SignUpForm
             onSuccess={() => {
               setIsAddModalOpen(false);
-              fetchUsers();
+              void fetchItems();
             }}
           />
         </div>
@@ -622,7 +578,7 @@ export function UserListing({ initialData }: UserListingProps) {
               }}
               onSuccess={() => {
                 setIsEditModalOpen(false);
-                fetchUsers();
+                void fetchItems();
               }}
             />
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState } from "react";
 import {
   Users,
   RefreshCcw,
@@ -21,7 +21,6 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Badge } from "@components/ui-elements/Badge";
-import { Alert } from "@components/ui-elements/Alert";
 import { Button } from "@components/ui-elements/Button";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
@@ -39,7 +38,7 @@ import {
   type PaginatedUserResults,
 } from "@lib/api/results";
 import { EmptyState } from "@components/ui-elements/EmptyState";
-import { toast } from "@lib/toast";
+import { useListing } from "@hooks/useListing";
 
 import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
@@ -91,39 +90,24 @@ const itemVariants = {
   },
 } as const;
 
+interface ResultsFilters {
+  search: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  completionReason: string;
+  overallGrade: string;
+}
+
 export function UserResultsClient() {
-  const [items, setItems] = useState<AdminUserResultListItem[]>([]);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
-
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [completionReasonFilter, setCompletionReasonFilter] = useState("all");
-  const [gradeFilter, setGradeFilter] = useState("all");
-
-  // Drawer
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  // Dynamic Subjects from data
-  const allSubjects = useMemo(() => {
-    const subjects = new Set<string>();
-    items.forEach((item) => {
-      item.latest_attempt?.subject_results?.forEach((s) =>
-        subjects.add(s.section_name),
-      );
-    });
-    return Array.from(subjects).sort();
-  }, [items]);
+  const [summaryStatsData, setSummaryStatsData] =
+    useState<PaginatedUserResults["summary_stats"]>(undefined);
 
   // Column Visibility
-  const availableColumns = useMemo(() => {
-    return [
+  const availableColumns = useMemo(
+    () => [
       { id: "candidate", label: "Candidate", pinned: true },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
@@ -134,8 +118,9 @@ export function UserResultsClient() {
       { id: "status", label: "Status" },
       { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
-    ];
-  }, []);
+    ],
+    [],
+  );
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
@@ -148,9 +133,49 @@ export function UserResultsClient() {
     "date",
     "actions",
   ];
-
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
     DEFAULT_VISIBLE_COLUMNS,
+  );
+
+  const {
+    data: items,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<AdminUserResultListItem, ResultsFilters, PaginatedUserResults>(
+    {
+      fetchFn: resultsApi.getUserResults,
+      initialFilters: {
+        search: "",
+        startDate: "",
+        endDate: "",
+        status: "all",
+        completionReason: "all",
+        overallGrade: "all",
+      },
+      filterMapping: (f) => ({
+        search: f.search || undefined,
+        startDate: f.startDate || undefined,
+        endDate: f.endDate || undefined,
+        status: f.status !== "all" ? f.status : undefined,
+        completionReason:
+          f.completionReason !== "all" ? f.completionReason : undefined,
+        overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
+      }),
+      onSuccess: (res) => {
+        if (res.summary_stats) setSummaryStatsData(res.summary_stats);
+      },
+      toastMessage: "Results refreshed successfully.",
+    },
   );
 
   const toggleColumn = (id: string) => {
@@ -159,84 +184,8 @@ export function UserResultsClient() {
     );
   };
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchItems = useCallback(
-    async (isRefresh = false) => {
-      try {
-        if (!isRefresh) setLoading(true);
-        setError(null);
-        const data = await resultsApi.getUserResults(
-          search || undefined,
-          page,
-          limit,
-          startDate || undefined,
-          endDate || undefined,
-          statusFilter !== "all" ? statusFilter : undefined,
-          completionReasonFilter !== "all" ? completionReasonFilter : undefined,
-          gradeFilter !== "all" ? gradeFilter : undefined,
-        );
-        setItems(data.items);
-        setTotalItems(data.total);
-        setTotalPages(data.total_pages);
-        if (data.summary_stats) {
-          setSummaryStatsData(data.summary_stats);
-        }
-        if (isRefresh) {
-          toast.success(`${data.total} results loaded successfully.`, {
-            title: "Data Refreshed",
-            duration: 2500,
-          });
-        }
-      } catch {
-        setError("Failed to fetch user results. Please try again.");
-      } finally {
-        if (!isRefresh) setLoading(false);
-      }
-    },
-    [
-      search,
-      page,
-      limit,
-      startDate,
-      endDate,
-      statusFilter,
-      completionReasonFilter,
-      gradeFilter,
-    ],
-  );
-
-  const firstMountRef = useRef(true);
-
-
-  useEffect(() => {
-    void fetchItems();
-  }, [fetchItems]);
-
-  const resetAllFilters = () => {
-    setSearch("");
-    setStartDate("");
-    setEndDate("");
-    setStatusFilter("all");
-    setCompletionReasonFilter("all");
-    setGradeFilter("all");
-    setPage(1);
-  };
-
-  const activeFilterCount = [
-    search,
-    startDate,
-    statusFilter !== "all" ? statusFilter : "",
-    completionReasonFilter !== "all" ? completionReasonFilter : "",
-    gradeFilter !== "all" ? gradeFilter : "",
-  ].filter(Boolean).length;
-
-  const [summaryStatsData, setSummaryStatsData] =
-    useState<PaginatedUserResults["summary_stats"]>(undefined);
-
-  const summaryStats = useMemo(() => {
-    return [
+  const summaryStats = useMemo(
+    () => [
       {
         id: "total",
         label: "Total Candidates",
@@ -244,7 +193,6 @@ export function UserResultsClient() {
         icon: <Users />,
         color: "text-brand-primary",
         bg: "bg-brand-primary/10",
-        trend: "Overall batch",
         filter: { type: "reset", value: "all" },
       },
       {
@@ -254,7 +202,6 @@ export function UserResultsClient() {
         icon: <UserCheck size={20} />,
         color: "text-emerald-500",
         bg: "bg-emerald-500/10",
-        trend: "Currently started",
         filter: { type: "status", value: "started" },
       },
       {
@@ -264,14 +211,14 @@ export function UserResultsClient() {
         icon: <BadgeCheck size={20} />,
         color: "text-amber-500",
         bg: "bg-amber-500/10",
-        trend: "Submitted records",
         filter: { type: "status", value: "submitted" },
       },
-    ];
-  }, [summaryStatsData]);
+    ],
+    [summaryStatsData],
+  );
 
-  const gradeStats = useMemo(() => {
-    return [
+  const gradeStats = useMemo(
+    () => [
       {
         id: "excellent",
         label: "Excellent",
@@ -308,26 +255,23 @@ export function UserResultsClient() {
         border: "border-rose-500/20",
         icon: <UserX />,
       },
-    ];
-  }, [summaryStatsData]);
+    ],
+    [summaryStatsData],
+  );
 
   const handleStatClick = (filterObj: { type: string; value: string }) => {
     if (filterObj.type === "reset") {
-      resetAllFilters();
+      resetFilters();
     } else if (filterObj.type === "status") {
-      setStatusFilter(filterObj.value);
-      setGradeFilter("all");
+      handleFilterChange({ status: filterObj.value, overallGrade: "all" });
     } else if (filterObj.type === "grade") {
-      setGradeFilter(filterObj.value);
-      setStatusFilter("all");
+      handleFilterChange({ overallGrade: filterObj.value, status: "all" });
     }
-    setPage(1);
     setIsFilterOpen(false);
   };
 
   return (
     <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
-      {/* Summary Stats Row - Using StatCard from Dashboard */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -349,7 +293,6 @@ export function UserResultsClient() {
         ))}
       </motion.div>
 
-      {/* Grade Quick Filters Row - Using InsightCard from Dashboard */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -357,14 +300,7 @@ export function UserResultsClient() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
       >
         {gradeStats.map((stat) => {
-          const gradeValue =
-            stat.id === "excellent"
-              ? "Excellent"
-              : stat.id === "good"
-                ? "Good"
-                : stat.id === "average"
-                  ? "Average"
-                  : "Poor";
+          const gradeValue = stat.label;
           return (
             <motion.div key={stat.id} variants={itemVariants}>
               <InsightCard
@@ -384,7 +320,6 @@ export function UserResultsClient() {
         })}
       </motion.div>
 
-      {/* Main Content — MCQ-style layout */}
       <MainCard
         title={
           <div className="flex items-center gap-3">
@@ -398,7 +333,6 @@ export function UserResultsClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            {/* Results count badge */}
             {loading ? (
               <div className="h-9 w-24 bg-muted animate-pulse rounded-full" />
             ) : (
@@ -423,7 +357,6 @@ export function UserResultsClient() {
               </>
             )}
 
-            {/* All 4 icon buttons — same style, grouped */}
             <div className="flex items-center gap-2">
               <Tooltip content="Switch to Card View" side="bottom">
                 <Button
@@ -447,23 +380,24 @@ export function UserResultsClient() {
                   <List size={18} />
                 </Button>
               </Tooltip>
-
               <div className="h-6 w-px bg-border mx-1" />
-
               <Tooltip content="Refresh Data" side="bottom">
                 <Button
                   variant="action"
                   size="rounded-icon"
                   animate="scale"
-                  onClick={() => void fetchItems(true)}
+                  onClick={refresh}
+                  disabled={loading}
                 >
-                  <RefreshCcw size={18} />
+                  <div className={cn(loading && "animate-spin")}>
+                    <RefreshCcw size={18} />
+                  </div>
                 </Button>
               </Tooltip>
               <Tooltip
                 content={
-                  activeFilterCount > 0
-                    ? `Filters (${activeFilterCount} active)`
+                  activeFiltersCount > 0
+                    ? `Filters (${activeFiltersCount} active)`
                     : "Open Filters"
                 }
                 side="bottom"
@@ -475,11 +409,11 @@ export function UserResultsClient() {
                   animate="scale"
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                 >
-                  {activeFilterCount > 0 ? (
+                  {activeFiltersCount > 0 ? (
                     <span className="relative">
                       <Filter size={18} />
-                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none">
-                        {activeFilterCount}
+                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                        {activeFiltersCount}
                       </span>
                     </span>
                   ) : (
@@ -491,26 +425,21 @@ export function UserResultsClient() {
           </div>
         }
       >
-        {/* Table column — sits next to InlineDrawer */}
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
-          {error && (
-            <Alert variant="error" description={error} className="m-4" />
-          )}
-
           <div className="flex-1 overflow-x-auto w-full min-h-0">
             {viewMode === "card" ? (
               loading ? (
-                <ResultCardSkeleton rowCount={limit} />
+                <ResultCardSkeleton rowCount={pageSize} />
               ) : items.length === 0 ? (
                 <EmptyState
                   variant="search"
                   title="No results found"
-                  description={`We couldn't find any candidates matching your criteria${search ? ` for "${search}"` : ""}. Try adjusting your search or filters.`}
+                  description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
                 />
               ) : (
                 <ResultCardView items={items} />
@@ -518,35 +447,32 @@ export function UserResultsClient() {
             ) : (
               <ResultTableView
                 items={items}
-                allSubjects={allSubjects}
                 visibleColumns={visibleColumns}
                 isLoading={loading}
-                limit={limit}
+                limit={pageSize}
               />
             )}
           </div>
 
           {!loading && items.length > 0 && (
             <Pagination
-              currentPage={page}
+              currentPage={currentPage}
               totalPages={totalPages}
               totalItems={totalItems}
-              pageSize={limit}
-              onPageChange={setPage}
-              onPageSizeChange={setLimit}
-              className="mt-auto shrink-0"
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              className="mt-auto shrink-0 border-t"
             />
           )}
         </div>
 
-        {/* Filter Drawer — renders inside MainCard body, exactly like MCQFilters */}
         <InlineDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
           title="Filters"
         >
           <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            {/* Search */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -557,15 +483,11 @@ export function UserResultsClient() {
               </Typography>
               <SearchInput
                 placeholder="Search by name, mobile..."
-                value={search}
-                onSearch={(val) => {
-                  setSearch(val);
-                  setPage(1);
-                }}
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
               />
             </div>
 
-            {/* Date Range */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -576,19 +498,15 @@ export function UserResultsClient() {
               </Typography>
               <DateRangePicker
                 onRangeChange={(range) => {
-                  if (range) {
-                    setStartDate(range.from);
-                    setEndDate(range.to);
-                  } else {
-                    setStartDate("");
-                    setEndDate("");
-                  }
+                  handleFilterChange({
+                    startDate: range?.from || "",
+                    endDate: range?.to || "",
+                  });
                 }}
                 initialLabel="All Time"
               />
             </div>
 
-            {/* Status */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -599,17 +517,15 @@ export function UserResultsClient() {
               </Typography>
               <SelectDropdown
                 options={STATUS_OPTIONS}
-                value={statusFilter}
-                onChange={(val) => {
-                  setStatusFilter(val as string);
-                  setPage(1);
-                }}
+                value={filters.status}
+                onChange={(val) =>
+                  handleFilterChange({ status: val as string })
+                }
                 placeholder="All Statuses"
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
               />
             </div>
 
-            {/* Completion Reason */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -620,17 +536,15 @@ export function UserResultsClient() {
               </Typography>
               <SelectDropdown
                 options={COMPLETION_REASON_OPTIONS}
-                value={completionReasonFilter}
-                onChange={(val) => {
-                  setCompletionReasonFilter(val as string);
-                  setPage(1);
-                }}
+                value={filters.completionReason}
+                onChange={(val) =>
+                  handleFilterChange({ completionReason: val as string })
+                }
                 placeholder="All Reasons"
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
               />
             </div>
 
-            {/* Overall Grade */}
             <div className="space-y-3">
               <Typography
                 variant="body5"
@@ -641,11 +555,10 @@ export function UserResultsClient() {
               </Typography>
               <SelectDropdown
                 options={GRADE_OPTIONS}
-                value={gradeFilter}
-                onChange={(val) => {
-                  setGradeFilter(val as string);
-                  setPage(1);
-                }}
+                value={filters.overallGrade}
+                onChange={(val) =>
+                  handleFilterChange({ overallGrade: val as string })
+                }
                 placeholder="All Grades"
                 className="h-12 border-border/60 hover:border-border bg-muted/20"
                 placement="top"
@@ -661,8 +574,8 @@ export function UserResultsClient() {
                 animate="scale"
                 iconAnimation="rotate-360"
                 startIcon={<RotateCcw size={18} />}
-                onClick={resetAllFilters}
-                className="font-bold w-full"
+                onClick={resetFilters}
+                className="font-bold w-full border-brand-primary text-brand-primary"
                 title="Reset Filters"
               >
                 Reset Filters

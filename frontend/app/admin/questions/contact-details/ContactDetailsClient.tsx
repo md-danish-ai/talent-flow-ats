@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from "@components/ui-elements/Badge";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -15,10 +15,13 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Filter, Upload } from "lucide-react";
-import { questionsApi, Question } from "@lib/api/questions";
+import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
+import { questionsApi, type Question } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import {
+  classificationsApi,
+  type Classification,
+} from "@lib/api/classifications";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
@@ -29,35 +32,60 @@ import { ContactDetailsFilters } from "./components/ContactDetailsFilters";
 import { ContactDetailsRow } from "./components/ContactDetailsRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { useListing } from "@hooks/useListing";
+
+interface ContactDetailsListingFilters {
+  search: string;
+  subject: string;
+  examLevel: string;
+  marks: string;
+  status: string;
+}
 
 export function ContactDetailsClient() {
-  const [data, setData] = useState<Question[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
-  // Filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [examLevelFilter, setExamLevelFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
-    "all",
-  );
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
+
+  const {
+    data: data,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    fetchItems,
+    refresh,
+  } = useListing<Question, ContactDetailsListingFilters>({
+    fetchFn: questionsApi.getQuestions,
+    initialFilters: {
+      search: "",
+      subject: "all",
+      examLevel: "all",
+      marks: "all",
+      status: "all",
+    },
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.CONTACT_DETAILS,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? (f.subject as string) : undefined,
+      exam_level: f.examLevel !== "all" ? (f.examLevel as string) : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
+    toastMessage: "Contact details refreshed successfully",
+  });
 
   // Column visibility
   const allColumns = [
@@ -96,55 +124,6 @@ export function ContactDetailsClient() {
     );
   };
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await questionsApi.getQuestions({
-        page: currentPage,
-        limit: pageSize,
-        question_type: QUESTION_TYPES.CONTACT_DETAILS,
-        search: searchQuery,
-        subject:
-          subjectFilter && subjectFilter !== "all"
-            ? (subjectFilter as string)
-            : undefined,
-        exam_level:
-          examLevelFilter && examLevelFilter !== "all"
-            ? (examLevelFilter as string)
-            : undefined,
-        marks:
-          marksFilter && marksFilter !== "all"
-            ? Number(marksFilter)
-            : undefined,
-        is_active:
-          statusFilter && statusFilter !== "all"
-            ? statusFilter === "true"
-            : undefined,
-      });
-
-      setData(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-    } catch (error) {
-      console.error("Failed to fetch questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    currentPage,
-    pageSize,
-    searchQuery,
-    subjectFilter,
-    examLevelFilter,
-    marksFilter,
-    statusFilter,
-  ]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   useEffect(() => {
     const fetchClassifications = async () => {
       try {
@@ -171,14 +150,14 @@ export function ContactDetailsClient() {
         console.error("Failed to fetch classifications:", error);
       }
     };
-    fetchClassifications();
+    void fetchClassifications();
   }, []);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      await fetchData();
+      void fetchItems();
       toast.success("Status updated successfully");
     } catch (error) {
       console.error("Failed to toggle question status:", error);
@@ -188,25 +167,16 @@ export function ContactDetailsClient() {
     }
   };
 
-  // Filter count logic
-  const activeFilterCount = [
-    searchQuery,
-    subjectFilter !== "all" ? subjectFilter : "",
-    examLevelFilter !== "all" ? examLevelFilter : "",
-    marksFilter !== "all" ? marksFilter : "",
-    statusFilter !== "all" ? statusFilter : "",
-  ].filter(Boolean).length;
-
   return (
     <PageContainer animate>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
             Company Contact Details
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
@@ -230,6 +200,20 @@ export function ContactDetailsClient() {
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
             <div className="h-6 w-px bg-border mx-1" />
             <Button
               variant="action"
@@ -243,8 +227,8 @@ export function ContactDetailsClient() {
             </Button>
             <Tooltip
               content={
-                activeFilterCount > 0
-                  ? `Filters (${activeFilterCount} active)`
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
                   : "Filter"
               }
               side="bottom"
@@ -256,11 +240,11 @@ export function ContactDetailsClient() {
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                {activeFilterCount > 0 ? (
+                {activeFiltersCount > 0 ? (
                   <span className="relative">
                     <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFilterCount}
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
                     </span>
                   </span>
                 ) : (
@@ -277,7 +261,7 @@ export function ContactDetailsClient() {
               iconAnimation="rotate-90"
               onClick={() => setIsAddOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Question
             </Button>
@@ -287,7 +271,7 @@ export function ContactDetailsClient() {
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
           <div className="flex-1 overflow-x-auto w-full">
@@ -358,7 +342,7 @@ export function ContactDetailsClient() {
                     colSpan={visibleColumns.length + 1}
                     variant="search"
                     title="No questions found"
-                    description="We couldn't find any contact details matching your criteria. Try adjusting your filters or adding a new entry."
+                    description="Try adjusting your filters or adding a new entry."
                   />
                 ) : (
                   data.map((row, index) => (
@@ -382,15 +366,12 @@ export function ContactDetailsClient() {
           {!isLoading && data.length > 0 && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize) || 1}
-              onPageChange={setCurrentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
-              className="mt-auto shrink-0"
+              onPageSizeChange={handlePageSizeChange}
+              className="mt-auto shrink-0 border-t"
             />
           )}
         </div>
@@ -398,46 +379,34 @@ export function ContactDetailsClient() {
         <ContactDetailsFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          subjectFilter={subjectFilter}
-          onSubjectFilterChange={(val) => {
-            setSubjectFilter(val);
-            setCurrentPage(1);
-          }}
+          searchQuery={filters.search}
+          onSearchChange={(val) => handleFilterChange({ search: val })}
+          subjectFilter={filters.subject}
+          onSubjectFilterChange={(val) =>
+            handleFilterChange({ subject: val as string })
+          }
           subjects={subjects}
-          examLevelFilter={examLevelFilter}
-          onExamLevelFilterChange={(val) => {
-            setExamLevelFilter(val);
-            setCurrentPage(1);
-          }}
+          examLevelFilter={filters.examLevel}
+          onExamLevelFilterChange={(val) =>
+            handleFilterChange({ examLevel: val as string })
+          }
           examLevels={examLevels}
-          marksFilter={marksFilter}
-          onMarksFilterChange={(val) => {
-            setMarksFilter(val);
-            setCurrentPage(1);
-          }}
-          statusFilter={statusFilter}
-          onStatusFilterChange={(val) => {
-            setStatusFilter(val);
-            setCurrentPage(1);
-          }}
-          onReset={() => {
-            setSearchQuery("");
-            setSubjectFilter("all");
-            setExamLevelFilter("all");
-            setMarksFilter("all");
-            setStatusFilter("all");
-            setCurrentPage(1);
-          }}
+          marksFilter={filters.marks}
+          onMarksFilterChange={(val) =>
+            handleFilterChange({ marks: val as string })
+          }
+          statusFilter={filters.status}
+          onStatusFilterChange={(val) =>
+            handleFilterChange({ status: val as string })
+          }
+          onReset={resetFilters}
         />
       </MainCard>
 
-      {/* Modals */}
       <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchItems()}
       />
 
       {editingQuestion && (
@@ -445,14 +414,14 @@ export function ContactDetailsClient() {
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}
-          onSuccess={fetchData}
+          onSuccess={() => void fetchItems()}
         />
       )}
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchItems()}
         questionType={QUESTION_TYPES.CONTACT_DETAILS}
       />
     </PageContainer>

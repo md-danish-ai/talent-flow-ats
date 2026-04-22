@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import {
   Table,
@@ -20,38 +20,36 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { SearchInput } from "@components/ui-elements/SearchInput";
-import {
-  departmentsApi,
-  Department,
-  PaginatedDepartmentsResponse,
-} from "@lib/api/departments";
+import { departmentsApi, type Department } from "@lib/api/departments";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { useListing } from "@hooks/useListing";
 
-interface DepartmentListingProps {
-  initialData?: PaginatedDepartmentsResponse;
-}
+export function DepartmentListing() {
+  // Hook for standardized listing
+  const {
+    data: departments,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    fetchItems,
+    refresh,
+  } = useListing<Department, { search: string }>({
+    fetchFn: departmentsApi.getDepartments,
+    initialFilters: { search: "" },
+    initialPageSize: 10,
+    toastMessage: "Department list refreshed successfully",
+  });
 
-export function DepartmentListing({ initialData }: DepartmentListingProps) {
-  // Data State
-  const [departments, setDepartments] = useState<Department[]>(
-    initialData?.data || [],
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalItems, setTotalItems] = useState(
-    initialData?.pagination?.total_records || 0,
-  );
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // Search State
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Modals State
+  // Modals Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
@@ -59,35 +57,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deptToDelete, setDeptToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-
-
-  const fetchDepartments = useCallback(async (isRefresh = false) => {
-    setIsLoading(true);
-    try {
-      const response = await departmentsApi.getDepartments({
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery,
-      });
-      setDepartments(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-      if (isRefresh) {
-        toast.success("Department list refreshed successfully", {
-          title: "Data Updated",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch departments:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize, searchQuery]);
-
-  useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
@@ -100,17 +70,17 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   };
 
   const confirmDelete = async () => {
-    if (deptToDelete) {
-      setIsLoading(true);
-      try {
-        await departmentsApi.deleteDepartment(deptToDelete);
-        fetchDepartments();
-        setIsDeleteModalOpen(false);
-      } catch (error) {
-        console.error("Delete failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!deptToDelete) return;
+    setIsDeleting(true);
+    try {
+      await departmentsApi.deleteDepartment(deptToDelete);
+      void fetchItems();
+      setIsDeleteModalOpen(false);
+      toast.success("Department deleted successfully");
+    } catch (error) {
+      console.error("Delete failed:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -120,7 +90,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       await departmentsApi.updateDepartment(dept.id, {
         is_active: !dept.is_active,
       });
-      fetchDepartments();
+      void fetchItems();
+      toast.success(
+        `Department ${!dept.is_active ? "activated" : "deactivated"}`,
+      );
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -161,7 +134,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={() => fetchDepartments(true)}
+                onClick={refresh}
                 disabled={isLoading}
               >
                 <div className={cn(isLoading && "animate-spin")}>
@@ -173,10 +146,8 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder="Search departments..."
-              onSearch={(val) => {
-                setSearchQuery(val);
-                setCurrentPage(1);
-              }}
+              value={filters.search}
+              onSearch={(val) => handleFilterChange({ search: val })}
               className="w-64"
             />
             <Button
@@ -188,7 +159,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               onClick={() => handleOpenModal()}
               disabled={isLoading}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Department
             </Button>
@@ -263,7 +234,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                             shape="square"
                             color={dept.is_active ? "success" : "error"}
                           >
-                            {dept.is_active ? "Activate" : "Deactivate"}
+                            {dept.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </div>
                       </TableCell>
@@ -306,17 +277,14 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             </Table>
           </div>
 
-          {totalItems > 0 && (
+          {!isLoading && departments.length > 0 && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize) || 1}
-              onPageChange={setCurrentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
+              onPageSizeChange={handlePageSizeChange}
               className="mt-auto shrink-0 border-t"
             />
           )}
@@ -327,7 +295,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingDepartment={editingDepartment}
-        onSuccess={fetchDepartments}
+        onSuccess={() => void fetchItems()}
       />
 
       <ConfirmModal
@@ -338,7 +306,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         description="Are you sure you want to delete this department? This action cannot be undone."
         variant="danger"
         confirmText="Delete"
-        isLoading={isLoading}
+        isLoading={isDeleting}
       />
     </>
   );

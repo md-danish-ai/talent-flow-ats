@@ -1,6 +1,7 @@
 import { api } from "./index";
 import { ENDPOINTS } from "./endpoints";
 import { GradeSetting } from "./papers";
+import { type PaginatedResponse } from "./types";
 
 export interface AdminUserLatestAttempt {
   attempt_id: number;
@@ -35,21 +36,18 @@ export interface AdminUserResultListItem {
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 
-export interface PaginatedUserResults {
-  items: AdminUserResultListItem[];
+export interface SummaryStats {
   total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
-  summary_stats?: {
-    total: number;
-    active: number;
-    completed: number;
-    excellent: number;
-    good: number;
-    average: number;
-    poor: number;
-  };
+  active: number;
+  completed: number;
+  excellent: number;
+  good: number;
+  average: number;
+  poor: number;
+}
+
+export interface PaginatedUserResults extends PaginatedResponse<AdminUserResultListItem> {
+  summary_stats?: SummaryStats;
 }
 
 export interface AdminUserResultAnswer {
@@ -165,17 +163,28 @@ export interface AdminUserAttemptsResponse {
   attempts: AdminUserAttemptHistoryItem[];
 }
 
+export interface GetUserResultsParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  completionReason?: string;
+  overallGrade?: string;
+}
+
 export const resultsApi = {
-  getUserResults: async (
-    search?: string,
-    page: number = 1,
-    limit: number = 10,
-    startDate?: string,
-    endDate?: string,
-    status?: string,
-    completionReason?: string,
-    overallGrade?: string,
-  ) => {
+  getUserResults: async ({
+    search,
+    page = 1,
+    limit = 10,
+    startDate,
+    endDate,
+    status,
+    completionReason,
+    overallGrade,
+  }: GetUserResultsParams) => {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
     params.append("page", String(page));

@@ -1,7 +1,7 @@
 import React from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { TodayUserListing } from "./components/TodayUserListing";
-import { getUsersByRole, UserListResponse } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
 import { cookies } from "next/headers";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { Button } from "@components/ui-elements/Button";

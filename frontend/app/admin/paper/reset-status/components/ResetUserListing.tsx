@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { cn } from "@lib/utils";
 import {
   Table,
@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { UserListResponse } from "@lib/api/auth";
+import { type UserListResponse, getUsersByRole } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
@@ -42,8 +42,7 @@ import {
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
-import { getUsersByRole } from "@lib/api/auth";
-import { toast } from "@lib/toast";
+import { useListing } from "@hooks/useListing";
 
 interface ResetUserListingProps {
   initialData?: {
@@ -59,95 +58,58 @@ interface ResetUserListingProps {
   };
 }
 
+interface UserListingFilters {
+  search: string;
+  department: string;
+  level: string;
+  status: string;
+}
+
 export function ResetUserListing({ initialData }: ResetUserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(
-    initialData?.data || [],
-  );
-  const [loading, setLoading] = useState(false);
-  const [totalItems, setTotalItems] = useState(
-    initialData?.pagination?.total_records || 0,
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await getUsersByRole("user", {
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery,
-      });
-      setUsers(response.data);
-      setTotalItems(response.pagination.total_records);
-    } catch (error) {
-      console.error("Fetch failed:", error);
-      toast.error("Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, pageSize, searchQuery]);
-
-  useEffect(() => {
-    if (
-      initialData &&
-      initialData.data &&
-      currentPage === 1 &&
-      searchQuery === ""
-    ) {
-      setUsers(initialData.data);
-      setTotalItems(initialData.pagination?.total_records || 0);
-      setLoading(false);
-    } else {
-      fetchData();
-    }
-  }, [initialData, fetchData, currentPage, searchQuery]);
-
-  const handleRefresh = async () => {
-    await fetchData();
-    toast.success("Candidate list refreshed successfully", {
-      title: "Data Updated",
-    });
-  };
-
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
     null,
   );
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isReInterviewModalOpen, setIsReInterviewModalOpen] = useState(false);
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
 
-
-  // Filter logic
-  const filteredUsers = users.filter((user) => {
-    // Search is handled by API now
-
-    const statusMatch =
-      statusFilter === "all" ||
-      (statusFilter === "submitted" && user.is_interview_submitted) ||
-      (statusFilter === "inprogress" && !user.is_interview_submitted);
-
-    const deptName = user.department_name || user.assignment?.department_name;
-    const departmentMatch =
-      departmentFilter === "all" || deptName === departmentFilter;
-
-    const userLevel = user.test_level_name || user.assignment?.test_level_name;
-    const levelMatch = levelFilter === "all" || userLevel === levelFilter;
-
-    return statusMatch && departmentMatch && levelMatch;
+  const {
+    data: users,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+    fetchItems,
+  } = useListing<UserListResponse, UserListingFilters>({
+    fetchFn: (params) => getUsersByRole("user", params),
+    initialFilters: {
+      search: "",
+      department: "all",
+      level: "all",
+      status: "all",
+    },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_name: f.department !== "all" ? f.department : undefined,
+      test_level_name: f.level !== "all" ? f.level : undefined,
+      status: f.status !== "all" ? f.status : undefined,
+    }),
+    toastMessage: "Candidate list refreshed successfully",
   });
 
-  // Fetch all departments and levels from API
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
   const classificationQuery = useClassifications({
     type: "exam_level",
@@ -157,36 +119,17 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
 
   const levelOptions = [
     { id: "all", label: "All Levels" },
-    ...allLevels.map((lvl) => ({
-      id: lvl.name,
-      label: lvl.name,
-    })),
+    ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
   ];
-
   const departmentOptions = [
     { id: "all", label: "All Departments" },
-    ...allDepartments.map((dept) => ({
-      id: dept.name,
-      label: dept.name,
-    })),
+    ...allDepartments.map((dept) => ({ id: dept.name, label: dept.name })),
   ];
-
   const statusOptions = [
     { id: "all", label: "All Statuses" },
     { id: "submitted", label: "Submitted" },
     { id: "inprogress", label: "In Progress" },
   ];
-
-  // Use directly filtered data (client side filters only now)
-  const paginatedUsers = filteredUsers;
-
-  // Calculate active filter count
-  const activeFilterCount = [
-    searchQuery,
-    statusFilter !== "all" ? statusFilter : "",
-    departmentFilter !== "all" ? departmentFilter : "",
-    levelFilter !== "all" ? levelFilter : "",
-  ].filter(Boolean).length;
 
   return (
     <>
@@ -218,7 +161,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 color="default"
                 className="font-bold border-border/50 bg-card"
               >
-                {filteredUsers.length} USERS
+                {totalItems} USERS
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
@@ -227,7 +170,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={handleRefresh}
+                onClick={refresh}
                 disabled={loading}
               >
                 <div className={cn(loading && "animate-spin")}>
@@ -237,8 +180,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
             </Tooltip>
             <Tooltip
               content={
-                activeFilterCount > 0
-                  ? `Filters (${activeFilterCount} active)`
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
                   : "Advanced Filters & Searching"
               }
             >
@@ -249,11 +192,11 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                {activeFilterCount > 0 ? (
+                {activeFiltersCount > 0 ? (
                   <span className="relative">
                     <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFilterCount}
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
                     </span>
                   </span>
                 ) : (
@@ -301,16 +244,15 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                 <TableBody>
                   {loading ? (
                     <ResetUserListingSkeleton rowCount={pageSize} />
-                  ) : !Array.isArray(paginatedUsers) ||
-                    paginatedUsers.length === 0 ? (
+                  ) : users.length === 0 ? (
                     <EmptyState
                       colSpan={7}
                       variant="search"
                       title="No candidates found"
-                      description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
+                      description="Try adjusting your filters."
                     />
                   ) : (
-                    paginatedUsers.map((row, idx) => (
+                    users.map((row, idx) => (
                       <TableRow
                         key={row.id}
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
@@ -368,7 +310,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                         <TableCell className="align-middle py-3">
                           <CopyableText
                             value={row.mobile}
-                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
+                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
                             title="Copy Phone Number"
                           >
                             <span className="mb-[1px]">{row.mobile}</span>
@@ -448,7 +390,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             </span>
                           </div>
                         </TableCell>
-
                         <TableCell className="text-center align-middle py-3">
                           <div className="flex items-center justify-center gap-2">
                             {row.is_details_submitted && (
@@ -465,7 +406,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                 <FileEdit size={16} />
                               </TableIconButton>
                             )}
-
                             <TableIconButton
                               iconColor="red"
                               animate="scale"
@@ -478,7 +418,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             >
                               <RefreshCw size={16} />
                             </TableIconButton>
-
                             <TableIconButton
                               iconColor="violet"
                               animate="scale"
@@ -491,7 +430,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             >
                               <RotateCcw size={16} />
                             </TableIconButton>
-
                             <TableIconButton
                               iconColor="blue"
                               animate="scale"
@@ -513,31 +451,26 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Table>
             </div>
           </div>
-          {totalItems > 0 && (
+          {!loading && totalItems > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 totalItems={totalItems}
                 pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setCurrentPage(1);
-                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             </div>
           )}
         </div>
 
-        {/* Filter Drawer - Now Inside MainCard for Side-by-Side Layout */}
         <InlineDrawer
           title="Filters"
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
         >
           <div className="p-6 flex flex-col gap-8">
-            {/* Search Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
@@ -548,15 +481,11 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Typography>
               <SearchInput
                 placeholder="Search by name, mobile..."
-                value={searchQuery}
-                onSearch={(val) => {
-                  setSearchQuery(val);
-                  setCurrentPage(1);
-                }}
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
               />
             </div>
 
-            {/* Status Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
@@ -567,13 +496,14 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Typography>
               <SelectDropdown
                 options={statusOptions}
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as string)}
+                value={filters.status}
+                onChange={(val) =>
+                  handleFilterChange({ status: val as string })
+                }
                 placeholder="Select Status"
               />
             </div>
 
-            {/* Department Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
@@ -584,14 +514,15 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Typography>
               <SelectDropdown
                 options={departmentOptions}
-                value={departmentFilter}
-                onChange={(val) => setDepartmentFilter(val as string)}
+                value={filters.department}
+                onChange={(val) =>
+                  handleFilterChange({ department: val as string })
+                }
                 placeholder="Select Department"
                 isLoading={allDepartments.length === 0}
               />
             </div>
 
-            {/* Exam Level Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
@@ -602,14 +533,13 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               </Typography>
               <SelectDropdown
                 options={levelOptions}
-                value={levelFilter}
-                onChange={(val) => setLevelFilter(val as string)}
+                value={filters.level}
+                onChange={(val) => handleFilterChange({ level: val as string })}
                 placeholder="Select Level"
                 isLoading={classificationQuery.isLoading}
               />
             </div>
 
-            {/* Help Info */}
             <div className="mt-auto p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border">
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white dark:bg-black border border-border flex items-center justify-center shrink-0">
@@ -641,13 +571,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
               animate="scale"
               iconAnimation="rotate-360"
               startIcon={<RotateCcw size={18} />}
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-                setDepartmentFilter("all");
-                setLevelFilter("all");
-              }}
-              className="font-bold w-full"
+              onClick={resetFilters}
+              className="font-bold w-full border-brand-primary text-brand-primary"
               title="Reset Filters"
             >
               Reset Filters
@@ -660,7 +585,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetConfirmModal
           isOpen={isModalOpen}
           user={selectedUser}
-          onSuccess={fetchData}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
@@ -672,7 +597,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetDetailsModal
           isOpen={isDetailsModalOpen}
           user={selectedUser}
-          onSuccess={fetchData}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsDetailsModalOpen(false);
             setSelectedUser(null);
@@ -684,7 +609,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ReInterviewModal
           isOpen={isReInterviewModalOpen}
           user={selectedUser}
-          onSuccess={fetchData}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsReInterviewModalOpen(false);
             setSelectedUser(null);
@@ -696,15 +621,13 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetSubjectsModal
           isOpen={isResetSubjectsModalOpen}
           user={selectedUser}
-          onSuccess={fetchData}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsResetSubjectsModalOpen(false);
             setSelectedUser(null);
           }}
         />
       )}
-
-      {/* Filter Drawer removed from here as it's now inside MainCard */}
     </>
   );
 }

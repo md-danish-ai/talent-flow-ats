@@ -22,7 +22,6 @@ import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
-  allSubjects: string[];
   visibleColumns: string[];
   isLoading?: boolean;
   limit?: number;
@@ -30,7 +29,6 @@ interface ResultTableViewProps {
 
 export function ResultTableView({
   items,
-  allSubjects,
   visibleColumns,
   isLoading,
   limit = 10,

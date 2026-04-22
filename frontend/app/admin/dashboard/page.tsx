@@ -78,11 +78,7 @@ export default function DashboardPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  const {
-    data: overview,
-    isLoading: overviewLoading,
-    isFetching: isRefetching,
-  } = useDashboardOverview({
+  const { data: overview, isLoading: overviewLoading } = useDashboardOverview({
     start_date: startDate,
     end_date: endDate,
   });
