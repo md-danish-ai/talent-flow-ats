@@ -24,6 +24,7 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { Skeleton } from "@components/ui-elements/Skeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 
 interface ProjectLeadListingProps {
   initialData?: {
@@ -134,16 +135,12 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search project leads..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all w-64"
-              />
-            </div>
+            <SearchInput
+              placeholder="Search project leads..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+            />
             <Button
               variant="primary"
               color="primary"

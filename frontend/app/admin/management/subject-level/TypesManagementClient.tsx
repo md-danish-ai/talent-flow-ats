@@ -20,6 +20,7 @@ import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { Badge } from "@components/ui-elements/Badge";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Switch } from "@components/ui-elements/Switch";
 import {
   classificationsApi,
@@ -76,6 +77,17 @@ export function TypesManagementClient({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounced Search Effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const isFirstRender = React.useRef(true);
 
   // Pagination State
@@ -110,10 +122,12 @@ export function TypesManagementClient({
         page: number;
         limit: number;
         is_active?: boolean;
+        search?: string;
       } = {
         type: classificationType,
         page: currentPage,
         limit: pageSize,
+        search: debouncedSearch,
       };
 
       if (statusFilter === "active") params.is_active = true;
@@ -136,7 +150,7 @@ export function TypesManagementClient({
     } finally {
       setIsFetching(false);
     }
-  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize]);
+  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize, debouncedSearch]);
 
   // Initial Sync from initialData
   useEffect(() => {
@@ -340,6 +354,13 @@ export function TypesManagementClient({
                     : "LEVELS"}
               </Badge>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <SearchInput
+              placeholder={`Search ${activeTab}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"

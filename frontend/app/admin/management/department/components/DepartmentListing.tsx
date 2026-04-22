@@ -16,6 +16,7 @@ import { Plus, Edit, Trash2, Building2, Search } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import {
   departmentsApi,
   Department,
@@ -155,16 +156,12 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search departments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all w-64"
-              />
-            </div>
+            <SearchInput
+              placeholder="Search departments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+            />
             <Button
               variant="primary"
               size="md"
@@ -266,7 +263,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <TableIconButton
-                            iconColor="blue"
+                            iconColor="brand"
                             btnSize="sm"
                             animate="scale"
                             onClick={() => handleOpenModal(dept)}
