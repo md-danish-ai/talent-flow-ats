@@ -17,15 +17,17 @@ export function QuestionTableSkeleton({
     <>
       {Array.from({ length: rowCount }).map((_, idx) => (
         <TableRow key={idx} className="hover:bg-transparent border-b-border/40">
-          {/* Leading spacing column */}
-          <TableCell className="w-[50px]"></TableCell>
+          {/* Leading spacing column (Collapsible Icon) */}
+          <TableCell className="w-[50px]">
+            <Skeleton className="h-10 w-6 mx-auto rounded-sm opacity-60" />
+          </TableCell>
 
           {visibleColumns.map((colId) => {
             // Specific styling for certain columns
             if (colId === "srNo") {
               return (
                 <TableCell key={colId} className="w-[80px] text-center">
-                  <Skeleton className="h-6 w-8 mx-auto rounded" />
+                  <Skeleton className="h-10 w-8 mx-auto rounded" />
                 </TableCell>
               );
             }
@@ -42,7 +44,7 @@ export function QuestionTableSkeleton({
               return (
                 <TableCell key={colId} className="min-w-[300px]">
                   <div className="flex flex-col gap-2">
-                    <Skeleton className="h-5 w-full max-w-[400px] rounded" />
+                    <Skeleton className="h-6 w-full max-w-[400px] rounded" />
                     <Skeleton className="h-3 w-1/2 rounded opacity-60" />
                   </div>
                 </TableCell>
@@ -52,7 +54,7 @@ export function QuestionTableSkeleton({
             if (colId === "marks") {
               return (
                 <TableCell key={colId} className="w-[80px] text-center">
-                  <Skeleton className="h-6 w-10 mx-auto rounded" />
+                  <Skeleton className="h-10 w-10 mx-auto rounded" />
                 </TableCell>
               );
             }
@@ -60,7 +62,7 @@ export function QuestionTableSkeleton({
             if (colId === "status") {
               return (
                 <TableCell key={colId} className="w-[100px] text-center">
-                  <Skeleton className="h-6 w-16 mx-auto rounded" />
+                  <Skeleton className="h-10 w-16 mx-auto rounded" />
                 </TableCell>
               );
             }
@@ -69,8 +71,8 @@ export function QuestionTableSkeleton({
               return (
                 <TableCell key={colId} className="w-[140px] text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <Skeleton className="h-8 w-8 rounded-lg" />
-                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-10 w-8 rounded-lg" />
+                    <Skeleton className="h-10 w-8 rounded-lg" />
                   </div>
                 </TableCell>
               );
@@ -79,7 +81,7 @@ export function QuestionTableSkeleton({
             // Default skeleton for other columns (websiteUrl, companyName, Email, etc.)
             return (
               <TableCell key={colId} className="min-w-[120px]">
-                <Skeleton className="h-5 w-full max-w-[150px] rounded" />
+                <Skeleton className="h-10 w-full max-w-[150px] rounded" />
               </TableCell>
             );
           })}

@@ -1,4 +1,5 @@
 import React from "react";
+import { StatCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 
@@ -10,6 +11,7 @@ interface StatCardProps {
   color?: string;
   bgColor?: string;
   onClick?: () => void;
+  isLoading?: boolean;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -19,7 +21,10 @@ export const StatCard: React.FC<StatCardProps> = ({
   color = "text-brand-primary",
   bgColor = "bg-brand-primary/10",
   onClick,
+  isLoading = false,
 }) => {
+  if (isLoading) return <StatCardSkeleton />;
+
   return (
     <div
       onClick={onClick}

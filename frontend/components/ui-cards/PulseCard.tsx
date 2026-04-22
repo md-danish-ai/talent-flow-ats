@@ -1,4 +1,5 @@
 import React from "react";
+import { PulseCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 
@@ -9,6 +10,7 @@ interface PulseCardProps {
   icon: React.ReactNode;
   color: string;
   bgColor: string;
+  isLoading?: boolean;
 }
 
 export const PulseCard: React.FC<PulseCardProps> = ({
@@ -18,7 +20,10 @@ export const PulseCard: React.FC<PulseCardProps> = ({
   icon,
   color,
   bgColor,
+  isLoading = false,
 }) => {
+  if (isLoading) return <PulseCardSkeleton />;
+
   return (
     <div className="group relative flex items-center gap-6 p-6 rounded-[24px] bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden">
       {/* Icon Box */}

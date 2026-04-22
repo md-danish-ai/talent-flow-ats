@@ -44,6 +44,11 @@ interface TableSkeletonProps {
    * @default false
    */
   onlyRows?: boolean;
+  /**
+   * Whether to show a collapsible icon column at the start.
+   * @default false
+   */
+  showCollapsible?: boolean;
 }
 
 /**
@@ -57,12 +62,19 @@ export function TableSkeleton({
   actionButtons = 0,
   className,
   onlyRows = false,
+  showCollapsible = false,
 }: TableSkeletonProps) {
   const rows = Array.from({ length: rowCount }).map((_, rowIndex) => (
     <TableRow
       key={rowIndex}
       className="hover:bg-transparent border-b-border/40"
     >
+      {showCollapsible && (
+        <TableCell className="w-[50px]">
+          <Skeleton className="h-4 w-4 rounded-sm mx-auto opacity-60" />
+        </TableCell>
+      )}
+
       {showCheckbox && (
         <TableCell className="w-[50px]">
           <Skeleton className="h-6 w-6 rounded" />
@@ -119,6 +131,11 @@ export function TableSkeleton({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
+            {showCollapsible && (
+              <TableHead className="w-[50px]">
+                <Skeleton className="h-4 w-4 rounded-sm mx-auto opacity-60" />
+              </TableHead>
+            )}
             {showCheckbox && (
               <TableHead className="w-[50px]">
                 <Skeleton className="h-6 w-6 rounded" />

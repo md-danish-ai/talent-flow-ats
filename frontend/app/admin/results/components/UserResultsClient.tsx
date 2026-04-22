@@ -360,6 +360,7 @@ export function UserResultsClient() {
               icon={stat.icon}
               color={stat.color}
               bgColor={stat.bg}
+              isLoading={loading}
               onClick={() => handleStatClick(stat.filter)}
             />
           </motion.div>
@@ -391,6 +392,7 @@ export function UserResultsClient() {
                 color={stat.color}
                 bgColor={stat.bg}
                 borderColor={stat.border}
+                isLoading={loading}
                 onClick={() =>
                   handleStatClick({ type: "grade", value: gradeValue })
                 }

@@ -63,10 +63,10 @@ export function ContactDetailsClient() {
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "websiteUrl", label: "WebSiteURL" },
-    { id: "companyName", label: "CompanyName" },
-    { id: "name", label: "Name" },
+    { id: "companyName", label: "Organization" },
+    { id: "name", label: "Company Name" },
     { id: "title", label: "Title" },
-    { id: "primaryEmail", label: "Primary Email Address" },
+    { id: "primaryEmail", label: "Communication Email" },
     { id: "secondaryEmail", label: "Secondary Email Address" },
     { id: "linkedInUrl", label: "LinkedIn URL" },
     { id: "subject", label: "Subject" },
@@ -286,16 +286,16 @@ export function ContactDetailsClient() {
                     <TableHead>WebSiteURL</TableHead>
                   )}
                   {visibleColumns.includes("companyName") && (
-                    <TableHead>CompanyName</TableHead>
+                    <TableHead>Organization</TableHead>
                   )}
                   {visibleColumns.includes("name") && (
-                    <TableHead>Name</TableHead>
+                    <TableHead>Company Name</TableHead>
                   )}
                   {visibleColumns.includes("title") && (
                     <TableHead>Title</TableHead>
                   )}
                   {visibleColumns.includes("primaryEmail") && (
-                    <TableHead>Primary Email Address</TableHead>
+                    <TableHead>Communication Email</TableHead>
                   )}
                   {visibleColumns.includes("secondaryEmail") && (
                     <TableHead>Secondary Email Address</TableHead>
