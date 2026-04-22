@@ -132,6 +132,8 @@ export async function getUsersByRole(
     date?: string;
     date_from?: string;
     date_to?: string;
+    department_id?: number | string;
+    test_level_id?: number | string;
   },
 ): Promise<{
   data: UserListResponse[];
@@ -151,6 +153,10 @@ export async function getUsersByRole(
   if (options?.date) queryParams.append("date", options.date);
   if (options?.date_from) queryParams.append("date_from", options.date_from);
   if (options?.date_to) queryParams.append("date_to", options.date_to);
+  if (options?.department_id)
+    queryParams.append("department_id", options.department_id.toString());
+  if (options?.test_level_id)
+    queryParams.append("test_level_id", options.test_level_id.toString());
 
   const apiOptions = options ? { ...options } : undefined;
   if (apiOptions) {
@@ -160,6 +166,8 @@ export async function getUsersByRole(
     delete (apiOptions as { date?: string }).date;
     delete (apiOptions as { date_from?: string }).date_from;
     delete (apiOptions as { date_to?: string }).date_to;
+    delete (apiOptions as { department_id?: number | string }).department_id;
+    delete (apiOptions as { test_level_id?: number | string }).test_level_id;
   }
 
   return api.get<{

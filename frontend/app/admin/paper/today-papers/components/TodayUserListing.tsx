@@ -490,9 +490,8 @@ export function TodayUserListing({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Select Date Range
               </Typography>
               <DateRangeHeaderActions
@@ -508,9 +507,8 @@ export function TodayUserListing({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Search Candidates
               </Typography>
               <SearchInput
@@ -528,9 +526,8 @@ export function TodayUserListing({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Attempt Status
               </Typography>
               <SelectDropdown
@@ -546,9 +543,8 @@ export function TodayUserListing({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Department
               </Typography>
               <SelectDropdown
@@ -565,9 +561,8 @@ export function TodayUserListing({
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Exam Level
               </Typography>
               <SelectDropdown

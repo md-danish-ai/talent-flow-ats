@@ -254,7 +254,7 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None):
+def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None):
     db_session = SessionLocal()
     try:
         from sqlalchemy import func, or_
@@ -350,6 +350,22 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
         )
+
+        # --- DEPARTMENT & LEVEL FILTERS ---
+        if department_id:
+            # Filter by either user's department OR their assignment's department
+            results_query = results_query.filter(
+                or_(
+                    User.department_id == department_id,
+                    assignment_subq.c.department_id == department_id
+                )
+            )
+            
+        if test_level_id:
+            # Filter by assignment's test level
+            results_query = results_query.filter(
+                assignment_subq.c.test_level_id == test_level_id
+            )
 
         # Re-apply search to results query if needed (or use base_query logic)
         if search:

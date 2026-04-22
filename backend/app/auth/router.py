@@ -26,6 +26,8 @@ async def get_users(
     date: str = Query(None, description="Single date filter (YYYY-MM-DD)"),
     date_from: str = Query(None, description="Range start date (YYYY-MM-DD)"),
     date_to: str = Query(None, description="Range end date (YYYY-MM-DD)"),
+    department_id: int = Query(None),
+    test_level_id: int = Query(None),
 ):
     data = get_users_by_role(
         role,
@@ -34,7 +36,9 @@ async def get_users(
         search=search,
         date=date,
         date_from=date_from,
-        date_to=date_to
+        date_to=date_to,
+        department_id=department_id,
+        test_level_id=test_level_id
     )
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data["data"], pagination=data.get("pagination"))
 

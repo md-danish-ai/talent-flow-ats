@@ -234,9 +234,8 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
               <SearchInput
@@ -251,10 +250,9 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Department
+                Department
               </Typography>
               <SelectDropdown
                 options={deptOptions}
@@ -270,10 +268,9 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Exam Level
+                Exam Level
               </Typography>
               <SelectDropdown
                 options={levelOptions}

@@ -78,6 +78,8 @@ export function UserListing({ initialData }: UserListingProps) {
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
 
@@ -88,6 +90,8 @@ export function UserListing({ initialData }: UserListingProps) {
         page: currentPage,
         limit: pageSize,
         search: searchQuery,
+        department_id: departmentFilter === "all" ? undefined : Number(departmentFilter),
+        test_level_id: levelFilter === "all" ? undefined : Number(levelFilter),
       });
       setUsers(response.data || []);
       setTotalItems(response.pagination?.total_records || 0);
@@ -96,7 +100,7 @@ export function UserListing({ initialData }: UserListingProps) {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, searchQuery]);
+  }, [currentPage, pageSize, searchQuery, departmentFilter, levelFilter]);
 
   useEffect(() => {
     if (
@@ -104,7 +108,9 @@ export function UserListing({ initialData }: UserListingProps) {
       initialData.data &&
       initialData.data.length > 0 &&
       currentPage === 1 &&
-      !searchQuery
+      !searchQuery &&
+      departmentFilter === "all" &&
+      levelFilter === "all"
     ) {
       setUsers(initialData.data);
       setTotalItems(initialData.pagination?.total_records || 0);
@@ -112,7 +118,7 @@ export function UserListing({ initialData }: UserListingProps) {
     } else {
       fetchUsers();
     }
-  }, [initialData, fetchUsers, currentPage, searchQuery]);
+  }, [initialData, fetchUsers, currentPage, searchQuery, departmentFilter, levelFilter]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -130,6 +136,31 @@ export function UserListing({ initialData }: UserListingProps) {
     setEditingUser(user);
     setIsEditModalOpen(true);
   };
+    
+  // Fetch departments and levels
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
+  const departmentOptions = [
+    { id: "all", label: "All Departments" },
+    ...allDepartments.map((dept) => ({
+      id: String(dept.id),
+      label: dept.name,
+    })),
+  ];
+
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((lvl) => ({
+      id: String(lvl.id),
+      label: lvl.name,
+    })),
+  ];
+
 
   return (
     <>
@@ -162,16 +193,6 @@ export function UserListing({ initialData }: UserListingProps) {
                 {totalItems} USERS
               </Badge>
             )}
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <SearchInput
-              placeholder="Search candidates..."
-              value={searchQuery}
-              onSearch={(val) => {
-                setSearchQuery(val);
-                setCurrentPage(1);
-              }}
-              className="w-64"
-            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="action"
@@ -438,9 +459,8 @@ export function UserListing({ initialData }: UserListingProps) {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
               <SearchInput
@@ -453,11 +473,56 @@ export function UserListing({ initialData }: UserListingProps) {
               />
             </div>
 
+            {/* Department */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Department
+              </Typography>
+              <SelectDropdown
+                placeholder="All Departments"
+                options={departmentOptions}
+                value={departmentFilter}
+                onChange={(val) => {
+                  setDepartmentFilter(val as string);
+                  setCurrentPage(1);
+                }}
+                isLoading={allDepartments.length === 0}
+              />
+            </div>
+
+            {/* Level */}
+            <div className="flex flex-col gap-3">
+              <Typography
+                variant="body5"
+                weight="bold"
+                className="uppercase tracking-widest text-muted-foreground"
+              >
+                Exam Level
+              </Typography>
+              <SelectDropdown
+                placeholder="All Levels"
+                options={levelOptions}
+                value={levelFilter}
+                onChange={(val) => {
+                  setLevelFilter(val as string);
+                  setCurrentPage(1);
+                }}
+                isLoading={allLevels.length === 0}
+              />
+            </div>
+
             <Button
               variant="outline"
+              color="primary"
               className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
               onClick={() => {
                 setSearchQuery("");
+                setDepartmentFilter("all");
+                setLevelFilter("all");
                 setCurrentPage(1);
               }}
             >
