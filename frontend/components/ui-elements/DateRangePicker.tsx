@@ -41,6 +41,7 @@ interface DateRangePickerProps {
   ) => void;
   initialLabel?: string;
   className?: string;
+  triggerClassName?: string;
 }
 
 const PRESETS = [
@@ -96,6 +97,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   onRangeChange,
   initialLabel = "Today",
   className = "",
+  triggerClassName = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -365,8 +367,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         variant="outline"
         onClick={toggleDropdown}
         className={cn(
-          "flex items-center gap-3 px-4 py-3 bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-border rounded-md transition-all h-12 w-full justify-between focus:ring-1 focus:ring-brand-primary focus:border-brand-primary",
+          "flex items-center gap-3 px-4 py-3 bg-input dark:bg-card hover:bg-input/80 border-border/80 rounded-md transition-all h-12 w-full justify-between focus:ring-1 focus:ring-brand-primary focus:border-brand-primary shadow-sm",
           isOpen && "ring-1 ring-brand-primary border-brand-primary",
+          triggerClassName
         )}
       >
         <div className="flex items-center gap-3">

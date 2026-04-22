@@ -16,6 +16,7 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@lib/utils";
+import { motion } from "framer-motion";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
@@ -30,6 +31,8 @@ import { TableColumnToggle } from "@components/ui-elements/Table";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { StatCard } from "@components/ui-cards/StatCard";
+import { InsightCard } from "@components/ui-cards/InsightCard";
 
 import {
   resultsApi,
@@ -64,6 +67,30 @@ const GRADE_OPTIONS = [
   { id: "Average", label: "Average" },
   { id: "Poor", label: "Poor" },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0, scale: 0.95 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 12,
+    },
+  },
+} as const;
 
 export function UserResultsClient() {
   const [items, setItems] = useState<AdminUserResultListItem[]>([]);
@@ -232,10 +259,9 @@ export function UserResultsClient() {
         id: "total",
         label: "Total Candidates",
         value: summaryStatsData?.total || 0,
-        icon: <Users size={20} />,
+        icon: <Users />,
         color: "text-brand-primary",
         bg: "bg-brand-primary/10",
-        border: "border-brand-primary/20",
         trend: "Overall batch",
         filter: { type: "reset", value: "all" },
       },
@@ -244,9 +270,8 @@ export function UserResultsClient() {
         label: "Active Attempts",
         value: summaryStatsData?.active || 0,
         icon: <UserCheck size={20} />,
-        color: "text-emerald-600",
+        color: "text-emerald-500",
         bg: "bg-emerald-500/10",
-        border: "border-emerald-500/20",
         trend: "Currently started",
         filter: { type: "status", value: "started" },
       },
@@ -255,9 +280,8 @@ export function UserResultsClient() {
         label: "Completed Results",
         value: summaryStatsData?.completed || 0,
         icon: <BadgeCheck size={20} />,
-        color: "text-amber-600",
+        color: "text-amber-500",
         bg: "bg-amber-500/10",
-        border: "border-amber-500/20",
         trend: "Submitted records",
         filter: { type: "status", value: "submitted" },
       },
@@ -270,37 +294,37 @@ export function UserResultsClient() {
         id: "excellent",
         label: "Excellent",
         value: summaryStatsData?.excellent || 0,
-        color: "text-emerald-600",
-        bg: "bg-emerald-600/10",
-        border: "border-emerald-600/20",
-        icon: <Trophy size={18} />,
+        color: "text-emerald-500",
+        bg: "bg-emerald-500/10",
+        border: "border-emerald-500/20",
+        icon: <Trophy />,
       },
       {
         id: "good",
-        label: "Good Performance",
+        label: "Good",
         value: summaryStatsData?.good || 0,
         color: "text-blue-500",
         bg: "bg-blue-500/10",
         border: "border-blue-500/20",
-        icon: <BadgeCheck size={18} />,
+        icon: <BadgeCheck />,
       },
       {
         id: "average",
-        label: "Average Results",
+        label: "Average",
         value: summaryStatsData?.average || 0,
         color: "text-amber-500",
         bg: "bg-amber-500/10",
         border: "border-amber-500/20",
-        icon: <Target size={18} />,
+        icon: <Target />,
       },
       {
         id: "poor",
-        label: "Poor Performance",
+        label: "Poor",
         value: summaryStatsData?.poor || 0,
         color: "text-rose-500",
         bg: "bg-rose-500/10",
         border: "border-rose-500/20",
-        icon: <UserX size={18} />,
+        icon: <UserX />,
       },
     ];
   }, [summaryStatsData]);
@@ -321,80 +345,35 @@ export function UserResultsClient() {
 
   return (
     <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <Typography variant="h2" className="font-black tracking-tight">
-            Interview Results
-          </Typography>
-        </div>
-      </div>
-
-      {/* Summary Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {summaryStats.map((stat, idx) => (
-          <div
-            key={idx}
-            onClick={() => handleStatClick(stat.filter)}
-            className={cn(
-              "group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-1 cursor-pointer",
-              stat.border,
-              statusFilter === stat.filter.value &&
-                "ring-2 ring-brand-primary ring-offset-2 dark:ring-offset-slate-900",
-            )}
-          >
-            <div className="relative z-10 flex items-center gap-4">
-              <div
-                className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                  stat.bg,
-                  stat.color,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <Typography
-                  variant="body5"
-                  className="font-extrabold uppercase tracking-widest text-muted-foreground/80 truncate"
-                >
-                  {stat.label}
-                </Typography>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  {loading ? (
-                    <div className="h-8 w-16 bg-muted animate-pulse rounded mt-1" />
-                  ) : (
-                    <>
-                      <Typography
-                        variant="h2"
-                        className="font-black leading-none"
-                      >
-                        {stat.value}
-                      </Typography>
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-medium truncate"
-                      >
-                        {stat.trend}
-                      </Typography>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div
-              className={cn(
-                "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-40 transition-opacity group-hover:opacity-60",
-                stat.bg,
-              )}
+      {/* Summary Stats Row - Using StatCard from Dashboard */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        {summaryStats.map((stat) => (
+          <motion.div key={stat.id} variants={itemVariants}>
+            <StatCard
+              label={stat.label}
+              value={stat.value.toLocaleString()}
+              icon={stat.icon}
+              color={stat.color}
+              bgColor={stat.bg}
+              onClick={() => handleStatClick(stat.filter)}
             />
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Grade Quick Filters Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {gradeStats.map((stat, idx) => {
+      {/* Grade Quick Filters Row - Using InsightCard from Dashboard */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        {gradeStats.map((stat) => {
           const gradeValue =
             stat.id === "excellent"
               ? "Excellent"
@@ -404,59 +383,32 @@ export function UserResultsClient() {
                   ? "Average"
                   : "Poor";
           return (
-            <div
-              key={idx}
-              onClick={() =>
-                handleStatClick({ type: "grade", value: gradeValue })
-              }
-              className={cn(
-                "group relative flex items-center gap-4 p-4 rounded-xl border bg-card/50 transition-all hover:-translate-y-1 cursor-pointer hover:shadow-sm",
-                stat.border,
-                gradeFilter === gradeValue &&
-                  "ring-2 ring-brand-primary ring-offset-2 dark:ring-offset-slate-900 bg-card",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-                  stat.bg,
-                  stat.color,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <div>
-                <Typography
-                  variant="body5"
-                  className="font-bold uppercase tracking-widest text-muted-foreground/60 text-[9px] truncate"
-                >
-                  {stat.label}
-                </Typography>
-                {loading ? (
-                  <div className="h-6 w-10 bg-muted animate-pulse rounded mt-1" />
-                ) : (
-                  <Typography
-                    variant="h3"
-                    className="font-black leading-none mt-1"
-                  >
-                    {stat.value}
-                  </Typography>
-                )}
-              </div>
-            </div>
+            <motion.div key={stat.id} variants={itemVariants}>
+              <InsightCard
+                label={stat.label}
+                value={stat.value}
+                icon={stat.icon}
+                color={stat.color}
+                bgColor={stat.bg}
+                borderColor={stat.border}
+                onClick={() =>
+                  handleStatClick({ type: "grade", value: gradeValue })
+                }
+              />
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Main Content — MCQ-style layout */}
       <MainCard
         title={
-          <>
-            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-brand-primary shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
             Candidates Results
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"

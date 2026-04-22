@@ -207,10 +207,11 @@ export function SelectDropdown({
         variant="ghost"
         color="default"
         size="auto"
+        fullWidth
         onClick={toggleDropdown}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
+          "flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
           "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
@@ -220,7 +221,7 @@ export function SelectDropdown({
             "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
-        <div className="flex w-full items-center justify-between gap-2">
+        <div className="flex items-center justify-between w-full gap-2">
           <Typography
             variant="body4"
             weight="medium"

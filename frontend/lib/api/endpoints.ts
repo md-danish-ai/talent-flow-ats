@@ -98,4 +98,8 @@ export const ENDPOINTS = {
     SKIP_SECTION: (attemptId: string | number, sectionName: string) =>
       `/user/interview-attempts/skip-section/${attemptId}/${sectionName}`,
   },
+
+  DASHBOARD: {
+    OVERVIEW: "/admin/dashboard/overview",
+  },
 } as const;
