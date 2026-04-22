@@ -80,17 +80,8 @@ export function UserListing({ initialData }: UserListingProps) {
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Pagination hook synchronization
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -98,7 +89,7 @@ export function UserListing({ initialData }: UserListingProps) {
       const response = await getUsersByRole("user", {
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
       });
       setUsers(response.data || []);
       setTotalItems(response.pagination?.total_records || 0);
@@ -107,7 +98,7 @@ export function UserListing({ initialData }: UserListingProps) {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch]);
+  }, [currentPage, pageSize, searchQuery]);
 
   useEffect(() => {
     if (
@@ -115,7 +106,7 @@ export function UserListing({ initialData }: UserListingProps) {
       initialData.data &&
       initialData.data.length > 0 &&
       currentPage === 1 &&
-      !debouncedSearch
+      !searchQuery
     ) {
       setUsers(initialData.data);
       setTotalItems(initialData.pagination?.total_records || 0);
@@ -123,7 +114,7 @@ export function UserListing({ initialData }: UserListingProps) {
     } else {
       fetchUsers();
     }
-  }, [initialData, fetchUsers, currentPage, debouncedSearch]);
+  }, [initialData, fetchUsers, currentPage, searchQuery]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -177,7 +168,10 @@ export function UserListing({ initialData }: UserListingProps) {
             <SearchInput
               placeholder="Search candidates..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onSearch={(val) => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              }}
               className="w-64"
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
@@ -451,18 +445,14 @@ export function UserListing({ initialData }: UserListingProps) {
                 <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Name, Mobile or Email..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Name, Mobile or Email..."
+                value={searchQuery}
+                onSearch={(val) => {
+                  setSearchQuery(val);
+                  setCurrentPage(1);
+                }}
+              />
             </div>
 
             <Button

@@ -47,7 +47,6 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
 
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Modals State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,14 +57,6 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [deptToDelete, setDeptToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset to first page on new search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchDepartments = useCallback(async () => {
     setIsLoading(true);
@@ -73,7 +64,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       const response = await departmentsApi.getDepartments({
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
       });
       setDepartments(response.data || []);
       if (response.pagination) {
@@ -84,7 +75,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch]);
+  }, [currentPage, pageSize, searchQuery]);
 
   useEffect(() => {
     fetchDepartments();
@@ -158,8 +149,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             <div className="h-6 w-px bg-border/50 mx-1" />
             <SearchInput
               placeholder="Search departments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onSearch={(val) => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              }}
               className="w-64"
             />
             <Button

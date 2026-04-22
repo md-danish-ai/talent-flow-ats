@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Plus, Users, Search } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { AddAdminModal } from "./AddAdminModal";
@@ -52,16 +52,8 @@ export function AdminListing({ initialData }: AdminListingProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -69,7 +61,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
       const response = await getUsersByRole("admin", {
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
       });
       setUsers(response.data || []);
       setTotalItems(response.pagination?.total_records || 0);
@@ -78,7 +70,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, debouncedSearch]);
+  }, [currentPage, pageSize, searchQuery]);
 
   useEffect(() => {
     if (
@@ -86,7 +78,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
       initialData.data &&
       initialData.data.length > 0 &&
       currentPage === 1 &&
-      !debouncedSearch
+      !searchQuery
     ) {
       setUsers(initialData.data);
       setTotalItems(initialData.pagination?.total_records || 0);
@@ -94,7 +86,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
     } else {
       fetchUsers();
     }
-  }, [initialData, fetchUsers, currentPage, debouncedSearch]);
+  }, [initialData, fetchUsers, currentPage, searchQuery]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -138,7 +130,10 @@ export function AdminListing({ initialData }: AdminListingProps) {
             <SearchInput
               placeholder="Search admins..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onSearch={(val) => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              }}
               className="w-64"
             />
             <Button
