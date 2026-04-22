@@ -124,9 +124,13 @@ export const questionsApi = {
     );
   },
   autoGenerateQuestions: async (data: AutoGenerateRequest) => {
-    return api.post<AutoGenerateResponse>(ENDPOINTS.QUESTIONS.AUTO_GENERATE, data, {
-      silentSuccess: true,
-    });
+    return api.post<AutoGenerateResponse>(
+      ENDPOINTS.QUESTIONS.AUTO_GENERATE,
+      data,
+      {
+        silentSuccess: true,
+      },
+    );
   },
   getQuestionTypeCounts: async (subject: string, examLevel: string) => {
     return api.get<{ type_code: string; marks: number; count: number }[]>(
@@ -181,11 +185,14 @@ export const questionsApi = {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${BASE_URL}${ENDPOINTS.QUESTIONS.UPLOAD_IMAGE}`, {
-      method: "POST",
-      body: formData,
-      headers,
-    });
+    const response = await fetch(
+      `${BASE_URL}${ENDPOINTS.QUESTIONS.UPLOAD_IMAGE}`,
+      {
+        method: "POST",
+        body: formData,
+        headers,
+      },
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

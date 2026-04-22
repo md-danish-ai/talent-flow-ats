@@ -85,7 +85,13 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 def serialize(data: Any) -> Any:
-    """Recursively convert non-serializable objects (datetime, etc.) to JSON-safe types."""
+    """Recursively convert non-serializable objects (Pydantic models, datetime, etc.) to JSON-safe types."""
+    # If the data is a Pydantic model, convert to dict first
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "model_dump"):
+        data = data.model_dump()
+        
     return json.loads(json.dumps(data, cls=CustomJSONEncoder))
 
 

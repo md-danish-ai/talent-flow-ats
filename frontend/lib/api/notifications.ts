@@ -70,11 +70,17 @@ export const getAllNotifications = (params?: {
     query.append("is_read", params.is_read.toString());
 
   const queryString = query.toString() ? `?${query.toString()}` : "";
-  return api.get<NotificationResponse>(`${ENDPOINTS.NOTIFICATIONS.GET}${queryString}`);
+  return api.get<NotificationResponse>(
+    `${ENDPOINTS.NOTIFICATIONS.GET}${queryString}`,
+  );
 };
 
 export const markNotificationsRead = (notification_ids: number[]) =>
-  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.READ, { notification_ids });
+  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.READ, {
+    notification_ids,
+  });
 
 export const markNotificationsUnread = (notification_ids: number[]) =>
-  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.UNREAD, { notification_ids });
+  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.UNREAD, {
+    notification_ids,
+  });

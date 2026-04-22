@@ -369,7 +369,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         className={cn(
           "flex items-center gap-3 px-4 py-3 bg-input dark:bg-card hover:bg-input/80 border-border/80 rounded-md transition-all h-12 w-full justify-between focus:ring-1 focus:ring-brand-primary focus:border-brand-primary shadow-sm",
           isOpen && "ring-1 ring-brand-primary border-brand-primary",
-          triggerClassName
+          triggerClassName,
         )}
       >
         <div className="flex items-center gap-3">

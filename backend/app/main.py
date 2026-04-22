@@ -14,6 +14,7 @@ from app.duplicates.router import router as duplicates_router
 from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
 from app.paper_assignments.router import router as paper_assignments_router
+from app.dashboard.router import router as dashboard_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -99,6 +100,7 @@ app.include_router(duplicates_router)
 app.include_router(departments_router)
 app.include_router(papers_router)
 app.include_router(paper_assignments_router)
+app.include_router(dashboard_router)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

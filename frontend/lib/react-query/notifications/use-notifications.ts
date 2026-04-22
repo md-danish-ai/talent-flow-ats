@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@lib/api';
-import { ENDPOINTS } from '@lib/api/endpoints';
-import { type PaginatedResponse } from '@lib/api/types';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@lib/api";
+import { ENDPOINTS } from "@lib/api/endpoints";
+import { type PaginatedResponse } from "@lib/api/types";
 
 export interface NotificationItem {
   id: number;
@@ -18,9 +18,11 @@ export interface NotificationItem {
   };
 }
 
-export function useNotifications(params: { page?: number; limit?: number; is_read?: boolean } = {}) {
+export function useNotifications(
+  params: { page?: number; limit?: number; is_read?: boolean } = {},
+) {
   return useQuery<PaginatedResponse<NotificationItem>>({
-    queryKey: ['notifications', params],
+    queryKey: ["notifications", params],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
       if (params) {

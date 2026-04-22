@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@lib/api';
-import { ENDPOINTS } from '@lib/api/endpoints';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@lib/api";
+import { ENDPOINTS } from "@lib/api/endpoints";
 
 export interface DashboardStats {
   total_candidates: number;
@@ -27,11 +27,14 @@ export interface DashboardOverview {
   today_pulse: TodayPulse;
 }
 
-export function useDashboardOverview() {
+export function useDashboardOverview(params?: {
+  start_date?: string;
+  end_date?: string;
+}) {
   return useQuery<DashboardOverview>({
-    queryKey: ['dashboard-overview'],
+    queryKey: ["dashboard-overview", params],
     queryFn: async () => {
-      return await api.get(ENDPOINTS.DASHBOARD.OVERVIEW);
+      return await api.get(ENDPOINTS.DASHBOARD.OVERVIEW, { params });
     },
   });
 }

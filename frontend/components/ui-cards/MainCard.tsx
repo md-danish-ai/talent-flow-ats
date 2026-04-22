@@ -30,10 +30,10 @@ export const MainCard: React.FC<MainCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ 
+      transition={{
         type: "spring",
         stiffness: 100,
-        damping: 15
+        damping: 15,
       }}
       className={cn(
         "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
@@ -56,7 +56,7 @@ export const MainCard: React.FC<MainCardProps> = ({
         >
           {title}
         </Typography>
-        
+
         {action && (
           <div className="shrink-0 text-sm font-semibold text-brand-primary">
             {action}

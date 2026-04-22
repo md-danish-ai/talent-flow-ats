@@ -11,17 +11,21 @@ export const ENDPOINTS = {
     CREATE_ADMIN: "/auth/create-admin-account",
     CREATE_PROJECT_LEAD: "/auth/create-project-lead-account",
     GET_ALL_USERS: "/auth/get-all-system-users",
-    TOGGLE_STATUS: (id: string | number) => `/auth/toggle-user-active-status/${id}`,
+    TOGGLE_STATUS: (id: string | number) =>
+      `/auth/toggle-user-active-status/${id}`,
     DELETE_USER: (id: string | number) => `/auth/remove-user-account/${id}`,
-    UPDATE_BASIC_INFO: (id: string | number) => `/auth/update-user-profile/${id}`,
+    UPDATE_BASIC_INFO: (id: string | number) =>
+      `/auth/update-user-profile/${id}`,
     USERS_BY_ROLE: (role: string) => `/auth/list-users-by-role/${role}`,
   },
 
   CLASSIFICATIONS: {
     GET: "/classifications/get-classifications",
     CREATE: "/classifications/create-classification",
-    UPDATE: (id: string | number) => `/classifications/update-classification/${id}`,
-    DELETE: (id: string | number) => `/classifications/remove-classification/${id}`,
+    UPDATE: (id: string | number) =>
+      `/classifications/update-classification/${id}`,
+    DELETE: (id: string | number) =>
+      `/classifications/remove-classification/${id}`,
   },
 
   DEPARTMENTS: {
@@ -57,7 +61,8 @@ export const ENDPOINTS = {
     GET: "/paper-assignments/get-all-assignments",
     ASSIGN: "/paper-assignments/assign-new-paper",
     AUTO_RULES: "/paper-assignments/get-auto-rules",
-    AUTO_RULE_BY_ID: (id: string | number) => `/paper-assignments/get-auto-rule-details/${id}`,
+    AUTO_RULE_BY_ID: (id: string | number) =>
+      `/paper-assignments/get-auto-rule-details/${id}`,
     MY_INTERVIEW_PAPER: "/paper-assignments/get-my-assigned-paper",
   },
 
@@ -69,15 +74,25 @@ export const ENDPOINTS = {
 
   RESULTS: {
     GET_ALL: "/admin/results/get-all-results",
-    USER_DETAIL: (userId: string | number) => `/admin/results/user-result-details/${userId}`,
-    USER_ATTEMPTS: (userId: string | number) => `/admin/results/user-attempt-history/${userId}`,
-    RESET_ATTEMPT: (userId: string | number) => `/admin/results/reset-today-attempt/${userId}`,
-    RESET_DETAILS: (userId: string | number) => `/admin/results/clear-user-details/${userId}`,
-    RE_INTERVIEW: (userId: string | number) => `/admin/results/enable-reinterview/${userId}`,
-    RESET_SUBJECTS: (userId: string | number) => `/admin/results/reset-user-subjects/${userId}`,
-    MANUAL_MARKS: (userId: string | number, attemptId: string | number, questionId: string | number) =>
-      `/admin/results/manual-marks/${userId}/${attemptId}/${questionId}`,
-    ATTEMPT_DETAIL: (attemptId: string | number) => `/results/get-attempt-detail/${attemptId}`,
+    USER_DETAIL: (userId: string | number) =>
+      `/admin/results/user-result-details/${userId}`,
+    USER_ATTEMPTS: (userId: string | number) =>
+      `/admin/results/user-attempt-history/${userId}`,
+    RESET_ATTEMPT: (userId: string | number) =>
+      `/admin/results/reset-today-attempt/${userId}`,
+    RESET_DETAILS: (userId: string | number) =>
+      `/admin/results/clear-user-details/${userId}`,
+    RE_INTERVIEW: (userId: string | number) =>
+      `/admin/results/enable-reinterview/${userId}`,
+    RESET_SUBJECTS: (userId: string | number) =>
+      `/admin/results/reset-user-subjects/${userId}`,
+    MANUAL_MARKS: (
+      userId: string | number,
+      attemptId: string | number,
+      questionId: string | number,
+    ) => `/admin/results/manual-marks/${userId}/${attemptId}/${questionId}`,
+    ATTEMPT_DETAIL: (attemptId: string | number) =>
+      `/results/get-attempt-detail/${attemptId}`,
   },
 
   USER_DETAILS: {
@@ -89,12 +104,16 @@ export const ENDPOINTS = {
   INTERVIEW_ATTEMPTS: {
     ACTIVE_STATUS: "/user/interview-attempts/check-active-status",
     START: "/user/interview-attempts/start-new-attempt",
-    SUBMIT: (id: string | number) => `/user/interview-attempts/submit-attempt/${id}`,
-    AUTO_SUBMIT: (id: string | number) => `/user/interview-attempts/auto-submit-attempt/${id}`,
-    SUMMARY: (id: string | number) => `/user/interview-attempts/get-attempt-summary/${id}`,
+    SUBMIT: (id: string | number) =>
+      `/user/interview-attempts/submit-attempt/${id}`,
+    AUTO_SUBMIT: (id: string | number) =>
+      `/user/interview-attempts/auto-submit-attempt/${id}`,
+    SUMMARY: (id: string | number) =>
+      `/user/interview-attempts/get-attempt-summary/${id}`,
     SAVE_ANSWER: (attemptId: string | number, questionId: string | number) =>
       `/user/interview-attempts/save-answer/${attemptId}/${questionId}`,
-    SAVE_BATCH: (attemptId: string | number) => `/user/interview-attempts/save-answers-batch/${attemptId}`,
+    SAVE_BATCH: (attemptId: string | number) =>
+      `/user/interview-attempts/save-answers-batch/${attemptId}`,
     SKIP_SECTION: (attemptId: string | number, sectionName: string) =>
       `/user/interview-attempts/skip-section/${attemptId}/${sectionName}`,
   },

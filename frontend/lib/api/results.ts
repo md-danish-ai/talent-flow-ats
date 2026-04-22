@@ -188,7 +188,9 @@ export const resultsApi = {
     if (overallGrade && overallGrade !== "all")
       params.append("overall_grade", overallGrade);
 
-    return api.get<PaginatedUserResults>(`${ENDPOINTS.RESULTS.GET_ALL}?${params.toString()}`);
+    return api.get<PaginatedUserResults>(
+      `${ENDPOINTS.RESULTS.GET_ALL}?${params.toString()}`,
+    );
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
@@ -243,9 +245,8 @@ export const resultsApi = {
       message: string;
       manual_marks: number;
       new_total_marks: number;
-    }>(
-      ENDPOINTS.RESULTS.MANUAL_MARKS(userId, attemptId, questionId),
-      { marks },
-    );
+    }>(ENDPOINTS.RESULTS.MANUAL_MARKS(userId, attemptId, questionId), {
+      marks,
+    });
   },
 };

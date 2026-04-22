@@ -18,6 +18,8 @@ export interface ApiRequestOptions {
   silentSuccess?: boolean;
   // Suppress the automatic error toast for this request
   silentError?: boolean;
+  // Query parameters for GET/DELETE requests
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 interface ValidationError {
@@ -123,7 +125,20 @@ export async function apiClient<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = `${BASE_URL}${endpoint}`;
+  // Construct URL with query parameters if present
+  let url = `${BASE_URL}${endpoint}`;
+  if (options.params) {
+    const searchParams = new URLSearchParams();
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
 
   const fetchOptions: RequestInit & { next?: NextFetchRequestConfig } = {
     method,

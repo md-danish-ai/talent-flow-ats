@@ -1,23 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Users, 
-  FileText, 
-  HelpCircle, 
-  Zap, 
-  UserPlus, 
-  RefreshCcw, 
-  ClipboardCheck, 
+import {
+  Users,
+  FileText,
+  HelpCircle,
+  Zap,
+  UserPlus,
+  RefreshCcw,
+  ClipboardCheck,
   CheckCircle2,
   Bell,
   Trophy,
   BadgeCheck,
   Target,
-  UserX
+  UserX,
+  ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 import { MainCard } from "@components/ui-cards/MainCard";
 import { StatCard } from "@components/ui-cards/StatCard";
@@ -29,6 +31,7 @@ import { useNotifications } from "@lib/react-query/notifications/use-notificatio
 import { PulseCard } from "@components/ui-cards/PulseCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
+import { Button } from "@components/ui-elements/Button";
 
 // Types for better safety
 interface DashboardNotification {
@@ -65,40 +68,43 @@ const itemVariants = {
     transition: {
       type: "spring",
       stiffness: 100,
-      damping: 12
-    }
+      damping: 12,
+    },
   },
 } as const;
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  const { data: overview, isLoading: overviewLoading } = useDashboardOverview();
+  const {
+    data: overview,
+    isLoading: overviewLoading,
+    isFetching: isRefetching,
+  } = useDashboardOverview({
+    start_date: startDate,
+    end_date: endDate,
+  });
   const { data: notificationsData } = useNotifications({ limit: 5 });
 
-  const notifications = (notificationsData?.data || []) as DashboardNotification[];
-
-  if (overviewLoading) {
-    return (
-      <PageContainer className="py-6">
-        <div className="h-10 w-64 bg-muted/20 animate-pulse rounded mb-8" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted/20 animate-pulse rounded-2xl" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 h-96 bg-muted/20 animate-pulse rounded-3xl" />
-          <div className="h-96 bg-muted/20 animate-pulse rounded-3xl" />
-        </div>
-      </PageContainer>
-    );
-  }
+  const notifications = (notificationsData?.data ||
+    []) as DashboardNotification[];
 
   const { stats, today_pulse } = overview ?? {
-    stats: { total_candidates: 0, active_papers: 0, total_questions: 0, today_attempts: 0 },
-    today_pulse: { registrations: 0, reinterviews: 0, assignments: 0, attempts: 0, grades: [] },
+    stats: {
+      total_candidates: 0,
+      active_papers: 0,
+      total_questions: 0,
+      today_attempts: 0,
+    },
+    today_pulse: {
+      registrations: 0,
+      reinterviews: 0,
+      assignments: 0,
+      attempts: 0,
+      grades: [],
+    },
   };
 
   const displayGrades = today_pulse?.grades?.length
@@ -111,10 +117,34 @@ export default function DashboardPage() {
       ];
 
   const statCards = [
-    { label: "Total Users", value: stats?.total_candidates ?? 0, icon: <Users />, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-    { label: "Active Papers", value: stats?.active_papers ?? 0, icon: <FileText />, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
-    { label: "Question Pool", value: stats?.total_questions ?? 0, icon: <HelpCircle />, color: "text-purple-500", bgColor: "bg-purple-500/10" },
-    { label: "Today's Efforts", value: stats?.today_attempts ?? 0, icon: <Zap />, color: "text-amber-500", bgColor: "bg-amber-500/10" },
+    {
+      label: "Total Users",
+      value: stats?.total_candidates ?? 0,
+      icon: <Users />,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
+    },
+    {
+      label: "Active Papers",
+      value: stats?.active_papers ?? 0,
+      icon: <FileText />,
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
+    },
+    {
+      label: "Question Pool",
+      value: stats?.total_questions ?? 0,
+      icon: <HelpCircle />,
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+    },
+    {
+      label: "Today's Efforts",
+      value: stats?.today_attempts ?? 0,
+      icon: <Zap />,
+      color: "text-amber-500",
+      bgColor: "bg-amber-500/10",
+    },
   ];
 
   const pulseMetrics = [
@@ -122,7 +152,7 @@ export default function DashboardPage() {
       label: "New Registrations",
       value: today_pulse?.registrations ?? 0,
       icon: <UserPlus />,
-      sub: "Fresh applicants today",
+      sub: "Fresh applicants",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
@@ -153,148 +183,264 @@ export default function DashboardPage() {
   ];
 
   const gradeConfigs: Record<string, GradeConfig> = {
-    Excellent: { icon: <Trophy />, color: "text-emerald-500", bgColor: "bg-emerald-500/10", borderColor: "border-emerald-500/20" },
-    Good: { icon: <BadgeCheck />, color: "text-blue-500", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/20" },
-    Average: { icon: <Target />, color: "text-amber-500", bgColor: "bg-amber-500/10", borderColor: "border-amber-500/20" },
-    Poor: { icon: <UserX />, color: "text-rose-500", bgColor: "bg-rose-500/10", borderColor: "border-rose-500/20" },
+    Excellent: {
+      icon: <Trophy />,
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/20",
+    },
+    Good: {
+      icon: <BadgeCheck />,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
+      borderColor: "border-blue-500/20",
+    },
+    Average: {
+      icon: <Target />,
+      color: "text-amber-500",
+      bgColor: "bg-amber-500/10",
+      borderColor: "border-amber-500/20",
+    },
+    Poor: {
+      icon: <UserX />,
+      color: "text-rose-500",
+      bgColor: "bg-rose-500/10",
+      borderColor: "border-rose-500/20",
+    },
   };
 
   return (
     <PageContainer className="space-y-8 py-8">
+      {/* PERSISTENT HEADER: This part does not unmount during loading */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <Typography variant="body1" className="text-muted-foreground font-medium">
-            Monitor system health, candidate flow and today&apos;s performance at a glance.
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <Typography
+            variant="body1"
+            className="text-muted-foreground font-medium"
+          >
+            Monitor system health, candidate flow and performance insights.
           </Typography>
         </motion.div>
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }} 
-          animate={{ opacity: 1, x: 0 }} 
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
           className="flex-shrink-0"
         >
-           <DateRangePicker 
-             onRangeChange={(range) => {
-               if (range) {
-                 setStartDate(range.from);
-                 setEndDate(range.to);
-               } else {
-                 setStartDate("");
-                 setEndDate("");
-               }
-             }}
-             initialLabel="Today"
-             className="w-[280px]"
-           />
+          <DateRangePicker
+            onRangeChange={(range) => {
+              if (range) {
+                setStartDate(range.from);
+                setEndDate(range.to);
+              } else {
+                setStartDate("");
+                setEndDate("");
+              }
+            }}
+            initialLabel="Today"
+            className="w-[280px]"
+          />
         </motion.div>
       </div>
 
-      {/* Top Stat Cards Section */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-      >
-        {statCards.map((stat) => (
-          <motion.div key={stat.label} variants={itemVariants}>
-            <StatCard
-              label={stat.label}
-              value={stat.value.toLocaleString()}
-              icon={stat.icon}
-              color={stat.color}
-              bgColor={stat.bgColor}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Today's Pulse */}
-        <div className="lg:col-span-2">
-          <MainCard
-            title={
-              <div className="flex items-center gap-3">
-                <Zap size={22} className="text-brand-primary" />
-                <Typography variant="h4" weight="black" className="uppercase tracking-widest pt-0.5 text-foreground">Today&apos;s Pulse</Typography>
-              </div>
-            }
-            className="shadow-xl"
-          >
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-1">
-              {pulseMetrics.map((metric) => (
-                <motion.div key={metric.label} variants={itemVariants}>
-                  <PulseCard {...metric} />
-                </motion.div>
-              ))}
-            </motion.div>
-          </MainCard>
-        </div>
-
-        {/* Activity & Focus */}
-        <div className="lg:col-span-1">
-          <MainCard
-            title={
-              <div className="flex items-center gap-3">
-                <Bell size={22} className="text-rose-500" />
-                <Typography variant="h4" weight="black" className="uppercase tracking-widest pt-0.5 text-foreground">Activity & Focus</Typography>
-              </div>
-            }
-            className="shadow-xl"
-          >
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-1">
-              {notifications.length === 0 ? (
-                <div className="py-20 text-center text-muted-foreground/40 font-bold text-xs uppercase tracking-widest">No recent activity</div>
-              ) : (
-                <>
-                  {notifications.map((notif) => (
-                    <motion.div key={notif.id} variants={itemVariants}>
-                      <ActivityItem
-                        icon={notif.type === 'duplicate_user' ? <UserPlus size={18} /> : <FileText size={18} />}
-                        title={notif.title}
-                        description={notif.message}
-                        time={formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
-                        color={notif.type === 'duplicate_user' ? 'text-rose-500' : 'text-blue-500'}
-                      />
-                    </motion.div>
-                  ))}
-                  <button className="w-full py-5 mt-4 text-xs font-black uppercase tracking-widest text-brand-primary hover:bg-muted/30 transition-all border-t border-border rounded-b-3xl">
-                    View all notifications →
-                  </button>
-                </>
-              )}
-            </motion.div>
-          </MainCard>
-        </div>
-      </div>
-
-      {/* Performance Insights */}
-      <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <Trophy size={22} className="text-emerald-500" />
-            <Typography variant="h4" weight="black" className="uppercase tracking-widest pt-0.5 text-foreground">Performance Insights</Typography>
+      {overviewLoading ? (
+        /* SKELETON AREA: Only content part shows skeletons */
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-32 bg-muted/20 animate-pulse rounded-2xl"
+              />
+            ))}
           </div>
-        }
-        className="shadow-xl"
-      >
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1">
-          {displayGrades.map((grade) => {
-            const config = gradeConfigs[grade.label] || gradeConfigs.Average;
-            return (
-              <motion.div key={grade.label} variants={itemVariants}>
-                <InsightCard
-                  label={grade.label}
-                  value={grade.count}
-                  icon={config.icon}
-                  color={config.color}
-                  bgColor={config.bgColor}
-                  borderColor={config.borderColor}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-96 bg-muted/20 animate-pulse rounded-3xl" />
+            <div className="h-96 bg-muted/20 animate-pulse rounded-3xl" />
+          </div>
+        </div>
+      ) : (
+        /* ACTUAL CONTENT: Reappears when loading finishes */
+        <motion.div
+          initial={{ opacity: 0.5 }}
+          animate={{ opacity: isRefetching ? 0.7 : 1 }}
+          className="space-y-8"
+        >
+          {/* Top Stat Cards Section */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {statCards.map((stat) => (
+              <motion.div key={stat.label} variants={itemVariants}>
+                <StatCard
+                  label={stat.label}
+                  value={stat.value.toLocaleString()}
+                  icon={stat.icon}
+                  color={stat.color}
+                  bgColor={stat.bgColor}
                 />
               </motion.div>
-            );
-          })}
+            ))}
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            {/* Pulse Section */}
+            <div className="lg:col-span-2">
+              <MainCard
+                title={
+                  <div className="flex items-center gap-3">
+                    <Zap size={22} className="text-brand-primary" />
+                    <Typography
+                      variant="h4"
+                      weight="black"
+                      className="uppercase tracking-widest pt-0.5 text-foreground"
+                    >
+                      Dashboard Pulse
+                    </Typography>
+                  </div>
+                }
+                className="h-full"
+              >
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-1"
+                >
+                  {pulseMetrics.map((metric) => (
+                    <motion.div key={metric.label} variants={itemVariants}>
+                      <PulseCard {...metric} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </MainCard>
+            </div>
+
+            {/* Activity Section */}
+            <div className="lg:col-span-1">
+              <MainCard
+                title={
+                  <div className="flex items-center gap-3">
+                    <Bell size={22} className="text-rose-500" />
+                    <Typography
+                      variant="h4"
+                      weight="black"
+                      className="uppercase tracking-widest pt-0.5 text-foreground"
+                    >
+                      Activity & Focus
+                    </Typography>
+                  </div>
+                }
+                className="h-full"
+                bodyClassName="p-1"
+              >
+                <div className="flex flex-col flex-1 h-full">
+                  <div className="flex-1 space-y-1">
+                    {notifications.length === 0 ? (
+                      <div className="py-20 text-center text-muted-foreground/40 font-bold text-xs uppercase tracking-widest">
+                        No recent activity
+                      </div>
+                    ) : (
+                      <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-1"
+                      >
+                        {notifications.map((notif) => (
+                          <motion.div key={notif.id} variants={itemVariants}>
+                            <ActivityItem
+                              icon={
+                                notif.type === "duplicate_user" ? (
+                                  <UserPlus size={18} />
+                                ) : (
+                                  <FileText size={18} />
+                                )
+                              }
+                              title={notif.title}
+                              description={notif.message}
+                              time={formatDistanceToNow(
+                                new Date(notif.created_at),
+                                { addSuffix: true },
+                              )}
+                              color={
+                                notif.type === "duplicate_user"
+                                  ? "text-rose-500"
+                                  : "text-blue-500"
+                              }
+                              className="p-3"
+                            />
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {notifications.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      color="primary"
+                      fullWidth
+                      animate="scale"
+                      onClick={() => router.push("/admin/notifications")}
+                      className="py-5 mt-auto text-xs font-black uppercase tracking-widest border-t border-border rounded-t-none rounded-b-3xl h-auto flex items-center justify-center gap-2 shadow-none hover:bg-muted/30"
+                      endIcon={<ArrowRight size={14} />}
+                    >
+                      View all
+                    </Button>
+                  )}
+                </div>
+              </MainCard>
+            </div>
+          </div>
+
+          {/* Performance Insights */}
+          <MainCard
+            title={
+              <div className="flex items-center gap-3">
+                <Trophy size={22} className="text-emerald-500" />
+                <Typography
+                  variant="h4"
+                  weight="black"
+                  className="uppercase tracking-widest pt-0.5 text-foreground"
+                >
+                  Performance Insights
+                </Typography>
+              </div>
+            }
+          >
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
+            >
+              {displayGrades.map((grade) => {
+                const config =
+                  gradeConfigs[grade.label] || gradeConfigs.Average;
+                return (
+                  <motion.div key={grade.label} variants={itemVariants}>
+                    <InsightCard
+                      label={grade.label}
+                      value={grade.count}
+                      icon={config.icon}
+                      color={config.color}
+                      bgColor={config.bgColor}
+                      borderColor={config.borderColor}
+                      onClick={() => router.push(`/admin/results?grade=${grade.label}`)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </MainCard>
         </motion.div>
-      </MainCard>
+      )}
     </PageContainer>
   );
 }

@@ -74,7 +74,11 @@ export async function createAdmin(
   data: CreateAdminFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<CreateAdminResponse> {
-  return api.post<CreateAdminResponse>(ENDPOINTS.AUTH.CREATE_ADMIN, data, options);
+  return api.post<CreateAdminResponse>(
+    ENDPOINTS.AUTH.CREATE_ADMIN,
+    data,
+    options,
+  );
 }
 
 // POST /auth/create-project-lead - Create a new project lead

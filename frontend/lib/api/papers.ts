@@ -109,6 +109,9 @@ export const papersApi = {
   },
 
   updateGradeSettings: async (id: number, grade_settings: GradeSetting[]) => {
-    return api.put<PaperSetup>(ENDPOINTS.PAPERS.GRADE_SETTINGS(id), grade_settings);
+    return api.put<PaperSetup>(
+      ENDPOINTS.PAPERS.GRADE_SETTINGS(id),
+      grade_settings,
+    );
   },
 };
