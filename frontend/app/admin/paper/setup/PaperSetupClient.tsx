@@ -16,10 +16,10 @@ import { useClassifications } from "@lib/react-query/classifications/use-classif
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
-import { Filter, RotateCcw, Search } from "lucide-react";
+import { Filter, RotateCcw } from "lucide-react";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
 import { cn } from "@lib/utils";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -239,18 +239,11 @@ export function PaperSetupClient() {
                 <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Paper name..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Paper name..."
+                value={searchQuery}
+                onSearch={handleSearchChange}
+              />
             </div>
 
             {/* Department Filter */}

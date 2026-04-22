@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Input } from "@components/ui-elements/Input";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Search, Mail, Lock } from "lucide-react";
 import { ComponentPageView } from "../ComponentPageView";
 import { DocSubSection } from "../DocSubSection";
@@ -67,6 +68,15 @@ export default function InputShowcase() {
       <DocSubSection title="Simple Inputs">
         <Input placeholder="Placeholder text" />
         <Input defaultValue="Predefined value" />
+      </DocSubSection>
+      <DocSubSection title="Standardized Search (Debounced)">
+        <SearchInput
+          placeholder="Type to search (debounced)..."
+          onSearch={(val) => console.log("Search:", val)}
+        />
+        <div className="text-[10px] text-muted-foreground italic mt-1">
+          * Automatically debounced (500ms) with clear button and focus effects.
+        </div>
       </DocSubSection>
     </div>
   </ComponentPageView>

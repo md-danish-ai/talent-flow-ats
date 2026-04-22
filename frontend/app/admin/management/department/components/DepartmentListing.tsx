@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Building2 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";

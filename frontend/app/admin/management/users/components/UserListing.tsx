@@ -13,7 +13,6 @@ import {
   Users,
   Eye,
   UserPlus,
-  Search,
   Filter,
   RotateCcw,
   Mail,
@@ -34,7 +33,6 @@ import { Modal } from "@components/ui-elements/Modal";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { cn } from "@lib/utils";

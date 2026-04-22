@@ -55,7 +55,6 @@ export function PassageClient() {
   const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
     "all",
   );
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
@@ -88,13 +87,6 @@ export function PassageClient() {
     );
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -103,7 +95,7 @@ export function PassageClient() {
         page: currentPage,
         limit: pageSize,
         question_type: QUESTION_TYPES.PASSAGE_CONTENT,
-        search: debouncedSearch,
+        search: searchQuery,
         subject:
           subjectFilter && subjectFilter !== "all"
             ? (subjectFilter as string)
@@ -134,7 +126,7 @@ export function PassageClient() {
   }, [
     currentPage,
     pageSize,
-    debouncedSearch,
+    searchQuery,
     subjectFilter,
     examLevelFilter,
     marksFilter,

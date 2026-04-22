@@ -57,7 +57,6 @@ export function ImageSubjectiveClient() {
   const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
     "all",
   );
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
@@ -92,13 +91,6 @@ export function ImageSubjectiveClient() {
     );
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -107,7 +99,7 @@ export function ImageSubjectiveClient() {
         page: currentPage,
         limit: pageSize,
         question_type: QUESTION_TYPES.IMAGE_SUBJECTIVE,
-        search: debouncedSearch,
+        search: searchQuery,
         subject:
           subjectFilter && subjectFilter !== "all"
             ? (subjectFilter as string)
@@ -138,7 +130,7 @@ export function ImageSubjectiveClient() {
   }, [
     currentPage,
     pageSize,
-    debouncedSearch,
+    searchQuery,
     subjectFilter,
     examLevelFilter,
     marksFilter,

@@ -34,7 +34,7 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
     .map((c) => `${c.name}=${c.value}`)
     .join(";");
 
-  let initialData: UserListResponse[] = [];
+  let initialData = undefined;
   try {
     const todayDate = new Date().toISOString().split("T")[0];
 
@@ -44,6 +44,8 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
       date: date_from || date_to ? undefined : date || todayDate,
       date_from: date_from,
       date_to: date_to,
+      page: 1,
+      limit: 10,
     };
 
     initialData = await getUsersByRole("user", fetchOptions);

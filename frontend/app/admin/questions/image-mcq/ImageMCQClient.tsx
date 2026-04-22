@@ -57,7 +57,6 @@ export function ImageMCQClient({
     "all",
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<Question[]>(initialData || []);
   const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
@@ -122,13 +121,6 @@ export function ImageMCQClient({
   };
 
   // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset page on search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -136,7 +128,7 @@ export function ImageMCQClient({
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
         subject:
           subjectFilter && subjectFilter !== "all"
             ? (subjectFilter as string)
@@ -169,7 +161,7 @@ export function ImageMCQClient({
   }, [
     currentPage,
     pageSize,
-    debouncedSearch,
+    searchQuery,
     subjectFilter,
     examLevelFilter,
     marksFilter,

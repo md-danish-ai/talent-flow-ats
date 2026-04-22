@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -16,14 +16,12 @@ import {
   Mail,
   Filter,
   RotateCcw,
-  Search,
   Copy,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { UserListResponse } from "@lib/api/auth";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -34,6 +32,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { useRouter } from "next/navigation";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Avatar } from "@components/ui-elements/Avatar";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 
 import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
 import { DateRangeHeaderActions } from "./DateRangeHeaderActions";
@@ -44,32 +43,55 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 
 interface TodayUserListingProps {
-  initialData?: UserListResponse[];
+  initialData?: {
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  };
   initialLabel?: string;
 }
 
 export function TodayUserListing({
-  initialData = [],
+  initialData,
   initialLabel = "Today",
 }: TodayUserListingProps) {
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [users, setUsers] = useState<UserListResponse[]>(
+    initialData?.data || [],
+  );
+  const [loading, setLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(
+    initialData?.pagination?.total_records || 0,
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
   const searchParams = useSearchParams();
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(true);
 
-  // Sync with initialData whenever it changes (e.g. on URL change)
-  useEffect(() => {
-    if (initialData) {
-      setUsers(initialData);
-      setLoading(false);
-    }
-  }, [initialData]);
-
-  // Manual API refresh function
-  const handleRefresh = async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const role = "user";
       const options = {
+        page: currentPage,
+        limit: pageSize,
+        search: searchQuery,
         date:
           searchParams.get("date") ||
           (!searchParams.get("date_from")
@@ -79,30 +101,30 @@ export function TodayUserListing({
         date_to: searchParams.get("date_to") || undefined,
       };
 
-      const refreshedData = await getUsersByRole(role, options);
-      setUsers(refreshedData);
-      toast.success("List Refreshed");
+      const response = await getUsersByRole(role, options);
+      setUsers(response.data || []);
+      setTotalItems(response.pagination?.total_records || 0);
     } catch (error) {
-      console.error("Refresh failed:", error);
-      toast.error("Refresh failed");
+      console.error("Fetch failed:", error);
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
+  }, [currentPage, pageSize, searchQuery, searchParams]);
+
+  useEffect(() => {
+    if (currentPage === 1 && searchQuery === "" && initialData?.data) {
+      // Skip initial fetch if we have initialData
+      return;
+    }
+    fetchData();
+  }, [fetchData]);
+
+  // Manual API refresh function
+  const handleRefresh = async () => {
+    await fetchData();
+    toast.success("List Refreshed");
   };
-
-  // Pagination and Filter states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
-    null,
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const router = useRouter();
 
@@ -139,13 +161,7 @@ export function TodayUserListing({
 
   // Filter logic
   const filteredUsers = users.filter((user) => {
-    const searchMatch =
-      !searchQuery ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.mobile.includes(searchQuery) ||
-      (user.email &&
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()));
-
+    // Search is handled by API now
     const deptName = user.department_name || user.assignment?.department_name;
     const departmentMatch =
       departmentFilter === "all" || deptName === departmentFilter;
@@ -161,27 +177,10 @@ export function TodayUserListing({
         !user.assignment?.is_attempted) ||
       (statusFilter === "pending" && !user.assignment?.paper_id);
 
-    return searchMatch && departmentMatch && levelMatch && statusMatch;
+    return departmentMatch && levelMatch && statusMatch;
   });
 
-  const totalItems = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
-  // Handlers for pagination
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1); // Reset to first page
-  };
-
-  // Sliced data for current page
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const paginatedUsers = filteredUsers;
 
   return (
     <>
@@ -462,8 +461,11 @@ export function TodayUserListing({
                 totalPages={totalPages}
                 totalItems={totalItems}
                 pageSize={pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           )}
@@ -504,18 +506,14 @@ export function TodayUserListing({
                 <span className="w-4 h-px bg-muted-foreground/30" />
                 Search Candidates
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by name, mobile..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Search by name, mobile..."
+                value={searchQuery}
+                onSearch={(val) => {
+                  setSearchQuery(val);
+                  setCurrentPage(1);
+                }}
+              />
             </div>
 
             {/* Attempt Status Filter */}

@@ -60,7 +60,6 @@ export function MCQClient({
     "all",
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<Question[]>(initialData);
@@ -122,13 +121,6 @@ export function MCQClient({
     );
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset page on search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -136,7 +128,7 @@ export function MCQClient({
       const response = await questionsApi.getQuestions({
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
         subject:
           subjectFilter && subjectFilter !== "all"
             ? (subjectFilter as string)
@@ -170,7 +162,7 @@ export function MCQClient({
   }, [
     currentPage,
     pageSize,
-    debouncedSearch,
+    searchQuery,
     subjectFilter,
     examLevelFilter,
     marksFilter,

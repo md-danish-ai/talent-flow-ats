@@ -9,7 +9,6 @@ import {
   UserCheck,
   UserX,
   Filter,
-  Search,
   RotateCcw,
   Trophy,
   BadgeCheck,
@@ -20,7 +19,7 @@ import { motion } from "framer-motion";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
-import { Input } from "@components/ui-elements/Input";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Badge } from "@components/ui-elements/Badge";
 import { Alert } from "@components/ui-elements/Alert";
 import { Button } from "@components/ui-elements/Button";
@@ -210,23 +209,6 @@ export function UserResultsClient() {
 
   const firstMountRef = useRef(true);
 
-  useEffect(() => {
-    if (firstMountRef.current) {
-      firstMountRef.current = false;
-      return;
-    }
-    const timer = setTimeout(() => {
-      setPage(1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [
-    search,
-    startDate,
-    endDate,
-    statusFilter,
-    completionReasonFilter,
-    gradeFilter,
-  ]);
 
   useEffect(() => {
     void fetchItems();
@@ -573,18 +555,14 @@ export function UserResultsClient() {
               >
                 Search Candidates
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by name, mobile..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Search by name, mobile..."
+                value={search}
+                onSearch={(val) => {
+                  setSearch(val);
+                  setPage(1);
+                }}
+              />
             </div>
 
             {/* Date Range */}

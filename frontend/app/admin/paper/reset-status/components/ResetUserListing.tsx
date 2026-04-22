@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@lib/utils";
 import {
   Table,
@@ -17,12 +17,11 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Input } from "@components/ui-elements/Input";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { ResetConfirmModal } from "./ResetConfirmModal";
 import { ResetDetailsModal } from "./ResetDetailsModal";
 import { ReInterviewModal } from "./ReInterviewModal";
 import { ResetSubjectsModal } from "./ResetSubjectsModal";
-import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
@@ -44,35 +43,69 @@ import {
 import { Typography } from "@components/ui-elements/Typography";
 import { getUsersByRole } from "@lib/api/auth";
 import { toast } from "@lib/toast";
-import { useEffect } from "react";
 
 interface ResetUserListingProps {
-  initialData?: UserListResponse[];
+  initialData?: {
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  };
 }
 
-export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(true);
+export function ResetUserListing({ initialData }: ResetUserListingProps) {
+  const [users, setUsers] = useState<UserListResponse[]>(
+    initialData?.data || [],
+  );
+  const [loading, setLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(
+    initialData?.pagination?.total_records || 0,
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
-  useEffect(() => {
-    if (initialData) {
-      setUsers(initialData);
-      setLoading(false);
-    }
-  }, [initialData]);
+  // Search and Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const handleRefresh = async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const refreshedData = await getUsersByRole("user");
-      setUsers(refreshedData);
-      toast.success("List Refreshed");
+      const response = await getUsersByRole("user", {
+        page: currentPage,
+        limit: pageSize,
+        search: searchQuery,
+      });
+      setUsers(response.data);
+      setTotalItems(response.pagination.total_records);
     } catch (error) {
-      console.error("Refresh failed:", error);
-      toast.error("Refresh failed");
+      console.error("Fetch failed:", error);
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
+  }, [currentPage, pageSize, searchQuery]);
+
+  useEffect(() => {
+    if (currentPage === 1 && searchQuery === "" && initialData?.data) {
+      // Skip initial fetch if we have initialData
+      return;
+    }
+    fetchData();
+  }, [fetchData]);
+
+  const handleRefresh = async () => {
+    await fetchData();
+    toast.success("List Refreshed");
   };
 
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
@@ -84,24 +117,10 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
 
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const router = useRouter();
 
   // Filter logic
   const filteredUsers = users.filter((user) => {
-    const searchMatch =
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.mobile.includes(searchQuery) ||
-      (user.email &&
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Search is handled by API now
 
     const statusMatch =
       statusFilter === "all" ||
@@ -115,7 +134,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
     const userLevel = user.test_level_name || user.assignment?.test_level_name;
     const levelMatch = levelFilter === "all" || userLevel === levelFilter;
 
-    return searchMatch && statusMatch && departmentMatch && levelMatch;
+    return statusMatch && departmentMatch && levelMatch;
   });
 
   // Fetch all departments and levels from API
@@ -148,24 +167,8 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
     { id: "inprogress", label: "In Progress" },
   ];
 
-  const totalItems = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
-  // Handlers for pagination
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1); // Reset to first page
-  };
-
-  // Sliced data for current page
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  // Use directly filtered data (client side filters only now)
+  const paginatedUsers = filteredUsers;
 
   return (
     <>
@@ -485,8 +488,11 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 totalPages={totalPages}
                 totalItems={totalItems}
                 pageSize={pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           )}
@@ -509,18 +515,14 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 <span className="w-4 h-px bg-muted-foreground/30" />
                 Search Candidates
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by name, mobile..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Search by name, mobile..."
+                value={searchQuery}
+                onSearch={(val) => {
+                  setSearchQuery(val);
+                  setCurrentPage(1);
+                }}
+              />
             </div>
 
             {/* Status Filter */}
@@ -625,7 +627,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetConfirmModal
           isOpen={isModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={fetchData}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
@@ -637,7 +639,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetDetailsModal
           isOpen={isDetailsModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={fetchData}
           onClose={() => {
             setIsDetailsModalOpen(false);
             setSelectedUser(null);
@@ -649,7 +651,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ReInterviewModal
           isOpen={isReInterviewModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={fetchData}
           onClose={() => {
             setIsReInterviewModalOpen(false);
             setSelectedUser(null);
@@ -661,7 +663,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetSubjectsModal
           isOpen={isResetSubjectsModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={fetchData}
           onClose={() => {
             setIsResetSubjectsModalOpen(false);
             setSelectedUser(null);

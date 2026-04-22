@@ -16,7 +16,7 @@ export default async function ResetStatusPage() {
     .map((c) => `${c.name}=${c.value}`)
     .join(";");
 
-  let initialData: UserListResponse[] = [];
+  let initialData = null;
   try {
     initialData = await getUsersByRole("user", {
       cookies: cookieString,
@@ -31,7 +31,7 @@ export default async function ResetStatusPage() {
         title="Reset User Status"
         description="List of all registered candidates. Manage their daily interview progress and application details."
       />
-      <ResetUserListing initialData={initialData} />
+      <ResetUserListing initialData={initialData || undefined} />
     </PageContainer>
   );
 }

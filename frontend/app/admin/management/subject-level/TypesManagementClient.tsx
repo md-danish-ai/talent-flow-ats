@@ -78,16 +78,6 @@ export function TypesManagementClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // Debounced Search Effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
   const isFirstRender = React.useRef(true);
 
   // Pagination State
@@ -127,7 +117,7 @@ export function TypesManagementClient({
         type: classificationType,
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
       };
 
       if (statusFilter === "active") params.is_active = true;
@@ -150,7 +140,7 @@ export function TypesManagementClient({
     } finally {
       setIsFetching(false);
     }
-  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize, debouncedSearch]);
+  }, [classificationType, statusFilter, setTargetData, currentPage, pageSize, searchQuery]);
 
   // Initial Sync from initialData
   useEffect(() => {
@@ -358,7 +348,10 @@ export function TypesManagementClient({
             <SearchInput
               placeholder={`Search ${activeTab}...`}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onSearch={(val) => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              }}
               className="w-64"
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
