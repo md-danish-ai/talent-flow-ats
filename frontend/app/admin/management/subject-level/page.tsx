@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 export const dynamic = "force-dynamic";
 
 import { TypesManagementClient } from "./TypesManagementClient";
-import { classificationsApi, Classification } from "@/lib/api/classifications";
+import { classificationsApi } from "lib/api/classifications";
 
 // This simulates server-side data fetching for both types
 async function getTypesData() {
@@ -16,44 +16,32 @@ async function getTypesData() {
 
     const [subjectsResponse, levelsResponse] = await Promise.all([
       classificationsApi.getClassifications(
-        { type: "subject", limit: 100 },
+        { type: "subject", page: 1, limit: 10 },
         { cookies: cookieStr },
       ),
       classificationsApi.getClassifications(
-        { type: "exam_level", limit: 100 },
+        { type: "exam_level", page: 1, limit: 10 },
         { cookies: cookieStr },
       ),
     ]);
 
     return {
-      subjectTypes: subjectsResponse.data.map((item: Classification) => ({
-        id: item.id,
-        name: item.name,
-        code: item.code || "",
-        description: (item.metadata?.description as string) || "",
-        is_active: item.is_active,
-      })),
-      levelTypes: levelsResponse.data.map((item: Classification) => ({
-        id: item.id,
-        name: item.name,
-        code: item.code || "",
-        description: (item.metadata?.description as string) || "",
-        is_active: item.is_active,
-      })),
+      subjectsResponse,
+      levelsResponse,
     };
   } catch (error) {
     console.error("Error fetching types data:", error);
-    return { subjectTypes: [], levelTypes: [] };
+    return { subjectsResponse: null, levelsResponse: null };
   }
 }
 
 export default async function TypesManagementPage() {
-  const { subjectTypes, levelTypes } = await getTypesData();
+  const { subjectsResponse, levelsResponse } = await getTypesData();
 
   return (
     <TypesManagementClient
-      initialSubjectData={subjectTypes}
-      initialLevelData={levelTypes}
+      initialSubjectData={subjectsResponse || undefined}
+      initialLevelData={levelsResponse || undefined}
     />
   );
 }

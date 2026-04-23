@@ -18,7 +18,7 @@ import Link from "next/link";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { getInitials } from "@lib/auth/user-utils";
 import { UserDetailView } from "@features/user-details/UserDetailView";
-import type { UserDetails } from "@lib/api/user-details";
+import type { UserDetails } from "@types";
 
 interface ProfileClientProps {
   user: CurrentUser | null;

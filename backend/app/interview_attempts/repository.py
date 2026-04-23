@@ -907,11 +907,15 @@ def get_admin_user_results(
             })
 
         return {
-            "items": results,
-            "total": total_items,
-            "page": page,
-            "limit": limit,
-            "total_pages": total_pages,
+            "data": results,
+            "pagination": {
+                "total_records": total_items,
+                "total_pages": total_pages,
+                "current_page": page,
+                "per_page": limit,
+                "has_next": page < total_pages,
+                "has_previous": page > 1,
+            },
             "summary_stats": summary_stats,
         }
     finally:

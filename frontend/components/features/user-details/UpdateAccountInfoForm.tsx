@@ -10,9 +10,9 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { signUpSchema, type SignUpFormValues } from "@lib/validations/auth";
 import { zodValidator } from "@tanstack/zod-form-adapter";
-import { useUpdateBasicInfo } from "@lib/react-query/user/use-auth";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useUpdateBasicInfo } from "@hooks/api/user/use-auth";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { getErrorMessage } from "@lib/utils";
 
 interface UpdateAccountInfoFormProps {

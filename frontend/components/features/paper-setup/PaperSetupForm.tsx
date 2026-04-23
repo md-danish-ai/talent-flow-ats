@@ -16,13 +16,15 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { Save, ArrowLeft, Loader2 } from "lucide-react";
-import { Classification, classificationsApi } from "@lib/api/classifications";
-import { Department, departmentsApi } from "@lib/api/departments";
+import { classificationsApi } from "@lib/api/classifications";
+import { departmentsApi } from "@lib/api/departments";
 import {
-  PaperSetup,
-  PaperSubjectConfig,
-  PaperSetupCreate,
-} from "@lib/api/papers";
+  type Classification,
+  type Department,
+  type PaperSetup,
+  type PaperSubjectConfig,
+  type PaperSetupCreate,
+} from "@types";
 import {
   paperSetupSchema,
   type PaperSetupFormValues,

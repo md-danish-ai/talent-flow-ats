@@ -5,7 +5,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 
 import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
 
@@ -30,6 +30,8 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
   onToggleStatus,
   onEdit,
 }) => {
+  const options = (row.options as Record<string, unknown>) || {};
+
   return (
     <TableCollapsibleRow
       key={row.id}
@@ -44,85 +46,76 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
+
       {visibleColumns.includes("websiteUrl") && (
         <TableCell>
           <Typography
             variant="body4"
-            weight="semibold"
-            className="truncate group-hover/row:text-brand-primary transition-colors"
+            className="truncate text-muted-foreground"
           >
-            {((row.options as Record<string, unknown>)
-              ?.websiteUrl as React.ReactNode) || "N/A"}
+            {(options.websiteUrl as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
+
       {visibleColumns.includes("companyName") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.companyName as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("streetAddress") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.streetAddress as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("city") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.city as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("state") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.state as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("zipCode") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.zipCode as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("companyPhoneNumber") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.companyPhoneNumber as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("generalEmail") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {((row.options as Record<string, unknown>)
-              ?.generalEmail as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-      {visibleColumns.includes("facebookPage") && (
         <TableCell>
           <Typography
             variant="body4"
-            className="text-muted-foreground truncate max-w-[200px]"
+            weight="semibold"
+            className="text-foreground group-hover/row:text-brand-primary transition-colors"
           >
-            {((row.options as Record<string, unknown>)
-              ?.facebookPage as React.ReactNode) || "N/A"}
+            {(options.companyName as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
+
+      {visibleColumns.includes("name") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.companyName as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("title") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.title as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("primaryEmail") && (
+        <TableCell>
+          <Typography
+            variant="body4"
+            className="text-brand-primary font-medium"
+          >
+            {(options.generalEmail as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("secondaryEmail") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground/60">
+            {(options.secondaryEmail as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("linkedInUrl") && (
+        <TableCell>
+          <Typography
+            variant="body4"
+            className="text-blue-500 truncate max-w-[150px]"
+          >
+            {(options.linkedInUrl as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
       {visibleColumns.includes("subject") && (
         <TableCell>
           <Badge
@@ -136,6 +129,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("examLevel") && (
         <TableCell>
           <Badge
@@ -149,6 +143,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("marks") && (
         <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
           <Badge
@@ -161,6 +156,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
           {row.created_at
@@ -172,6 +168,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             : "N/A"}
         </TableCell>
       )}
+
       {visibleColumns.includes("status") && (
         <TableCell>
           <div className="flex flex-col items-center justify-center gap-1">
@@ -186,11 +183,12 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Activate" : "Deactivate"}
+              {row.is_active !== false ? "Active" : "Deactive"}
             </Badge>
           </div>
         </TableCell>
       )}
+
       {visibleColumns.includes("actions") && (
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">

@@ -16,7 +16,8 @@ import {
   TableCell,
 } from "@components/ui-elements/Table";
 import { EmptyState } from "@components/ui-elements/EmptyState";
-import { papersApi, GradeSetting } from "@lib/api/papers";
+import { papersApi } from "@lib/api/papers";
+import { type GradeSetting } from "@types";
 import { toast } from "@lib/toast";
 import { Trash2, Edit2, Loader2 } from "lucide-react";
 

@@ -45,3 +45,7 @@ export * from "./interview-attempts";
 export * from "./paper-assignments";
 export * from "./results";
 export * from "./notifications";
+export * from "./auth";
+export * from "./user-details";
+export * from "./departments";
+export * from "./papers";

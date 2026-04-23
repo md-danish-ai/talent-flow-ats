@@ -5,7 +5,9 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
-import { departmentsApi, Department } from "@/lib/api/departments";
+import { departmentsApi } from "@lib/api/departments";
+import { type Department } from "@types";
+import { departmentSchema } from "@lib/validations/management";
 
 interface ManageDepartmentModalProps {
   isOpen: boolean;
@@ -34,8 +36,10 @@ export const ManageDepartmentModal: React.FC<ManageDepartmentModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("Department name is required");
+
+    const result = departmentSchema.safeParse({ name });
+    if (!result.success) {
+      setError(result.error.errors[0].message);
       return;
     }
 

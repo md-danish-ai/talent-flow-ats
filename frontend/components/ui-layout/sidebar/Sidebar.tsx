@@ -2,15 +2,18 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ADMIN_ROUTES, NavSection } from "@lib/config/adminRoutes";
+import { NavSection } from "@lib/routes/types";
+import { ADMIN_ROUTES } from "@lib/routes/admin";
+import { PROJECT_LEAD_ROUTES } from "@lib/routes/project-lead";
 import { Button } from "@components/ui-elements/Button";
 
 import { useSidebar } from "./SidebarProvider";
 import { NavItem } from "./NavItem";
 import { CollapsedNavItem } from "./CollapsedNavItem";
 
-export const Sidebar = () => {
+export const Sidebar = ({ role = "admin" }: { role?: string }) => {
   const pathname = usePathname();
+  const routes = role === "project_lead" ? PROJECT_LEAD_ROUTES : ADMIN_ROUTES;
   const {
     isMobileOpen,
     isCollapsed,
@@ -20,7 +23,7 @@ export const Sidebar = () => {
   } = useSidebar();
 
   const [expandedSection, setExpandedSection] = useState<string | null>(() => {
-    const active = ADMIN_ROUTES.find(
+    const active = routes.find(
       (s: NavSection) =>
         s.type !== "item" &&
         s.items.some((item: { href: string }) => pathname === item.href),
@@ -98,7 +101,7 @@ export const Sidebar = () => {
         <div className="flex flex-col h-full overflow-hidden">
           {isCollapsed && (
             <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">
-              {ADMIN_ROUTES.map((section: NavSection) => (
+              {routes.map((section: NavSection) => (
                 <CollapsedNavItem
                   key={section.title}
                   section={section}
@@ -114,7 +117,7 @@ export const Sidebar = () => {
 
           {!isCollapsed && (
             <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-6 px-4 space-y-2">
-              {ADMIN_ROUTES.map((section: NavSection) => (
+              {routes.map((section: NavSection) => (
                 <NavItem
                   key={section.title}
                   section={section}
@@ -128,7 +131,7 @@ export const Sidebar = () => {
           )}
 
           <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
-            {ADMIN_ROUTES.map((section: NavSection) => (
+            {routes.map((section: NavSection) => (
               <NavItem
                 key={section.title}
                 section={section}

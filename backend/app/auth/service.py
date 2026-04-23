@@ -119,11 +119,7 @@ def signin_user(data):
                 detail="The password you entered is incorrect.",
             )
 
-        if user.role != data.role.value:
-            raise HTTPException(
-                status_code=StatusCode.UNAUTHORIZED,
-                detail=f"Access denied: Your account is not authorized for the {data.role.value} role.",
-            )
+        # Role is now auto-detected from the database record
 
         # For regular users, check/trigger auto-assignment on login if not already assigned
         if user.role == "user":
@@ -149,7 +145,7 @@ def signin_user(data):
         db_session.close()
 
 
-def create_admin(data):
+def _create_staff(data, role):
     db_session = SessionLocal()
     try:
         existing_user = (
@@ -163,23 +159,23 @@ def create_admin(data):
 
         hashed_password = hash_password(data.mobile)
 
-        new_admin = User(
+        new_user = User(
             username=data.name,
             mobile=data.mobile,
             email=data.email,
             password=hashed_password,
-            role="admin",
+            role=role,
             is_active=True,
             created_by=None,
         )
-        db_session.add(new_admin)
+        db_session.add(new_user)
         db_session.commit()
-        db_session.refresh(new_admin)
+        db_session.refresh(new_user)
 
         user_data = {
-            "id": new_admin.id,
-            "username": new_admin.username,
-            "role": new_admin.role,
+            "id": new_user.id,
+            "username": new_user.username,
+            "role": new_user.role,
         }
         token = generate_jwt(user_data)
         return {"access_token": token, "user": user_data}
@@ -194,6 +190,14 @@ def create_admin(data):
         )
     finally:
         db_session.close()
+
+
+def create_admin(data):
+    return _create_staff(data, "admin")
+
+
+def create_project_lead(data):
+    return _create_staff(data, "project_lead")
 
 
 def get_user_by_id(user_id):
@@ -250,11 +254,10 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, date: str = None, date_from: str = None, date_to: str = None):
+def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None):
     db_session = SessionLocal()
     try:
         from sqlalchemy import func, or_
-
         from datetime import date as dt_date
         target_date = dt_date.fromisoformat(date) if date else dt_date.today()
 
@@ -268,6 +271,19 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
         from sqlalchemy.orm import aliased
 
         UserDept = aliased(Department)
+
+        # Base filter
+        base_query = db_session.query(User).filter(User.role == role)
+
+        # --- SEARCH LOGIC ---
+        if search:
+            base_query = base_query.filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.mobile.ilike(f"%{search}%")
+                )
+            )
 
         # Get latest paper assignment for each user
         assignment_subq = (
@@ -302,7 +318,7 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             .subquery()
         )
 
-        results = (
+        results_query = (
             db_session.query(
                 User,
                 assignment_subq.c.paper_id.label("asgn_paper_id"),
@@ -335,25 +351,55 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             .filter(User.role == role)
         )
 
-        # --- FILTERING LOGIC ---
+        # --- DEPARTMENT & LEVEL FILTERS ---
+        if department_id:
+            # Filter by either user's department OR their assignment's department
+            results_query = results_query.filter(
+                or_(
+                    User.department_id == department_id,
+                    assignment_subq.c.department_id == department_id
+                )
+            )
+            
+        if test_level_id:
+            # Filter by assignment's test level
+            results_query = results_query.filter(
+                assignment_subq.c.test_level_id == test_level_id
+            )
+
+        # Re-apply search to results query if needed (or use base_query logic)
+        if search:
+            results_query = results_query.filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.mobile.ilike(f"%{search}%")
+                )
+            )
+
+        # --- OTHER FILTERS ---
         if range_from and range_to:
-            results = results.filter(
+            results_query = results_query.filter(
                 or_(
                     func.date(User.created_at).between(range_from, range_to),
                     UserDetail.reinterview_date.between(range_from, range_to),
                 )
             )
         elif date:
-            results = results.filter(
+            results_query = results_query.filter(
                 or_(
                     func.date(User.created_at) == target_date,
                     UserDetail.reinterview_date == target_date,
                 )
             )
 
-        results = results.order_by(User.id.desc()).all()
+        # --- TOTAL COUNT ---
+        total_records = results_query.count()
 
-        return [
+        # --- PAGINATION ---
+        results = results_query.order_by(User.id.desc()).offset((page - 1) * limit).limit(limit).all()
+
+        data = [
             {
                 "id": row.User.id,
                 "username": row.User.username,
@@ -363,7 +409,7 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
                 "test_level_id": row.User.test_level_id,
                 "test_level_name": row.User.test_level.name if row.User.test_level else None,
                 "department_id": row.User.department_id,
-                "department_name": row.User.department.name if row.User.department else None,
+                "department_name": row.user_dept_name,
                 "is_active": row.User.is_active,
                 "is_details_submitted": row.is_submitted if row.is_submitted is not None else False,
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
@@ -385,10 +431,18 @@ def get_users_by_role(role: str, date: str = None, date_from: str = None, date_t
             for row in results
         ]
 
-    except Exception:
+        from app.utils.pagination import create_paginated_response, PaginationParams
+        return create_paginated_response(
+            data=data,
+            total_records=total_records,
+            params=PaginationParams(page=page, limit=limit)
+        )
+
+    except Exception as e:
+        print(f"Error in get_users_by_role: {str(e)}")
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
-            detail="An internal server error occurred. Please try again later.",
+            detail=f"Internal server error: {str(e)}",
         )
     finally:
         db_session.close()

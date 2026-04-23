@@ -1,34 +1,32 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Filter, RotateCcw, RefreshCcw } from "lucide-react";
 import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
-import { papersApi, PaperSetup } from "@lib/api/papers";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { TableColumnToggle } from "@components/ui-elements/Table";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
-import { Filter, RotateCcw, Search } from "lucide-react";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
 import { cn } from "@lib/utils";
+import { SearchInput } from "@components/ui-elements/SearchInput";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { useListing } from "@hooks/useListing";
 
 export function PaperSetupClient() {
   const router = useRouter();
-  const [papers, setPapers] = useState<Partial<PaperSetup>[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "sr_no",
     "paper_name",
@@ -40,10 +38,38 @@ export function PaperSetupClient() {
     "actions",
   ]);
 
-  const [deptFilter, setDeptFilter] = useState<string>("all");
-  const [levelFilter, setLevelFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // Hook for standardized listing
+  const {
+    data: papers,
+    isLoading,
+    totalItems,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+    fetchItems,
+  } = useListing<
+    Partial<PaperSetup>,
+    { search: string; department_id: string; test_level_id: string }
+  >({
+    fetchFn: papersApi.getPapers,
+    initialFilters: {
+      search: "",
+      department_id: "all",
+      test_level_id: "all",
+    },
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_id: f.department_id === "all" ? undefined : f.department_id,
+      test_level_id: f.test_level_id === "all" ? undefined : f.test_level_id,
+    }),
+    toastMessage: "Paper list refreshed successfully",
+  });
 
   // Fetch all departments and levels for filters
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
@@ -81,63 +107,17 @@ export function PaperSetupClient() {
     );
   };
 
-  const fetchPapers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await papersApi.getPapers({
-        page: currentPage,
-        limit: pageSize,
-        search: searchQuery || undefined,
-        department_id: deptFilter === "all" ? undefined : deptFilter,
-        test_level_id: levelFilter === "all" ? undefined : levelFilter,
-      });
-      setPapers(response.data);
-      setTotalItems(response.pagination.total_records);
-    } catch (error) {
-      console.error("Failed to fetch papers:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize, deptFilter, levelFilter, searchQuery]);
-
-  const handleSearchChange = (val: string) => {
-    setSearchQuery(val);
-    setCurrentPage(1);
-  };
-
-  const handleDeptChange = (val: string) => {
-    setDeptFilter(val);
-    setCurrentPage(1);
-  };
-
-  const handleLevelChange = (val: string) => {
-    setLevelFilter(val);
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    fetchPapers();
-  }, [fetchPapers]);
-
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
-      fetchPapers();
+      void fetchItems();
       toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
-      // toast.error("Failed to update status");
+      // Error is handled by API client
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const handleEditClick = (id: number) => {
-    router.push(`/admin/paper/setup/edit/${id}`);
-  };
-
-  const handleViewDetails = (id: number) => {
-    router.push(`/admin/paper/setup/detail/${id}`);
   };
 
   return (
@@ -173,15 +153,47 @@ export function PaperSetupClient() {
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
             />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Open Filters"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -212,13 +224,17 @@ export function PaperSetupClient() {
             totalItems={totalItems}
             currentPage={currentPage}
             pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
             isLoading={isLoading}
             togglingId={togglingId}
             onToggleStatus={handleToggleStatus}
-            onEdit={(paper) => handleEditClick(paper.id!)}
-            onViewDetails={handleViewDetails}
+            onEdit={(paper) =>
+              router.push(`/admin/paper/setup/edit/${paper.id}`)
+            }
+            onViewDetails={(id) =>
+              router.push(`/admin/paper/setup/detail/${id}`)
+            }
             visibleColumns={visibleColumns}
           />
         </div>
@@ -234,23 +250,15 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Paper name..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Paper name..."
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
+              />
             </div>
 
             {/* Department Filter */}
@@ -258,15 +266,16 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Department
+                Department
               </Typography>
               <SelectDropdown
                 options={deptOptions}
-                value={deptFilter}
-                onChange={(val) => handleDeptChange(String(val))}
+                value={filters.department_id}
+                onChange={(val) =>
+                  handleFilterChange({ department_id: String(val) })
+                }
                 placeholder="Select Department"
                 isLoading={allDepartments.length === 0}
               />
@@ -277,15 +286,16 @@ export function PaperSetupClient() {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Exam Level
+                Exam Level
               </Typography>
               <SelectDropdown
                 options={levelOptions}
-                value={levelFilter}
-                onChange={(val) => handleLevelChange(String(val))}
+                value={filters.test_level_id}
+                onChange={(val) =>
+                  handleFilterChange({ test_level_id: String(val) })
+                }
                 placeholder="Select Level"
                 isLoading={classificationQuery.isLoading}
               />
@@ -293,16 +303,17 @@ export function PaperSetupClient() {
 
             <Button
               variant="outline"
-              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
-              onClick={() => {
-                setSearchQuery("");
-                setDeptFilter("all");
-                setLevelFilter("all");
-                setCurrentPage(1);
-              }}
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
+              onClick={resetFilters}
+              className="font-bold w-full mt-auto"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>

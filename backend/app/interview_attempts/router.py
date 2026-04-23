@@ -12,7 +12,7 @@ router = APIRouter(
 service = InterviewAttemptService()
 
 
-@router.post("/user/interview-attempts/start")
+@router.post("/user/interview-attempts/start-new-attempt")
 async def start_attempt(
     payload: StartAttemptRequest,
     current_user: int = Depends(authenticate_user),
@@ -21,7 +21,7 @@ async def start_attempt(
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/user/interview-attempts/{attempt_id}/answers/{question_id}")
+@router.put("/user/interview-attempts/save-answer/{attempt_id}/{question_id}")
 async def save_answer(
     attempt_id: int,
     question_id: int,
@@ -38,7 +38,7 @@ async def save_answer(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.post("/user/interview-attempts/{attempt_id}/answers/batch")
+@router.post("/user/interview-attempts/save-answers-batch/{attempt_id}")
 async def save_answers_batch(
     attempt_id: int,
     payload: BatchSaveAnswersRequest,
@@ -52,7 +52,7 @@ async def save_answers_batch(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.post("/user/interview-attempts/{attempt_id}/submit")
+@router.post("/user/interview-attempts/submit-attempt/{attempt_id}")
 async def submit_attempt(
     attempt_id: int,
     current_user: int = Depends(authenticate_user),
@@ -61,7 +61,7 @@ async def submit_attempt(
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
 
-@router.post("/user/interview-attempts/{attempt_id}/auto-submit")
+@router.post("/user/interview-attempts/auto-submit-attempt/{attempt_id}")
 async def auto_submit_attempt(
     attempt_id: int,
     current_user: int = Depends(authenticate_user),
@@ -72,7 +72,7 @@ async def auto_submit_attempt(
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
 
-@router.get("/user/interview-attempts/{attempt_id}/summary")
+@router.get("/user/interview-attempts/get-attempt-summary/{attempt_id}")
 async def get_attempt_summary(
     attempt_id: int,
     current_user: int = Depends(authenticate_user),
@@ -82,7 +82,7 @@ async def get_attempt_summary(
 
 
 @router.get(
-    "/admin/results",
+    "/admin/results/get-all-results",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def get_admin_user_results(
@@ -109,7 +109,7 @@ async def get_admin_user_results(
 
 
 @router.get(
-    "/admin/results/users/{user_id}",
+    "/admin/results/user-result-details/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def get_admin_user_result_detail(
@@ -124,7 +124,7 @@ async def get_admin_user_result_detail(
 
 
 @router.get(
-    "/admin/results/users/{user_id}/attempts",
+    "/admin/results/user-attempt-history/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def get_admin_user_attempts(
@@ -135,7 +135,7 @@ async def get_admin_user_attempts(
 
 
 @router.post(
-    "/admin/results/users/{user_id}/reset",
+    "/admin/results/reset-today-attempt/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def reset_user_today_attempt(
@@ -146,7 +146,7 @@ async def reset_user_today_attempt(
 
 
 @router.post(
-    "/admin/results/users/{user_id}/reset-details",
+    "/admin/results/clear-user-details/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def reset_user_details(
@@ -157,7 +157,7 @@ async def reset_user_details(
 
 
 @router.post(
-    "/admin/results/users/{user_id}/enable-reinterview",
+    "/admin/results/enable-reinterview/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def enable_reinterview(
@@ -168,7 +168,7 @@ async def enable_reinterview(
 
 
 @router.post(
-    "/admin/results/users/{user_id}/attempts/{attempt_id}/responses/{question_id}/manual-marks",
+    "/admin/results/manual-marks/{user_id}/{attempt_id}/{question_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def assign_manual_marks(
@@ -187,7 +187,7 @@ async def assign_manual_marks(
 
 
 @router.post(
-    "/admin/results/users/{user_id}/reset-subjects",
+    "/admin/results/reset-user-subjects/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 async def reset_user_subjects(
@@ -202,7 +202,7 @@ async def reset_user_subjects(
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
 
-@router.post("/user/interview-attempts/{attempt_id}/sections/{section_name}/skip")
+@router.post("/user/interview-attempts/skip-section/{attempt_id}/{section_name}")
 async def skip_section(
     attempt_id: int,
     section_name: str,
@@ -214,7 +214,7 @@ async def skip_section(
     return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
 
 
-@router.get("/user/interview-attempts/active-status")
+@router.get("/user/interview-attempts/check-active-status")
 async def get_active_status(
     current_user: int = Depends(authenticate_user),
 ):

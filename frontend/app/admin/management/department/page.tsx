@@ -2,7 +2,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { DepartmentListing } from "./components/DepartmentListing";
-import { departmentsApi } from "@/lib/api/departments";
+import { departmentsApi } from "@lib/api/departments";
 
 export const dynamic = "force-dynamic";
 

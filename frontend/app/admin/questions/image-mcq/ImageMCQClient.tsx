@@ -14,13 +14,19 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
-import { Filter, Plus, Image as ImageIcon, Upload } from "lucide-react";
+import {
+  Filter,
+  Plus,
+  Image as ImageIcon,
+  Upload,
+  RefreshCcw,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { questionsApi, Question } from "@lib/api/questions";
+import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
-import { ApiError } from "@lib/api/client";
+import { classificationsApi, ApiError } from "@lib/api";
+import { Question, Classification } from "@types";
 import { useRouter } from "next/navigation";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { toast } from "@lib/toast";
@@ -31,10 +37,20 @@ import { ImageMCQFilters } from "./components/ImageMCQFilters";
 import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { useListing } from "@hooks/useListing";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ImageMCQClientProps {
   initialData?: Question[];
   totalItems?: number;
+}
+
+interface ImageMCQListingFilters {
+  search: string;
+  subject: string;
+  examLevel: string;
+  marks: string;
+  status: string;
 }
 
 export function ImageMCQClient({
@@ -44,23 +60,7 @@ export function ImageMCQClient({
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [examLevelFilter, setExamLevelFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<Question[]>(initialData || []);
-  const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
+
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -83,6 +83,44 @@ export function ImageMCQClient({
     },
     [router],
   );
+
+  const {
+    data: questions,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    fetchItems,
+    refresh,
+  } = useListing<Question, ImageMCQListingFilters>({
+    fetchFn: questionsApi.getQuestions,
+    initialFilters: {
+      search: "",
+      subject: "all",
+      examLevel: "all",
+      marks: "all",
+      status: "all",
+    },
+    initialData,
+    initialTotalItems,
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? (f.subject as string) : undefined,
+      exam_level: f.examLevel !== "all" ? (f.examLevel as string) : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
+    toastMessage: "Image MCQ list refreshed successfully",
+    onError: handleAuthError,
+  });
 
   // Column Visibility State
   const allColumns = [
@@ -110,82 +148,11 @@ export function ImageMCQClient({
 
   const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
-
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset page on search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await questionsApi.getQuestions({
-        page: currentPage,
-        limit: pageSize,
-        search: debouncedSearch,
-        subject:
-          subjectFilter && subjectFilter !== "all"
-            ? (subjectFilter as string)
-            : undefined,
-        exam_level:
-          examLevelFilter && examLevelFilter !== "all"
-            ? (examLevelFilter as string)
-            : undefined,
-        marks:
-          marksFilter && marksFilter !== "all"
-            ? Number(marksFilter)
-            : undefined,
-        is_active:
-          statusFilter && statusFilter !== "all"
-            ? statusFilter === "true"
-            : undefined,
-        question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
-      });
-
-      setData(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-    } catch (error) {
-      if (handleAuthError(error)) return;
-      console.error("Error fetching questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearch,
-    subjectFilter,
-    examLevelFilter,
-    marksFilter,
-    statusFilter,
-    handleAuthError,
-  ]);
-
-  const isFirstMount = React.useRef(true);
-  useEffect(() => {
-    if (isFirstMount.current && initialData.length > 0) {
-      isFirstMount.current = false;
-      setIsLoading(false);
-      return;
-    }
-    fetchData();
-  }, [fetchData, initialData.length]);
 
   useEffect(() => {
     const fetchClassifications = async () => {
@@ -210,44 +177,39 @@ export function ImageMCQClient({
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (err) {
-        if (handleAuthError(err)) return;
-        console.error("Failed to fetch classifications:", err);
+        if (!handleAuthError(err)) {
+          console.error("Failed to fetch classifications:", err);
+        }
       }
     };
-    fetchClassifications();
+    void fetchClassifications();
   }, [handleAuthError]);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      await fetchData();
+      void fetchItems();
       toast.success("Question status updated successfully");
     } catch (error) {
-      if (handleAuthError(error)) return;
-      toast.error("Failed to update status");
-      console.error("Failed to toggle status:", error);
+      if (!handleAuthError(error)) {
+        toast.error("Failed to update status");
+      }
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const handleAddSuccess = async () => {
-    setIsAddModalOpen(false);
-    setCurrentPage(1);
-    await fetchData();
   };
 
   return (
     <PageContainer animate>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ImageIcon size={20} />
             </div>
             Image-Based MCQs
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
@@ -271,6 +233,20 @@ export function ImageMCQClient({
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
             <div className="h-6 w-px bg-border mx-1" />
             <Button
               variant="action"
@@ -282,16 +258,33 @@ export function ImageMCQClient({
             >
               <Upload size={18} />
             </Button>
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              title="Filter"
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Filter"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -301,7 +294,7 @@ export function ImageMCQClient({
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Question
             </Button>
@@ -311,7 +304,7 @@ export function ImageMCQClient({
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
           <div className="flex-1 overflow-x-auto w-full min-h-0">
@@ -368,15 +361,15 @@ export function ImageMCQClient({
                     rowCount={pageSize}
                     hasImage
                   />
-                ) : data.length === 0 ? (
+                ) : questions.length === 0 ? (
                   <EmptyState
                     colSpan={visibleColumns.length + 1}
                     variant="search"
                     title="No questions found"
-                    description="We couldn't find any image questions matching your criteria. Try adjusting your filters or adding a new question."
+                    description="Try adjusting your filters or adding a new question."
                   />
                 ) : (
-                  data.map((row, index) => (
+                  questions.map((row, index) => (
                     <ImageMCQRow
                       key={row.id}
                       row={row}
@@ -395,18 +388,15 @@ export function ImageMCQClient({
             </Table>
           </div>
 
-          {!isLoading && data.length > 0 && (
+          {!isLoading && questions.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
-              className="mt-auto shrink-0"
+              onPageSizeChange={handlePageSizeChange}
+              className="mt-auto shrink-0 border-t"
             />
           )}
         </div>
@@ -414,59 +404,47 @@ export function ImageMCQClient({
         <ImageMCQFilters
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          subjectFilter={subjectFilter}
-          onSubjectFilterChange={(val) => {
-            setSubjectFilter(val as string);
-            setCurrentPage(1);
-          }}
+          searchQuery={filters.search}
+          onSearchChange={(val) => handleFilterChange({ search: val })}
+          subjectFilter={filters.subject}
+          onSubjectFilterChange={(val) =>
+            handleFilterChange({ subject: val as string })
+          }
           subjects={subjects}
-          examLevelFilter={examLevelFilter}
-          onExamLevelFilterChange={(val) => {
-            setExamLevelFilter(val as string);
-            setCurrentPage(1);
-          }}
+          examLevelFilter={filters.examLevel}
+          onExamLevelFilterChange={(val) =>
+            handleFilterChange({ examLevel: val as string })
+          }
           examLevels={examLevels}
-          marksFilter={marksFilter}
-          onMarksFilterChange={(val) => {
-            setMarksFilter(val as string);
-            setCurrentPage(1);
-          }}
-          statusFilter={statusFilter}
-          onStatusFilterChange={(val) => {
-            setStatusFilter(val as string);
-            setCurrentPage(1);
-          }}
-          onReset={() => {
-            setSearchQuery("");
-            setSubjectFilter("all");
-            setExamLevelFilter("all");
-            setMarksFilter("all");
-            setStatusFilter("all");
-            setCurrentPage(1);
-          }}
+          marksFilter={filters.marks}
+          onMarksFilterChange={(val) =>
+            handleFilterChange({ marks: val as string })
+          }
+          statusFilter={filters.status}
+          onStatusFilterChange={(val) =>
+            handleFilterChange({ status: val as string })
+          }
+          onReset={resetFilters}
         />
       </MainCard>
 
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={handleAddSuccess}
+        onSuccess={() => void fetchItems()}
       />
       {editingQuestion && (
         <EditImageQuestionModal
           isOpen={true}
           questionData={editingQuestion}
           onClose={() => setEditingQuestion(null)}
-          onSuccess={async () => {
-            await fetchData();
+          onSuccess={() => {
+            void fetchItems();
             setEditingQuestion(null);
           }}
         />
       )}
 
-      {/* Image lightbox: open when a row's image icon is clicked */}
       {lightboxUrl && (
         <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
@@ -474,7 +452,7 @@ export function ImageMCQClient({
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={() => void fetchItems()}
         questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
       />
     </PageContainer>

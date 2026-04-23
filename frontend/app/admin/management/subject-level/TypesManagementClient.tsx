@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
@@ -14,19 +14,23 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Layers, Gauge } from "lucide-react";
-import { Tabs, TabItem } from "@components/ui-elements/Tabs";
+import { Plus, Edit, Trash2, Layers, Gauge, RefreshCcw } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { cn } from "@lib/utils";
+import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { Badge } from "@components/ui-elements/Badge";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Switch } from "@components/ui-elements/Switch";
-import {
-  classificationsApi,
-  type Classification,
-} from "@/lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
+import { Classification, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { classificationSchema } from "@lib/validations/management";
+import { Skeleton } from "@components/ui-elements/Skeleton";
+import { useListing } from "@hooks/useListing";
 
 interface BaseType {
   id: number;
@@ -37,25 +41,72 @@ interface BaseType {
   metadata?: Record<string, unknown>;
 }
 
+interface TypesListingFilters {
+  type: string;
+  search: string;
+  status: "all" | "active" | "inactive";
+}
+
 interface TypesManagementClientProps {
-  initialSubjectData: BaseType[];
-  initialLevelData: BaseType[];
+  initialSubjectData?: PaginatedResponse<Classification>;
+  initialLevelData?: PaginatedResponse<Classification>;
 }
 
 export function TypesManagementClient({
   initialSubjectData,
-  initialLevelData,
 }: TypesManagementClientProps) {
   const [activeTab, setActiveTab] = useState("subjects");
-  const [subjects, setSubjects] = useState<BaseType[]>(initialSubjectData);
-  const [levels, setLevels] = useState<BaseType[]>(initialLevelData);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const isFirstRender = React.useRef(true);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    data: items,
+    isLoading: isFetching,
+    totalItems,
+    currentPage,
+    pageSize,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    refresh,
+    fetchItems,
+  } = useListing<Classification, TypesListingFilters>({
+    fetchFn: classificationsApi.getClassifications,
+    initialFilters: {
+      type: "subject",
+      search: "",
+      status: "all",
+    },
+    // We only use initialSubjectData if we are on the subjects tab
+    initialData: initialSubjectData?.data,
+    initialTotalItems: initialSubjectData?.pagination.total_records,
+    filterMapping: (f) => ({
+      type: f.type === "subjects" ? "subject" : "exam_level",
+      search: f.search || undefined,
+      is_active:
+        f.status === "active"
+          ? true
+          : f.status === "inactive"
+            ? false
+            : undefined,
+    }),
+    toastMessage: `${activeTab === "subjects" ? "Subject" : "Level"} list refreshed successfully`,
+  });
+
+  // Transform data for UI
+  const currentData = useMemo(
+    () =>
+      items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        code: item.code || "",
+        description: (item.metadata?.description as string) || "",
+        is_active: item.is_active,
+        metadata: item.metadata,
+      })),
+    [items],
+  );
+
+  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<BaseType | null>(null);
@@ -66,76 +117,20 @@ export function TypesManagementClient({
     description: "",
     is_exclusive: false,
   });
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
 
   const classificationType =
     activeTab === "subjects" ? "subject" : "exam_level";
-  const setTargetData = activeTab === "subjects" ? setSubjects : setLevels;
-  const currentData = activeTab === "subjects" ? subjects : levels;
-
-  const fetchData = useCallback(async () => {
-    setIsFetching(true);
-    try {
-      const params: {
-        type?: string;
-        is_active?: boolean;
-        limit?: number;
-      } = {
-        type: classificationType,
-        limit: 100,
-      };
-
-      if (statusFilter === "active") params.is_active = true;
-      if (statusFilter === "inactive") params.is_active = false;
-
-      const response = await classificationsApi.getClassifications(params);
-      const formattedData = response.data.map((item: Classification) => ({
-        id: item.id,
-        name: item.name,
-        code: item.code || "",
-        description: (item.metadata?.description as string) || "",
-        is_active: item.is_active,
-        metadata: item.metadata,
-      }));
-
-      setTargetData(formattedData);
-    } catch (error) {
-      console.error("Failed to fetch classifications:", error);
-    } finally {
-      setIsFetching(false);
-    }
-  }, [classificationType, statusFilter, setTargetData]);
-
-  // Refetch when tab or status filter changes
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    fetchData();
-  }, [fetchData]);
 
   const tabs: TabItem[] = [
     { label: "Subject", value: "subjects", icon: <Layers size={18} /> },
     { label: "Level", value: "levels", icon: <Gauge size={18} /> },
   ];
 
-  const totalItems = currentData.length;
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-  // Sliced data based on pagination
-  const paginatedData = currentData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
-
   const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
 
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
-    setCurrentPage(1); // Reset page on tab change
+    handleFilterChange({ type: newTab });
   };
 
   const handleOpenModal = (item?: BaseType) => {
@@ -161,51 +156,31 @@ export function TypesManagementClient({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const result = classificationSchema.safeParse(formData);
+    if (!result.success) return;
+
     setIsLoading(true);
     try {
       const metadataToSubmit: Record<string, unknown> = {
         description: formData.description,
       };
-      // For Subjects, allow saving the is_exclusive flag inside the record metadata
       if (classificationType === "subject" && formData.is_exclusive) {
         metadataToSubmit.is_exclusive = true;
       }
 
       if (editingType) {
-        const response = await classificationsApi.updateClassification(
-          editingType.id,
-          {
-            name: formData.name,
-            metadata: metadataToSubmit,
-          },
-        );
-        const updatedItem = {
-          id: response.id,
-          name: response.name,
-          code: response.code || "",
-          description: (response.metadata?.description as string) || "",
-          is_active: response.is_active,
-          metadata: response.metadata,
-        };
-        setTargetData(
-          currentData.map((t) => (t.id === editingType.id ? updatedItem : t)),
-        );
+        await classificationsApi.updateClassification(editingType.id, {
+          name: formData.name,
+          metadata: metadataToSubmit,
+        });
       } else {
-        const response = await classificationsApi.createClassification({
+        await classificationsApi.createClassification({
           type: classificationType,
           name: formData.name,
           metadata: metadataToSubmit,
         });
-        const newItem = {
-          id: response.id,
-          name: response.name,
-          code: response.code || "",
-          description: (response.metadata?.description as string) || "",
-          is_active: response.is_active,
-          metadata: response.metadata,
-        };
-        setTargetData([...currentData, newItem]);
       }
+      void fetchItems();
       handleCloseModal();
     } catch {
       // Error toast is handled globally
@@ -224,7 +199,7 @@ export function TypesManagementClient({
       setIsLoading(true);
       try {
         await classificationsApi.deleteClassification(typeToDelete);
-        setTargetData(currentData.filter((t) => t.id !== typeToDelete));
+        void fetchItems();
         setIsDeleteModalOpen(false);
         setTypeToDelete(null);
       } catch {
@@ -238,16 +213,10 @@ export function TypesManagementClient({
   const handleToggleStatus = async (item: BaseType) => {
     setTogglingId(item.id);
     try {
-      const response = await classificationsApi.updateClassification(item.id, {
+      await classificationsApi.updateClassification(item.id, {
         is_active: !item.is_active,
       });
-      const updatedItem = {
-        ...item,
-        is_active: response.is_active,
-      };
-      setTargetData(
-        currentData.map((t) => (t.id === item.id ? updatedItem : t)),
-      );
+      void fetchItems();
     } catch {
       // Error toast is handled globally
     } finally {
@@ -264,31 +233,18 @@ export function TypesManagementClient({
 
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-border shrink-0">
-          <Button
-            variant={statusFilter === "all" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => setStatusFilter("all")}
-            className="h-8 px-3 text-xs"
-          >
-            All
-          </Button>
-          <Button
-            variant={statusFilter === "active" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => setStatusFilter("active")}
-            className="h-8 px-3 text-xs"
-          >
-            Active
-          </Button>
-          <Button
-            variant={statusFilter === "inactive" ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => setStatusFilter("inactive")}
-            className="h-8 px-3 text-xs"
-          >
-            Inactive
-          </Button>
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-lg border border-border shrink-0">
+          {(["all", "active", "inactive"] as const).map((status) => (
+            <Button
+              key={status}
+              variant={filters.status === status ? "secondary" : "primary"}
+              size="sm"
+              onClick={() => handleFilterChange({ status: status })}
+              className="h-8 px-3 text-xs border-none"
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -310,7 +266,7 @@ export function TypesManagementClient({
         action={
           <div className="flex items-center gap-3">
             {isFetching ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+              <Skeleton className="h-8 w-24 rounded-full" />
             ) : (
               <Badge
                 variant="outline"
@@ -326,6 +282,29 @@ export function TypesManagementClient({
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={isFetching}
+              >
+                <div className={cn(isFetching && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <SearchInput
+              placeholder={`Search ${activeTab}...`}
+              value={filters.search}
+              onSearch={(val) => handleFilterChange({ search: val })}
+              className="w-64"
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
               size="md"
@@ -336,7 +315,7 @@ export function TypesManagementClient({
               onClick={() => handleOpenModal()}
               disabled={isLoading || isFetching}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add {activeTab === "subjects" ? "Subject" : "Level"}
             </Button>
@@ -345,21 +324,33 @@ export function TypesManagementClient({
       >
         <div className="overflow-x-auto w-full">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
-                <TableHead>
+                <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                  Sr. No.
+                </TableHead>
+                <TableHead className="font-bold text-slate-500 text-xs uppercase">
                   {activeTab === "subjects" ? "Subject Name" : "Level Name"}
                 </TableHead>
                 {activeTab === "subjects" && (
-                  <TableHead>Subject Code</TableHead>
+                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    Code
+                  </TableHead>
                 )}
-                <TableHead>Description</TableHead>
+                <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                  Description
+                </TableHead>
                 {activeTab === "subjects" && (
-                  <TableHead className="text-center">Exclusive</TableHead>
+                  <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    Exclusive
+                  </TableHead>
                 )}
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center w-[100px]">Action</TableHead>
+                <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                  Status
+                </TableHead>
+                <TableHead className="text-center w-[120px] font-bold text-slate-500 text-xs uppercase">
+                  Action
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -368,20 +359,20 @@ export function TypesManagementClient({
                   columnCount={activeTab === "subjects" ? 7 : 5}
                   rowCount={pageSize}
                 />
-              ) : paginatedData.length === 0 ? (
+              ) : currentData.length === 0 ? (
                 <EmptyState
                   colSpan={activeTab === "subjects" ? 7 : 5}
                   variant="database"
                   title={`No ${activeTab} found`}
-                  description={`You haven't added any ${activeTab} yet. Click on the 'Add ${activeTab === "subjects" ? "Subject" : "Level"}' button to get started.`}
+                  description={`You haven't added any ${activeTab} yet.`}
                 />
               ) : (
-                paginatedData.map((item, idx) => (
+                currentData.map((item, idx) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium text-center">
                       {(currentPage - 1) * pageSize + idx + 1}
                     </TableCell>
-                    <TableCell>{item.name}</TableCell>
+                    <TableCell className="font-semibold">{item.name}</TableCell>
                     {activeTab === "subjects" && (
                       <TableCell>
                         {item.code ? (
@@ -400,7 +391,9 @@ export function TypesManagementClient({
                         )}
                       </TableCell>
                     )}
-                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {item.description || "-"}
+                    </TableCell>
                     {activeTab === "subjects" && (
                       <TableCell className="text-center">
                         {item.metadata?.is_exclusive ? (
@@ -408,12 +401,18 @@ export function TypesManagementClient({
                             variant="outline"
                             color="success"
                             shape="square"
+                            className="text-[9px]"
                           >
-                            Yes
+                            YES
                           </Badge>
                         ) : (
-                          <Badge variant="outline" color="error" shape="square">
-                            No
+                          <Badge
+                            variant="outline"
+                            color="error"
+                            shape="square"
+                            className="text-[9px]"
+                          >
+                            NO
                           </Badge>
                         )}
                       </TableCell>
@@ -430,21 +429,19 @@ export function TypesManagementClient({
                           variant="outline"
                           shape="square"
                           color={item.is_active ? "success" : "error"}
+                          className="text-[9px] font-bold"
                         >
-                          {item.is_active ? "Activate" : "Deactivate"}
+                          {item.is_active ? "ACTIVE" : "INACTIVE"}
                         </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-2">
                         <TableIconButton
                           iconColor="blue"
                           btnSize="sm"
                           animate="scale"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleOpenModal(item);
-                          }}
+                          onClick={() => handleOpenModal(item)}
                           title={`Edit ${currentEntityName}`}
                         >
                           <Edit size={16} />
@@ -453,10 +450,7 @@ export function TypesManagementClient({
                           iconColor="red"
                           btnSize="sm"
                           animate="scale"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDeleteClick(item.id);
-                          }}
+                          onClick={() => handleDeleteClick(item.id)}
                           title={`Delete ${currentEntityName}`}
                         >
                           <Trash2 size={16} />
@@ -469,17 +463,14 @@ export function TypesManagementClient({
             </TableBody>
           </Table>
         </div>
-        {totalItems > 0 && (
+        {!isFetching && totalItems > 0 && (
           <Pagination
             currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            onPageChange={handlePageChange}
             totalItems={totalItems}
             pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
+            onPageSizeChange={handlePageSizeChange}
             className="mt-auto shrink-0 border-t border-border"
           />
         )}
@@ -501,6 +492,7 @@ export function TypesManagementClient({
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         description={`This ${currentEntityName} will be permanently removed from the database.`}
+        isLoading={isLoading}
       />
     </PageContainer>
   );

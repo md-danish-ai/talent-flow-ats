@@ -25,7 +25,7 @@ def get_db():
 
 
 @router.post(
-    "/assign",
+    "/assign-new-paper",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def assign_paper(
@@ -48,7 +48,7 @@ def assign_paper(
     )
 
 
-@router.get("/my-interview-paper")
+@router.get("/get-my-assigned-paper")
 def get_my_interview_paper(
     assigned_date: date | None = Query(
         default=None, description="Optional assignment date in YYYY-MM-DD"
@@ -74,7 +74,7 @@ def get_my_interview_paper(
 # --- AUTO ASSIGNMENT RULES ---
 
 @router.post(
-    "/auto-rules",
+    "/get-auto-rules",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def create_auto_rule(
@@ -93,7 +93,7 @@ def create_auto_rule(
 
 
 @router.get(
-    "/auto-rules",
+    "/get-auto-rules",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def list_auto_rules(
@@ -112,7 +112,7 @@ def list_auto_rules(
 
 
 @router.patch(
-    "/auto-rules/{rule_id}",
+    "/get-auto-rule-details/{rule_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def update_auto_rule(
@@ -131,7 +131,7 @@ def update_auto_rule(
 
 
 @router.delete(
-    "/auto-rules/{rule_id}",
+    "/remove-auto-rule/{rule_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def delete_auto_rule(

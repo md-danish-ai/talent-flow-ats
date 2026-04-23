@@ -85,7 +85,13 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 def serialize(data: Any) -> Any:
-    """Recursively convert non-serializable objects (datetime, etc.) to JSON-safe types."""
+    """Recursively convert non-serializable objects (Pydantic models, datetime, etc.) to JSON-safe types."""
+    # If the data is a Pydantic model, convert to dict first
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "model_dump"):
+        data = data.model_dump()
+        
     return json.loads(json.dumps(data, cls=CustomJSONEncoder))
 
 
@@ -99,6 +105,7 @@ def api_response(
     message: str,
     data: Optional[Any] = None,
     errors: Optional[Any] = None,
+    pagination: Optional[Any] = None,
 ) -> JSONResponse:
     body = {
         "status": status_code,
@@ -108,5 +115,7 @@ def api_response(
         body["data"] = serialize(data)
     if errors is not None:
         body["errors"] = serialize(errors)
+    if pagination is not None:
+        body["pagination"] = serialize(pagination)
 
     return JSONResponse(status_code=status_code, content=body)

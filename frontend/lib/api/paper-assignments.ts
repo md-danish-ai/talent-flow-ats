@@ -1,4 +1,5 @@
 import { api } from "./index";
+import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 
 export interface PaperAssignmentPayload {
@@ -73,7 +74,7 @@ export const paperAssignmentsApi = {
     >,
   ) =>
     api.post<PaperAssignmentResponse>(
-      "/paper-assignments/assign",
+      ENDPOINTS.PAPER_ASSIGNMENTS.ASSIGN,
       payload,
       options,
     ),
@@ -84,8 +85,8 @@ export const paperAssignmentsApi = {
   ) =>
     api.get<AssignedInterviewPaperResponse>(
       assignedDate
-        ? `/paper-assignments/my-interview-paper?assigned_date=${encodeURIComponent(assignedDate)}`
-        : "/paper-assignments/my-interview-paper",
+        ? `${ENDPOINTS.PAPER_ASSIGNMENTS.MY_INTERVIEW_PAPER}?assigned_date=${encodeURIComponent(assignedDate)}`
+        : ENDPOINTS.PAPER_ASSIGNMENTS.MY_INTERVIEW_PAPER,
       options,
     ),
 
@@ -96,14 +97,14 @@ export const paperAssignmentsApi = {
   ) =>
     api.get<AutoAssignmentRuleResponse[]>(
       assignedDate
-        ? `/paper-assignments/auto-rules?assigned_date=${encodeURIComponent(assignedDate)}`
-        : "/paper-assignments/auto-rules",
+        ? `${ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULES}?assigned_date=${encodeURIComponent(assignedDate)}`
+        : ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULES,
       options,
     ),
 
   createAutoRule: (payload: AutoAssignmentRulePayload) =>
     api.post<AutoAssignmentRuleResponse>(
-      "/paper-assignments/auto-rules",
+      ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULES,
       payload,
     ),
 
@@ -112,12 +113,14 @@ export const paperAssignmentsApi = {
     payload: Partial<AutoAssignmentRulePayload>,
   ) =>
     api.patch<AutoAssignmentRuleResponse>(
-      `/paper-assignments/auto-rules/${ruleId}`,
+      ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULE_BY_ID(ruleId),
       payload,
     ),
 
   deleteAutoRule: (ruleId: number) =>
-    api.delete<{ message: string }>(`/paper-assignments/auto-rules/${ruleId}`),
+    api.delete<{ message: string }>(
+      ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULE_BY_ID(ruleId),
+    ),
 };
 
 export interface AutoAssignmentRulePayload {

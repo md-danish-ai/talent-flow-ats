@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import {
   Table,
@@ -12,43 +12,51 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, RefreshCcw } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { toast } from "@lib/toast";
+import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  departmentsApi,
-  Department,
-  PaginatedDepartmentsResponse,
-} from "@/lib/api/departments";
+import { SearchInput } from "@components/ui-elements/SearchInput";
+import { departmentsApi } from "@lib/api/departments";
+import { type Department, PaginatedResponse } from "@types";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { useListing } from "@hooks/useListing";
 
 interface DepartmentListingProps {
-  initialData?: PaginatedDepartmentsResponse;
+  initialData?: PaginatedResponse<Department>;
 }
 
 export function DepartmentListing({ initialData }: DepartmentListingProps) {
-  // Data State
-  const [departments, setDepartments] = useState<Department[]>(
-    initialData?.data || [],
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalItems, setTotalItems] = useState(
-    initialData?.pagination?.total_records || 0,
-  );
+  // Hook for standardized listing
+  const {
+    data: departments,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    fetchItems,
+    refresh,
+  } = useListing<Department, { search: string }>({
+    fetchFn: departmentsApi.getDepartments,
+    initialFilters: { search: "" },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    initialPageSize: 10,
+    toastMessage: "Department list refreshed successfully",
+  });
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // Search State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // Modals State
+  // Modals Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
@@ -56,38 +64,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deptToDelete, setDeptToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset to first page on new search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  const fetchDepartments = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await departmentsApi.getDepartments({
-        page: currentPage,
-        limit: pageSize,
-        search: debouncedSearch,
-      });
-      setDepartments(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-    } catch (error) {
-      console.error("Failed to fetch departments:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize, debouncedSearch]);
-
-  useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
@@ -100,17 +77,17 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   };
 
   const confirmDelete = async () => {
-    if (deptToDelete) {
-      setIsLoading(true);
-      try {
-        await departmentsApi.deleteDepartment(deptToDelete);
-        fetchDepartments();
-        setIsDeleteModalOpen(false);
-      } catch (error) {
-        console.error("Delete failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!deptToDelete) return;
+    setIsDeleting(true);
+    try {
+      await departmentsApi.deleteDepartment(deptToDelete);
+      void fetchItems();
+      setIsDeleteModalOpen(false);
+      toast.success("Department deleted successfully");
+    } catch (error) {
+      console.error("Delete failed:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -120,7 +97,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       await departmentsApi.updateDepartment(dept.id, {
         is_active: !dept.is_active,
       });
-      fetchDepartments();
+      void fetchItems();
+      toast.success(
+        `Department ${!dept.is_active ? "activated" : "deactivated"}`,
+      );
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -155,16 +135,28 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search departments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all w-64"
-              />
-            </div>
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <SearchInput
+              placeholder="Search departments..."
+              value={filters.search}
+              onSearch={(val) => handleFilterChange({ search: val })}
+              className="w-64"
+            />
             <Button
               variant="primary"
               size="md"
@@ -174,7 +166,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               onClick={() => handleOpenModal()}
               disabled={isLoading}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Department
             </Button>
@@ -249,7 +241,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                             shape="square"
                             color={dept.is_active ? "success" : "error"}
                           >
-                            {dept.is_active ? "Activate" : "Deactivate"}
+                            {dept.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </div>
                       </TableCell>
@@ -266,7 +258,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <TableIconButton
-                            iconColor="blue"
+                            iconColor="brand"
                             btnSize="sm"
                             animate="scale"
                             onClick={() => handleOpenModal(dept)}
@@ -292,17 +284,14 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             </Table>
           </div>
 
-          {totalItems > 0 && (
+          {!isLoading && departments.length > 0 && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize) || 1}
-              onPageChange={setCurrentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
+              onPageSizeChange={handlePageSizeChange}
               className="mt-auto shrink-0 border-t"
             />
           )}
@@ -313,7 +302,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingDepartment={editingDepartment}
-        onSuccess={fetchDepartments}
+        onSuccess={() => void fetchItems()}
       />
 
       <ConfirmModal
@@ -324,7 +313,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         description="Are you sure you want to delete this department? This action cannot be undone."
         variant="danger"
         confirmText="Delete"
-        isLoading={isLoading}
+        isLoading={isDeleting}
       />
     </>
   );

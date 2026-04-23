@@ -11,7 +11,7 @@ from typing import Optional
 router = APIRouter(prefix="/notifications", tags=["Admin Notifications"])
 
 
-@router.get("/get", dependencies=[Depends(require_roles(["admin"]))])
+@router.get("/get-all-notifications", dependencies=[Depends(require_roles(["admin"]))])
 async def get_notifications(
     db: Session = Depends(get_db),
     pagination: PaginationParams = Depends(get_pagination_params),
@@ -22,7 +22,7 @@ async def get_notifications(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
-@router.post("/read", dependencies=[Depends(require_roles(["admin"]))])
+@router.post("/mark-read", dependencies=[Depends(require_roles(["admin"]))])
 async def mark_notifications_read(
     request: NotificationReadRequest, db: Session = Depends(get_db)
 ):
@@ -35,7 +35,7 @@ async def mark_notifications_read(
     )
 
 
-@router.post("/unread", dependencies=[Depends(require_roles(["admin"]))])
+@router.post("/mark-unread", dependencies=[Depends(require_roles(["admin"]))])
 async def mark_notifications_unread(
     request: NotificationReadRequest, db: Session = Depends(get_db)
 ):

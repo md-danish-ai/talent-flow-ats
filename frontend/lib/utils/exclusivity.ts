@@ -1,4 +1,4 @@
-import { Classification } from "@lib/api/classifications";
+import { type Classification } from "@types";
 
 const normalize = (s: string) =>
   (s || "")

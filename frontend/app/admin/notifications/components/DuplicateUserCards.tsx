@@ -1,5 +1,5 @@
 import React from "react";
-import { type MatchDetails } from "@lib/api";
+import { type MatchDetails } from "@types";
 
 interface DuplicateUserCardsProps {
   matchDetails: MatchDetails;

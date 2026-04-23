@@ -28,8 +28,8 @@ import {
   useUserDetails,
   useSaveUserDetails,
   useUpdateUserDetails,
-} from "@lib/react-query/user-details/use-user-details";
-import type { UserDetails } from "@lib/api/user-details";
+} from "@hooks/api/user-details/use-user-details";
+import type { UserDetails } from "@types";
 
 interface UserFormProps {
   initialData?: UserDetails;

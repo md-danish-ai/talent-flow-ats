@@ -1,11 +1,11 @@
 import React from "react";
-import { Search, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
-import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Classification } from "@lib/api/classifications";
+import { Classification } from "@types";
 
 interface MCQFiltersProps {
   isOpen: boolean;
@@ -53,18 +53,11 @@ export const MCQFilters: React.FC<MCQFiltersProps> = ({
           >
             Search Questions
           </Typography>
-          <div className="relative group">
-            <Search
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-              size={18}
-            />
-            <Input
-              placeholder="Search by keyword..."
-              className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            placeholder="Search by keyword..."
+            value={searchQuery}
+            onSearch={onSearchChange}
+          />
         </div>
 
         <div className="space-y-3">

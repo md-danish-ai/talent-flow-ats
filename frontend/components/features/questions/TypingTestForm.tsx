@@ -13,9 +13,9 @@ import { Textarea } from "@components/ui-elements/Textarea";
 import { getErrorMessage } from "@lib/utils";
 import { HelpCircle, Loader2 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
+import { type Classification, type QuestionCreate } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { type QuestionCreate } from "@lib/api/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const TypingTestForm = ({

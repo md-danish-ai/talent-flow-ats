@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { ResultCard } from "@components/ui-cards/ResultCard";
-import { AdminUserResultListItem } from "@lib/api/results";
+import { type AdminUserResultListItem } from "@types";
 
 interface ResultCardViewProps {
   items: AdminUserResultListItem[];

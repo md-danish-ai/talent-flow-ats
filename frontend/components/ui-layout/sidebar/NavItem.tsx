@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { NavSection } from "@lib/config/adminRoutes";
+import { NavSection } from "@lib/routes/types";
 import { NavItemLink } from "./NavItemLink";
 import { CollapsibleHeader } from "./CollapsibleHeader";
 import { AnimatedCollapsible } from "./AnimatedCollapsible";

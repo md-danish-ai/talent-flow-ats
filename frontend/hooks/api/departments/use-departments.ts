@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { departmentsApi, type Department } from "@lib/api/departments";
+import { departmentsApi } from "@lib/api/departments";
+import { type Department } from "@types";
 
 export function useDepartments(params?: {
   is_active?: boolean;

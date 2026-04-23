@@ -12,23 +12,23 @@ import {
 } from "@components/ui-elements/Table";
 import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { UserListResponse } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
+import { UserListResponse, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Input } from "@components/ui-elements/Input";
+import { SearchInput } from "@components/ui-elements/SearchInput";
 import { ResetConfirmModal } from "./ResetConfirmModal";
 import { ResetDetailsModal } from "./ResetDetailsModal";
 import { ReInterviewModal } from "./ReInterviewModal";
 import { ResetSubjectsModal } from "./ResetSubjectsModal";
-import { useRouter } from "next/navigation";
 import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import {
@@ -37,88 +37,70 @@ import {
   Filter,
   FileEdit,
   RotateCcw,
+  RefreshCcw,
   BookOpenCheck,
   Mail,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
-import { getUsersByRole } from "@lib/api/auth";
-import { toast } from "@lib/toast";
-import { useEffect } from "react";
+import { useListing } from "@hooks/useListing";
 
 interface ResetUserListingProps {
-  initialData?: UserListResponse[];
+  initialData?: PaginatedResponse<UserListResponse>;
 }
 
-export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(true);
+interface UserListingFilters {
+  search: string;
+  department: string;
+  level: string;
+  status: string;
+}
 
-  useEffect(() => {
-    if (initialData) {
-      setUsers(initialData);
-      setLoading(false);
-    }
-  }, [initialData]);
-
-  const handleRefresh = async () => {
-    try {
-      setLoading(true);
-      const refreshedData = await getUsersByRole("user");
-      setUsers(refreshedData);
-      toast.success("List Refreshed");
-    } catch (error) {
-      console.error("Refresh failed:", error);
-      toast.error("Refresh failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
     null,
   );
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isReInterviewModalOpen, setIsReInterviewModalOpen] = useState(false);
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
 
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const router = useRouter();
-
-  // Filter logic
-  const filteredUsers = users.filter((user) => {
-    const searchMatch =
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.mobile.includes(searchQuery) ||
-      (user.email &&
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const statusMatch =
-      statusFilter === "all" ||
-      (statusFilter === "submitted" && user.is_interview_submitted) ||
-      (statusFilter === "inprogress" && !user.is_interview_submitted);
-
-    const deptName = user.department_name || user.assignment?.department_name;
-    const departmentMatch =
-      departmentFilter === "all" || deptName === departmentFilter;
-
-    const userLevel = user.test_level_name || user.assignment?.test_level_name;
-    const levelMatch = levelFilter === "all" || userLevel === levelFilter;
-
-    return searchMatch && statusMatch && departmentMatch && levelMatch;
+  const {
+    data: users,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+    fetchItems,
+  } = useListing<UserListResponse, UserListingFilters>({
+    fetchFn: (params) => getUsersByRole("user", params),
+    initialFilters: {
+      search: "",
+      department: "all",
+      level: "all",
+      status: "all",
+    },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_name: f.department !== "all" ? f.department : undefined,
+      test_level_name: f.level !== "all" ? f.level : undefined,
+      status: f.status !== "all" ? f.status : undefined,
+    }),
+    toastMessage: "Candidate list refreshed successfully",
   });
 
-  // Fetch all departments and levels from API
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
   const classificationQuery = useClassifications({
     type: "exam_level",
@@ -128,44 +110,17 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
 
   const levelOptions = [
     { id: "all", label: "All Levels" },
-    ...allLevels.map((lvl) => ({
-      id: lvl.name,
-      label: lvl.name,
-    })),
+    ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
   ];
-
   const departmentOptions = [
     { id: "all", label: "All Departments" },
-    ...allDepartments.map((dept) => ({
-      id: dept.name,
-      label: dept.name,
-    })),
+    ...allDepartments.map((dept) => ({ id: dept.name, label: dept.name })),
   ];
-
   const statusOptions = [
     { id: "all", label: "All Statuses" },
     { id: "submitted", label: "Submitted" },
     { id: "inprogress", label: "In Progress" },
   ];
-
-  const totalItems = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
-  // Handlers for pagination
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1); // Reset to first page
-  };
-
-  // Sliced data for current page
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
 
   return (
     <>
@@ -197,25 +152,30 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 color="default"
                 className="font-bold border-border/50 bg-card"
               >
-                {filteredUsers.length} USERS
+                {totalItems} USERS
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Reload Candidate List">
+            <Tooltip content="Refresh Data" side="bottom">
               <Button
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
-                onClick={handleRefresh}
+                onClick={refresh}
                 disabled={loading}
               >
-                <RefreshCw
-                  size={18}
-                  className={loading ? "animate-spin" : ""}
-                />
+                <div className={cn(loading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
               </Button>
             </Tooltip>
-            <Tooltip content="Advanced Filters & Searching">
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Advanced Filters & Searching"
+              }
+            >
               <Button
                 variant="action"
                 size="rounded-icon"
@@ -223,7 +183,16 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 animate="scale"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                <Filter size={18} />
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
               </Button>
             </Tooltip>
           </div>
@@ -266,16 +235,15 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                 <TableBody>
                   {loading ? (
                     <ResetUserListingSkeleton rowCount={pageSize} />
-                  ) : !Array.isArray(paginatedUsers) ||
-                    paginatedUsers.length === 0 ? (
+                  ) : users.length === 0 ? (
                     <EmptyState
                       colSpan={7}
                       variant="search"
                       title="No candidates found"
-                      description="We couldn't find any candidates matching your criteria for status reset. Try adjusting your filters."
+                      description="Try adjusting your filters."
                     />
                   ) : (
-                    paginatedUsers.map((row, idx) => (
+                    users.map((row, idx) => (
                       <TableRow
                         key={row.id}
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
@@ -332,8 +300,8 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <CopyableText
-                            value={row.mobile}
-                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
+                            value={row.mobile || ""}
+                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
                             title="Copy Phone Number"
                           >
                             <span className="mb-[1px]">{row.mobile}</span>
@@ -413,7 +381,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             </span>
                           </div>
                         </TableCell>
-
                         <TableCell className="text-center align-middle py-3">
                           <div className="flex items-center justify-center gap-2">
                             {row.is_details_submitted && (
@@ -430,7 +397,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                                 <FileEdit size={16} />
                               </TableIconButton>
                             )}
-
                             <TableIconButton
                               iconColor="red"
                               animate="scale"
@@ -443,7 +409,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             >
                               <RefreshCw size={16} />
                             </TableIconButton>
-
                             <TableIconButton
                               iconColor="violet"
                               animate="scale"
@@ -456,7 +421,6 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
                             >
                               <RotateCcw size={16} />
                             </TableIconButton>
-
                             <TableIconButton
                               iconColor="blue"
                               animate="scale"
@@ -478,7 +442,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
               </Table>
             </div>
           </div>
-          {totalItems > 0 && (
+          {!loading && totalItems > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
               <Pagination
                 currentPage={currentPage}
@@ -492,94 +456,81 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
           )}
         </div>
 
-        {/* Filter Drawer - Now Inside MainCard for Side-by-Side Layout */}
         <InlineDrawer
           title="Filters"
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
         >
           <div className="p-6 flex flex-col gap-8">
-            {/* Search Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Search Candidates
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Search by name, mobile..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Search by name, mobile..."
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
+              />
             </div>
 
-            {/* Status Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Attempt Status
               </Typography>
               <SelectDropdown
                 options={statusOptions}
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as string)}
+                value={filters.status}
+                onChange={(val) =>
+                  handleFilterChange({ status: val as string })
+                }
                 placeholder="Select Status"
               />
             </div>
 
-            {/* Department Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Department
               </Typography>
               <SelectDropdown
                 options={departmentOptions}
-                value={departmentFilter}
-                onChange={(val) => setDepartmentFilter(val as string)}
+                value={filters.department}
+                onChange={(val) =>
+                  handleFilterChange({ department: val as string })
+                }
                 placeholder="Select Department"
                 isLoading={allDepartments.length === 0}
               />
             </div>
 
-            {/* Exam Level Filter */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Exam Level
               </Typography>
               <SelectDropdown
                 options={levelOptions}
-                value={levelFilter}
-                onChange={(val) => setLevelFilter(val as string)}
+                value={filters.level}
+                onChange={(val) => handleFilterChange({ level: val as string })}
                 placeholder="Select Level"
                 isLoading={classificationQuery.isLoading}
               />
             </div>
 
-            {/* Help Info */}
             <div className="mt-auto p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border">
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white dark:bg-black border border-border flex items-center justify-center shrink-0">
@@ -606,16 +557,16 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
             <Button
               variant="outline"
               color="primary"
-              className="w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-                setDepartmentFilter("all");
-                setLevelFilter("all");
-              }}
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
+              onClick={resetFilters}
+              className="font-bold w-full border-brand-primary text-brand-primary"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>
@@ -625,7 +576,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetConfirmModal
           isOpen={isModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
@@ -637,7 +588,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetDetailsModal
           isOpen={isDetailsModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsDetailsModalOpen(false);
             setSelectedUser(null);
@@ -649,7 +600,7 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ReInterviewModal
           isOpen={isReInterviewModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsReInterviewModalOpen(false);
             setSelectedUser(null);
@@ -661,15 +612,13 @@ export function ResetUserListing({ initialData = [] }: ResetUserListingProps) {
         <ResetSubjectsModal
           isOpen={isResetSubjectsModalOpen}
           user={selectedUser}
-          onSuccess={() => router.refresh()}
+          onSuccess={() => void fetchItems()}
           onClose={() => {
             setIsResetSubjectsModalOpen(false);
             setSelectedUser(null);
           }}
         />
       )}
-
-      {/* Filter Drawer removed from here as it's now inside MainCard */}
     </>
   );
 }

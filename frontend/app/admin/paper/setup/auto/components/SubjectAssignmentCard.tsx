@@ -16,8 +16,8 @@ import {
   Wand2,
 } from "lucide-react";
 import { toast } from "@lib/toast";
-import { PaperSubjectConfig } from "@lib/api/papers";
-import { Classification } from "@lib/api/classifications";
+import { PaperSubjectConfig, Classification } from "@types";
+
 import { filterQuestionTypesForSubject } from "@lib/utils/exclusivity";
 
 interface SubjectAssignmentCardProps {

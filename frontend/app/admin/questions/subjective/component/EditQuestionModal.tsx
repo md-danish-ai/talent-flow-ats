@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { SubjectiveQuestionForm } from "@components/features/questions/SubjectiveQuestionForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { type SubjectiveFormValues } from "@lib/validations/question";
 
 interface EditQuestionModalProps {

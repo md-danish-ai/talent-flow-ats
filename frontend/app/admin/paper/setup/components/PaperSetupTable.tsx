@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { PaperSetup } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { PaperSetupRow } from "./PaperSetupRow";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { PaperSetupSkeleton } from "@components/ui-skeleton/PaperSetupSkeleton";

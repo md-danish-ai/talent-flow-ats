@@ -15,8 +15,9 @@ import {
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { X, Loader2, RotateCw } from "lucide-react";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { questionsApi, Question } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { questionsApi } from "@lib/api/questions";
+import { Question, Classification } from "@types";
+import { classificationsApi } from "@lib/api/classifications";
 
 interface AddContentModalProps {
   subjectName: string;

@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@lib/utils";
 import { Typography } from "@components/ui-elements/Typography";
+import { motion } from "framer-motion";
 
 interface MainCardProps {
   /** Card heading shown in the header bar */
@@ -26,7 +27,14 @@ export const MainCard: React.FC<MainCardProps> = ({
   onHeaderClick,
 }) => {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+      }}
       className={cn(
         "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
         className,
@@ -65,6 +73,6 @@ export const MainCard: React.FC<MainCardProps> = ({
       >
         {children}
       </div>
-    </div>
+    </motion.div>
   );
 };

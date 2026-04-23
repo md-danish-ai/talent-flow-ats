@@ -7,21 +7,7 @@ import {
   Building2,
   Bell,
 } from "lucide-react";
-
-export interface NavItem {
-  label: string;
-  href: string;
-}
-
-export type NavSectionType = "item" | "collapsible";
-
-export interface NavSection {
-  title: string;
-  icon: React.ReactNode;
-  type: NavSectionType;
-  href?: string;
-  items: NavItem[];
-}
+import { NavSection, NavSectionType } from "./types";
 
 export const ADMIN_ROUTES: NavSection[] = [
   {
@@ -73,6 +59,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     type: "collapsible",
     items: [
       { label: "Admins", href: "/admin/management/admins" },
+      { label: "Project Leads", href: "/admin/management/project-leads" },
       { label: "Users", href: "/admin/management/users" },
       { label: "Departments", href: "/admin/management/department" },
       { label: "Subjects & Levels", href: "/admin/management/subject-level" },

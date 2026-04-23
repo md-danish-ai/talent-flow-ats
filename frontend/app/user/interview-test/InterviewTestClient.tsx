@@ -10,10 +10,8 @@ import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
-import {
-  interviewAttemptsApi,
-  type AttemptSummaryResponse,
-} from "@lib/api/interview-attempts";
+import { interviewAttemptsApi } from "@lib/api/interview-attempts";
+import { type AttemptSummaryResponse } from "@types";
 import {
   paperAssignmentsApi,
   type AssignedInterviewPaperResponse,

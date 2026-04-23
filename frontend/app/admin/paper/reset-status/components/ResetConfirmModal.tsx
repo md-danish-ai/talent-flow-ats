@@ -2,7 +2,7 @@
 
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
-import { UserListResponse } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { resultsApi } from "@lib/api/results";

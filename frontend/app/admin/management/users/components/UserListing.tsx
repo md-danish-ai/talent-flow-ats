@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,115 +9,109 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { UserListingSkeleton } from "@components/ui-skeleton/UserListingSkeleton";
-import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import {
   Users,
   Eye,
+  RefreshCcw,
   UserPlus,
-  Search,
   Filter,
   RotateCcw,
   Mail,
-  FileText,
   UserCog,
+  FileText,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
-import {
-  getUsersByRole,
-  UserListResponse,
-  toggleUserStatus,
-} from "@lib/api/auth";
+import { getUsersByRole, toggleUserStatus,  } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Modal } from "@components/ui-elements/Modal";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { cn } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
+import { SearchInput } from "@components/ui-elements/SearchInput";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Skeleton } from "@components/ui-elements/Skeleton";
+import { useListing } from "@hooks/useListing";
 
 interface UserListingProps {
-  initialData?: UserListResponse[];
+  initialData?: {
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  };
 }
 
-export function UserListing({ initialData = [] }: UserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(true);
+export function UserListing({ initialData }: UserListingProps) {
+  // Hook for standardized listing
+  const {
+    data: users,
+    isLoading: loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    fetchItems,
+    refresh,
+  } = useListing<
+    UserListResponse,
+    { search: string; department_id: string; test_level_id: string }
+  >({
+    // Adaptation for getUsersByRole
+    fetchFn: (params) => getUsersByRole("user", params),
+    initialFilters: {
+      search: "",
+      department_id: "all",
+      test_level_id: "all",
+    },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_id:
+        f.department_id === "all" ? undefined : Number(f.department_id),
+      test_level_id:
+        f.test_level_id === "all" ? undefined : Number(f.test_level_id),
+    }),
+    toastMessage: "Candidate list refreshed successfully",
+  });
+
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserListResponse | null>(null);
-
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [deptFilter, setDeptFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [levelFilter, setLevelFilter] = useState<string>("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  // Fetch data via hooks
-  const { data: allDepartments = [] } = useDepartments({ is_active: true });
-  const classificationQuery = useClassifications({
-    type: "exam_level",
-    is_active: true,
-  });
-  const allLevels = classificationQuery.data?.data || [];
-
-  const departmentOptions = [
-    { id: "all", label: "All Departments" },
-    ...allDepartments.map((dept) => ({
-      id: dept.name,
-      label: dept.name,
-    })),
-  ];
-
-  const levelOptions = [
-    { id: "all", label: "All Levels" },
-    ...allLevels.map((lvl) => ({
-      id: lvl.name,
-      label: lvl.name,
-    })),
-  ];
-
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const fetchUsers = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getUsersByRole("user");
-      setUsers(data);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (initialData) {
-      setUsers(initialData);
-      setLoading(false);
-    }
-  }, [initialData]);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      fetchUsers();
+      void fetchItems();
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -130,39 +124,29 @@ export function UserListing({ initialData = [] }: UserListingProps) {
     setIsEditModalOpen(true);
   };
 
-  // Filter logic
-  const filteredUsers = users.filter((user) => {
-    const searchMatch =
-      (user.username || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.mobile || "").includes(searchQuery) ||
-      (user.email &&
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const deptMatch =
-      deptFilter === "all" ||
-      user.department_name === deptFilter ||
-      user.assignment?.department_name === deptFilter;
-
-    const statusMatch =
-      statusFilter === "all" ||
-      (statusFilter === "active" && user.is_active) ||
-      (statusFilter === "disabled" && !user.is_active);
-
-    const levelMatch =
-      levelFilter === "all" ||
-      user.test_level_name === levelFilter ||
-      user.assignment?.test_level_name === levelFilter;
-
-    return searchMatch && deptMatch && statusMatch && levelMatch;
+  // Fetch departments and levels
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
   });
+  const allLevels = classificationQuery.data?.data || [];
 
-  const totalItems = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const departmentOptions = [
+    { id: "all", label: "All Departments" },
+    ...allDepartments.map((dept) => ({
+      id: String(dept.id),
+      label: dept.name,
+    })),
+  ];
 
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const levelOptions = [
+    { id: "all", label: "All Levels" },
+    ...allLevels.map((lvl) => ({
+      id: String(lvl.id),
+      label: lvl.name,
+    })),
+  ];
 
   return (
     <>
@@ -185,35 +169,67 @@ export function UserListing({ initialData = [] }: UserListingProps) {
         action={
           <div className="flex items-center gap-3">
             {loading ? (
-              <div className="h-8 w-20 bg-muted animate-pulse rounded-full" />
+              <Skeleton className="h-8 w-20 rounded-full" />
             ) : (
               <Badge
                 variant="outline"
                 color="default"
-                className="font-bold border-border/50"
+                className="font-bold border-border/50 bg-card"
               >
-                {filteredUsers.length} USERS
+                {totalItems} USERS
               </Badge>
             )}
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isFilterOpen}
-              animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
+
+            <Tooltip content="Refresh Data" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                onClick={refresh}
+                disabled={loading}
+              >
+                <div className={cn(loading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
+
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Open Filters"
+              }
+              side="bottom"
             >
-              <Filter size={18} />
-            </Button>
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
 
             <Button
-              size="sm"
-              variant="outline"
+              variant="primary"
               color="primary"
               startIcon={<UserPlus size={16} />}
               onClick={() => setIsAddModalOpen(true)}
               animate="scale"
-              className="font-bold uppercase tracking-wider text-[11px]"
+              className="font-bold border-none"
             >
               Add Candidate
             </Button>
@@ -256,16 +272,28 @@ export function UserListing({ initialData = [] }: UserListingProps) {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <UserListingSkeleton rowCount={8} />
-                ) : paginatedUsers.length === 0 ? (
+                  <SimpleTableSkeleton
+                    rowCount={pageSize}
+                    columnCount={7}
+                    columnWidths={[
+                      "w-[80px] text-center py-4",
+                      "py-4",
+                      "py-4",
+                      "py-4",
+                      "text-center py-4",
+                      "py-4 text-center",
+                      "py-4 text-center",
+                    ]}
+                  />
+                ) : users.length === 0 ? (
                   <EmptyState
                     colSpan={7}
                     variant="search"
                     title="No candidates found"
-                    description="We couldn't find any candidates matching your current filters. Try adjusting your search or filters."
+                    description="We couldn't find any candidates matching your criteria. Try adjusting your search."
                   />
                 ) : (
-                  paginatedUsers.map((row, idx) => (
+                  users.map((row, idx) => (
                     <TableRow
                       key={row.id}
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
@@ -322,7 +350,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
                       </TableCell>
                       <TableCell className="align-middle py-3">
                         <CopyableText
-                          value={row.mobile}
+                          value={row.mobile || ""}
                           className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
                           title="Copy Phone Number"
                         >
@@ -421,18 +449,15 @@ export function UserListing({ initialData = [] }: UserListingProps) {
               </TableBody>
             </Table>
           </div>
-          {totalItems > 0 && (
+          {!loading && users.length > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 totalItems={totalItems}
                 pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setCurrentPage(1);
-                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             </div>
           )}
@@ -449,97 +474,70 @@ export function UserListing({ initialData = [] }: UserListingProps) {
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
                 Quick Search
               </Typography>
-              <div className="relative group">
-                <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-brand-primary transition-colors"
-                  size={18}
-                />
-                <Input
-                  placeholder="Name, Mobile or Email..."
-                  className="pl-11 h-12 border-border/60 hover:border-border focus:border-brand-primary transition-all bg-muted/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Name, Mobile or Email..."
+                value={filters.search}
+                onSearch={(val) => handleFilterChange({ search: val })}
+              />
             </div>
 
-            {/* Department Filter */}
+            {/* Department */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Department
+                Department
               </Typography>
               <SelectDropdown
+                placeholder="All Departments"
                 options={departmentOptions}
-                value={deptFilter}
-                onChange={(val) => setDeptFilter(val as string)}
-                placeholder="Select Department"
+                value={filters.department_id}
+                onChange={(val) =>
+                  handleFilterChange({ department_id: String(val) })
+                }
                 isLoading={allDepartments.length === 0}
               />
             </div>
 
-            {/* Exam Level Filter */}
+            {/* Level */}
             <div className="flex flex-col gap-3">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
+                className="uppercase tracking-widest text-muted-foreground"
               >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                By Exam Level
+                Exam Level
               </Typography>
               <SelectDropdown
+                placeholder="All Levels"
                 options={levelOptions}
-                value={levelFilter}
-                onChange={(val) => setLevelFilter(val as string)}
-                placeholder="Select Level"
-                isLoading={classificationQuery.isLoading}
-              />
-            </div>
-
-            {/* Account Status Filter */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-[10px] text-muted-foreground/80 flex items-center gap-2"
-              >
-                <span className="w-4 h-px bg-muted-foreground/30" />
-                Account Status
-              </Typography>
-              <SelectDropdown
-                options={[
-                  { id: "all", label: "All Statuses" },
-                  { id: "active", label: "Active Only" },
-                  { id: "disabled", label: "Disabled Only" },
-                ]}
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as string)}
-                placeholder="Select Status"
+                value={filters.test_level_id}
+                onChange={(val) =>
+                  handleFilterChange({ test_level_id: String(val) })
+                }
+                isLoading={allLevels.length === 0}
               />
             </div>
 
             <Button
               variant="outline"
-              className="mt-auto w-full h-11 font-bold uppercase tracking-widest text-[10px] gap-2"
-              onClick={() => {
-                setSearchQuery("");
-                setDeptFilter("all");
-                setStatusFilter("all");
-                setLevelFilter("all");
-              }}
+              color="primary"
+              size="md"
+              shadow
+              animate="scale"
+              iconAnimation="rotate-360"
+              startIcon={<RotateCcw size={18} />}
+              onClick={resetFilters}
+              className="font-bold w-full mt-auto"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
-              Reset All
+              Reset Filters
             </Button>
           </div>
         </InlineDrawer>
@@ -554,7 +552,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
           <SignUpForm
             onSuccess={() => {
               setIsAddModalOpen(false);
-              fetchUsers();
+              void fetchItems();
             }}
           />
         </div>
@@ -577,7 +575,7 @@ export function UserListing({ initialData = [] }: UserListingProps) {
               }}
               onSuccess={() => {
                 setIsEditModalOpen(false);
-                fetchUsers();
+                void fetchItems();
               }}
             />
           )}

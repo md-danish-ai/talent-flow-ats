@@ -5,7 +5,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableRow } from "@components/ui-elements/Table";
-import { PaperSetup } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { GradeSettingsModal } from "./GradeSettingsModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

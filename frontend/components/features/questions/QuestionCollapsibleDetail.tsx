@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Question } from "@lib/api/questions";
+import { type Question } from "@types";
 import { Typography } from "@components/ui-elements/Typography";
 import {
   BookOpen,

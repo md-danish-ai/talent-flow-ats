@@ -17,12 +17,11 @@ import {
 } from "@components/ui-elements/Table";
 import { Badge } from "@components/ui-elements/Badge";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { AdminUserResultListItem } from "@lib/api/results";
+import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
-  allSubjects: string[];
   visibleColumns: string[];
   isLoading?: boolean;
   limit?: number;
@@ -30,7 +29,6 @@ interface ResultTableViewProps {
 
 export function ResultTableView({
   items,
-  allSubjects,
   visibleColumns,
   isLoading,
   limit = 10,

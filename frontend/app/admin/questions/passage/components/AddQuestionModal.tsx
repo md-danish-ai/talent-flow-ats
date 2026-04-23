@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
-import { AddPassageQuestionForm } from "@/components/features/questions/AddPassageQuestionForm";
+import { AddPassageQuestionForm } from "@components/features/questions/AddPassageQuestionForm";
 import { Typography } from "@components/ui-elements/Typography";
 
 interface AddQuestionModalProps {

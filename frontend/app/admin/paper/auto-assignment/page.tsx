@@ -53,12 +53,13 @@ export default function AutoAssignmentDashboard() {
   const activeRulesCount = rules.filter((r) => r.is_active).length;
 
   return (
-    <div className="flex flex-col gap-8 p-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+    <div className="flex flex-col gap-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       <PageHeader
         title="Auto-Assignment Dashboard"
         description="Manage rules and paper pools for automatic sequential distribution."
+        className="mb-0"
         action={
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <Button
               variant="outline"
               color="secondary"
