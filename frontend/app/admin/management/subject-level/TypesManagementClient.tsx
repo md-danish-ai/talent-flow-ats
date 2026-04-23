@@ -20,6 +20,7 @@ import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
 
@@ -109,6 +110,11 @@ export function TypesManagementClient({
     activeTab === "subjects" ? "subject" : "exam_level";
 
   const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
+
+  const tabs: TabItem[] = [
+    { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
+    { label: "Levels", value: "levels", icon: <Gauge size={18} /> },
+  ];
 
   const handleTabChange = (newTab: string) => {
     handleFilterChange({ type: newTab });
@@ -214,15 +220,14 @@ export function TypesManagementClient({
 
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              {activeTab === "subjects" ? (
-                <Layers size={20} />
-              ) : (
-                <Gauge size={20} />
-              )}
-            </div>
-            {currentEntityName} List
+          <div className="flex items-center">
+            <Tabs
+              tabs={tabs}
+              activeTab={activeTab}
+              onChange={handleTabChange}
+              variant="pills"
+              size="md"
+            />
           </div>
         }
         className="mb-6 flex flex-col"
