@@ -508,7 +508,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetConfirmModal
           isOpen={isModalOpen}
           user={selectedUser}
-          onSuccess={() => void fetchItems()}
+          onSuccess={() => void refresh()}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
@@ -520,7 +520,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetDetailsModal
           isOpen={isDetailsModalOpen}
           user={selectedUser}
-          onSuccess={() => void fetchItems()}
+          onSuccess={() => void refresh()}
           onClose={() => {
             setIsDetailsModalOpen(false);
             setSelectedUser(null);
@@ -532,7 +532,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ReInterviewModal
           isOpen={isReInterviewModalOpen}
           user={selectedUser}
-          onSuccess={() => void fetchItems()}
+          onSuccess={() => void refresh()}
           onClose={() => {
             setIsReInterviewModalOpen(false);
             setSelectedUser(null);
@@ -544,7 +544,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         <ResetSubjectsModal
           isOpen={isResetSubjectsModalOpen}
           user={selectedUser}
-          onSuccess={() => void fetchItems()}
+          onSuccess={() => void refresh()}
           onClose={() => {
             setIsResetSubjectsModalOpen(false);
             setSelectedUser(null);
