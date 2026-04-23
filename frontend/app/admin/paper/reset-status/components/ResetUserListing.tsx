@@ -109,20 +109,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   });
   const allLevels = classificationQuery.data?.data || [];
 
-  const levelOptions = [
-    { id: "all", label: "All Levels" },
-    ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
-  ];
-  const departmentOptions = [
-    { id: "all", label: "All Departments" },
-    ...allDepartments.map((dept) => ({ id: dept.name, label: dept.name })),
-  ];
-  const statusOptions = [
-    { id: "all", label: "All Statuses" },
-    { id: "submitted", label: "Submitted" },
-    { id: "inprogress", label: "In Progress" },
-  ];
-
   return (
     <>
       <MainCard

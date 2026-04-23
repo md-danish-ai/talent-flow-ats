@@ -96,28 +96,13 @@ export function TodayUserListing({
     toastMessage: "List Refreshed",
   });
 
-  // Fetch options for dropdowns
+  // Fetch options for dynamic dropdowns in Drawer
   const { data: allDepartments = [] } = useDepartments({ is_active: true });
   const classificationQuery = useClassifications({
     type: "exam_level",
     is_active: true,
   });
   const allLevels = classificationQuery.data?.data || [];
-
-  const levelOptions = [
-    { id: "all", label: "All Levels" },
-    ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
-  ];
-  const departmentOptions = [
-    { id: "all", label: "All Departments" },
-    ...allDepartments.map((dept) => ({ id: dept.name, label: dept.name })),
-  ];
-  const statusOptions = [
-    { id: "all", label: "All Statuses" },
-    { id: "completed", label: "Completed" },
-    { id: "inprogress", label: "In Progress" },
-    { id: "pending", label: "Pending Assignment" },
-  ];
 
   return (
     <>
