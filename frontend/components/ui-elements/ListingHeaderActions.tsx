@@ -76,7 +76,9 @@ export function ListingHeaderActions({
           disabled={isLoading}
           aria-label="Refresh list"
         >
-          <div className={cn((isLoading || isBackgroundLoading) && "animate-spin")}>
+          <div
+            className={cn((isLoading || isBackgroundLoading) && "animate-spin")}
+          >
             <RefreshCcw size={18} />
           </div>
         </Button>

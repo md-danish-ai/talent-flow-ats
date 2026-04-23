@@ -15,10 +15,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { getUsersByRole } from "@lib/api/auth";
 import { UserListResponse, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Tooltip } from "@components/ui-elements/Tooltip";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { ResetConfirmModal } from "./ResetConfirmModal";
 import { ResetDetailsModal } from "./ResetDetailsModal";
 import { ReInterviewModal } from "./ReInterviewModal";
@@ -26,24 +23,18 @@ import { ResetSubjectsModal } from "./ResetSubjectsModal";
 import { Badge } from "@components/ui-elements/Badge";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import {
   RefreshCw,
-  Search,
-  Filter,
   FileEdit,
   RotateCcw,
-  RefreshCcw,
   BookOpenCheck,
   Mail,
-  Loader2,
 } from "lucide-react";
 
-import { Typography } from "@components/ui-elements/Typography";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
@@ -86,7 +77,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
     handlePageSizeChange,
     resetFilters,
     refresh,
-    fetchItems,
   } = useListing<UserListResponse, UserListingFilters>({
     fetchFn: (params) => getUsersByRole("user", params),
     initialFilters: {
@@ -159,263 +149,264 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
             >
               <div className="flex-1 overflow-x-auto w-full">
                 <Table>
-                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Sr. No.
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Candidate Profile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                      Contact Info
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Department
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Test Level
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Status
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                      Action
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <ResetUserListingSkeleton rowCount={pageSize} />
-                  ) : users.length === 0 ? (
-                    <EmptyState
-                      colSpan={7}
-                      variant="search"
-                      title="No candidates found"
-                      description="Try adjusting your filters."
-                    />
-                  ) : (
-                    users.map((row, idx) => (
-                      <TableRow
-                        key={row.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
-                      >
-                        <TableCell className="font-medium text-center align-middle">
-                          {(currentPage - 1) * pageSize + idx + 1}
-                        </TableCell>
-                        <TableCell className="align-middle py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar
-                              name={row.username}
-                              variant="brand"
-                              size="sm"
-                            />
-                            <div className="flex flex-col">
-                              <div className="flex items-center gap-3">
-                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                                  {row.username || "Unnamed Candidate"}
-                                </span>
-                                {row.is_reinterview ? (
-                                  <Badge
-                                    variant="outline"
-                                    color="violet"
-                                    animate="pulse"
-                                    shape="square"
-                                    className="text-[9px] font-bold"
-                                  >
-                                    RETURNING
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="outline"
-                                    color="success"
-                                    animate="pulse"
-                                    shape="square"
-                                    className="text-[9px] font-bold"
-                                  >
-                                    NEW
-                                  </Badge>
-                                )}
+                  <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+                    <TableRow>
+                      <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
+                        Sr. No.
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                        Candidate Profile
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
+                        Contact Info
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                        Department
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                        Test Level
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
+                        Action
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <ResetUserListingSkeleton rowCount={pageSize} />
+                    ) : users.length === 0 ? (
+                      <EmptyState
+                        colSpan={7}
+                        variant="search"
+                        title="No candidates found"
+                        description="Try adjusting your filters."
+                      />
+                    ) : (
+                      users.map((row, idx) => (
+                        <TableRow
+                          key={row.id}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
+                        >
+                          <TableCell className="font-medium text-center align-middle">
+                            {(currentPage - 1) * pageSize + idx + 1}
+                          </TableCell>
+                          <TableCell className="align-middle py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar
+                                name={row.username}
+                                variant="brand"
+                                size="sm"
+                              />
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-3">
+                                  <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                                    {row.username || "Unnamed Candidate"}
+                                  </span>
+                                  {row.is_reinterview ? (
+                                    <Badge
+                                      variant="outline"
+                                      color="violet"
+                                      animate="pulse"
+                                      shape="square"
+                                      className="text-[9px] font-bold"
+                                    >
+                                      RETURNING
+                                    </Badge>
+                                  ) : (
+                                    <Badge
+                                      variant="outline"
+                                      color="success"
+                                      animate="pulse"
+                                      shape="square"
+                                      className="text-[9px] font-bold"
+                                    >
+                                      NEW
+                                    </Badge>
+                                  )}
+                                </div>
+                                <CopyableText
+                                  value={row.email || "-"}
+                                  className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                                  title="Copy Email"
+                                >
+                                  <Mail size={11} />
+                                  <span className="text-[11px] truncate max-w-[150px]">
+                                    {row.email || "-"}
+                                  </span>
+                                </CopyableText>
                               </div>
-                              <CopyableText
-                                value={row.email || "-"}
-                                className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
-                                title="Copy Email"
-                              >
-                                <Mail size={11} />
-                                <span className="text-[11px] truncate max-w-[150px]">
-                                  {row.email || "-"}
-                                </span>
-                              </CopyableText>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="align-middle py-3">
-                          <CopyableText
-                            value={row.mobile || ""}
-                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
-                            title="Copy Phone Number"
-                          >
-                            <span className="mb-[1px]">{row.mobile}</span>
-                          </CopyableText>
-                        </TableCell>
-                        <TableCell className="align-middle py-3 text-center">
-                          {row.department_name ||
-                          row.assignment?.department_name ? (
-                            <Badge
-                              color="primary"
-                              animate="pulse"
-                              shape="square"
-                              variant="outline"
+                          </TableCell>
+                          <TableCell className="align-middle py-3">
+                            <CopyableText
+                              value={row.mobile || ""}
+                              className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
+                              title="Copy Phone Number"
                             >
-                              {row.department_name ||
-                                row.assignment?.department_name}
-                            </Badge>
-                          ) : (
-                            <span className="text-[10px] text-slate-400 italic">
-                              No Dept
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="align-middle py-3 text-center">
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color="default"
-                          >
-                            {row.assignment?.test_level_name ||
-                              row.test_level_name ||
-                              "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center align-middle py-3">
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            {row.process_status === "submitted" ||
-                            row.is_interview_submitted ||
-                            row.assignment?.is_attempted ? (
+                              <span className="mb-[1px]">{row.mobile}</span>
+                            </CopyableText>
+                          </TableCell>
+                          <TableCell className="align-middle py-3 text-center">
+                            {row.department_name ||
+                            row.assignment?.department_name ? (
                               <Badge
-                                color="success"
-                                variant="outline"
+                                color="primary"
                                 animate="pulse"
                                 shape="square"
-                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
-                              >
-                                Submitted
-                              </Badge>
-                            ) : row.process_status === "inprogress" ||
-                              row.assignment?.has_started ? (
-                              <Badge
-                                color="warning"
                                 variant="outline"
-                                animate="pulse"
-                                shape="square"
-                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
                               >
-                                In Progress
-                              </Badge>
-                            ) : row.process_status === "ready" ? (
-                              <Badge
-                                color="default"
-                                variant="outline"
-                                shape="square"
-                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
-                              >
-                                Ready
-                              </Badge>
-                            ) : row.process_status === "expired" ? (
-                              <Badge
-                                color="error"
-                                variant="outline"
-                                shape="square"
-                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
-                              >
-                                Expired
+                                {row.department_name ||
+                                  row.assignment?.department_name}
                               </Badge>
                             ) : (
-                              <Badge
-                                color="warning"
-                                variant="outline"
-                                shape="square"
-                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
-                              >
-                                Pending
-                              </Badge>
+                              <span className="text-[10px] text-slate-400 italic">
+                                No Dept
+                              </span>
                             )}
-                            <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
+                          </TableCell>
+                          <TableCell className="align-middle py-3 text-center">
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color="default"
+                            >
+                              {row.assignment?.test_level_name ||
+                                row.test_level_name ||
+                                "N/A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center align-middle py-3">
+                            <div className="flex flex-col items-center justify-center gap-1">
                               {row.process_status === "submitted" ||
                               row.is_interview_submitted ||
-                              row.assignment?.is_attempted
-                                ? "Process complete"
-                                : row.process_status === "inprogress"
-                                  ? "Attempt Active"
-                                  : row.process_status === "ready"
-                                    ? "Awaiting Login"
-                                    : row.process_status === "expired"
-                                      ? "Session Expired"
-                                      : "Awaiting Assignment"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center align-middle py-3">
-                          <div className="flex items-center justify-center gap-2">
-                            {row.is_details_submitted && (
+                              row.assignment?.is_attempted ? (
+                                <Badge
+                                  color="success"
+                                  variant="outline"
+                                  animate="pulse"
+                                  shape="square"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                >
+                                  Submitted
+                                </Badge>
+                              ) : row.process_status === "inprogress" ||
+                                row.assignment?.has_started ? (
+                                <Badge
+                                  color="warning"
+                                  variant="outline"
+                                  animate="pulse"
+                                  shape="square"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                >
+                                  In Progress
+                                </Badge>
+                              ) : row.process_status === "ready" ? (
+                                <Badge
+                                  color="default"
+                                  variant="outline"
+                                  shape="square"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                >
+                                  Ready
+                                </Badge>
+                              ) : row.process_status === "expired" ? (
+                                <Badge
+                                  color="error"
+                                  variant="outline"
+                                  shape="square"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                >
+                                  Expired
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  color="warning"
+                                  variant="outline"
+                                  shape="square"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                >
+                                  Pending
+                                </Badge>
+                              )}
+                              <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
+                                {row.process_status === "submitted" ||
+                                row.is_interview_submitted ||
+                                row.assignment?.is_attempted
+                                  ? "Process complete"
+                                  : row.process_status === "inprogress"
+                                    ? "Attempt Active"
+                                    : row.process_status === "ready"
+                                      ? "Awaiting Login"
+                                      : row.process_status === "expired"
+                                        ? "Session Expired"
+                                        : "Awaiting Assignment"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center align-middle py-3">
+                            <div className="flex items-center justify-center gap-2">
+                              {row.is_details_submitted && (
+                                <TableIconButton
+                                  iconColor="orange"
+                                  animate="scale"
+                                  title="Enable candidate to edit personal details"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(row);
+                                    setIsDetailsModalOpen(true);
+                                  }}
+                                >
+                                  <FileEdit size={16} />
+                                </TableIconButton>
+                              )}
                               <TableIconButton
-                                iconColor="orange"
+                                iconColor="red"
                                 animate="scale"
-                                title="Enable candidate to edit personal details"
+                                title="Delete current attempt and allow re-start"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedUser(row);
-                                  setIsDetailsModalOpen(true);
+                                  setIsModalOpen(true);
                                 }}
                               >
-                                <FileEdit size={16} />
+                                <RefreshCw size={16} />
                               </TableIconButton>
-                            )}
-                            <TableIconButton
-                              iconColor="red"
-                              animate="scale"
-                              title="Delete current attempt and allow re-start"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUser(row);
-                                setIsModalOpen(true);
-                              }}
-                            >
-                              <RefreshCw size={16} />
-                            </TableIconButton>
-                            <TableIconButton
-                              iconColor="violet"
-                              animate="scale"
-                              title="Assign a fresh session (Returning Candidate)"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUser(row);
-                                setIsReInterviewModalOpen(true);
-                              }}
-                            >
-                              <RotateCcw size={16} />
-                            </TableIconButton>
-                            <TableIconButton
-                              iconColor="blue"
-                              animate="scale"
-                              title="Reset specific subjects data"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUser(row);
-                                setIsResetSubjectsModalOpen(true);
-                              }}
-                            >
-                              <BookOpenCheck size={16} />
-                            </TableIconButton>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                              <TableIconButton
+                                iconColor="violet"
+                                animate="scale"
+                                title="Assign a fresh session (Returning Candidate)"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsReInterviewModalOpen(true);
+                                }}
+                              >
+                                <RotateCcw size={16} />
+                              </TableIconButton>
+                              <TableIconButton
+                                iconColor="blue"
+                                animate="scale"
+                                title="Reset specific subjects data"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedUser(row);
+                                  setIsResetSubjectsModalOpen(true);
+                                }}
+                              >
+                                <BookOpenCheck size={16} />
+                              </TableIconButton>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </ListingTransition>
           </div>
           {!loading && totalItems > 0 && (
             <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
@@ -430,7 +421,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
             </div>
           )}
         </div>
-
         <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}

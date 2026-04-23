@@ -31,40 +31,20 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { StatCard } from "@components/ui-cards/StatCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 import { resultsApi } from "@lib/api/results";
 import {
   type AdminUserResultListItem,
   type PaginatedUserResults,
 } from "@types";
-import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 
 import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
 import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
-
-// ── Static filter option sets ──────────────────────────────────────────
-const STATUS_OPTIONS = [
-  { id: "all", label: "All Statuses" },
-  { id: "started", label: "Started" },
-  { id: "submitted", label: "Submitted (Manual)" },
-  { id: "auto_submitted", label: "Auto Submitted" },
-];
-
-const COMPLETION_REASON_OPTIONS = [
-  { id: "all", label: "All Reasons" },
-  { id: "manual", label: "Manual" },
-  { id: "time_over", label: "Time Over" },
-];
-
-const GRADE_OPTIONS = [
-  { id: "all", label: "All Grades" },
-  { id: "Excellent", label: "Excellent" },
-  { id: "Good", label: "Good" },
-  { id: "Average", label: "Average" },
-  { id: "Poor", label: "Poor" },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -140,6 +120,7 @@ export function UserResultsClient() {
   const {
     data: items,
     isLoading: loading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
@@ -334,29 +315,18 @@ export function UserResultsClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            {loading ? (
-              <div className="h-9 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-black text-[10px] h-9 px-3 bg-card"
-              >
-                {totalItems} RESULTS
-              </Badge>
-            )}
+            <ListingHeaderActions
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Results"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
 
-            {viewMode === "table" && (
-              <>
-                <div className="h-6 w-px bg-border mx-1" />
-                <TableColumnToggle
-                  columns={availableColumns}
-                  visibleColumns={visibleColumns}
-                  onToggle={toggleColumn}
-                  onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
-                />
-              </>
-            )}
+            <div className="h-6 w-px bg-border mx-1" />
 
             <div className="flex items-center gap-2">
               <Tooltip content="Switch to Card View" side="bottom">
@@ -381,48 +351,19 @@ export function UserResultsClient() {
                   <List size={18} />
                 </Button>
               </Tooltip>
-              <div className="h-6 w-px bg-border mx-1" />
-              <Tooltip content="Refresh Data" side="bottom">
-                <Button
-                  variant="action"
-                  size="rounded-icon"
-                  animate="scale"
-                  onClick={refresh}
-                  disabled={loading}
-                >
-                  <div className={cn(loading && "animate-spin")}>
-                    <RefreshCcw size={18} />
-                  </div>
-                </Button>
-              </Tooltip>
-              <Tooltip
-                content={
-                  activeFiltersCount > 0
-                    ? `Filters (${activeFiltersCount} active)`
-                    : "Open Filters"
-                }
-                side="bottom"
-              >
-                <Button
-                  variant="action"
-                  size="rounded-icon"
-                  isActive={isFilterOpen}
-                  animate="scale"
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                >
-                  {activeFiltersCount > 0 ? (
-                    <span className="relative">
-                      <Filter size={18} />
-                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
-                        {activeFiltersCount}
-                      </span>
-                    </span>
-                  ) : (
-                    <Filter size={18} />
-                  )}
-                </Button>
-              </Tooltip>
             </div>
+
+            {viewMode === "table" && (
+              <>
+                <div className="h-6 w-px bg-border mx-1" />
+                <TableColumnToggle
+                  columns={availableColumns}
+                  visibleColumns={visibleColumns}
+                  onToggle={toggleColumn}
+                  onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
+                />
+              </>
+            )}
           </div>
         }
       >
@@ -432,40 +373,45 @@ export function UserResultsClient() {
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <div className="flex-1 overflow-x-auto w-full min-h-0">
-            {viewMode === "card" ? (
-              loading ? (
-                <ResultCardSkeleton rowCount={pageSize} />
-              ) : items.length === 0 ? (
-                <EmptyState
-                  variant="search"
-                  title="No results found"
-                  description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
-                />
+          <ListingTransition
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full min-h-0">
+              {viewMode === "card" ? (
+                loading ? (
+                  <ResultCardSkeleton rowCount={pageSize} />
+                ) : items.length === 0 ? (
+                  <EmptyState
+                    variant="search"
+                    title="No results found"
+                    description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
+                  />
+                ) : (
+                  <ResultCardView items={items} />
+                )
               ) : (
-                <ResultCardView items={items} />
-              )
-            ) : (
-              <ResultTableView
-                items={items}
-                visibleColumns={visibleColumns}
-                isLoading={loading}
-                limit={pageSize}
+                <ResultTableView
+                  items={items}
+                  visibleColumns={visibleColumns}
+                  isLoading={loading}
+                  limit={pageSize}
+                />
+              )}
+            </div>
+
+            {!loading && items.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
               />
             )}
-          </div>
-
-          {!loading && items.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-auto shrink-0 border-t"
-            />
-          )}
+          </ListingTransition>
         </div>
 
         <ListingFiltersDrawer

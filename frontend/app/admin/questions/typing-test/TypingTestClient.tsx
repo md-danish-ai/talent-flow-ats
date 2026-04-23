@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Badge } from "@components/ui-elements/Badge";
 import {
   Table,
   TableBody,
@@ -15,7 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
+import { Plus, ListChecks, Upload } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
@@ -30,7 +29,8 @@ import { TypingTestRow } from "./components/TypingTestRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 type TypingTestListingFilters = {
   search: string;
@@ -53,6 +53,7 @@ export function TypingTestClient() {
   const {
     data: questions,
     isLoading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
@@ -173,17 +174,16 @@ export function TypingTestClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            {isLoading ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} QUESTIONS
-              </Badge>
-            )}
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Questions"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={allColumns}
@@ -192,20 +192,6 @@ export function TypingTestClient() {
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <div className="h-6 w-px bg-border mx-1" />
             <Button
               variant="action"
               size="rounded-icon"
@@ -216,33 +202,6 @@ export function TypingTestClient() {
             >
               <Upload size={18} />
             </Button>
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Filter"
-              }
-              side="bottom"
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -265,88 +224,93 @@ export function TypingTestClient() {
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("question") && (
-                    <TableHead>Typing Test</TableHead>
-                  )}
-                  {visibleColumns.includes("subject") && (
-                    <TableHead>Subject</TableHead>
-                  )}
-                  {visibleColumns.includes("examLevel") && (
-                    <TableHead>Exam Level</TableHead>
-                  )}
-                  {visibleColumns.includes("marks") && (
-                    <TableHead className="w-[80px] text-center">
-                      Marks
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("createdDate") && (
-                    <TableHead>Created Date</TableHead>
-                  )}
-                  {visibleColumns.includes("status") && (
-                    <TableHead className="w-[100px] text-center">
-                      Status
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">
-                      Action
-                    </TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <QuestionTableSkeleton
-                    visibleColumns={visibleColumns}
-                    rowCount={pageSize}
-                  />
-                ) : questions.length === 0 ? (
-                  <EmptyState
-                    colSpan={visibleColumns.length + 1}
-                    variant="search"
-                    title="No questions found"
-                    description="Try adjusting your filters or adding a new question."
-                  />
-                ) : (
-                  questions.map((row, index) => (
-                    <TypingTestRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      currentPage={currentPage}
-                      pageSize={pageSize}
+          <ListingTransition
+            isLoading={isLoading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("question") && (
+                      <TableHead>Typing Test</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("examLevel") && (
+                      <TableHead>Exam Level</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableHead>Created Date</TableHead>
+                    )}
+                    {visibleColumns.includes("status") && (
+                      <TableHead className="w-[100px] text-center">
+                        Status
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <QuestionTableSkeleton
                       visibleColumns={visibleColumns}
-                      togglingId={togglingId}
-                      onToggleStatus={handleToggleStatus}
-                      onEdit={setEditingQuestion}
+                      rowCount={pageSize}
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : questions.length === 0 ? (
+                    <EmptyState
+                      colSpan={visibleColumns.length + 1}
+                      variant="search"
+                      title="No questions found"
+                      description="Try adjusting your filters or adding a new question."
+                    />
+                  ) : (
+                    questions.map((row, index) => (
+                      <TypingTestRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        visibleColumns={visibleColumns}
+                        togglingId={togglingId}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={setEditingQuestion}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-          {!isLoading && questions.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-auto shrink-0 border-t"
-            />
-          )}
+            {!isLoading && questions.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
 
         <ListingFiltersDrawer

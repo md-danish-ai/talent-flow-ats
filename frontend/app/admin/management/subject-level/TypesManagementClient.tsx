@@ -18,6 +18,8 @@ import { classificationSchema } from "@lib/validations/management";
 import { Skeleton } from "@components/ui-elements/Skeleton";
 import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
 
@@ -40,7 +42,9 @@ export function TypesManagementClient({
   const {
     data: items,
     isLoading: isFetching,
+    isBackgroundLoading,
     totalItems,
+    totalPages,
     currentPage,
     pageSize,
     filters,
@@ -60,7 +64,7 @@ export function TypesManagementClient({
       status: "all",
     },
     initialData: initialSubjectData?.data,
-    initialTotalItems: initialSubjectData?.pagination.total_records,
+    initialTotalItems: initialSubjectData?.pagination?.total_records,
     filterMapping: (f) => ({
       type: f.type === "subjects" ? "subject" : "exam_level",
       search: f.search || undefined,
@@ -225,66 +229,16 @@ export function TypesManagementClient({
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            {isFetching ? (
-              <Skeleton className="h-8 w-24 rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems}{" "}
-                {totalItems === 1
-                  ? currentEntityName.toUpperCase()
-                  : activeTab === "subjects"
-                    ? "SUBJECTS"
-                    : "LEVELS"}
-              </Badge>
-            )}
-            <div className="h-6 w-px bg-border/50 mx-1" />
-
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={isFetching}
-                aria-label="Refresh list"
-              >
-                <div className={cn(isFetching && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Filter"
-              }
-              side="bottom"
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
+            <ListingHeaderActions
+              isLoading={isFetching}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel={activeTab === "subjects" ? "Subjects" : "Levels"}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
@@ -310,29 +264,34 @@ export function TypesManagementClient({
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <TypeTable
-            activeTab={activeTab}
-            currentData={currentData}
-            isFetching={isFetching}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            togglingId={togglingId}
-            onEdit={handleOpenModal}
-            onDelete={handleDeleteClick}
-            onToggleStatus={handleToggleStatus}
-          />
-
-          {!isFetching && totalItems > 0 && (
-            <Pagination
+          <ListingTransition
+            isLoading={isFetching}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <TypeTable
+              activeTab={activeTab}
+              currentData={currentData}
+              isFetching={isFetching}
               currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize)}
-              onPageChange={handlePageChange}
-              totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-auto shrink-0 border-t border-border"
+              togglingId={togglingId}
+              onEdit={handleOpenModal}
+              onDelete={handleDeleteClick}
+              onToggleStatus={handleToggleStatus}
             />
-          )}
+
+            {!isFetching && totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalItems / pageSize)}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t border-border"
+              />
+            )}
+          </ListingTransition>
         </div>
         <ListingFiltersDrawer
           isOpen={isFilterOpen}

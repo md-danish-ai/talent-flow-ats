@@ -27,6 +27,8 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface ProjectLeadListingProps {
   initialData?: {
@@ -50,6 +52,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
   const {
     data: users,
     isLoading: loading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
@@ -99,60 +102,16 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            {loading ? (
-              <Skeleton className="h-8 w-24 rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} LEADS
-              </Badge>
-            )}
-            <div className="h-6 w-px bg-border/50 mx-1" />
-
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={loading}
-              >
-                <div className={cn(loading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Filter"
-              }
-              side="bottom"
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
+            <ListingHeaderActions
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Leads"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
@@ -176,85 +135,90 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Name
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Mobile
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Email
-                  </TableHead>
-                  <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                    Status
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
-                ) : !Array.isArray(users) || users.length === 0 ? (
-                  <EmptyState
-                    colSpan={5}
-                    title="No project leads found"
-                    description="There are currently no project lead accounts registered in the system."
-                  />
-                ) : (
-                  users.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="font-medium text-center">
-                        {(currentPage - 1) * pageSize + idx + 1}
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {row.username || "-"}
-                      </TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {row.email || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={row.is_active}
-                            onChange={() => handleToggleStatus(row)}
-                            size="sm"
-                            disabled={togglingId === row.id}
-                          />
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color={row.is_active ? "success" : "error"}
-                            className="text-[9px] font-bold"
-                          >
-                            {row.is_active ? "ACTIVE" : "INACTIVE"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <ListingTransition
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Mobile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Email
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
+                  ) : !Array.isArray(users) || users.length === 0 ? (
+                    <EmptyState
+                      colSpan={5}
+                      title="No project leads found"
+                      description="There are currently no project lead accounts registered in the system."
+                    />
+                  ) : (
+                    users.map((row, idx) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {row.username || "-"}
+                        </TableCell>
+                        <TableCell>{row.mobile}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.email || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={row.is_active}
+                              onChange={() => handleToggleStatus(row)}
+                              size="sm"
+                              disabled={togglingId === row.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={row.is_active ? "success" : "error"}
+                              className="text-[9px] font-bold"
+                            >
+                              {row.is_active ? "ACTIVE" : "INACTIVE"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-          {!loading && totalItems > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-auto shrink-0 border-t"
-            />
-          )}
+            {!loading && totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
         <ListingFiltersDrawer
           isOpen={isFilterOpen}

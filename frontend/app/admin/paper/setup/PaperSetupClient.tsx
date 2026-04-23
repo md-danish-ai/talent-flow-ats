@@ -20,6 +20,8 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { cn } from "@lib/utils";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -40,7 +42,9 @@ export function PaperSetupClient() {
   const {
     data: papers,
     isLoading,
+    isBackgroundLoading,
     totalItems,
+    totalPages,
     currentPage,
     pageSize,
     filters,
@@ -77,16 +81,6 @@ export function PaperSetupClient() {
     is_active: true,
   });
   const allLevels = classificationQuery.data?.data || [];
-
-  const deptOptions = [
-    { id: "all", label: "All Departments" },
-    ...allDepartments.map((d) => ({ id: String(d.id), label: d.name })),
-  ];
-
-  const levelOptions = [
-    { id: "all", label: "All Levels" },
-    ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
-  ];
 
   const columns = [
     { id: "sr_no", label: "Sr. No.", pinned: true },
@@ -135,17 +129,16 @@ export function PaperSetupClient() {
         }
         action={
           <div className="flex items-center gap-3">
-            {isLoading ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} PAPERS
-              </Badge>
-            )}
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Papers"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
@@ -153,46 +146,6 @@ export function PaperSetupClient() {
               onToggle={handleToggleColumn}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Open Filters"
-              }
-              side="bottom"
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -218,24 +171,29 @@ export function PaperSetupClient() {
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <PaperSetupTable
-            data={papers}
-            totalItems={totalItems}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
+          <ListingTransition
             isLoading={isLoading}
-            togglingId={togglingId}
-            onToggleStatus={handleToggleStatus}
-            onEdit={(paper) =>
-              router.push(`/admin/paper/setup/edit/${paper.id}`)
-            }
-            onViewDetails={(id) =>
-              router.push(`/admin/paper/setup/detail/${id}`)
-            }
-            visibleColumns={visibleColumns}
-          />
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <PaperSetupTable
+              data={papers}
+              totalItems={totalItems}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+              togglingId={togglingId}
+              onToggleStatus={handleToggleStatus}
+              onEdit={(paper) =>
+                router.push(`/admin/paper/setup/edit/${paper.id}`)
+              }
+              onViewDetails={(id) =>
+                router.push(`/admin/paper/setup/detail/${id}`)
+              }
+              visibleColumns={visibleColumns}
+            />
+          </ListingTransition>
         </div>
 
         <ListingFiltersDrawer
@@ -247,8 +205,17 @@ export function PaperSetupClient() {
           onReset={resetFilters}
           isLoading={isLoading}
           dynamicOptions={{
-            department_id: deptOptions,
-            test_level_id: levelOptions,
+            department_id: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((d) => ({
+                id: String(d.id),
+                label: d.name,
+              })),
+            ],
+            test_level_id: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
+            ],
           }}
         />
       </MainCard>
