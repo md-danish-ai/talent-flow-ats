@@ -3,7 +3,12 @@ import { toast } from "@lib/toast";
 
 import { PaginatedResponse } from "@types";
 
-interface UseListingProps<T, F, R extends PaginatedResponse<T>, P = Record<string, unknown>> {
+interface UseListingProps<
+  T,
+  F,
+  R extends PaginatedResponse<T>,
+  P = Record<string, unknown>,
+> {
   /** The API function to call. It should accept an object of QueryParams. */
   fetchFn: (params: P) => Promise<R>;
   /** Initial filter values. */
@@ -152,10 +157,13 @@ export function useListing<
     setCurrentPage(1);
   }, []);
 
-  const handleSingleFilterChange = useCallback((key: string, value: unknown) => {
-    setFilters((prev) => ({ ...prev, [key]: value } as F));
-    setCurrentPage(1);
-  }, []);
+  const handleSingleFilterChange = useCallback(
+    (key: string, value: unknown) => {
+      setFilters((prev) => ({ ...prev, [key]: value }) as F);
+      setCurrentPage(1);
+    },
+    [],
+  );
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);

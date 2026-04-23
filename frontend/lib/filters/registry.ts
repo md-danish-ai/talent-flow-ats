@@ -1,6 +1,5 @@
 import { FilterConfig } from "@types";
 
-
 class FilterRegistry {
   private registry: Map<string, FilterConfig[]> = new Map();
 

@@ -63,7 +63,9 @@ export function DynamicFilterRenderer({
         <div className="flex flex-col">
           {labelElement}
           <DateRangePicker
-            onRangeChange={(range, label) => onChange({ range, label } as unknown)}
+            onRangeChange={(range, label) =>
+              onChange({ range, label } as unknown)
+            }
             initialLabel={dateVal?.label || "Today"}
             {...(config.props || {})}
           />

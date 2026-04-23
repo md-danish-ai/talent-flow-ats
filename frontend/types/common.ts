@@ -19,5 +19,3 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: ApiResponsePagination;
 }
-
-

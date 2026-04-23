@@ -29,6 +29,7 @@ export interface UserListResponse extends User {
   is_reinterview?: boolean;
   reinterview_date?: string | null;
   user_type?: "new" | "returning";
+  process_status?: string;
   assignment?: UserAssignment | null;
   is_details_submitted: boolean;
   is_interview_submitted: boolean;

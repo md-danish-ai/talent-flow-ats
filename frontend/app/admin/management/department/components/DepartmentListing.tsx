@@ -12,7 +12,14 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2, RefreshCcw, Filter } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Building2,
+  RefreshCcw,
+  Filter,
+} from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";

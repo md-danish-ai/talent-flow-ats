@@ -86,7 +86,10 @@ def get_auto_assignment_rule(db: Session, rule_id: int) -> AutoAssignmentRule | 
 
 
 def get_auto_assignment_rules(
-    db: Session, assigned_date: date | None = None
+    db: Session, 
+    assigned_date: date | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
 ) -> list[AutoAssignmentRule]:
     query = db.query(
         AutoAssignmentRule,
@@ -98,6 +101,10 @@ def get_auto_assignment_rules(
 
     if assigned_date:
         query = query.filter(AutoAssignmentRule.assigned_date == assigned_date)
+    if date_from:
+        query = query.filter(AutoAssignmentRule.assigned_date >= date_from)
+    if date_to:
+        query = query.filter(AutoAssignmentRule.assigned_date <= date_to)
 
     results = query.order_by(AutoAssignmentRule.id.desc()).all()
 
@@ -321,6 +328,12 @@ def assign_best_paper(
     )
 
     db.add(assignment)
+    
+    # Update user status to ready
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        user.process_status = "ready"
+        
     db.commit()
     db.refresh(assignment)
 
@@ -489,6 +502,12 @@ def assign_paper_to_user(
         assigned_by=assigned_by,
     )
     db.add(assignment)
+    
+    # Update user status to ready
+    user = db.query(User).filter(User.id == payload.user_id).first()
+    if user:
+        user.process_status = "ready"
+        
     db.commit()
     db.refresh(assignment)
     return get_assignment_by_user_and_date(

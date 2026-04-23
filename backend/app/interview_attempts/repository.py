@@ -461,6 +461,12 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
             started_at=datetime.now(timezone.utc),
         )
         db.add(record)
+        
+        # Update user status to inprogress
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = "inprogress"
+            
         db.commit()
         db.refresh(record)
 
@@ -713,6 +719,13 @@ def finalize_attempt(
         )
         if assignment:
             assignment.is_attempted = True
+
+        # Update physical status in User table
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = "submitted"
+            # If manually resetting or something, we might want to keep it active.
+            # But normally completion doesn't disable login unless expired.
 
         db.commit()
         db.refresh(record)

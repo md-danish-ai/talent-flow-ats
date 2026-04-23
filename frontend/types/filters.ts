@@ -27,4 +27,3 @@ export interface DynamicFilterRendererProps {
   onChange: (value: unknown) => void;
   isLoading?: boolean;
 }
-

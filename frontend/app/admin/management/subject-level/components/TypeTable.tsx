@@ -85,10 +85,7 @@ export function TypeTable({
         </TableHeader>
         <TableBody>
           {isFetching ? (
-            <SimpleTableSkeleton
-              columnCount={colSpan}
-              rowCount={pageSize}
-            />
+            <SimpleTableSkeleton columnCount={colSpan} rowCount={pageSize} />
           ) : currentData.length === 0 ? (
             <EmptyState
               colSpan={colSpan}

@@ -101,7 +101,6 @@ export function TypesManagementClient({
     is_exclusive: false,
   });
 
-
   const classificationType =
     activeTab === "subjects" ? "subject" : "exam_level";
 

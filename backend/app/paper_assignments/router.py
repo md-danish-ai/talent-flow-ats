@@ -98,9 +98,16 @@ def create_auto_rule(
 )
 def list_auto_rules(
     assigned_date: date | None = Query(None),
+    date_from: date | None = Query(None),
+    date_to: date | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    rules = repository.get_auto_assignment_rules(db=db, assigned_date=assigned_date)
+    rules = repository.get_auto_assignment_rules(
+        db=db, 
+        assigned_date=assigned_date,
+        date_from=date_from,
+        date_to=date_to
+    )
     return api_response(
         StatusCode.OK,
         ResponseMessage.FETCHED,

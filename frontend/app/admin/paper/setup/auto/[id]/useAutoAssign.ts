@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { papersApi } from "@lib/api/papers";
-import { PaperSetup, PaperSubjectConfig, Question, Classification } from "@types";
+import {
+  PaperSetup,
+  PaperSubjectConfig,
+  Question,
+  Classification,
+} from "@types";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";

@@ -70,7 +70,7 @@ export const Badge = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 transition-all duration-300",
+        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 transition-all duration-300",
         shape === "curve" ? "rounded-full" : "rounded-sm",
         variant === "outline" ? "border" : "",
         colorStyles[color][variant],
@@ -83,7 +83,7 @@ export const Badge = ({
         variant="body5"
         weight="medium"
         color="text-inherit"
-        className="uppercase tracking-wider"
+        className="uppercase leading-none tracking-wider"
         as="span"
       >
         {children}

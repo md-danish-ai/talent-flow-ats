@@ -24,7 +24,7 @@ import { ResetDetailsModal } from "./ResetDetailsModal";
 import { ReInterviewModal } from "./ReInterviewModal";
 import { ResetSubjectsModal } from "./ResetSubjectsModal";
 import { Badge } from "@components/ui-elements/Badge";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@hooks/api/departments/use-departments";
@@ -49,12 +49,12 @@ interface ResetUserListingProps {
   initialData?: PaginatedResponse<UserListResponse>;
 }
 
-interface UserListingFilters {
+type UserListingFilters = {
   search: string;
   department: string;
   level: string;
   status: string;
-}
+};
 
 export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
@@ -77,6 +77,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
@@ -338,7 +339,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                         </TableCell>
                         <TableCell className="text-center align-middle py-3">
                           <div className="flex flex-col items-center justify-center gap-1">
-                            {row.is_interview_submitted ||
+                            {row.process_status === "submitted" ||
+                            row.is_interview_submitted ||
                             row.assignment?.is_attempted ? (
                               <Badge
                                 color="success"
@@ -349,7 +351,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                               >
                                 Submitted
                               </Badge>
-                            ) : row.assignment?.has_started ? (
+                            ) : row.process_status === "inprogress" ||
+                              row.assignment?.has_started ? (
                               <Badge
                                 color="warning"
                                 variant="outline"
@@ -359,7 +362,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                               >
                                 In Progress
                               </Badge>
-                            ) : (
+                            ) : row.process_status === "ready" ? (
                               <Badge
                                 color="default"
                                 variant="outline"
@@ -368,16 +371,37 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                               >
                                 Ready
                               </Badge>
+                            ) : row.process_status === "expired" ? (
+                              <Badge
+                                color="error"
+                                variant="outline"
+                                shape="square"
+                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                              >
+                                Expired
+                              </Badge>
+                            ) : (
+                              <Badge
+                                color="warning"
+                                variant="outline"
+                                shape="square"
+                                className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                              >
+                                Pending
+                              </Badge>
                             )}
                             <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
-                              {row.is_interview_submitted ||
+                              {row.process_status === "submitted" ||
+                              row.is_interview_submitted ||
                               row.assignment?.is_attempted
                                 ? "Process complete"
-                                : row.assignment?.has_started
+                                : row.process_status === "inprogress"
                                   ? "Attempt Active"
-                                  : row.is_details_submitted
-                                    ? "Form Done"
-                                    : "Awaiting Login"}
+                                  : row.process_status === "ready"
+                                    ? "Awaiting Login"
+                                    : row.process_status === "expired"
+                                      ? "Session Expired"
+                                      : "Awaiting Assignment"}
                             </span>
                           </div>
                         </TableCell>
@@ -456,120 +480,28 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
           )}
         </div>
 
-        <InlineDrawer
-          title="Filters"
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-        >
-          <div className="p-6 flex flex-col gap-8">
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Candidates
-              </Typography>
-              <SearchInput
-                placeholder="Search by name, mobile..."
-                value={filters.search}
-                onSearch={(val) => handleFilterChange({ search: val })}
-              />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Attempt Status
-              </Typography>
-              <SelectDropdown
-                options={statusOptions}
-                value={filters.status}
-                onChange={(val) =>
-                  handleFilterChange({ status: val as string })
-                }
-                placeholder="Select Status"
-              />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Department
-              </Typography>
-              <SelectDropdown
-                options={departmentOptions}
-                value={filters.department}
-                onChange={(val) =>
-                  handleFilterChange({ department: val as string })
-                }
-                placeholder="Select Department"
-                isLoading={allDepartments.length === 0}
-              />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Exam Level
-              </Typography>
-              <SelectDropdown
-                options={levelOptions}
-                value={filters.level}
-                onChange={(val) => handleFilterChange({ level: val as string })}
-                placeholder="Select Level"
-                isLoading={classificationQuery.isLoading}
-              />
-            </div>
-
-            <div className="mt-auto p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white dark:bg-black border border-border flex items-center justify-center shrink-0">
-                  <Search size={18} className="text-brand-primary" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Typography
-                    variant="body5"
-                    weight="bold"
-                    className="text-slate-800 dark:text-slate-100 uppercase tracking-tight"
-                  >
-                    Quick Search
-                  </Typography>
-                  <Typography
-                    variant="body5"
-                    className="text-[10px] text-muted-foreground italic leading-relaxed"
-                  >
-                    Search field looks through Name, Phone Number, and Email ID.
-                  </Typography>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-360"
-              startIcon={<RotateCcw size={18} />}
-              onClick={resetFilters}
-              className="font-bold w-full border-brand-primary text-brand-primary"
-              title="Reset Filters"
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </InlineDrawer>
+          registryKey="reset-status-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={loading}
+          dynamicOptions={{
+            department: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((dept) => ({
+                id: dept.name,
+                label: dept.name,
+              })),
+            ],
+            level: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
+            ],
+          }}
+        />
       </MainCard>
 
       {selectedUser && (

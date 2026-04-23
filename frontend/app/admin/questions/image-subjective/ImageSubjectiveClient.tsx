@@ -19,7 +19,7 @@ import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi,  } from "@lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";

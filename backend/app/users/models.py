@@ -29,6 +29,7 @@ class User(Base):
     role = Column(String(50), nullable=False, server_default=text("'user'"))
 
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
+    process_status = Column(String(50), nullable=False, server_default=text("'pending'"))
 
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 

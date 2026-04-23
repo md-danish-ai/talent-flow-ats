@@ -12,7 +12,6 @@ from app.paper_assignments.repository import assign_best_paper
 from datetime import date as dt_date
 
 
-
 def signup_user(data):
     db_session = SessionLocal()
     try:
@@ -51,8 +50,10 @@ def signup_user(data):
                 test_level_id=new_user.test_level_id,
                 assigned_date=dt_date.today()
             )
+            new_user.process_status = 'ready'
+            db_session.commit()
         except Exception as e:
-            # Log error but don't fail signup. 
+            # Log error but don't fail signup.
             print(f"Auto-assignment failed for user {new_user.id}: {str(e)}")
 
         user_data = {
@@ -131,8 +132,11 @@ def signin_user(data):
                     test_level_id=user.test_level_id,
                     assigned_date=dt_date.today()
                 )
+                user.process_status = 'ready'
+                db_session.commit()
             except Exception as e:
-                print(f"Auto-assignment during login failed for user {user.id}: {str(e)}")
+                print(
+                    f"Auto-assignment during login failed for user {user.id}: {str(e)}")
 
         user_data = {"id": user.id, "username": user.username,
                      "role": user.role, "department_id": user.department_id}
@@ -254,38 +258,56 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None):
+def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
     db_session = SessionLocal()
     try:
         from sqlalchemy import func, or_
         from datetime import date as dt_date
-        target_date = dt_date.fromisoformat(date) if date else dt_date.today()
-
-        # Date range support
-        range_from = dt_date.fromisoformat(date_from) if date_from else None
-        range_to = dt_date.fromisoformat(date_to) if date_to else None
-
+        from app.paper_assignments.models import PaperAssignment
         from app.papers.models import Paper
+        from app.users.models import User as UserModel
         from app.departments.models import Department
         from app.classifications.models import Classification as Cls
         from sqlalchemy.orm import aliased
 
+        def safe_parse_date(value: str):
+            """Parse a date string safely, returning None for invalid/partial dates."""
+            if not value:
+                return None
+            try:
+                return dt_date.fromisoformat(value)
+            except (ValueError, TypeError):
+                return None
+
+        # 1. AUTO-EXPIRATION LOGIC (Bulk update for expired tests)
+        today = dt_date.today()
+        # Users with assigned_date in past, who are 'ready' but haven't started/submitted
+        to_expire_query = (
+            db_session.query(UserModel)
+            .join(PaperAssignment, UserModel.id == PaperAssignment.user_id)
+            .filter(
+                UserModel.role == "user",
+                UserModel.is_active == True,
+                UserModel.process_status == "ready",
+                PaperAssignment.assigned_date < today
+            )
+        )
+
+        for u in to_expire_query.all():
+            u.process_status = "expired"
+            u.is_active = False
+
+        if to_expire_query.count() > 0:
+            db_session.commit()
+
+        # 2. DATA RETRIEVAL
+        target_date = safe_parse_date(date)
+        range_from = safe_parse_date(date_from)
+        range_to = safe_parse_date(date_to)
+
         UserDept = aliased(Department)
 
-        # Base filter
-        base_query = db_session.query(User).filter(User.role == role)
-
-        # --- SEARCH LOGIC ---
-        if search:
-            base_query = base_query.filter(
-                or_(
-                    User.username.ilike(f"%{search}%"),
-                    User.email.ilike(f"%{search}%"),
-                    User.mobile.ilike(f"%{search}%")
-                )
-            )
-
-        # Get latest paper assignment for each user
+        # Latest assignment per user via row_number()
         assignment_subq = (
             db_session.query(
                 PaperAssignment.user_id,
@@ -293,6 +315,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 PaperAssignment.department_id,
                 PaperAssignment.test_level_id,
                 PaperAssignment.is_attempted,
+                PaperAssignment.assigned_date,
                 func.row_number()
                 .over(
                     partition_by=PaperAssignment.user_id,
@@ -303,11 +326,12 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             .subquery()
         )
 
-        # Get latest interview attempt for each user
+        # Latest attempt per user via row_number()
         attempt_subq = (
             db_session.query(
                 InterviewRecord.user_id,
                 InterviewRecord.id,
+                InterviewRecord.status,
                 func.row_number()
                 .over(
                     partition_by=InterviewRecord.user_id,
@@ -320,16 +344,18 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
 
         results_query = (
             db_session.query(
-                User,
+                UserModel,
                 assignment_subq.c.paper_id.label("asgn_paper_id"),
                 assignment_subq.c.department_id.label("asgn_dept_id"),
                 assignment_subq.c.test_level_id.label("asgn_level_id"),
                 assignment_subq.c.is_attempted.label("asgn_is_attempted"),
+                assignment_subq.c.assigned_date.label("asgn_date"),
                 Paper.paper_name,
                 Department.name.label("asgn_dept_name"),
                 Cls.name.label("level_name"),
                 UserDept.name.label("user_dept_name"),
                 attempt_subq.c.id.label("attempt_id"),
+                attempt_subq.c.status.label("attempt_status"),
                 UserDetail.is_submitted,
                 UserDetail.is_interview_submitted,
                 UserDetail.is_reinterview,
@@ -337,67 +363,90 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             )
             .outerjoin(
                 assignment_subq,
-                (User.id == assignment_subq.c.user_id) & (assignment_subq.c.rn == 1),
+                (UserModel.id == assignment_subq.c.user_id) & (
+                    assignment_subq.c.rn == 1),
             )
             .outerjoin(Paper, assignment_subq.c.paper_id == Paper.id)
             .outerjoin(Department, assignment_subq.c.department_id == Department.id)
-            .outerjoin(UserDept, User.department_id == UserDept.id)
+            .outerjoin(UserDept, UserModel.department_id == UserDept.id)
             .outerjoin(Cls, assignment_subq.c.test_level_id == Cls.id)
             .outerjoin(
                 attempt_subq,
-                (User.id == attempt_subq.c.user_id) & (attempt_subq.c.rn == 1),
+                (UserModel.id == attempt_subq.c.user_id) & (
+                    attempt_subq.c.rn == 1),
             )
-            .outerjoin(UserDetail, User.id == UserDetail.user_id)
-            .filter(User.role == role)
+            .outerjoin(UserDetail, UserModel.id == UserDetail.user_id)
+            .filter(UserModel.role == role)
         )
 
-        # --- DEPARTMENT & LEVEL FILTERS ---
+        # Apply Filters
         if department_id:
-            # Filter by either user's department OR their assignment's department
             results_query = results_query.filter(
-                or_(
-                    User.department_id == department_id,
-                    assignment_subq.c.department_id == department_id
-                )
+                or_(UserModel.department_id == department_id,
+                    assignment_subq.c.department_id == department_id)
             )
-            
         if test_level_id:
-            # Filter by assignment's test level
             results_query = results_query.filter(
-                assignment_subq.c.test_level_id == test_level_id
-            )
-
-        # Re-apply search to results query if needed (or use base_query logic)
+                assignment_subq.c.test_level_id == test_level_id)
         if search:
+            pattern = f"%{search}%"
             results_query = results_query.filter(
-                or_(
-                    User.username.ilike(f"%{search}%"),
-                    User.email.ilike(f"%{search}%"),
-                    User.mobile.ilike(f"%{search}%")
-                )
+                or_(UserModel.username.ilike(pattern), UserModel.email.ilike(
+                    pattern), UserModel.mobile.ilike(pattern))
             )
 
-        # --- OTHER FILTERS ---
+        # STATUS FILTER (uses physical process_status column)
+        if status:
+            if status == "pending":
+                results_query = results_query.filter(
+                    or_(UserModel.process_status == "pending",
+                        assignment_subq.c.paper_id.is_(None))
+                )
+                target_date = None
+                range_from = None
+                range_to = None
+            else:
+                results_query = results_query.filter(
+                    UserModel.process_status == status)
+
+        # DATE FILTERS
         if range_from and range_to:
+            # Range: broad OR for all date types (used in general search)
             results_query = results_query.filter(
                 or_(
-                    func.date(User.created_at).between(range_from, range_to),
+                    func.date(UserModel.created_at).between(
+                        range_from, range_to),
                     UserDetail.reinterview_date.between(range_from, range_to),
+                    assignment_subq.c.assigned_date.between(
+                        range_from, range_to),
                 )
             )
-        elif date:
-            results_query = results_query.filter(
-                or_(
-                    func.date(User.created_at) == target_date,
-                    UserDetail.reinterview_date == target_date,
+        elif target_date:
+            if status:
+                # Status + Date combined:
+                # Include assigned_date so admin can see e.g. "submitted users from today"
+                # even if user registered on a different day
+                results_query = results_query.filter(
+                    or_(
+                        func.date(UserModel.created_at) == target_date,
+                        UserDetail.reinterview_date == target_date,
+                        assignment_subq.c.assigned_date == target_date,
+                    )
                 )
-            )
+            else:
+                # Date-only filter (Today's Papers default view):
+                # Show users registered today OR reinterview today
+                # Do NOT use assigned_date (would pull in old submitted users re-assigned)
+                results_query = results_query.filter(
+                    or_(
+                        func.date(UserModel.created_at) == target_date,
+                        UserDetail.reinterview_date == target_date,
+                    )
+                )
 
-        # --- TOTAL COUNT ---
         total_records = results_query.count()
-
-        # --- PAGINATION ---
-        results = results_query.order_by(User.id.desc()).offset((page - 1) * limit).limit(limit).all()
+        results = results_query.order_by(UserModel.id.desc()).offset(
+            (page - 1) * limit).limit(limit).all()
 
         data = [
             {
@@ -406,6 +455,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 "mobile": row.User.mobile,
                 "email": row.User.email,
                 "role": row.User.role,
+                "process_status": row.User.process_status,
                 "test_level_id": row.User.test_level_id,
                 "test_level_name": row.User.test_level.name if row.User.test_level else None,
                 "department_id": row.User.department_id,
@@ -415,7 +465,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
                 "is_reinterview": row.is_reinterview if row.is_reinterview is not None else False,
                 "reinterview_date": row.reinterview_date.isoformat() if row.reinterview_date else None,
-                "user_type": "returning" if (row.is_reinterview and row.reinterview_date and row.reinterview_date == target_date) else "new",
+                "user_type": "returning" if (row.is_reinterview and row.reinterview_date and target_date and row.reinterview_date == target_date) else "new",
                 "assignment": {
                     "is_assigned": row.asgn_paper_id is not None,
                     "paper_id": row.asgn_paper_id,
@@ -424,8 +474,9 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                     "department_name": row.asgn_dept_name,
                     "test_level_id": row.asgn_level_id,
                     "test_level_name": row.level_name,
-                    "is_attempted": bool(row.asgn_is_attempted),
-                    "has_started": row.attempt_id is not None
+                    "assigned_date": row.asgn_date.isoformat() if row.asgn_date else None,
+                    "is_attempted": bool(row.asgn_is_attempted) or row.attempt_status in ["submitted", "auto_submitted"],
+                    "has_started": row.attempt_id is not None and row.attempt_status == "started"
                 } if row.asgn_paper_id else None
             }
             for row in results

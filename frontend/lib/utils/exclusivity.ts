@@ -35,7 +35,7 @@ export const isExclusiveClassification = (
   // Handle Object (Best way: check metadata from DB)
   if (typeof classificationOrName === "object") {
     if (classificationOrName.metadata?.is_exclusive === true) return true;
-    
+
     // Check if it's one of the exclusive Question Types
     const code = (classificationOrName.code || "").toUpperCase();
     return !!EXCLUSIVE_MAPPING[code] || !!REVERSE_EXCLUSIVE_MAPPING[code];

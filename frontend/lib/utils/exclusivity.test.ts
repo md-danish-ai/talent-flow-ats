@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { 
-  isExclusiveClassification, 
+import {
+  isExclusiveClassification,
   filterSubjectsForQuestionType,
-  filterQuestionTypesForSubject 
+  filterQuestionTypesForSubject,
 } from "./exclusivity";
 import { Classification } from "@types";
 
@@ -13,7 +13,7 @@ describe("exclusivity utils", () => {
     name: "Company Contact Details",
     type: "subject",
     is_active: true,
-    metadata: { is_exclusive: true }
+    metadata: { is_exclusive: true },
   };
 
   const mockNormalSubject: Classification = {
@@ -21,7 +21,7 @@ describe("exclusivity utils", () => {
     code: "APTITUDE",
     name: "Aptitude",
     type: "subject",
-    is_active: true
+    is_active: true,
   };
 
   const mockExclusiveQT: Classification = {
@@ -29,7 +29,7 @@ describe("exclusivity utils", () => {
     code: "CONTACT_DETAILS",
     name: "Contact Details",
     type: "question_type",
-    is_active: true
+    is_active: true,
   };
 
   const mockNormalQT: Classification = {
@@ -37,7 +37,7 @@ describe("exclusivity utils", () => {
     code: "MULTIPLE_CHOICE",
     name: "Multiple Choice",
     type: "question_type",
-    is_active: true
+    is_active: true,
   };
 
   describe("isExclusiveClassification", () => {
@@ -62,13 +62,19 @@ describe("exclusivity utils", () => {
     const subjects = [mockExclusiveSubject, mockNormalSubject];
 
     it("should return only mapped exclusive subject for exclusive question type", () => {
-      const filtered = filterSubjectsForQuestionType(subjects, "CONTACT_DETAILS");
+      const filtered = filterSubjectsForQuestionType(
+        subjects,
+        "CONTACT_DETAILS",
+      );
       expect(filtered).toHaveLength(1);
       expect(filtered[0].code).toBe("COMPANY_CONTACT_DETAILS");
     });
 
     it("should show only non-exclusive subjects for normal question type", () => {
-      const filtered = filterSubjectsForQuestionType(subjects, "MULTIPLE_CHOICE");
+      const filtered = filterSubjectsForQuestionType(
+        subjects,
+        "MULTIPLE_CHOICE",
+      );
       expect(filtered).toHaveLength(1);
       expect(filtered[0].code).toBe("APTITUDE");
     });
@@ -78,7 +84,10 @@ describe("exclusivity utils", () => {
     const types = [mockExclusiveQT, mockNormalQT];
 
     it("should return only mapped exclusive question type for exclusive subject", () => {
-      const filtered = filterQuestionTypesForSubject(types, "COMPANY_CONTACT_DETAILS");
+      const filtered = filterQuestionTypesForSubject(
+        types,
+        "COMPANY_CONTACT_DETAILS",
+      );
       expect(filtered).toHaveLength(1);
       expect(filtered[0].code).toBe("CONTACT_DETAILS");
     });

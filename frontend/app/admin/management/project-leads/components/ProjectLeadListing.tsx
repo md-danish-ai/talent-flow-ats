@@ -16,7 +16,7 @@ import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { AddProjectLeadModal } from "./AddProjectLeadModal";
-import { getUsersByRole, toggleUserStatus,  } from "@lib/api/auth";
+import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
 import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
