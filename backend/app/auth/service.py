@@ -5,7 +5,6 @@ from app.auth.utils import hash_password, verify_password, generate_jwt
 from fastapi import HTTPException
 from app.utils.status_codes import StatusCode
 from app.users.models import User
-from app.paper_assignments.models import PaperAssignment
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
 from app.paper_assignments.repository import assign_best_paper
@@ -261,7 +260,7 @@ def get_user_by_id(user_id):
 def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func, or_, cast, Date
+        from sqlalchemy import func, or_
         from datetime import date as dt_date
         from app.paper_assignments.models import PaperAssignment
         from app.papers.models import Paper
@@ -270,7 +269,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         from app.classifications.models import Classification as Cls
         from sqlalchemy.orm import aliased
 
-        from datetime import datetime, time, date as dt_date
+        from datetime import datetime, time
         def safe_parse_date(value: str):
             """Parse a date string safely, returning None for invalid/partial dates."""
             if not value or not isinstance(value, str):
@@ -297,7 +296,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             .join(PaperAssignment, UserModel.id == PaperAssignment.user_id)
             .filter(
                 UserModel.role == "user",
-                UserModel.is_active == True,
+                UserModel.is_active,
                 UserModel.process_status == "ready",
                 PaperAssignment.assigned_date < today
             )
