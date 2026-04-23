@@ -3,9 +3,9 @@ import { toast } from "@lib/toast";
 
 import { PaginatedResponse } from "@types";
 
-interface UseListingProps<T, F, R extends PaginatedResponse<T>> {
+interface UseListingProps<T, F, R extends PaginatedResponse<T>, P = Record<string, unknown>> {
   /** The API function to call. It should accept an object of QueryParams. */
-  fetchFn: (params: Record<string, unknown>) => Promise<R>;
+  fetchFn: (params: P) => Promise<R>;
   /** Initial filter values. */
   initialFilters: F;
   /** Optional initial data to skip first fetch. */
@@ -30,6 +30,7 @@ export function useListing<
   T,
   F extends object,
   R extends PaginatedResponse<T> = PaginatedResponse<T>,
+  P = Record<string, unknown>,
 >({
   fetchFn,
   initialFilters,
@@ -41,10 +42,10 @@ export function useListing<
   onSuccess,
   onError,
   filterMapping,
-}: UseListingProps<T, F, R>) {
-  const [data, setData] = useState<T[]>(initialData);
-  const [isLoading, setIsLoading] = useState(initialData.length === 0);
-  const [totalItems, setTotalItems] = useState(initialTotalItems);
+}: UseListingProps<T, F, R, P>) {
+  const [data, setData] = useState<T[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(initialTotalItems || 0);
   const [totalPages, setTotalPages] = useState(
     initialTotalItems ? Math.ceil(initialTotalItems / initialPageSize) : 1,
   );
@@ -112,7 +113,7 @@ export function useListing<
           ...activeFilters,
         };
 
-        const response = await fetchFnRef.current(params);
+        const response = await fetchFnRef.current(params as unknown as P);
 
         const fetchedData = response.data || [];
         const pagination = response.pagination;
@@ -151,6 +152,11 @@ export function useListing<
     setCurrentPage(1);
   }, []);
 
+  const handleSingleFilterChange = useCallback((key: string, value: unknown) => {
+    setFilters((prev) => ({ ...prev, [key]: value } as F));
+    setCurrentPage(1);
+  }, []);
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
   }, []);
@@ -184,10 +190,11 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: () => {
-      fetchItems(true);
+    refresh: async () => {
+      await fetchItems(true);
     },
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,

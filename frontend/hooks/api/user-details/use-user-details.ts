@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@lib/api";
-import { UserDetails, IApiError } from "@types";
+import { api, ApiError } from "@lib/api";
+import { UserDetails } from "@types";
 import { type CurrentUser } from "@lib/auth/user-utils";
 import {
   addUserDetails,
@@ -16,7 +16,7 @@ export const userDetailsKeys = {
 };
 
 export function useUserDetails() {
-  return useQuery<UserDetails, IApiError>({
+  return useQuery<UserDetails, ApiError>({
     queryKey: userDetailsKeys.me,
     queryFn: async () => {
       // 1. Get current user to get the ID
@@ -27,9 +27,7 @@ export function useUserDetails() {
       try {
         return await getUserDetailsById(user.id);
       } catch (error) {
-        const apiError = error as IApiError;
-        // If 404 or other error, return empty state if it's a new user
-        if (apiError?.status_code === 404) {
+        if (error instanceof ApiError && error.status === 404) {
           return {
             is_submitted: false,
             is_interview_submitted: false,
@@ -44,7 +42,7 @@ export function useUserDetails() {
 
 export function useSaveUserDetails() {
   const qc = useQueryClient();
-  return useMutation<UserDetails, IApiError, UserDetails>({
+  return useMutation<UserDetails, ApiError, UserDetails>({
     mutationFn: (data) => addUserDetails(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: userDetailsKeys.me });
@@ -54,7 +52,7 @@ export function useSaveUserDetails() {
 
 export function useUpdateUserDetails() {
   const qc = useQueryClient();
-  return useMutation<UserDetails, IApiError, UserDetails>({
+  return useMutation<UserDetails, ApiError, UserDetails>({
     mutationFn: (data) => updateUserDetails(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: userDetailsKeys.me });

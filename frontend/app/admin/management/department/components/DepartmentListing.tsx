@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2, RefreshCcw } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, RefreshCcw, Filter } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
@@ -27,6 +27,7 @@ import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 
 interface DepartmentListingProps {
   initialData?: PaginatedResponse<Department>;
@@ -42,9 +43,12 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     currentPage,
     pageSize,
     filters,
+    activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
+    resetFilters,
     fetchItems,
     refresh,
   } = useListing<Department, { search: string }>({
@@ -58,6 +62,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
 
   // Modals Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
   );
@@ -120,7 +125,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
           </div>
         }
         className="mb-6 flex flex-col"
-        bodyClassName="p-0 flex flex-col items-stretch w-full"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-4">
             {isLoading ? (
@@ -150,13 +155,34 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               </Button>
             </Tooltip>
 
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Filter"
+              }
+              side="bottom"
+            >
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <SearchInput
-              placeholder="Search departments..."
-              value={filters.search}
-              onSearch={(val) => handleFilterChange({ search: val })}
-              className="w-64"
-            />
             <Button
               variant="primary"
               size="md"
@@ -173,7 +199,12 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
           </div>
         }
       >
-        <div className="flex flex-col min-w-0 relative">
+        <div
+          className={cn(
+            "flex flex-col min-w-0 relative",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
           <div className="overflow-x-auto w-full">
             <Table>
               <TableHeader>
@@ -296,6 +327,15 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
             />
           )}
         </div>
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="department-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+        />
       </MainCard>
 
       <ManageDepartmentModal

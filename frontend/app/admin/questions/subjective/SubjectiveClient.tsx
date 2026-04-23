@@ -26,19 +26,19 @@ import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import EditQuestionModal from "./component/EditQuestionModal";
 import { AddQuestionModal } from "./component/AddQuestionModal";
-import { SubjectiveFilters } from "./component/SubjectiveFilters";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { SubjectiveRow } from "./component/SubjectiveRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 
-interface SubjectiveListingFilters {
+type SubjectiveListingFilters = {
   search: string;
   subject: string;
   examLevel: string;
   marks: string;
   status: string;
-}
+};
 
 export function SubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -61,13 +61,14 @@ export function SubjectiveClient() {
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
     fetchItems,
     refresh,
   } = useListing<Question, SubjectiveListingFilters>({
-    fetchFn: questionsApi.getQuestions,
+    fetchFn: (params) => questionsApi.getQuestions(params),
     initialFilters: {
       search: "",
       subject: "all",
@@ -348,30 +349,24 @@ export function SubjectiveClient() {
           )}
         </div>
 
-        <SubjectiveFilters
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={filters.search}
-          onSearchChange={(val) => handleFilterChange({ search: val })}
-          subjectFilter={filters.subject}
-          onSubjectFilterChange={(val) =>
-            handleFilterChange({ subject: val as string })
-          }
-          subjects={subjects}
-          examLevelFilter={filters.examLevel}
-          onExamLevelFilterChange={(val) =>
-            handleFilterChange({ examLevel: val as string })
-          }
-          examLevels={examLevels}
-          marksFilter={filters.marks}
-          onMarksFilterChange={(val) =>
-            handleFilterChange({ marks: val as string })
-          }
-          statusFilter={filters.status}
-          onStatusFilterChange={(val) =>
-            handleFilterChange({ status: val as string })
-          }
+          registryKey="question-bank-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
           onReset={resetFilters}
+          isLoading={isLoading}
+          dynamicOptions={{
+            subject: [
+              { id: "all", label: "All Subjects" },
+              ...subjects.map((s) => ({ id: s.code || "", label: s.name })),
+            ],
+            examLevel: [
+              { id: "all", label: "All Levels" },
+              ...examLevels.map((e) => ({ id: e.code || "", label: e.name })),
+            ],
+          }}
         />
       </MainCard>
 

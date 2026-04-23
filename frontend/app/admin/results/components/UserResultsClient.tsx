@@ -27,7 +27,7 @@ import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { StatCard } from "@components/ui-cards/StatCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
@@ -90,14 +90,14 @@ const itemVariants = {
   },
 } as const;
 
-interface ResultsFilters {
+type ResultsFilters = {
   search: string;
   startDate: string;
   endDate: string;
   status: string;
   completionReason: string;
   overallGrade: string;
-}
+};
 
 export function UserResultsClient() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
@@ -147,6 +147,7 @@ export function UserResultsClient() {
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
@@ -467,122 +468,25 @@ export function UserResultsClient() {
           )}
         </div>
 
-        <InlineDrawer
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          title="Filters"
-        >
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Search Candidates
-              </Typography>
-              <SearchInput
-                placeholder="Search by name, mobile..."
-                value={filters.search}
-                onSearch={(val) => handleFilterChange({ search: val })}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Date Range
-              </Typography>
-              <DateRangePicker
-                onRangeChange={(range) => {
-                  handleFilterChange({
-                    startDate: range?.from || "",
-                    endDate: range?.to || "",
-                  });
-                }}
-                initialLabel="All Time"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Attempt Status
-              </Typography>
-              <SelectDropdown
-                options={STATUS_OPTIONS}
-                value={filters.status}
-                onChange={(val) =>
-                  handleFilterChange({ status: val as string })
-                }
-                placeholder="All Statuses"
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Completion Reason
-              </Typography>
-              <SelectDropdown
-                options={COMPLETION_REASON_OPTIONS}
-                value={filters.completionReason}
-                onChange={(val) =>
-                  handleFilterChange({ completionReason: val as string })
-                }
-                placeholder="All Reasons"
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Overall Grade
-              </Typography>
-              <SelectDropdown
-                options={GRADE_OPTIONS}
-                value={filters.overallGrade}
-                onChange={(val) =>
-                  handleFilterChange({ overallGrade: val as string })
-                }
-                placeholder="All Grades"
-                className="h-12 border-border/60 hover:border-border bg-muted/20"
-                placement="top"
-              />
-            </div>
-
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                shadow
-                animate="scale"
-                iconAnimation="rotate-360"
-                startIcon={<RotateCcw size={18} />}
-                onClick={resetFilters}
-                className="font-bold w-full border-brand-primary text-brand-primary"
-                title="Reset Filters"
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </div>
-        </InlineDrawer>
+          registryKey="results-filters"
+          filters={filters}
+          onFilterChange={(key, val) => {
+            if (key === "date") {
+              const dateVal = val as { range?: { from: string; to: string } };
+              handleFilterChange({
+                startDate: dateVal?.range?.from || "",
+                endDate: dateVal?.range?.to || "",
+              });
+            } else {
+              handleSingleFilterChange(key, val);
+            }
+          }}
+          onReset={resetFilters}
+          isLoading={loading}
+        />
       </MainCard>
     </PageContainer>
   );

@@ -16,10 +16,8 @@ import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Badge } from "@components/ui-elements/Badge";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { cn } from "@lib/utils";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { useListing } from "@hooks/useListing";
 
@@ -48,6 +46,7 @@ export function PaperSetupClient() {
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
@@ -57,7 +56,7 @@ export function PaperSetupClient() {
     Partial<PaperSetup>,
     { search: string; department_id: string; test_level_id: string }
   >({
-    fetchFn: papersApi.getPapers,
+    fetchFn: (params) => papersApi.getPapers(params),
     initialFilters: {
       search: "",
       department_id: "all",
@@ -239,84 +238,19 @@ export function PaperSetupClient() {
           />
         </div>
 
-        <InlineDrawer
-          title="Filters"
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-        >
-          <div className="p-6 flex flex-col gap-8">
-            {/* Search */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Quick Search
-              </Typography>
-              <SearchInput
-                placeholder="Paper name..."
-                value={filters.search}
-                onSearch={(val) => handleFilterChange({ search: val })}
-              />
-            </div>
-
-            {/* Department Filter */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Department
-              </Typography>
-              <SelectDropdown
-                options={deptOptions}
-                value={filters.department_id}
-                onChange={(val) =>
-                  handleFilterChange({ department_id: String(val) })
-                }
-                placeholder="Select Department"
-                isLoading={allDepartments.length === 0}
-              />
-            </div>
-
-            {/* Exam Level Filter */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Exam Level
-              </Typography>
-              <SelectDropdown
-                options={levelOptions}
-                value={filters.test_level_id}
-                onChange={(val) =>
-                  handleFilterChange({ test_level_id: String(val) })
-                }
-                placeholder="Select Level"
-                isLoading={classificationQuery.isLoading}
-              />
-            </div>
-
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-360"
-              startIcon={<RotateCcw size={18} />}
-              onClick={resetFilters}
-              className="font-bold w-full mt-auto"
-              title="Reset Filters"
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </InlineDrawer>
+          registryKey="paper-setup-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+          dynamicOptions={{
+            department_id: deptOptions,
+            test_level_id: levelOptions,
+          }}
+        />
       </MainCard>
     </PageContainer>
   );

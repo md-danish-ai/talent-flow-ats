@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Plus, Users, RefreshCcw } from "lucide-react";
+import { Plus, Users, RefreshCcw, Filter } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
@@ -26,6 +26,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { Skeleton } from "@components/ui-elements/Skeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { useListing } from "@hooks/useListing";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 
 interface AdminListingProps {
   initialData?: {
@@ -43,6 +44,7 @@ interface AdminListingProps {
 
 export function AdminListing({ initialData }: AdminListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const {
@@ -53,9 +55,12 @@ export function AdminListing({ initialData }: AdminListingProps) {
     currentPage,
     pageSize,
     filters,
+    activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
+    resetFilters,
     refresh,
     fetchItems,
   } = useListing<UserListResponse, { search: string }>({
@@ -91,7 +96,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
           </div>
         }
         className="mb-6 flex flex-col"
-        bodyClassName="p-0 flex flex-col items-stretch w-full"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
             {loading ? (
@@ -121,13 +126,34 @@ export function AdminListing({ initialData }: AdminListingProps) {
               </Button>
             </Tooltip>
 
+            <Tooltip
+              content={
+                activeFiltersCount > 0
+                  ? `Filters (${activeFiltersCount} active)`
+                  : "Filter"
+              }
+              side="bottom"
+            >
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isFilterOpen}
+                animate="scale"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              >
+                {activeFiltersCount > 0 ? (
+                  <span className="relative">
+                    <Filter size={18} />
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
+                      {activeFiltersCount}
+                    </span>
+                  </span>
+                ) : (
+                  <Filter size={18} />
+                )}
+              </Button>
+            </Tooltip>
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <SearchInput
-              placeholder="Search admins..."
-              value={filters.search}
-              onSearch={(val) => handleFilterChange({ search: val })}
-              className="w-64"
-            />
             <Button
               variant="primary"
               color="primary"
@@ -144,7 +170,12 @@ export function AdminListing({ initialData }: AdminListingProps) {
           </div>
         }
       >
-        <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
+        <div
+          className={cn(
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
           <div className="flex-1 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -225,6 +256,15 @@ export function AdminListing({ initialData }: AdminListingProps) {
             />
           )}
         </div>
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="admin-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={loading}
+        />
       </MainCard>
 
       <AddAdminModal

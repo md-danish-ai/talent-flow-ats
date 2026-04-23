@@ -32,9 +32,9 @@ const getDateStr = (dateStr: string) => {
   return new Date(tzDate);
 };
 
-interface NotificationListingFilters {
+type NotificationListingFilters = {
   status: "all" | "unread" | "read";
-}
+};
 
 export function NotificationsClient() {
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
@@ -49,7 +49,9 @@ export function NotificationsClient() {
     currentPage,
     pageSize,
     filters,
+    activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     fetchItems,
@@ -59,7 +61,7 @@ export function NotificationsClient() {
     NotificationListingFilters,
     NotificationResponse
   >({
-    fetchFn: getAllNotifications,
+    fetchFn: (params) => getAllNotifications(params),
     initialFilters: {
       status: "all",
     },
@@ -185,7 +187,7 @@ export function NotificationsClient() {
           <NotificationSummary
             counts={counts}
             statusFilter={filters.status}
-            onFilterChange={(val) => handleFilterChange({ status: val })}
+            onFilterChange={(val) => handleSingleFilterChange("status", val)}
           />
 
           <div className="overflow-x-auto w-full">

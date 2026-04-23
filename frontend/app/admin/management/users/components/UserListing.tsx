@@ -30,7 +30,7 @@ import { Switch } from "@components/ui-elements/Switch";
 import { Modal } from "@components/ui-elements/Modal";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { cn } from "@lib/utils";
@@ -73,6 +73,7 @@ export function UserListing({ initialData }: UserListingProps) {
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
@@ -463,84 +464,31 @@ export function UserListing({ initialData }: UserListingProps) {
           )}
         </div>
 
-        <InlineDrawer
-          title="Filters"
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-        >
-          <div className="p-6 flex flex-col gap-8">
-            {/* Search */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Quick Search
-              </Typography>
-              <SearchInput
-                placeholder="Name, Mobile or Email..."
-                value={filters.search}
-                onSearch={(val) => handleFilterChange({ search: val })}
-              />
-            </div>
-
-            {/* Department */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Department
-              </Typography>
-              <SelectDropdown
-                placeholder="All Departments"
-                options={departmentOptions}
-                value={filters.department_id}
-                onChange={(val) =>
-                  handleFilterChange({ department_id: String(val) })
-                }
-                isLoading={allDepartments.length === 0}
-              />
-            </div>
-
-            {/* Level */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Exam Level
-              </Typography>
-              <SelectDropdown
-                placeholder="All Levels"
-                options={levelOptions}
-                value={filters.test_level_id}
-                onChange={(val) =>
-                  handleFilterChange({ test_level_id: String(val) })
-                }
-                isLoading={allLevels.length === 0}
-              />
-            </div>
-
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-360"
-              startIcon={<RotateCcw size={18} />}
-              onClick={resetFilters}
-              className="font-bold w-full mt-auto"
-              title="Reset Filters"
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </InlineDrawer>
+          registryKey="management-user-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={loading}
+          dynamicOptions={{
+            department_id: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((dept) => ({
+                id: String(dept.id),
+                label: dept.name,
+              })),
+            ],
+            test_level_id: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((lvl) => ({
+                id: String(lvl.id),
+                label: lvl.name,
+              })),
+            ],
+          }}
+        />
       </MainCard>
 
       <Modal

@@ -30,19 +30,19 @@ import { classificationsApi, ApiError } from "@lib/api";
 import { Question, Classification } from "@types";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
-import { MCQFilters } from "./components/MCQFilters";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { MCQRow } from "./components/MCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 
-interface MCQListingFilters {
+type MCQListingFilters = {
   search: string;
   subject: string;
   examLevel: string;
   marks: string;
   status: string;
-}
+};
 
 interface MCQClientProps {
   initialData?: Question[];
@@ -90,13 +90,14 @@ export function MCQClient({
     filters,
     activeFiltersCount,
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
     fetchItems,
     refresh,
   } = useListing<Question, MCQListingFilters>({
-    fetchFn: questionsApi.getQuestions,
+    fetchFn: (params) => questionsApi.getQuestions(params),
     initialFilters: {
       search: "",
       subject: "all",
@@ -390,30 +391,23 @@ export function MCQClient({
           )}
         </div>
 
-        <MCQFilters
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={filters.search}
-          onSearchChange={(val) => handleFilterChange({ search: val })}
-          subjectFilter={filters.subject}
-          onSubjectFilterChange={(val) =>
-            handleFilterChange({ subject: val as string })
-          }
-          subjects={subjects}
-          examLevelFilter={filters.examLevel}
-          onExamLevelFilterChange={(val) =>
-            handleFilterChange({ examLevel: val as string })
-          }
-          examLevels={examLevels}
-          marksFilter={filters.marks}
-          onMarksFilterChange={(val) =>
-            handleFilterChange({ marks: val as string })
-          }
-          statusFilter={filters.status}
-          onStatusFilterChange={(val) =>
-            handleFilterChange({ status: val as string })
-          }
+          registryKey="mcq-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
           onReset={resetFilters}
+          dynamicOptions={{
+            subject: [
+              { id: "all", label: "All Subjects" },
+              ...subjects.map((s) => ({ id: s.code || "", label: s.name })),
+            ],
+            examLevel: [
+              { id: "all", label: "All Levels" },
+              ...examLevels.map((e) => ({ id: e.code || "", label: e.name })),
+            ],
+          }}
         />
       </MainCard>
 
