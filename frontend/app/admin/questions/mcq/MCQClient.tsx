@@ -22,7 +22,6 @@ import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkel
 import { Plus, ListChecks, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi, ApiError } from "@lib/api";
@@ -91,12 +90,10 @@ export function MCQClient({
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, MCQListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -169,7 +166,6 @@ export function MCQClient({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.MULTIPLE_CHOICE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

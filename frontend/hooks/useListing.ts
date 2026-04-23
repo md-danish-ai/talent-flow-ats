@@ -162,7 +162,7 @@ export function useListing<
         isFirstMount.current = false;
       }
     },
-    [currentPage, pageSize, filters, initialData.length],
+    [currentPage, pageSize, filters, initialData.length, data.length],
   );
 
   // Auto-fetch data on state change

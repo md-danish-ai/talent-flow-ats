@@ -71,7 +71,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
@@ -253,7 +252,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             {row.department_name ||
                             row.assignment?.department_name ? (
                               <Badge
-                                color="primary"
+                                color="secondary"
                                 animate="pulse"
                                 shape="square"
                                 variant="outline"
@@ -271,7 +270,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             <Badge
                               variant="outline"
                               shape="square"
-                              color="default"
+                              color="primary"
                             >
                               {row.assignment?.test_level_name ||
                                 row.test_level_name ||
@@ -290,7 +289,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
-                                  Submitted
+                                  SUBMITTED
                                 </Badge>
                               ) : row.process_status === "inprogress" ||
                                 row.assignment?.has_started ? (
@@ -301,7 +300,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
-                                  In Progress
+                                  IN PROGRESS
                                 </Badge>
                               ) : row.process_status === "ready" ? (
                                 <Badge
@@ -310,7 +309,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
-                                  Ready
+                                  READY
                                 </Badge>
                               ) : row.process_status === "expired" ? (
                                 <Badge
@@ -319,7 +318,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
-                                  Expired
+                                  EXPIRED
                                 </Badge>
                               ) : (
                                 <Badge
@@ -328,7 +327,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
-                                  Pending
+                                  PENDING
                                 </Badge>
                               )}
                               <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">

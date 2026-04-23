@@ -6,7 +6,7 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Plus, FileText, Filter, RotateCcw, RefreshCcw } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
 import { papersApi } from "@lib/api/papers";
@@ -14,11 +14,8 @@ import { PaperSetup } from "@types";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { Badge } from "@components/ui-elements/Badge";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { cn } from "@lib/utils";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
@@ -44,18 +41,15 @@ export function PaperSetupClient() {
     isLoading,
     isBackgroundLoading,
     totalItems,
-    totalPages,
     currentPage,
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
     refresh,
-    fetchItems,
   } = useListing<
     Partial<PaperSetup>,
     { search: string; department_id: string; test_level_id: string }

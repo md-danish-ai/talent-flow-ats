@@ -19,7 +19,6 @@ import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi } from "@lib/api/classifications";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
@@ -61,12 +60,10 @@ export function PassageClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, PassageListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -135,7 +132,6 @@ export function PassageClient() {
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.PASSAGE_CONTENT,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

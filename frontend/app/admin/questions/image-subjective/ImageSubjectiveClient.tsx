@@ -30,7 +30,6 @@ import ImageLightbox from "../image-mcq/components/ImageLightbox";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
@@ -63,12 +62,10 @@ export function ImageSubjectiveClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, ImageSubjectiveListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -139,7 +136,6 @@ export function ImageSubjectiveClient() {
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.IMAGE_SUBJECTIVE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

@@ -184,10 +184,10 @@ export function ResultTableView({
                   {visibleColumns.includes("attempts") && (
                     <TableCell className="text-center">
                       <Badge
-                        variant="fill"
+                        variant="outline"
                         color={item.attempts_count > 1 ? "warning" : "default"}
                         shape="square"
-                        className="font-bold text-[11px] px-2.5 py-0.5"
+                        className="font-bold text-[11px] px-2.5 py-0.5 uppercase tracking-tight"
                       >
                         {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
                         {item.attempts_count > 1 ? "Attempts" : "Attempt"}
@@ -293,7 +293,7 @@ export function ResultTableView({
                   {visibleColumns.includes("status") && (
                     <TableCell>
                       <Badge
-                        variant="fill"
+                        variant="outline"
                         color={
                           latest?.status === "submitted" ||
                           latest?.status === "completed"
@@ -304,8 +304,9 @@ export function ResultTableView({
                         }
                         shape="square"
                         animate="pulse"
+                        className="font-bold uppercase tracking-wider"
                       >
-                        {latest?.status?.replace("_", " ") || "Not started"}
+                        {latest?.status?.replace("_", " ") || "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}

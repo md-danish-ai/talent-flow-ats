@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FilterConfig, DynamicFilterRendererProps } from "@types";
+import { DynamicFilterRendererProps } from "@types";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Typography } from "@components/ui-elements/Typography";

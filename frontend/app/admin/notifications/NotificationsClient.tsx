@@ -49,12 +49,9 @@ export function NotificationsClient() {
     currentPage,
     pageSize,
     filters,
-    activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
-    fetchItems,
     refresh,
   } = useListing<
     NotificationItem,
@@ -90,7 +87,7 @@ export function NotificationsClient() {
     window.addEventListener("notificationsUpdated", handleUpdate);
     return () =>
       window.removeEventListener("notificationsUpdated", handleUpdate);
-  }, [fetchItems]);
+  }, [refresh]);
 
   const handleBulkAction = async (ids: number[], action: "read" | "unread") => {
     try {

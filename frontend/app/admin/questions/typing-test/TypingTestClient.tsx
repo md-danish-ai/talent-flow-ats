@@ -60,12 +60,10 @@ export function TypingTestClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, TypingTestListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -134,7 +132,6 @@ export function TypingTestClient() {
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.TYPING_TEST,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

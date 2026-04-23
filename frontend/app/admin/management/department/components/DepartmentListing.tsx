@@ -12,21 +12,12 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Building2,
-  RefreshCcw,
-  Filter,
-} from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Plus, Edit, Trash2, Building2 } from "lucide-react";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { departmentsApi } from "@lib/api/departments";
 import { type Department, PaginatedResponse } from "@types";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
@@ -54,12 +45,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Department, { search: string }>({
     fetchFn: departmentsApi.getDepartments,

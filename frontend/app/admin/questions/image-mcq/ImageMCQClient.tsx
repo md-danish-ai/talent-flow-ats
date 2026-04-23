@@ -31,7 +31,6 @@ import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
@@ -89,12 +88,10 @@ export function ImageMCQClient({
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, ImageMCQListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -169,7 +166,6 @@ export function ImageMCQClient({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

@@ -9,11 +9,11 @@ import { filterRegistry } from "@lib/filters/registry";
 import { FilterConfig, FilterOption } from "@types";
 import "@lib/filters/init"; // Initialize registry
 
-interface ListingFiltersDrawerProps {
+interface ListingFiltersDrawerProps<F> {
   isOpen: boolean;
   onClose: () => void;
   registryKey: string;
-  filters: Record<string, unknown>;
+  filters: F;
   onFilterChange: (key: string, value: unknown) => void;
   onReset: () => void;
   isLoading?: boolean;
@@ -21,7 +21,7 @@ interface ListingFiltersDrawerProps {
   dynamicOptions?: Record<string, FilterOption[]>;
 }
 
-export function ListingFiltersDrawer({
+export function ListingFiltersDrawer<F extends object>({
   isOpen,
   onClose,
   registryKey,
@@ -30,7 +30,7 @@ export function ListingFiltersDrawer({
   onReset,
   isLoading = false,
   dynamicOptions = {},
-}: ListingFiltersDrawerProps) {
+}: ListingFiltersDrawerProps<F>) {
   const configs = filterRegistry.getFilters(registryKey);
 
   return (
@@ -47,7 +47,7 @@ export function ListingFiltersDrawer({
             <DynamicFilterRenderer
               key={config.id}
               config={mergedConfig}
-              value={filters[config.id]}
+              value={filters[config.id as keyof F]}
               onChange={(val) => onFilterChange(config.id, val)}
               isLoading={isLoading}
             />

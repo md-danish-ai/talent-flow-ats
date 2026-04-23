@@ -10,25 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Plus, Users, RefreshCcw, Filter } from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Plus, Users } from "lucide-react";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { AddAdminModal } from "./AddAdminModal";
 import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
 import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { EmptyState } from "@components/ui-elements/EmptyState";
-import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
-import { Skeleton } from "@components/ui-elements/Skeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface AdminListingProps {
   initialData?: {
@@ -59,13 +56,11 @@ export function AdminListing({ initialData }: AdminListingProps) {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
     refresh,
-    fetchItems,
   } = useListing<UserListResponse, { search: string }>({
     fetchFn: (params) => getUsersByRole("admin", params),
     initialFilters: { search: "" },

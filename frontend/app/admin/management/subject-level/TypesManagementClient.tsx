@@ -5,17 +5,14 @@ import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, RefreshCcw, Plus, Filter } from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Layers, Gauge, Plus } from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
-import { Badge } from "@components/ui-elements/Badge";
 import { classificationsApi } from "@lib/api/classifications";
 import { Classification, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { classificationSchema } from "@lib/validations/management";
-import { Skeleton } from "@components/ui-elements/Skeleton";
 import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -45,7 +42,6 @@ export function TypesManagementClient({
     isLoading: isFetching,
     isBackgroundLoading,
     totalItems,
-    totalPages,
     currentPage,
     pageSize,
     filters,
@@ -56,7 +52,6 @@ export function TypesManagementClient({
     handlePageSizeChange,
     resetFilters,
     refresh,
-    fetchItems,
   } = useListing<Classification, TypesListingFilters>({
     fetchFn: (params) => classificationsApi.getClassifications(params),
     initialFilters: {

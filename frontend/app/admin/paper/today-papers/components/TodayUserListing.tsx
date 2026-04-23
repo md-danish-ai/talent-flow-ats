@@ -52,7 +52,6 @@ export function TodayUserListing({
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
@@ -76,7 +75,10 @@ export function TodayUserListing({
       // Handle presets like "Today", "Yesterday" etc.
       if (!dateFrom && !dateTo) {
         const today = new Date().toISOString().split("T")[0];
-        if (f.date?.label === "Today" || (!f.date?.label && !searchParams.get("date_from"))) {
+        if (
+          f.date?.label === "Today" ||
+          (!f.date?.label && !searchParams.get("date_from"))
+        ) {
           dateFrom = today;
           dateTo = today;
         } else if (f.date?.label === "Yesterday") {
@@ -93,8 +95,14 @@ export function TodayUserListing({
       }
 
       // Convert department/level to IDs if they are numeric
-      const deptId = f.department !== "all" ? allDepartments.find(d => d.name === f.department)?.id : undefined;
-      const levelId = f.level !== "all" ? allLevels.find(l => l.name === f.level)?.id : undefined;
+      const deptId =
+        f.department !== "all"
+          ? allDepartments.find((d) => d.name === f.department)?.id
+          : undefined;
+      const levelId =
+        f.level !== "all"
+          ? allLevels.find((l) => l.name === f.level)?.id
+          : undefined;
 
       return {
         search: f.search || undefined,

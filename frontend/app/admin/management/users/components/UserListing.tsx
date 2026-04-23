@@ -9,17 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import {
-  Users,
-  Eye,
-  RefreshCcw,
-  UserPlus,
-  Filter,
-  RotateCcw,
-  Mail,
-  UserCog,
-  FileText,
-} from "lucide-react";
+import { Users, Eye, UserPlus, Mail, UserCog, FileText } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -31,20 +21,15 @@ import { Modal } from "@components/ui-elements/Modal";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
-import { Typography } from "@components/ui-elements/Typography";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { cn } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
-import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Skeleton } from "@components/ui-elements/Skeleton";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
@@ -75,12 +60,10 @@ export function UserListing({ initialData }: UserListingProps) {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<
     UserListResponse,
@@ -347,9 +330,9 @@ export function UserListing({ initialData }: UserListingProps) {
                               variant="outline"
                               shape="square"
                               color={row.is_active ? "success" : "error"}
-                              className="text-[9px] font-bold uppercase tracking-tighter scale-90"
+                              className="text-[9px] font-bold uppercase tracking-tighter"
                             >
-                              {row.is_active ? "Active" : "Disabled"}
+                              {row.is_active ? "ACTIVE" : "DISABLED"}
                             </Badge>
                           </div>
                         </TableCell>

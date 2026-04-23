@@ -52,7 +52,6 @@ export const isExclusiveClassification = (
 export const filterSubjectsForQuestionType = (
   subjects: Classification[],
   currentQuestionType?: Classification | string,
-  questionTypesPool?: Classification[],
 ): Classification[] => {
   if (!currentQuestionType) return subjects;
 
@@ -80,7 +79,6 @@ export const filterSubjectsForQuestionType = (
 export const filterQuestionTypesForSubject = (
   types: Classification[],
   currentSubject?: Classification | string,
-  subjectsPool?: Classification[],
 ): Classification[] => {
   if (!currentSubject) return types;
 

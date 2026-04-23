@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
@@ -18,8 +19,7 @@ import { Plus, ListChecks, Upload } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi } from "@lib/api/classifications";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { classificationsApi, ApiError } from "@lib/api";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
@@ -34,7 +34,6 @@ import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface ContactDetailsListingFilters {
-  [key: string]: unknown;
   search: string;
   subject: string;
   examLevel: string;
@@ -43,6 +42,7 @@ interface ContactDetailsListingFilters {
 }
 
 export function ContactDetailsClient() {
+  const router = useRouter();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -52,8 +52,24 @@ export function ContactDetailsClient() {
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
+  const handleAuthError = useCallback(
+    (error: unknown): boolean => {
+      if (error instanceof ApiError && error.status === 401) {
+        if (typeof document !== "undefined") {
+          document.cookie = "role=; Max-Age=0; path=/";
+          document.cookie = "auth_token=; Max-Age=0; path=/";
+          document.cookie = "user_info=; Max-Age=0; path=/";
+        }
+        router.push("/sign-in");
+        return true;
+      }
+      return false;
+    },
+    [router],
+  );
+
   const {
-    data: data,
+    data: questions,
     isLoading,
     isBackgroundLoading,
     totalItems,
@@ -62,12 +78,10 @@ export function ContactDetailsClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, ContactDetailsListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -87,6 +101,7 @@ export function ContactDetailsClient() {
       is_active: f.status !== "all" ? f.status === "true" : undefined,
     }),
     toastMessage: "Contact details refreshed successfully",
+    onError: handleAuthError,
   });
 
   // Column visibility
@@ -144,7 +159,6 @@ export function ContactDetailsClient() {
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.CONTACT_DETAILS,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
@@ -301,7 +315,7 @@ export function ContactDetailsClient() {
                       visibleColumns={visibleColumns}
                       rowCount={pageSize}
                     />
-                  ) : data.length === 0 ? (
+                  ) : questions.length === 0 ? (
                     <EmptyState
                       colSpan={visibleColumns.length + 1}
                       variant="search"
@@ -309,7 +323,7 @@ export function ContactDetailsClient() {
                       description="Try adjusting your filters or adding a new entry."
                     />
                   ) : (
-                    data.map((row, index) => (
+                    questions.map((row, index) => (
                       <ContactDetailsRow
                         key={row.id}
                         row={row}
@@ -327,7 +341,7 @@ export function ContactDetailsClient() {
               </Table>
             </div>
 
-            {!isLoading && data.length > 0 && (
+            {!isLoading && questions.length > 0 && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

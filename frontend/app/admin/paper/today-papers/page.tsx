@@ -23,7 +23,6 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
   const cookieStore = await cookies();
   const params = await searchParams;
 
-  const date = params.date;
   const date_from = params.date_from;
   const date_to = params.date_to;
   const initialLabel = params.label || "Today";

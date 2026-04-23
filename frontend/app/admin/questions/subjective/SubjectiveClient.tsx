@@ -19,7 +19,6 @@ import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { Question, Classification } from "@types";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
@@ -62,12 +61,10 @@ export function SubjectiveClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
-    fetchItems,
     refresh,
   } = useListing<Question, SubjectiveListingFilters>({
     fetchFn: (params) => questionsApi.getQuestions(params),
@@ -136,7 +133,6 @@ export function SubjectiveClient() {
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.SUBJECTIVE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
