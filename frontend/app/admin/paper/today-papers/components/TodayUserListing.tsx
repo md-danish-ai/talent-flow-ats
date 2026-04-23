@@ -70,22 +70,37 @@ export function TodayUserListing({
     initialData: initialData?.data,
     initialTotalItems: initialData?.pagination?.total_records,
     filterMapping: (f) => {
-      const dateFrom = f.date?.range?.from || searchParams.get("date_from");
-      const dateTo = f.date?.range?.to || searchParams.get("date_to");
-      const specificDate =
-        !dateFrom && !dateTo
-          ? f.date?.label === "Today" ||
-            (!f.date?.label && !searchParams.get("date"))
-            ? new Date().toISOString().split("T")[0]
-            : searchParams.get("date")
-          : undefined;
+      let dateFrom = f.date?.range?.from;
+      let dateTo = f.date?.range?.to;
+
+      // Handle presets like "Today", "Yesterday" etc.
+      if (!dateFrom && !dateTo) {
+        const today = new Date().toISOString().split("T")[0];
+        if (f.date?.label === "Today" || (!f.date?.label && !searchParams.get("date_from"))) {
+          dateFrom = today;
+          dateTo = today;
+        } else if (f.date?.label === "Yesterday") {
+          const yesterdayRaw = new Date();
+          yesterdayRaw.setDate(yesterdayRaw.getDate() - 1);
+          const yesterday = yesterdayRaw.toISOString().split("T")[0];
+          dateFrom = yesterday;
+          dateTo = yesterday;
+        } else {
+          // Fallback to URL search params if any
+          dateFrom = searchParams.get("date_from") || undefined;
+          dateTo = searchParams.get("date_to") || undefined;
+        }
+      }
+
+      // Convert department/level to IDs if they are numeric
+      const deptId = f.department !== "all" ? allDepartments.find(d => d.name === f.department)?.id : undefined;
+      const levelId = f.level !== "all" ? allLevels.find(l => l.name === f.level)?.id : undefined;
 
       return {
         search: f.search || undefined,
-        department_name: f.department !== "all" ? f.department : undefined,
-        test_level_name: f.level !== "all" ? f.level : undefined,
+        department_id: deptId,
+        test_level_id: levelId,
         status: f.status !== "all" ? f.status : undefined,
-        date: specificDate || undefined,
         date_from: dateFrom || undefined,
         date_to: dateTo || undefined,
       };

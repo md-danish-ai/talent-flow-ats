@@ -92,6 +92,7 @@ export function UserTable({
                             color="violet"
                             animate="pulse"
                             shape="square"
+                            className="font-bold"
                           >
                             RETURNING
                           </Badge>
@@ -101,6 +102,7 @@ export function UserTable({
                             color="success"
                             animate="pulse"
                             shape="square"
+                            className="font-bold"
                           >
                             NEW
                           </Badge>
@@ -167,6 +169,7 @@ export function UserTable({
                         color="success"
                         animate="pulse"
                         shape="square"
+                        className="font-bold"
                       >
                         SUBMITTED
                       </Badge>
@@ -174,22 +177,39 @@ export function UserTable({
                       row.assignment?.has_started ? (
                       <Badge
                         variant="outline"
-                        color="warning"
+                        color="violet"
                         animate="pulse"
                         shape="square"
+                        className="font-bold"
                       >
                         IN PROGRESS
                       </Badge>
                     ) : row.process_status === "ready" ? (
-                      <Badge variant="outline" color="default" shape="square">
+                      <Badge
+                        variant="outline"
+                        color="primary"
+                        animate="pulse"
+                        shape="square"
+                        className="font-bold"
+                      >
                         READY
                       </Badge>
                     ) : row.process_status === "expired" ? (
-                      <Badge variant="outline" color="error" shape="square">
+                      <Badge
+                        variant="outline"
+                        color="error"
+                        shape="square"
+                        className="font-bold"
+                      >
                         EXPIRED
                       </Badge>
                     ) : (
-                      <Badge variant="outline" shape="square" color="warning">
+                      <Badge
+                        variant="outline"
+                        shape="square"
+                        color="warning"
+                        className="font-bold"
+                      >
                         PENDING ASSIGNMENT
                       </Badge>
                     )}

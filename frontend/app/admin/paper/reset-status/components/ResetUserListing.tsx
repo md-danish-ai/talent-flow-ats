@@ -211,7 +211,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                       color="violet"
                                       animate="pulse"
                                       shape="square"
-                                      className="text-[9px] font-bold"
+                                      className="text-[9px] font-bold uppercase tracking-tight"
                                     >
                                       RETURNING
                                     </Badge>
@@ -221,7 +221,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                       color="success"
                                       animate="pulse"
                                       shape="square"
-                                      className="text-[9px] font-bold"
+                                      className="text-[9px] font-bold uppercase tracking-tight"
                                     >
                                       NEW
                                     </Badge>
@@ -288,27 +288,27 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   variant="outline"
                                   animate="pulse"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   Submitted
                                 </Badge>
                               ) : row.process_status === "inprogress" ||
                                 row.assignment?.has_started ? (
                                 <Badge
-                                  color="warning"
+                                  color="violet"
                                   variant="outline"
                                   animate="pulse"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   In Progress
                                 </Badge>
                               ) : row.process_status === "ready" ? (
                                 <Badge
-                                  color="default"
+                                  color="primary"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   Ready
                                 </Badge>
@@ -317,7 +317,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   color="error"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   Expired
                                 </Badge>
@@ -326,7 +326,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   color="warning"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center"
+                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   Pending
                                 </Badge>

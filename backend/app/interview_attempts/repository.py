@@ -807,14 +807,19 @@ def get_admin_user_results(
                 | (User.email.ilike(pattern))
             )
 
-        if start_date:
-            latest_record_ids_query = latest_record_ids_query.filter(
-                InterviewRecord.started_at >= f"{start_date} 00:00:00"
-            )
-        if end_date:
-            latest_record_ids_query = latest_record_ids_query.filter(
-                InterviewRecord.started_at <= f"{end_date} 23:59:59"
-            )
+        if start_date or end_date:
+            date_col = InterviewRecord.started_at
+            if status in ["submitted", "auto_submitted"]:
+                date_col = InterviewRecord.submitted_at
+            
+            if start_date:
+                latest_record_ids_query = latest_record_ids_query.filter(
+                    date_col >= f"{start_date} 00:00:00"
+                )
+            if end_date:
+                latest_record_ids_query = latest_record_ids_query.filter(
+                    date_col <= f"{end_date} 23:59:59"
+                )
 
         latest_record_ids = (
             latest_record_ids_query

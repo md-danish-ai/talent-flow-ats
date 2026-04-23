@@ -258,10 +258,10 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
+def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func, or_
+        from sqlalchemy import func, or_, cast, Date
         from datetime import date as dt_date
         from app.paper_assignments.models import PaperAssignment
         from app.papers.models import Paper
@@ -270,13 +270,23 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         from app.classifications.models import Classification as Cls
         from sqlalchemy.orm import aliased
 
+        from datetime import datetime, time, date as dt_date
         def safe_parse_date(value: str):
             """Parse a date string safely, returning None for invalid/partial dates."""
-            if not value:
+            if not value or not isinstance(value, str):
                 return None
             try:
-                return dt_date.fromisoformat(value)
-            except (ValueError, TypeError):
+                # Basic cleanup
+                v = value.strip().split(" ")[0]
+                if "-" not in v:
+                    return None
+                parts = v.split("-")
+                if len(parts) != 3:
+                    return None
+                # Year, Month, Day
+                y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
+                return dt_date(y, m, d)
+            except (ValueError, TypeError, IndexError):
                 return None
 
         # 1. AUTO-EXPIRATION LOGIC (Bulk update for expired tests)
@@ -301,7 +311,6 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             db_session.commit()
 
         # 2. DATA RETRIEVAL
-        target_date = safe_parse_date(date)
         range_from = safe_parse_date(date_from)
         range_to = safe_parse_date(date_to)
 
@@ -332,6 +341,8 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 InterviewRecord.user_id,
                 InterviewRecord.id,
                 InterviewRecord.status,
+                InterviewRecord.started_at,
+                InterviewRecord.submitted_at,
                 func.row_number()
                 .over(
                     partition_by=InterviewRecord.user_id,
@@ -356,6 +367,8 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 UserDept.name.label("user_dept_name"),
                 attempt_subq.c.id.label("attempt_id"),
                 attempt_subq.c.status.label("attempt_status"),
+                attempt_subq.c.started_at.label("attempt_started_at"),
+                attempt_subq.c.submitted_at.label("attempt_submitted_at"),
                 UserDetail.is_submitted,
                 UserDetail.is_interview_submitted,
                 UserDetail.is_reinterview,
@@ -395,54 +408,31 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                     pattern), UserModel.mobile.ilike(pattern))
             )
 
-        # STATUS FILTER (uses physical process_status column)
-        if status:
+        # 3. DATE FILTERS (Strictly New Registrations or Re-interviews)
+        if range_from:
+            start_date_obj = range_from
+            end_date_obj = range_to if range_to else range_from
+            
+            # For TIMESTAMP (created_at) - explicitly cover the full day
+            start_ts = datetime.combine(start_date_obj, time.min)
+            end_ts = datetime.combine(end_date_obj, time.max)
+            
+            results_query = results_query.filter(
+                or_(
+                    UserModel.created_at.between(start_ts, end_ts),
+                    UserDetail.reinterview_date.between(start_date_obj, end_date_obj)
+                )
+            )
+
+        # 4. STATUS FILTER
+        if status and status != "all":
             if status == "pending":
                 results_query = results_query.filter(
                     or_(UserModel.process_status == "pending",
-                        assignment_subq.c.paper_id.is_(None))
-                )
-                target_date = None
-                range_from = None
-                range_to = None
-            else:
-                results_query = results_query.filter(
-                    UserModel.process_status == status)
-
-        # DATE FILTERS
-        if range_from and range_to:
-            # Range: broad OR for all date types (used in general search)
-            results_query = results_query.filter(
-                or_(
-                    func.date(UserModel.created_at).between(
-                        range_from, range_to),
-                    UserDetail.reinterview_date.between(range_from, range_to),
-                    assignment_subq.c.assigned_date.between(
-                        range_from, range_to),
-                )
-            )
-        elif target_date:
-            if status:
-                # Status + Date combined:
-                # Include assigned_date so admin can see e.g. "submitted users from today"
-                # even if user registered on a different day
-                results_query = results_query.filter(
-                    or_(
-                        func.date(UserModel.created_at) == target_date,
-                        UserDetail.reinterview_date == target_date,
-                        assignment_subq.c.assigned_date == target_date,
-                    )
+                        assignment_subq.c.rn.is_(None))
                 )
             else:
-                # Date-only filter (Today's Papers default view):
-                # Show users registered today OR reinterview today
-                # Do NOT use assigned_date (would pull in old submitted users re-assigned)
-                results_query = results_query.filter(
-                    or_(
-                        func.date(UserModel.created_at) == target_date,
-                        UserDetail.reinterview_date == target_date,
-                    )
-                )
+                results_query = results_query.filter(UserModel.process_status == status)
 
         total_records = results_query.count()
         results = results_query.order_by(UserModel.id.desc()).offset(
@@ -465,7 +455,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
                 "is_reinterview": row.is_reinterview if row.is_reinterview is not None else False,
                 "reinterview_date": row.reinterview_date.isoformat() if row.reinterview_date else None,
-                "user_type": "returning" if (row.is_reinterview and row.reinterview_date and target_date and row.reinterview_date == target_date) else "new",
+                "user_type": "returning" if (row.is_reinterview and row.reinterview_date and range_from and row.reinterview_date == range_from) else "new",
                 "assignment": {
                     "is_assigned": row.asgn_paper_id is not None,
                     "paper_id": row.asgn_paper_id,
