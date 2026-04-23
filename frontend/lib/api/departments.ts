@@ -1,34 +1,11 @@
 import { api, type ApiRequestOptions } from "./index";
-
-export interface Department {
-  id: number;
-  name: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PaginatedDepartmentsResponse {
-  data: Department[];
-  pagination: {
-    total_records: number;
-    total_pages: number;
-    current_page: number;
-    per_page: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}
-
-export interface DepartmentCreate {
-  name: string;
-  is_active?: boolean;
-}
-
-export interface DepartmentUpdate {
-  name?: string;
-  is_active?: boolean;
-}
+import { ENDPOINTS } from "./endpoints";
+import {
+  Department,
+  DepartmentCreate,
+  DepartmentUpdate,
+  PaginatedResponse,
+} from "@types";
 
 export const departmentsApi = {
   getDepartments: async (
@@ -49,19 +26,19 @@ export const departmentsApi = {
       });
     }
     const queryString = queryParams.toString();
-    const endpoint = `/departments/get${queryString ? `?${queryString}` : ""}`;
-    return api.get<PaginatedDepartmentsResponse>(endpoint, options);
+    const endpoint = `${ENDPOINTS.DEPARTMENTS.GET}${queryString ? `?${queryString}` : ""}`;
+    return api.get<PaginatedResponse<Department>>(endpoint, options);
   },
 
   createDepartment: async (data: DepartmentCreate) => {
-    return api.post<Department>("/departments/create", data);
+    return api.post<Department>(ENDPOINTS.DEPARTMENTS.CREATE, data);
   },
 
   updateDepartment: async (id: number, data: DepartmentUpdate) => {
-    return api.put<Department>(`/departments/update/${id}`, data);
+    return api.put<Department>(ENDPOINTS.DEPARTMENTS.UPDATE(id), data);
   },
 
   deleteDepartment: async (id: number) => {
-    return api.delete<void>(`/departments/delete/${id}`);
+    return api.delete<void>(ENDPOINTS.DEPARTMENTS.DELETE(id));
   },
 };

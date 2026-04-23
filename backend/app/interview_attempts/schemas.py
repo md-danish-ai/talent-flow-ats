@@ -28,8 +28,20 @@ class AttemptSummaryResponse(BaseModel):
     total_questions: int
     attempted_count: int
     unattempted_count: int
+    total_marks: float
     obtained_marks: Optional[float]
+    overall_grade: str
     is_auto_submitted: bool
+
+
+class AttemptSavedResponse(BaseModel):
+    question_id: int
+    section_code: str
+    section_name: str
+    answer_text: Optional[str]
+    is_attempted: bool
+    is_auto_saved: bool
+    saved_at: datetime
 
 
 class AttemptStartResponse(BaseModel):
@@ -39,12 +51,55 @@ class AttemptStartResponse(BaseModel):
     status: str
     total_questions: int
     started_at: datetime
+    is_resumed: bool
     paper_question_ids: list[int]
+    total_duration_minutes: int
+    saved_responses: list[AttemptSavedResponse]
 
 
 class SaveAnswerResponse(BaseModel):
     attempt_id: int
     question_id: int
+    section_code: str
+    section_name: str
     is_attempted: bool
     is_auto_saved: bool
     saved_at: datetime
+
+
+class ManualMarksRequest(BaseModel):
+    marks: float
+
+
+class ResetSubjectsRequest(BaseModel):
+    attempt_id: int
+    section_names: list[str]
+
+
+class AnswerEntry(BaseModel):
+    question_id: int
+    answer_text: Optional[str] = None
+    is_auto_saved: bool = False
+
+
+class SummaryStats(BaseModel):
+    total: int
+    active: int
+    completed: int
+    excellent: int
+    good: int
+    average: int
+    poor: int
+
+
+class AdminResultsResponse(BaseModel):
+    items: list[dict]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+    summary_stats: Optional[SummaryStats] = None
+
+
+class BatchSaveAnswersRequest(BaseModel):
+    answers: list[AnswerEntry]

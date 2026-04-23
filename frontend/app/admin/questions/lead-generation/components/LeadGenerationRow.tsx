@@ -3,9 +3,11 @@ import { Edit as EditIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
+
+import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
 
 interface LeadGenerationRowProps {
   row: Question;
@@ -33,42 +35,7 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
       key={row.id}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
-      expandedContent={
-        <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40 grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Company Name:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.companyName || "N/A")}
-             </Typography>
-           </div>
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Website:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.website || "N/A")}
-             </Typography>
-           </div>
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Name:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.name || "N/A")} ({String((row.options as Record<string, unknown>)?.title || "N/A")})
-             </Typography>
-           </div>
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Email:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.email || "N/A")}
-             </Typography>
-           </div>
-        </div>
-      }
+      expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
         <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">
@@ -77,14 +44,47 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
-      {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[400px]">
+      {visibleColumns.includes("companyName") && (
+        <TableCell>
           <Typography
             variant="body4"
             weight="semibold"
             className="truncate group-hover/row:text-brand-primary transition-colors"
           >
-            {row.question_text}
+            {((row.options as Record<string, unknown>)
+              ?.companyName as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("website") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.website as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("name") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.name as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("title") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.title as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("email") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.email as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
@@ -159,20 +159,18 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
       {visibleColumns.includes("actions") && (
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              color="primary"
-              size="icon"
+            <TableIconButton
+              iconColor="blue"
+              btnSize="sm"
               animate="scale"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(row);
               }}
               title="Edit Lead Generation"
-              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
             >
               <EditIcon size={16} />
-            </Button>
+            </TableIconButton>
           </div>
         </TableCell>
       )}

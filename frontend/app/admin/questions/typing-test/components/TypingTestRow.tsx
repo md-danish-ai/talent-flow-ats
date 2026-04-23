@@ -3,9 +3,11 @@ import { Edit as EditIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
+
+import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
 
 interface TypingTestRowProps {
   row: Question;
@@ -33,16 +35,7 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
       key={row.id}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
-      expandedContent={
-        <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40">
-           <Typography variant="body3" weight="bold" className="mb-2">
-             Paragraph:
-           </Typography>
-           <Typography variant="body4" className="text-muted-foreground whitespace-pre-wrap">
-             {row.passage || "No paragraph content provided."}
-           </Typography>
-        </div>
-      }
+      expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
         <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">
@@ -133,20 +126,18 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
       {visibleColumns.includes("actions") && (
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              color="primary"
-              size="icon"
+            <TableIconButton
+              iconColor="blue"
+              btnSize="sm"
               animate="scale"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(row);
               }}
               title="Edit Typing Test"
-              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
             >
               <EditIcon size={16} />
-            </Button>
+            </TableIconButton>
           </div>
         </TableCell>
       )}

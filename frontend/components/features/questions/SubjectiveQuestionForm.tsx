@@ -13,9 +13,10 @@ import { Textarea } from "@components/ui-elements/Textarea";
 import { getErrorMessage } from "@lib/utils";
 import { MessageSquareText, HelpCircle, Loader2, BookOpen } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
+import { type Classification, type QuestionCreate } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { type QuestionCreate } from "@lib/api/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const SubjectiveQuestionForm = ({
   initialData,
@@ -44,7 +45,11 @@ export const SubjectiveQuestionForm = ({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.SUBJECTIVE,
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);

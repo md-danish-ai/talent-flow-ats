@@ -7,15 +7,11 @@ import re
 # ─── Shared Enums (single source of truth for both backend & frontend) ────
 
 
-class TestLevelEnum(str, Enum):
-    fresher = "fresher"
-    qa = "QA"
-    team_lead = "team-lead"
-
 
 class RoleEnum(str, Enum):
     user = "user"
     admin = "admin"
+    project_lead = "project_lead"
 
 
 # ─── Sign Up Schema ──────────────────────────────────────────────────────
@@ -24,10 +20,31 @@ class RoleEnum(str, Enum):
 class SignUpSchema(BaseModel):
     name: str
     mobile: str
-    testLevel: TestLevelEnum
+    test_level_id: int
+    department_id: int
     email: Optional[EmailStr] = None
 
     @validator("email", pre=True)
+    def empty_to_none(cls, field_value):
+        if field_value == "":
+            return None
+        return field_value
+
+    @validator("department_id", pre=True)
+    def validate_dept_id(cls, value):
+        if value == "":
+            return None
+        return value
+
+
+class UpdateUserSchema(BaseModel):
+    name: Optional[str] = None
+    mobile: Optional[str] = None
+    email: Optional[EmailStr] = None
+    test_level_id: Optional[int] = None
+    department_id: Optional[int] = None
+
+    @validator("email", "department_id", pre=True)
     def empty_to_none(cls, field_value):
         if field_value == "":
             return None
@@ -56,7 +73,6 @@ class SignInSchema(BaseModel):
     mobile: Optional[str] = None
     email: Optional[EmailStr] = None
     password: str
-    role: RoleEnum
 
     @validator("mobile", "email", pre=True)
     def empty_to_none(cls, field_value):
@@ -76,20 +92,6 @@ class SignInSchema(BaseModel):
         if not re.match(r"^[0-9]{10}$", value):
             raise ValueError("Password must be 10 digits")
         return value
-
-    @validator("role")
-    def validate_fields_by_role(cls, field_value, values):
-        mobile = values.get("mobile")
-        email = values.get("email")
-
-        if field_value == RoleEnum.user:
-            if not mobile:
-                raise ValueError("Mobile number is required for user login")
-        elif field_value == RoleEnum.admin:
-            if not mobile and not email:
-                raise ValueError("Either mobile or email is required for admin login")
-
-        return field_value
 
 
 class CreateAdminSchema(BaseModel):

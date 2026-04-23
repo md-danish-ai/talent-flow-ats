@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, MailOpen, Loader2 } from "lucide-react";
+import { Bell, Mail, MailOpen, RefreshCcw } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -18,29 +17,63 @@ import {
   getAllNotifications,
   markNotificationsRead,
   markNotificationsUnread,
-  type NotificationItem,
 } from "@lib/api";
+import { type NotificationItem, type NotificationResponse } from "@types";
 import { NotificationSummary } from "./components/NotificationSummary";
 import { NotificationRow } from "./components/NotificationRow";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { useListing } from "@hooks/useListing";
+import { cn } from "@lib/utils";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 const getDateStr = (dateStr: string) => {
   const tzDate = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
   return new Date(tzDate);
 };
 
+type NotificationListingFilters = {
+  status: "all" | "unread" | "read";
+};
+
 export function NotificationsClient() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [counts, setCounts] = useState({ read: 0, unread: 0, total: 0 });
 
-  const [statusFilter, setStatusFilter] = useState<"all" | "unread" | "read">(
-    "all",
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    data: notifications,
+    isLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    refresh,
+  } = useListing<
+    NotificationItem,
+    NotificationListingFilters,
+    NotificationResponse
+  >({
+    fetchFn: (params) => getAllNotifications(params),
+    initialFilters: {
+      status: "all",
+    },
+    filterMapping: (f) => ({
+      is_read: f.status === "all" ? undefined : f.status === "read",
+    }),
+    onSuccess: (res: NotificationResponse) => {
+      setCounts({
+        read: res.read_count || 0,
+        unread: res.unread_count || 0,
+        total: res.pagination?.total_records || 0,
+      });
+    },
+    toastMessage: "Notifications refreshed successfully",
+  });
 
   const toggleRow = useCallback((id: number) => {
     setExpandedRows((prev) => ({
@@ -49,44 +82,12 @@ export function NotificationsClient() {
     }));
   }, []);
 
-  const onFilterChange = useCallback((filter: "all" | "unread" | "read") => {
-    setStatusFilter(filter);
-    setCurrentPage(1);
-  }, []);
-
-  const fetchNotifications = useCallback(
-    async (page: number) => {
-      try {
-        setLoading(true);
-        const res = await getAllNotifications({
-          page,
-          limit: pageSize,
-          is_read: statusFilter === "all" ? undefined : statusFilter === "read",
-        });
-        setNotifications(res.data);
-        setTotalPages(res.pagination.total_pages);
-        setCounts({
-          read: res.read_count,
-          unread: res.unread_count,
-          total: res.pagination.total_records,
-        });
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [pageSize, statusFilter],
-  );
-
   useEffect(() => {
-    fetchNotifications(currentPage);
-
-    const handleUpdate = () => fetchNotifications(currentPage);
+    const handleUpdate = () => void refresh();
     window.addEventListener("notificationsUpdated", handleUpdate);
     return () =>
       window.removeEventListener("notificationsUpdated", handleUpdate);
-  }, [currentPage, fetchNotifications]);
+  }, [refresh]);
 
   const handleBulkAction = async (ids: number[], action: "read" | "unread") => {
     try {
@@ -95,7 +96,6 @@ export function NotificationsClient() {
       } else {
         await markNotificationsUnread(ids);
       }
-      fetchNotifications(currentPage);
       setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       window.dispatchEvent(new CustomEvent("notificationsUpdated"));
     } catch (error) {
@@ -134,32 +134,48 @@ export function NotificationsClient() {
           </div>
         }
         action={
-          selectedIds.length > 0 && (
-            <div className="flex gap-2">
+          <div className="flex items-center gap-3">
+            <Tooltip content="Refresh Notifications" side="bottom">
               <Button
-                variant="primary"
-                color="primary"
-                size="md"
+                variant="action"
+                size="rounded-icon"
                 animate="scale"
-                onClick={() => handleBulkAction(selectedIds, "read")}
-                className="flex items-center gap-2"
+                onClick={refresh}
+                disabled={isLoading}
               >
-                <MailOpen size={16} />
-                Marks Read ({selectedIds.length})
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
               </Button>
-              <Button
-                variant="outline"
-                color="primary"
-                size="md"
-                animate="scale"
-                onClick={() => handleBulkAction(selectedIds, "unread")}
-                className="flex items-center gap-2"
-              >
-                <Mail size={16} />
-                Marks Unread ({selectedIds.length})
-              </Button>
-            </div>
-          )
+            </Tooltip>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            {selectedIds.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  color="primary"
+                  size="md"
+                  animate="scale"
+                  onClick={() => handleBulkAction(selectedIds, "read")}
+                  className="flex items-center gap-2 border-none"
+                >
+                  <MailOpen size={16} />
+                  Marks Read ({selectedIds.length})
+                </Button>
+                <Button
+                  variant="outline"
+                  color="primary"
+                  size="md"
+                  animate="scale"
+                  onClick={() => handleBulkAction(selectedIds, "unread")}
+                  className="flex items-center gap-2 border-brand-primary text-brand-primary"
+                >
+                  <Mail size={16} />
+                  Marks Unread ({selectedIds.length})
+                </Button>
+              </div>
+            )}
+          </div>
         }
         className="mb-6"
         bodyClassName="p-0 flex flex-col items-stretch"
@@ -167,32 +183,28 @@ export function NotificationsClient() {
         <div className="flex flex-col min-w-0 relative">
           <NotificationSummary
             counts={counts}
-            statusFilter={statusFilter}
-            onFilterChange={onFilterChange}
+            statusFilter={filters.status}
+            onFilterChange={(val) => handleSingleFilterChange("status", val)}
           />
-
-          {loading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
 
           <div className="overflow-x-auto w-full">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px] text-center px-6">
-                    <div className="flex justify-center items-center">
-                      <Checkbox
-                        checked={
-                          notifications.length > 0 &&
-                          notifications.every((item) =>
-                            selectedIds.includes(item.id),
-                          )
-                        }
-                        onChange={toggleAll}
-                      />
-                    </div>
+                    {!isLoading && (
+                      <div className="flex justify-center items-center">
+                        <Checkbox
+                          checked={
+                            notifications.length > 0 &&
+                            notifications.every((item) =>
+                              selectedIds.includes(item.id),
+                            )
+                          }
+                          onChange={toggleAll}
+                        />
+                      </div>
+                    )}
                   </TableHead>
                   <TableHead className="w-[80px] text-center">
                     Sr. No.
@@ -209,15 +221,14 @@ export function NotificationsClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!loading && notifications.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      No notifications available.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
+                ) : notifications.length === 0 ? (
+                  <EmptyState
+                    colSpan={9}
+                    title="All caught up!"
+                    description="You have no new notifications right now."
+                  />
                 ) : (
                   notifications.map((notif, idx) => (
                     <NotificationRow
@@ -236,18 +247,15 @@ export function NotificationsClient() {
             </Table>
           </div>
 
-          {!loading && (
+          {!isLoading && notifications.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              totalItems={counts.total}
+              onPageChange={handlePageChange}
+              totalItems={totalItems}
               pageSize={pageSize}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
-              className="mt-auto shrink-0"
+              onPageSizeChange={handlePageSizeChange}
+              className="mt-auto shrink-0 border-t"
             />
           )}
         </div>

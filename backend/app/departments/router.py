@@ -13,11 +13,11 @@ from app.utils.pagination import (
 router = APIRouter(
     prefix="/departments",
     tags=["Departments"],
-    dependencies=[Depends(require_roles(["admin"]))],
 )
 service = DepartmentService()
 
-@router.get("/get")
+
+@router.get("/get-departments")
 def get_all(
     is_active: Optional[bool] = None,
     pagination: PaginationParams = Depends(get_pagination_params),
@@ -32,26 +32,22 @@ def get_all(
     paginated_data = create_paginated_response(data, total_records, pagination)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
-@router.get("/get/{department_id}")
-def get_by_id(department_id: int):
-    data = service.get_by_id(department_id)
-    if not data:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
-@router.post("/create")
+@router.post("/create-department", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: DepartmentCreate):
     data = service.create(payload)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
-@router.put("/update/{department_id}")
+
+@router.put("/update-department/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
 def update(department_id: int, payload: DepartmentUpdate):
     data = service.update(department_id, payload)
     if not data:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
-@router.delete("/delete/{department_id}")
+
+@router.delete("/remove-department/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
 def delete(department_id: int):
     success = service.delete(department_id)
     if not success:

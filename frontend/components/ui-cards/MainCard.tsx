@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@lib/utils";
 import { Typography } from "@components/ui-elements/Typography";
+import { motion } from "framer-motion";
 
 interface MainCardProps {
   /** Card heading shown in the header bar */
@@ -13,6 +14,8 @@ interface MainCardProps {
   className?: string;
   /** Extra classes on the content body */
   bodyClassName?: string;
+  /** Optional click handler for the entire header bar */
+  onHeaderClick?: () => void;
 }
 
 export const MainCard: React.FC<MainCardProps> = ({
@@ -21,15 +24,30 @@ export const MainCard: React.FC<MainCardProps> = ({
   children,
   className = "",
   bodyClassName = "",
+  onHeaderClick,
 }) => {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+      }}
       className={cn(
-        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors",
+        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
         className,
       )}
     >
-      <div className="px-6 py-5 border-b border-border flex items-center justify-between gap-3">
+      <div
+        onClick={onHeaderClick}
+        className={cn(
+          "px-6 py-5 border-b border-border flex items-center justify-between gap-3 transition-colors duration-300",
+          onHeaderClick &&
+            "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
+        )}
+      >
         <Typography
           variant="h4"
           as="h3"
@@ -46,9 +64,15 @@ export const MainCard: React.FC<MainCardProps> = ({
         )}
       </div>
 
-      <div className={cn("p-5 flex-1 flex flex-col", bodyClassName)}>
+      <div
+        className={cn(
+          "flex-1 flex flex-col overflow-hidden rounded-b-xl",
+          bodyClassName,
+          !bodyClassName.includes("p-") && "p-5",
+        )}
+      >
         {children}
       </div>
-    </div>
+    </motion.div>
   );
 };

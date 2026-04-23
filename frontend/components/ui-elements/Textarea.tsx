@@ -24,9 +24,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           className={cn(
             "w-full rounded-md border bg-input py-3 px-4 text-medium text-foreground outline-none transition-all resize-none",
-            "placeholder:text-muted-foreground/50",
+            "placeholder:text-muted-foreground/50 dark:placeholder:text-white/40",
             "focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
-            "border-border",
+            "border-border dark:border-white/20",
             startIcon && "pl-[42px]",
             endIcon && "pr-[42px]",
             error &&

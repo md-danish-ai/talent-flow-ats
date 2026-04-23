@@ -26,6 +26,8 @@ services:
   migrations:
     image: talent-flow-ats-backend
     profiles: ["migrate"]
+    volumes:
+      - ./backend:/backend
     depends_on:
       db:
         condition: service_healthy

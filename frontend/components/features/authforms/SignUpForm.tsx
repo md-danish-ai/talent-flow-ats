@@ -6,30 +6,50 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Input } from "@components/ui-elements/Input";
-import {
-  signUpSchema,
-  type SignUpFormValues,
-  TEST_LEVELS,
-} from "@lib/validations/auth";
-import { useSignUp } from "@lib/react-query/user/use-auth";
+import { signUpSchema, type SignUpFormValues } from "@lib/validations/auth";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { useSignUp } from "@hooks/api/user/use-auth";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { getErrorMessage } from "@lib/utils";
 
-export function SignUpForm() {
+export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const signUpMutation = useSignUp();
+  const { data: departments, isLoading: isLoadingDepts } = useDepartments({
+    is_active: true,
+  });
+
+  const { data: classificationRes, isLoading: isLoadingLevels } =
+    useClassifications({
+      type: "exam_level",
+      is_active: true,
+    });
+  const levels = (classificationRes?.data || []).map((c) => ({
+    id: String(c.id),
+    label: c.name,
+  }));
+
+  const deptOptions = (departments || []).map((d) => ({
+    id: String(d.id),
+    label: d.name,
+  }));
 
   const form = useForm({
+    // @ts-expect-error - validatorAdapter types mismatch in this version
+    validatorAdapter: zodValidator(),
     defaultValues: {
       name: "",
       mobile: "",
       email: "",
-      testLevel: "fresher",
+      test_level_id: "",
+      department_id: "",
       role: "user",
     } as SignUpFormValues,
     validators: {
@@ -40,26 +60,23 @@ export function SignUpForm() {
       try {
         const response = await signUpMutation.mutateAsync(value);
 
+        if (onSuccess) {
+          onSuccess();
+          return;
+        }
+
         // Store auth token and role in cookies
         document.cookie = `role=${response.user?.role ?? "user"}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
 
         router.push("/user/dashboard");
       } catch (err: unknown) {
-        const error = err as { message?: string };
         setServerError(
-          error.message ?? "Registration failed. Please try again.",
+          getErrorMessage(err) || "Registration failed. Please try again.",
         );
       }
     },
   });
-
-  const levelLabels: Record<(typeof TEST_LEVELS)[number], string> = {
-    fresher: "Fresher",
-    QA: "Quality Analyst",
-    "team-lead": "Team Lead",
-  };
-  const levels = TEST_LEVELS.map((id) => ({ id, label: levelLabels[id] }));
 
   return (
     <div className="w-full">
@@ -192,7 +209,7 @@ export function SignUpForm() {
           )}
         </form.Field>
 
-        <form.Field name="testLevel">
+        <form.Field name="test_level_id">
           {(field) => (
             <div className="group">
               <Typography
@@ -205,11 +222,55 @@ export function SignUpForm() {
               <SelectDropdown
                 options={levels}
                 value={field.state.value}
-                onChange={(val) =>
-                  field.handleChange(val as (typeof TEST_LEVELS)[number])
-                }
+                onChange={(val) => field.handleChange(String(val))}
+                placeholder="Choose Level"
+                isLoading={isLoadingLevels}
+                disabled={isLoadingLevels}
                 placement="top"
               />
+              {field.state.meta.isTouched &&
+                field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="mt-1 font-medium text-red-500"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
+                )}
+            </div>
+          )}
+        </form.Field>
+
+        <form.Field name="department_id">
+          {(field) => (
+            <div className="group">
+              <Typography
+                as="label"
+                variant="h6"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Select Department
+              </Typography>
+              <div className="relative">
+                <SelectDropdown
+                  options={deptOptions}
+                  value={field.state.value}
+                  onChange={(val) => field.handleChange(String(val))}
+                  placeholder="Choose Department"
+                  isLoading={isLoadingDepts}
+                  disabled={isLoadingDepts}
+                  placement="top"
+                />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-medium text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+              </div>
             </div>
           )}
         </form.Field>

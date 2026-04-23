@@ -3,9 +3,9 @@ import { Edit as EditIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
 
 interface MCQRowProps {
@@ -140,20 +140,18 @@ export const MCQRow: React.FC<MCQRowProps> = ({
       {visibleColumns.includes("actions") && (
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              color="primary"
-              size="icon"
+            <TableIconButton
+              iconColor="blue"
+              btnSize="sm"
               animate="scale"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(row);
               }}
               title="Edit Question"
-              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
             >
               <EditIcon size={16} />
-            </Button>
+            </TableIconButton>
           </div>
         </TableCell>
       )}

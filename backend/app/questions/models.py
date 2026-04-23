@@ -7,6 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     TIMESTAMP,
     func,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from app.database.db import Base
@@ -43,4 +44,15 @@ class Question(Base):
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
         nullable=False,
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_questions_subject_level_type_marks",
+            "subject_type",
+            "exam_level",
+            "question_type",
+            "marks",
+            "is_active",
+        ),
     )

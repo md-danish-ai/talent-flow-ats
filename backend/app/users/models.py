@@ -24,10 +24,12 @@ class User(Base):
 
     password = Column(String(255), nullable=False)
 
-    testlevel = Column(String(50), nullable=True)
+    test_level_id = Column(Integer, ForeignKey("classifications.id"), nullable=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
     role = Column(String(50), nullable=False, server_default=text("'user'"))
 
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
+    process_status = Column(String(50), nullable=False, server_default=text("'pending'"))
 
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
@@ -49,6 +51,9 @@ class User(Base):
         remote_side=[id],
         backref="created_users",
     )
+
+    test_level = relationship("Classification", foreign_keys=[test_level_id])
+    department = relationship("Department", foreign_keys=[department_id])
 
 
 # Explicit index (matches your SQL)

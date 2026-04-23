@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { NavSection } from "@lib/config/adminRoutes";
+import { NavSection } from "@lib/routes/types";
 import { NAV_ACTIVE, NAV_IDLE } from "./styles";
 
 interface CollapsedNavItemProps {

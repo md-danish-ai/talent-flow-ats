@@ -1,63 +1,119 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Loader2, Filter } from "lucide-react";
-import { questionsApi, Question } from "@lib/api/questions";
+import { Plus, ListChecks, Upload } from "lucide-react";
+import { questionsApi } from "@lib/api/questions";
+import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { classificationsApi, ApiError } from "@lib/api";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
-import EditContactDetailsModal from "./components/EditContactDetailsModal";
-import { AddContactDetailsModal } from "./components/AddContactDetailsModal";
-import { ContactDetailsFilters } from "./components/ContactDetailsFilters";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
+import EditQuestionModal from "./components/EditContactDetailsModal";
+import { AddContactDetailsModal as AddQuestionModal } from "./components/AddContactDetailsModal";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ContactDetailsRow } from "./components/ContactDetailsRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+
+interface ContactDetailsListingFilters {
+  search: string;
+  subject: string;
+  examLevel: string;
+  marks: string;
+  status: string;
+}
 
 export function ContactDetailsClient() {
-  const [data, setData] = useState<Question[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
-  // Filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [examLevelFilter, setExamLevelFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
+
+  const handleAuthError = useCallback(
+    (error: unknown): boolean => {
+      if (error instanceof ApiError && error.status === 401) {
+        if (typeof document !== "undefined") {
+          document.cookie = "role=; Max-Age=0; path=/";
+          document.cookie = "auth_token=; Max-Age=0; path=/";
+          document.cookie = "user_info=; Max-Age=0; path=/";
+        }
+        router.push("/sign-in");
+        return true;
+      }
+      return false;
+    },
+    [router],
+  );
+
+  const {
+    data: questions,
+    isLoading,
+    isBackgroundLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<Question, ContactDetailsListingFilters>({
+    fetchFn: (params) => questionsApi.getQuestions(params),
+    initialFilters: {
+      search: "",
+      subject: "all",
+      examLevel: "all",
+      marks: "all",
+      status: "all",
+    },
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.CONTACT_DETAILS,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? (f.subject as string) : undefined,
+      exam_level: f.examLevel !== "all" ? (f.examLevel as string) : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
+    toastMessage: "Contact details refreshed successfully",
+    onError: handleAuthError,
+  });
 
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "WebSiteURL", pinned: true },
+    { id: "websiteUrl", label: "WebSiteURL" },
+    { id: "companyName", label: "Organization" },
+    { id: "name", label: "Company Name" },
+    { id: "title", label: "Title" },
+    { id: "primaryEmail", label: "Communication Email" },
+    { id: "secondaryEmail", label: "Secondary Email Address" },
+    { id: "linkedInUrl", label: "LinkedIn URL" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -68,7 +124,9 @@ export function ContactDetailsClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "question",
+    "name",
+    "companyName",
+    "primaryEmail",
     "subject",
     "examLevel",
     "marks",
@@ -82,63 +140,6 @@ export function ContactDetailsClient() {
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await questionsApi.getQuestions({
-        page: currentPage,
-        limit: pageSize,
-        question_type: QUESTION_TYPES.CONTACT_DETAILS,
-        search: debouncedSearch,
-        subject:
-          subjectFilter && subjectFilter !== "all"
-            ? (subjectFilter as string)
-            : undefined,
-        exam_level:
-          examLevelFilter && examLevelFilter !== "all"
-            ? (examLevelFilter as string)
-            : undefined,
-        marks:
-          marksFilter && marksFilter !== "all"
-            ? Number(marksFilter)
-            : undefined,
-        is_active:
-          statusFilter && statusFilter !== "all"
-            ? statusFilter === "true"
-            : undefined,
-      });
-
-      setData(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-    } catch (error) {
-      console.error("Failed to fetch contact details questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearch,
-    subjectFilter,
-    examLevelFilter,
-    marksFilter,
-    statusFilter,
-  ]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   useEffect(() => {
     const fetchClassifications = async () => {
@@ -155,23 +156,27 @@ export function ContactDetailsClient() {
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.CONTACT_DETAILS,
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
       }
     };
-    fetchClassifications();
+    void fetchClassifications();
   }, []);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      await fetchData();
+      void refresh();
       toast.success("Status updated successfully");
     } catch (error) {
-      console.error("Failed to toggle contact details question status:", error);
+      console.error("Failed to toggle question status:", error);
       toast.error("Failed to update status");
     } finally {
       setTogglingId(null);
@@ -182,33 +187,44 @@ export function ContactDetailsClient() {
     <PageContainer animate>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ListChecks size={20} />
             </div>
-            Contact Detailss
-          </>
+            Company Contact Details
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Entries"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
-            <div className="h-6 w-px bg-border mx-1" />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="action"
               size="rounded-icon"
-              isActive={isFilterOpen}
+              isActive={isBulkUploadOpen}
               animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              title="Filter"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
             >
-              <Filter size={18} />
+              <Upload size={18} />
             </Button>
             <Button
               variant="primary"
@@ -219,9 +235,9 @@ export function ContactDetailsClient() {
               iconAnimation="rotate-90"
               onClick={() => setIsAddOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
-              Add Contact Details
+              Add Question
             </Button>
           </div>
         }
@@ -229,151 +245,158 @@ export function ContactDetailsClient() {
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("question") && (
-                    <TableHead>WebSiteURL</TableHead>
-                  )}
-                  {visibleColumns.includes("subject") && (
-                    <TableHead>Subject</TableHead>
-                  )}
-                  {visibleColumns.includes("examLevel") && (
-                    <TableHead>Exam Level</TableHead>
-                  )}
-                  {visibleColumns.includes("marks") && (
-                    <TableHead className="w-[80px] text-center">
-                      Marks
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("createdDate") && (
-                    <TableHead>Created Date</TableHead>
-                  )}
-                  {visibleColumns.includes("status") && (
-                    <TableHead className="w-[100px] text-center">
-                      Status
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">
-                      Action
-                    </TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {data.length === 0 && !isLoading ? (
+          <ListingTransition
+            isLoading={isLoading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No contact details questions found. Click &quot;Add
-                      Contact Details&quot; to create one.
-                    </TableCell>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("websiteUrl") && (
+                      <TableHead>WebSiteURL</TableHead>
+                    )}
+                    {visibleColumns.includes("companyName") && (
+                      <TableHead>Organization</TableHead>
+                    )}
+                    {visibleColumns.includes("name") && (
+                      <TableHead>Company Name</TableHead>
+                    )}
+                    {visibleColumns.includes("title") && (
+                      <TableHead>Title</TableHead>
+                    )}
+                    {visibleColumns.includes("primaryEmail") && (
+                      <TableHead>Communication Email</TableHead>
+                    )}
+                    {visibleColumns.includes("secondaryEmail") && (
+                      <TableHead>Secondary Email Address</TableHead>
+                    )}
+                    {visibleColumns.includes("linkedInUrl") && (
+                      <TableHead>LinkedIn URL</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("examLevel") && (
+                      <TableHead>Exam Level</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableHead>Created Date</TableHead>
+                    )}
+                    {visibleColumns.includes("status") && (
+                      <TableHead className="w-[100px] text-center">
+                        Status
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
                   </TableRow>
-                ) : (
-                  data.map((row, index) => (
-                    <ContactDetailsRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      currentPage={currentPage}
-                      pageSize={pageSize}
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <QuestionTableSkeleton
                       visibleColumns={visibleColumns}
-                      togglingId={togglingId}
-                      onToggleStatus={handleToggleStatus}
-                      onEdit={setEditingQuestion}
+                      rowCount={pageSize}
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : questions.length === 0 ? (
+                    <EmptyState
+                      colSpan={visibleColumns.length + 1}
+                      variant="search"
+                      title="No questions found"
+                      description="Try adjusting your filters or adding a new entry."
+                    />
+                  ) : (
+                    questions.map((row, index) => (
+                      <ContactDetailsRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        visibleColumns={visibleColumns}
+                        togglingId={togglingId}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={setEditingQuestion}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalItems / pageSize)}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0"
-          />
+            {!isLoading && questions.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
 
-        <ContactDetailsFilters
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          subjectFilter={subjectFilter}
-          onSubjectFilterChange={(val) => {
-            setSubjectFilter(val);
-            setCurrentPage(1);
-          }}
-          subjects={subjects}
-          examLevelFilter={examLevelFilter}
-          onExamLevelFilterChange={(val) => {
-            setExamLevelFilter(val);
-            setCurrentPage(1);
-          }}
-          examLevels={examLevels}
-          marksFilter={marksFilter}
-          onMarksFilterChange={(val) => {
-            setMarksFilter(val);
-            setCurrentPage(1);
-          }}
-          statusFilter={statusFilter}
-          onStatusFilterChange={(val) => {
-            setStatusFilter(val);
-            setCurrentPage(1);
-          }}
-          onReset={() => {
-            setSearchQuery("");
-            setSubjectFilter("all");
-            setExamLevelFilter("all");
-            setMarksFilter("all");
-            setStatusFilter("all");
-            setCurrentPage(1);
+          registryKey="question-bank-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+          dynamicOptions={{
+            subject: [
+              { id: "all", label: "All Subjects" },
+              ...subjects.map((s) => ({ id: s.code || "", label: s.name })),
+            ],
+            examLevel: [
+              { id: "all", label: "All Levels" },
+              ...examLevels.map((e) => ({ id: e.code || "", label: e.name })),
+            ],
           }}
         />
       </MainCard>
 
-      {/* Modals */}
-      <AddContactDetailsModal
+      <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onSuccess={fetchData}
+        onSuccess={() => void refresh()}
       />
 
       {editingQuestion && (
-        <EditContactDetailsModal
+        <EditQuestionModal
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}
-          onSuccess={fetchData}
+          onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.CONTACT_DETAILS}
+      />
     </PageContainer>
   );
 }

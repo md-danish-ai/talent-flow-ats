@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,49 +9,96 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users } from "lucide-react";
+import { Users, Eye, UserPlus, Mail, UserCog, FileText } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
-import {
-  getUsersByRole,
-  UserListResponse,
-  toggleUserStatus,
-} from "@lib/api/auth";
+import Link from "next/link";
+import { Button } from "@components/ui-elements/Button";
+import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
+import { Modal } from "@components/ui-elements/Modal";
+import { SignUpForm } from "@features/authforms/SignUpForm";
+import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { Pagination } from "@components/ui-elements/Pagination";
+import { cn } from "@lib/utils";
+import { Avatar } from "@components/ui-elements/Avatar";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { CopyableText } from "@components/ui-elements/CopyableText";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+
 interface UserListingProps {
-  initialData?: UserListResponse[];
+  initialData?: {
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  };
 }
 
-export function UserListing({ initialData = [] }: UserListingProps) {
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(!initialData.length);
+export function UserListing({ initialData }: UserListingProps) {
+  // Hook for standardized listing
+  const {
+    data: users,
+    isLoading: loading,
+    isBackgroundLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<
+    UserListResponse,
+    { search: string; department_id: string; test_level_id: string }
+  >({
+    // Adaptation for getUsersByRole
+    fetchFn: (params) => getUsersByRole("user", params),
+    initialFilters: {
+      search: "",
+      department_id: "all",
+      test_level_id: "all",
+    },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_id:
+        f.department_id === "all" ? undefined : Number(f.department_id),
+      test_level_id:
+        f.test_level_id === "all" ? undefined : Number(f.test_level_id),
+    }),
+    toastMessage: "Candidate list refreshed successfully",
+  });
+
   const [togglingId, setTogglingId] = useState<number | null>(null);
-
-  const fetchUsers = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getUsersByRole("user");
-      setUsers(data);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!initialData.length) {
-      fetchUsers();
-    } else {
-      setLoading(false);
-    }
-  }, [initialData, fetchUsers]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserListResponse | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      fetchUsers();
+      void refresh();
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -59,81 +106,362 @@ export function UserListing({ initialData = [] }: UserListingProps) {
     }
   };
 
+  const handleEditUser = (user: UserListResponse) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  // Fetch departments and levels
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
+
   return (
     <>
       <MainCard
         title={
-          <>
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <Users size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Users size={22} />
             </div>
-            Users
-          </>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
+                Candidate Management
+              </h2>
+              <p className="text-[11px] text-muted-foreground -mt-1 font-medium italic opacity-70">
+                Manage all registered users and their account status
+              </p>
+            </div>
+          </div>
         }
-        className="mb-6 flex flex-col"
+        action={
+          <div className="flex items-center gap-3">
+            <ListingHeaderActions
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Users"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+
+            <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <Button
+              variant="primary"
+              color="primary"
+              startIcon={<UserPlus size={16} />}
+              onClick={() => setIsAddModalOpen(true)}
+              animate="scale"
+              className="font-bold border-none"
+            >
+              Add Candidate
+            </Button>
+          </div>
+        }
         bodyClassName="p-0 flex flex-row items-stretch w-full"
       >
-        <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
+          <ListingTransition
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Candidate Profile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Mobile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Department
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                      Level
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Account Status
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Action
+                    </TableHead>
                   </TableRow>
-                ) : !Array.isArray(users) || users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No users found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  users.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="font-medium text-center">
-                        {idx + 1}
-                      </TableCell>
-                      <TableCell>{row.username || "-"}</TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell>{row.email || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={row.is_active}
-                            onChange={() => handleToggleStatus(row)}
-                            size="sm"
-                            disabled={togglingId === row.id}
-                          />
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <SimpleTableSkeleton
+                      rowCount={pageSize}
+                      columnCount={7}
+                      columnWidths={[
+                        "w-[80px] text-center py-4",
+                        "py-4",
+                        "py-4",
+                        "py-4",
+                        "text-center py-4",
+                        "py-4 text-center",
+                        "py-4 text-center",
+                      ]}
+                    />
+                  ) : users.length === 0 ? (
+                    <EmptyState
+                      colSpan={7}
+                      variant="search"
+                      title="No candidates found"
+                      description="We couldn't find any candidates matching your criteria. Try adjusting your search."
+                    />
+                  ) : (
+                    users.map((row, idx) => (
+                      <TableRow
+                        key={row.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
+                      >
+                        <TableCell className="font-bold text-center align-middle py-3 text-slate-500">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="align-middle py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={row.username}
+                              variant="brand"
+                              size="sm"
+                            />
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                                  {row.username || "Unnamed"}
+                                </span>
+                                {row.is_reinterview ? (
+                                  <Badge
+                                    variant="outline"
+                                    color="violet"
+                                    animate="pulse"
+                                    shape="square"
+                                    className="text-[9px] font-bold"
+                                  >
+                                    RETURNING
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    color="success"
+                                    animate="pulse"
+                                    shape="square"
+                                    className="text-[9px] font-bold"
+                                  >
+                                    NEW
+                                  </Badge>
+                                )}
+                              </div>
+                              <CopyableText
+                                value={row.email || "-"}
+                                className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                                title="Copy Email"
+                              >
+                                <Mail size={11} />
+                                <span className="text-[11px] truncate max-w-[150px]">
+                                  {row.email || "-"}
+                                </span>
+                              </CopyableText>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="align-middle py-3">
+                          <CopyableText
+                            value={row.mobile || ""}
+                            className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
+                            title="Copy Phone Number"
+                          >
+                            <span className="mb-[1px]">{row.mobile}</span>
+                          </CopyableText>
+                        </TableCell>
+                        <TableCell className="align-middle py-3">
                           <Badge
                             variant="outline"
+                            color={
+                              row.department_name ||
+                              row.assignment?.department_name
+                                ? "primary"
+                                : "default"
+                            }
                             shape="square"
-                            color={row.is_active ? "success" : "error"}
                           >
-                            {row.is_active ? "Activate" : "Deactivate"}
+                            {row.department_name ||
+                              row.assignment?.department_name ||
+                              "NO DEPT"}
                           </Badge>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                        </TableCell>
+                        <TableCell className="align-middle py-3 text-center">
+                          <Badge
+                            variant="outline"
+                            color="default"
+                            shape="square"
+                            className="font-bold text-[9px] px-2 h-5 inline-flex items-center justify-center border-slate-300 dark:border-slate-800 uppercase"
+                          >
+                            {row.assignment?.test_level_name ||
+                              row.test_level_name ||
+                              "N/A"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="align-middle py-3">
+                          <div className="flex flex-col items-center justify-center gap-1.5">
+                            <Switch
+                              checked={row.is_active}
+                              onChange={() => handleToggleStatus(row)}
+                              size="sm"
+                              disabled={togglingId === row.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={row.is_active ? "success" : "error"}
+                              className="text-[9px] font-bold uppercase tracking-tighter"
+                            >
+                              {row.is_active ? "ACTIVE" : "DISABLED"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="align-middle py-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <Link
+                              href={`/admin/management/users/view-details/${row.id}`}
+                              passHref
+                            >
+                              <TableIconButton
+                                iconColor="brand"
+                                btnSize="sm"
+                                animate="scale"
+                                title="View Details"
+                              >
+                                <Eye size={16} />
+                              </TableIconButton>
+                            </Link>
+                            <TableIconButton
+                              iconColor="blue"
+                              btnSize="sm"
+                              animate="scale"
+                              title="Edit Basic Info"
+                              onClick={() => handleEditUser(row)}
+                            >
+                              <UserCog size={16} />
+                            </TableIconButton>
+
+                            <Link
+                              href={`/admin/management/users/update-details/${row.id}`}
+                              passHref
+                            >
+                              <TableIconButton
+                                iconColor="violet"
+                                btnSize="sm"
+                                animate="scale"
+                                title="Edit Recruitment Form"
+                              >
+                                <FileText size={16} />
+                              </TableIconButton>
+                            </Link>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            {!loading && users.length > 0 && (
+              <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
+          </ListingTransition>
         </div>
+
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="management-user-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={loading}
+          dynamicOptions={{
+            department_id: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((dept) => ({
+                id: String(dept.id),
+                label: dept.name,
+              })),
+            ],
+            test_level_id: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((lvl) => ({
+                id: String(lvl.id),
+                label: lvl.name,
+              })),
+            ],
+          }}
+        />
       </MainCard>
+
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add New Candidate"
+      >
+        <div className="p-1 pb-4">
+          <SignUpForm
+            onSuccess={() => {
+              setIsAddModalOpen(false);
+              void refresh();
+            }}
+          />
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Candidate Information"
+      >
+        <div className="p-1 pb-4">
+          {editingUser && (
+            <UpdateAccountInfoForm
+              userId={editingUser.id}
+              initialData={{
+                username: editingUser.username ?? undefined,
+                mobile: editingUser.mobile ?? undefined,
+                email: editingUser.email ?? undefined,
+                test_level_id: editingUser.test_level_id ?? "",
+                department_id: editingUser.department_id ?? "",
+              }}
+              onSuccess={() => {
+                setIsEditModalOpen(false);
+                void refresh();
+              }}
+            />
+          )}
+        </div>
+      </Modal>
     </>
   );
 }

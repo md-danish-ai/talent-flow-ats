@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
@@ -9,17 +9,21 @@ import { Button } from "@components/ui-elements/Button";
 import { Plus, FileText } from "lucide-react";
 import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
-import { papersApi, PaperSetup } from "@lib/api/papers";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { TableColumnToggle } from "@components/ui-elements/Table";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { cn } from "@lib/utils";
+import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 export function PaperSetupClient() {
   const router = useRouter();
-  const [papers, setPapers] = useState<Partial<PaperSetup>[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "sr_no",
     "paper_name",
@@ -30,6 +34,47 @@ export function PaperSetupClient() {
     "active",
     "actions",
   ]);
+
+  // Hook for standardized listing
+  const {
+    data: papers,
+    isLoading,
+    isBackgroundLoading,
+    totalItems,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<
+    Partial<PaperSetup>,
+    { search: string; department_id: string; test_level_id: string }
+  >({
+    fetchFn: (params) => papersApi.getPapers(params),
+    initialFilters: {
+      search: "",
+      department_id: "all",
+      test_level_id: "all",
+    },
+    filterMapping: (f) => ({
+      search: f.search || undefined,
+      department_id: f.department_id === "all" ? undefined : f.department_id,
+      test_level_id: f.test_level_id === "all" ? undefined : f.test_level_id,
+    }),
+    toastMessage: "Paper list refreshed successfully",
+  });
+
+  // Fetch all departments and levels for filters
+  const { data: allDepartments = [] } = useDepartments({ is_active: true });
+  const classificationQuery = useClassifications({
+    type: "exam_level",
+    is_active: true,
+  });
+  const allLevels = classificationQuery.data?.data || [];
 
   const columns = [
     { id: "sr_no", label: "Sr. No.", pinned: true },
@@ -49,56 +94,17 @@ export function PaperSetupClient() {
     );
   };
 
-  const fetchPapers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await papersApi.getPapers({
-        page: currentPage,
-        limit: pageSize,
-      });
-      setPapers(response.data);
-      setTotalItems(response.pagination.total_records);
-    } catch (error) {
-      console.error("Failed to fetch papers:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize]);
-
-  useEffect(() => {
-    fetchPapers();
-  }, [fetchPapers]);
-
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     setTogglingId(id);
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
-      fetchPapers();
+      void refresh();
       toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
-      // toast.error("Failed to update status");
+      // Error is handled by API client
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this paper?")) return;
-    try {
-      await papersApi.deletePaper(id);
-      toast.success("Paper deleted successfully");
-      fetchPapers();
-    } catch {
-      // toast.error("Failed to delete paper");
-    }
-  };
-
-  const handleEditClick = (id: number) => {
-    router.push(`/admin/paper/setup/edit/${id}`);
-  };
-
-  const handleViewDetails = (id: number) => {
-    router.push(`/admin/paper/setup/detail/${id}`);
   };
 
   return (
@@ -117,11 +123,23 @@ export function PaperSetupClient() {
         }
         action={
           <div className="flex items-center gap-3">
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Papers"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
             />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
               color="primary"
@@ -139,22 +157,60 @@ export function PaperSetupClient() {
           </div>
         }
         className="mt-6 flex flex-col"
-        bodyClassName="p-0 flex-1 overflow-hidden"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
       >
-        <PaperSetupTable
-          data={papers}
-          totalItems={totalItems}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
+          <ListingTransition
+            isLoading={isLoading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <PaperSetupTable
+              data={papers}
+              totalItems={totalItems}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+              togglingId={togglingId}
+              onToggleStatus={handleToggleStatus}
+              onEdit={(paper) =>
+                router.push(`/admin/paper/setup/edit/${paper.id}`)
+              }
+              onViewDetails={(id) =>
+                router.push(`/admin/paper/setup/detail/${id}`)
+              }
+              visibleColumns={visibleColumns}
+            />
+          </ListingTransition>
+        </div>
+
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="paper-setup-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
           isLoading={isLoading}
-          togglingId={togglingId}
-          onToggleStatus={handleToggleStatus}
-          onEdit={(paper) => handleEditClick(paper.id!)}
-          onDelete={handleDelete}
-          onViewDetails={handleViewDetails}
-          visibleColumns={visibleColumns}
+          dynamicOptions={{
+            department_id: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((d) => ({
+                id: String(d.id),
+                label: d.name,
+              })),
+            ],
+            test_level_id: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
+            ],
+          }}
         />
       </MainCard>
     </PageContainer>

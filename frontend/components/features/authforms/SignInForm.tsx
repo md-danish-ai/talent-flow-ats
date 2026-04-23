@@ -12,9 +12,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 import { toast } from "@lib/toast";
 import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
-import { useSignIn } from "@lib/react-query/user/use-auth";
+import { useSignIn } from "@hooks/api/user/use-auth";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
@@ -23,7 +24,6 @@ import { getErrorMessage } from "@lib/utils";
 
 export function SignInForm() {
   const router = useRouter();
-  const [role, setRole] = useState("user");
   const [serverError, setServerError] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
@@ -56,11 +56,12 @@ export function SignInForm() {
   const signInMutation = useSignIn();
 
   const form = useForm({
+    // @ts-expect-error - validatorAdapter types mismatch in this version
+    validatorAdapter: zodValidator(),
     defaultValues: {
       mobile: "",
       email: "",
       password: "",
-      role: role as "user" | "admin",
     } as SignInFormValues,
     validators: {
       onChange: signInSchema,
@@ -68,21 +69,17 @@ export function SignInForm() {
     onSubmit: async ({ value }) => {
       setServerError(null);
       try {
-        // Only send email for admin role
-        const payload = { ...value };
-        if (value.role === "user") {
-          delete payload.email;
-        }
+        const response = await signInMutation.mutateAsync(value);
 
-        const response = await signInMutation.mutateAsync(payload);
-
+        const userRole = response.user?.role;
         // Store auth token and role in cookies
-        document.cookie = `role=${response.user?.role ?? value.role}; path=/`;
+        document.cookie = `role=${userRole}; path=/`;
         document.cookie = `auth_token=${response.access_token}; path=/`;
 
-        const userRole = response.user?.role ?? value.role;
         if (userRole === "admin") {
           router.push("/admin/dashboard");
+        } else if (userRole === "project_lead") {
+          router.push("/project-lead/dashboard");
         } else {
           router.push("/user/dashboard");
         }
@@ -114,103 +111,39 @@ export function SignInForm() {
           form.handleSubmit();
         }}
       >
-        <form.Field name="role">
+        <form.Field name="email">
           {(field) => (
-            <div>
+            <div className="group">
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-2 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
-                Select Your Role
+                Email Address (Optional)
               </Typography>
-              <div className="grid grid-cols-2 gap-3">
-                <Typography
-                  as="label"
-                  className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
-                    field.state.value === "user"
-                      ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 dark:border-border text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="user"
-                    className="hidden"
-                    checked={field.state.value === "user"}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value as "admin" | "user");
-                      setRole(e.target.value);
-                    }}
-                  />
-                  <Typography variant="body4" weight="bold" as="span">
-                    User
-                  </Typography>
-                </Typography>
-                <Typography
-                  as="label"
-                  className={`flex cursor-pointer items-center justify-center rounded-md border-2 py-2.5 text-small font-bold transition-all ${
-                    field.state.value === "admin"
-                      ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                      : "border-slate-100 dark:border-border text-slate-400 hover:border-brand-primary/20 hover:bg-brand-primary/5"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="admin"
-                    className="hidden"
-                    checked={field.state.value === "admin"}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value as "admin" | "user");
-                      setRole(e.target.value);
-                    }}
-                  />
-                  <Typography variant="body4" weight="bold" as="span">
-                    Admin
-                  </Typography>
-                </Typography>
+              <div className="relative">
+                <Input
+                  type="email"
+                  placeholder="admin@example.com"
+                  startIcon={<Mail className="h-[18px] w-[18px]" />}
+                  error={field.state.meta.errors.length > 0}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
               </div>
+              {field.state.meta.isTouched &&
+                field.state.meta.errors.length > 0 && (
+                  <Typography
+                    variant="body5"
+                    className="mt-1 font-medium text-red-500"
+                  >
+                    {getErrorMessage(field.state.meta.errors[0])}
+                  </Typography>
+                )}
             </div>
           )}
         </form.Field>
-
-        {role === "admin" && (
-          <form.Field name="email">
-            {(field) => (
-              <div className="group">
-                <Typography
-                  as="label"
-                  variant="h6"
-                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >
-                  Email Address
-                </Typography>
-                <div className="relative">
-                  <Input
-                    type="email"
-                    placeholder="admin@example.com"
-                    startIcon={<Mail className="h-[18px] w-[18px]" />}
-                    error={field.state.meta.errors.length > 0}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </div>
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="mt-1 font-medium text-red-500"
-                    >
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
-                  )}
-              </div>
-            )}
-          </form.Field>
-        )}
 
         <form.Field name="mobile">
           {(field) => (
@@ -323,20 +256,18 @@ export function SignInForm() {
         </form.Subscribe>
       </form>
 
-      {role === "user" && (
-        <Typography
-          variant="body4"
-          className="mt-6 text-center text-slate-400 dark:text-slate-500"
+      <Typography
+        variant="body4"
+        className="mt-6 text-center text-slate-400 dark:text-slate-500"
+      >
+        New to TalentFlow?{" "}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
         >
-          New to TalentFlow?{" "}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
-          >
-            Create an account <UserPlus className="h-3.5 w-3.5" />
-          </Link>
-        </Typography>
-      )}
+          Create an account <UserPlus className="h-3.5 w-3.5" />
+        </Link>
+      </Typography>
     </div>
   );
 }

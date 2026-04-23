@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { ContactDetailsForm } from "@components/features/questions/ContactDetailsForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { type ContactDetailsFormValues } from "@lib/validations/question";
 
 interface EditContactDetailsModalProps {
@@ -24,22 +24,36 @@ export default function EditContactDetailsModal({
     examLevel: question.exam_level?.code || "",
     marks: question.marks,
     questionText: question.question_text,
-    websiteUrl: String((question.options as Record<string, unknown>)?.websiteUrl || ""),
-    companyName: String((question.options as Record<string, unknown>)?.companyName || ""),
-    streetAddress: String((question.options as Record<string, unknown>)?.streetAddress || ""),
+    websiteUrl: String(
+      (question.options as Record<string, unknown>)?.websiteUrl || "",
+    ),
+    companyName: String(
+      (question.options as Record<string, unknown>)?.companyName || "",
+    ),
+    streetAddress: String(
+      (question.options as Record<string, unknown>)?.streetAddress || "",
+    ),
     city: String((question.options as Record<string, unknown>)?.city || ""),
     state: String((question.options as Record<string, unknown>)?.state || ""),
-    zipCode: String((question.options as Record<string, unknown>)?.zipCode || ""),
-    companyPhoneNumber: String((question.options as Record<string, unknown>)?.companyPhoneNumber || ""),
-    generalEmail: String((question.options as Record<string, unknown>)?.generalEmail || ""),
-    facebookPage: String((question.options as Record<string, unknown>)?.facebookPage || ""),
+    zipCode: String(
+      (question.options as Record<string, unknown>)?.zipCode || "",
+    ),
+    companyPhoneNumber: String(
+      (question.options as Record<string, unknown>)?.companyPhoneNumber || "",
+    ),
+    generalEmail: String(
+      (question.options as Record<string, unknown>)?.generalEmail || "",
+    ),
+    facebookPage: String(
+      (question.options as Record<string, unknown>)?.facebookPage || "",
+    ),
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Contact Details"
+      title="Edit Company Contact Details"
       className="max-w-5xl"
     >
       <ContactDetailsForm

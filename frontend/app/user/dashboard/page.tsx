@@ -1,6 +1,7 @@
 import { DashboardClient } from "./DashboardClient";
 import { getCurrentUser } from "@lib/auth/get-current-user";
 import { getUserDetailsById } from "@lib/api/user-details";
+import { interviewAttemptsApi } from "@lib/api/interview-attempts";
 import { cookies } from "next/headers";
 
 export default async function UserDashboard() {
@@ -8,6 +9,17 @@ export default async function UserDashboard() {
   const cookieStore = await cookies();
 
   let isDetailsComplete = false;
+  let isInterviewSubmitted = false;
+  let activeInterviewStatus: {
+    has_attempt: boolean;
+    status: string | null;
+    is_expired: boolean;
+    attempt_id?: number | null;
+  } = {
+    has_attempt: false,
+    status: null,
+    is_expired: false,
+  };
 
   if (user) {
     const cookieString = cookieStore
@@ -16,18 +28,35 @@ export default async function UserDashboard() {
       .join(";");
 
     try {
-      // Fetch specific recruitment details by ID from the dedicated endpoint
+      // 1. Fetch recruitment details
       const details = await getUserDetailsById(user.id, {
         cookies: cookieString,
       });
-      if (details && details.is_submitted) {
-        isDetailsComplete = true;
+      if (details) {
+        isDetailsComplete = details.is_submitted || false;
+        isInterviewSubmitted = details.is_interview_submitted || false;
       }
+
+      // 2. Fetch active interview status
+      const statusRes = await interviewAttemptsApi.getActiveStatus({
+        cookies: cookieString,
+      });
+      activeInterviewStatus = statusRes;
     } catch (detailsError) {
-      console.warn("Recruitment details not found for user:", detailsError);
-      // If not found, isDetailsComplete remains false
+      console.warn(
+        "Recruitment details or active status info not found:",
+        detailsError,
+      );
+      // Fallback to default flags
     }
   }
 
-  return <DashboardClient user={user} isDetailsComplete={isDetailsComplete} />;
+  return (
+    <DashboardClient
+      user={user}
+      isDetailsComplete={isDetailsComplete}
+      isInterviewSubmitted={isInterviewSubmitted}
+      activeInterviewStatus={activeInterviewStatus}
+    />
+  );
 }

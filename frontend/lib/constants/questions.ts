@@ -1,9 +1,6 @@
 /**
  * Centralized classification codes used throughout the frontend.
  * These correspond exactly to the `code` values stored in the backend classifications table.
- *
- * DO NOT hardcode these strings anywhere else in the codebase.
- * Import and use these constants instead.
  */
 
 // ─── Question Types ────────────────────────────────────────────────────────
@@ -20,17 +17,6 @@ export const QUESTION_TYPES = {
 
 export type QuestionType = (typeof QUESTION_TYPES)[keyof typeof QUESTION_TYPES];
 
-// ─── Subject Types ─────────────────────────────────────────────────────────
-export const SUBJECT_TYPES = {
-  COMPREHENSION: "COMPREHENSION",
-  WRITTEN: "WRITTEN",
-  GRAMMAR: "GRAMMAR",
-  APTITUDE: "APTITUDE",
-  INDUSTRY_AWARENESS: "INDUSTRY_AWARENESS",
-} as const;
-
-export type SubjectType = (typeof SUBJECT_TYPES)[keyof typeof SUBJECT_TYPES];
-
 // ─── Exam Levels ───────────────────────────────────────────────────────────
 export const EXAM_LEVELS = {
   FRESHER: "FRESHER",
@@ -42,10 +28,21 @@ export type ExamLevel = (typeof EXAM_LEVELS)[keyof typeof EXAM_LEVELS];
 
 // ─── Subjects ──────────────────────────────────────────────────────────────
 export const SUBJECTS = {
+  APTITUDE: "APTITUDE",
+  BRAND_AWARENESS: "BRAND_AWARENESS",
+  COMPANY_CONTACT_DETAILS: "COMPANY_CONTACT_DETAILS",
+  COMPREHENSION: "COMPREHENSION",
+  DATA_INTERPRETATION_ANALYTICS: "DATA_INTERPRETATION_ANALYTICS",
   ENGLISH: "ENGLISH",
-  GRAMMER: "GRAMMER",
-  LOGICAL: "LOGICAL",
-  MATHS: "MATH'S",
+  EXCEL: "EXCEL",
+  FOOD_INDUSTRY: "FOOD_INDUSTRY",
+  GRAMMAR: "GRAMMAR",
+  INDUSTRY_AWARENESS: "INDUSTRY_AWARENESS",
+  LEAD_GENERATION: "LEAD_GENERATION",
+  REAL_ESTATE: "REAL_ESTATE",
+  TYPING_TEST: "TYPING_TEST",
+  WRITTEN: "WRITTEN",
+  E_COMMERCE_ONLINE_SHOPPING: "E_COMMERCE_ONLINE_SHOPPING",
 } as const;
 
 export type Subject = (typeof SUBJECTS)[keyof typeof SUBJECTS];

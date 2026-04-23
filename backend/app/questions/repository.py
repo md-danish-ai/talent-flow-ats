@@ -1,5 +1,4 @@
-# app/questions/repository.py
-
+from typing import Optional
 from sqlalchemy.orm import aliased
 from app.database.db import SessionLocal
 from app.questions.models import Question
@@ -383,7 +382,120 @@ def toggle_question_status(question_id: int):
         db_session.close()
 
 
-# ─── Helper ───────────────────────────────────────────────────────────────────
+def auto_generate_questions(
+    subject_code: str,
+    exam_level: str,
+    requirements: list,
+):
+    """
+    Randomly select questions per type for a given subject + exam level.
+
+    requirements: list of dicts with keys: type_code (str), count (int)
+
+    Returns a dict:
+        {
+          "question_ids": [int, ...],      # all selected IDs flat list
+          "details": [                      # per-type breakdown
+            { "type_code", "requested", "found", "question_ids": [...] }
+          ],
+          "warnings": ["..."]             # non-empty when found < requested
+        }
+
+    Performance notes:
+    - Only Question.id and Question.marks are fetched (no joins, no full objects).
+    - ORDER BY RANDOM() + LIMIT is pushed entirely to PostgreSQL — fast for
+      typical question banks (< 100k rows per subject slice).
+    - One query per type_code, each scoped by all three filter columns which
+      should be covered by a composite index on (subject_type, exam_level,
+      question_type, is_active).
+    """
+    from sqlalchemy import func as sql_func
+
+    db_session = SessionLocal()
+    try:
+        all_ids: list[int] = []
+        details: list[dict] = []
+        warnings: list[str] = []
+
+        for req in requirements:
+            type_code: str = req["type_code"]
+            requested: int = max(0, int(req["count"]))
+            marks: Optional[int] = req.get("marks")
+
+            if requested == 0:
+                continue
+
+            query = db_session.query(Question.id, Question.marks).filter(
+                Question.subject_type == subject_code,
+                Question.exam_level == exam_level,
+                Question.question_type == type_code,
+                Question.is_active.is_(True),
+            )
+
+            if marks is not None:
+                query = query.filter(Question.marks == marks)
+
+            rows = query.order_by(sql_func.random()).limit(requested).all()
+
+            found_ids = [r.id for r in rows]
+            found = len(found_ids)
+
+            all_ids.extend(found_ids)
+            details.append(
+                {
+                    "type_code": type_code,
+                    "marks": marks,
+                    "requested": requested,
+                    "found": found,
+                    "question_ids": found_ids,
+                }
+            )
+
+            if found < requested:
+                warnings.append(
+                    f"Sirf {found} '{type_code}' question mile "
+                    f"(Requested: {requested}). "
+                    f"Baki {requested - found} aap manual select kar sakte hain."
+                )
+
+        return {
+            "question_ids": all_ids,
+            "details": details,
+            "warnings": warnings,
+        }
+
+    finally:
+        db_session.close()
+
+
+def get_available_question_counts(subject_code: str, exam_level: str):
+    """
+    Returns the count of available active questions per question type
+    for a specific subject and exam level.
+    """
+    from sqlalchemy import func as sql_func
+    db_session = SessionLocal()
+    try:
+        rows = (
+            db_session.query(
+                Question.question_type,
+                Question.marks,
+                sql_func.count(Question.id).label("count")
+            )
+            .filter(
+                Question.subject_type == subject_code,
+                Question.exam_level == exam_level,
+                Question.is_active.is_(True)
+            )
+            .group_by(Question.question_type, Question.marks)
+            .all()
+        )
+        return [
+            {"type_code": r.question_type, "marks": r.marks, "count": r.count} 
+            for r in rows
+        ]
+    finally:
+        db_session.close()
 
 
 def _format_question_orm(row) -> dict:

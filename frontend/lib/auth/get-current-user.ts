@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { api } from "@lib/api";
+import { ENDPOINTS } from "@lib/api/endpoints";
 import type { CurrentUser } from "./user-utils";
 
 export type { CurrentUser } from "./user-utils";
@@ -21,7 +22,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     .join(";");
 
   try {
-    const user = await api.get<CurrentUser>("/auth/me", {
+    const user = await api.get<CurrentUser>(ENDPOINTS.AUTH.ME, {
       cookies: cookieString,
     });
     return user;

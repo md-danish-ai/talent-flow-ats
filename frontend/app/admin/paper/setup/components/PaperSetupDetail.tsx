@@ -12,6 +12,7 @@ import {
   TableRow,
   TableCollapsibleRow,
 } from "@components/ui-elements/Table";
+import { EmptyState } from "@components/ui-elements/EmptyState";
 import {
   ArrowLeft,
   FileText,
@@ -21,13 +22,13 @@ import {
   Layers,
   Trophy,
   Clock,
-  FileStack,
   Trash2,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
-import { papersApi, PaperSetup } from "@lib/api/papers";
-import { questionsApi, Question } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup, Question, Classification } from "@types";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 
 interface PaperSetupDetailProps {
@@ -40,7 +41,9 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   onBack,
 }) => {
   const [paper, setPaper] = useState<PaperSetup | null>(null);
-  const [subjects, setSubjects] = useState<Classification[]>([]);
+  const [allClassifications, setAllClassifications] = useState<
+    Classification[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedSubjectId, setExpandedSubjectId] = useState<number | null>(
     null,
@@ -77,15 +80,14 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [paperData, subjectsData] = await Promise.all([
+        const [paperData, classificationsData] = await Promise.all([
           papersApi.getPaperById(paperId),
           classificationsApi.getClassifications({
-            type: "subject",
             limit: 100,
           }),
         ]);
         setPaper(paperData);
-        setSubjects(subjectsData.data);
+        setAllClassifications(classificationsData.data);
       } catch (error) {
         console.error("Failed to fetch details:", error);
         toast.error("Failed to load paper details");
@@ -106,7 +108,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   }, [paper?.question_id]);
 
   const getSubjectNameAndCode = (subjectId: number) => {
-    const subject = subjects.find((s) => s.id === subjectId);
+    const subject = allClassifications.find((s) => s.id === subjectId);
     return subject
       ? { name: subject.name, code: subject.code }
       : { name: `Subject ${subjectId}`, code: "" };
@@ -219,19 +221,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
               </Typography>
             </div>
           </div>
-          <div className="hidden md:block">
-            <Button
-              variant="primary"
-              color="primary"
-              size="sm"
-              shadow
-              animate="scale"
-              startIcon={<FileStack size={16} />}
-              className="font-black text-[10px] tracking-widest uppercase border-none px-6"
-            >
-              VIEW FULL PAPER SET
-            </Button>
-          </div>
         </div>
 
         <div className="p-8 space-y-8">
@@ -300,7 +289,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                 weight="black"
                 className="text-brand-primary/60 uppercase tracking-[0.2em] mb-1 z-10"
               >
-                Test Competency
+                Test Level
               </Typography>
               <Typography
                 variant="h2"
@@ -474,14 +463,11 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                   </TableRow>
                                 ))
                             ) : (
-                              <TableRow>
-                                <TableCell
-                                  colSpan={5}
-                                  className="text-center py-8 text-muted-foreground italic"
-                                >
-                                  No questions assigned to this subject yet.
-                                </TableCell>
-                              </TableRow>
+                              <EmptyState
+                                colSpan={5}
+                                title="No questions assigned"
+                                description="No questions assigned to this subject yet. Click 'Add Content' to start."
+                              />
                             )}
                           </TableBody>
                         </Table>

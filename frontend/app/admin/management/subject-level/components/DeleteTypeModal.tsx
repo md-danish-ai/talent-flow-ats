@@ -12,6 +12,7 @@ interface DeleteTypeModalProps {
   onConfirm: () => void;
   title?: string;
   description?: string;
+  isLoading?: boolean;
 }
 
 export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
@@ -20,11 +21,12 @@ export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
   onConfirm,
   title = "Confirm Deletion",
   description = "This action cannot be undone. This item will be permanently removed from the database.",
+  isLoading = false,
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-md">
       <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+        <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
           <AlertCircle size={28} />
         </div>
         <div className="space-y-2">
@@ -36,7 +38,12 @@ export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
           </Typography>
         </div>
         <div className="flex w-full gap-3 pt-2">
-          <Button variant="ghost" className="flex-1" onClick={onClose}>
+          <Button
+            variant="ghost"
+            className="flex-1"
+            onClick={onClose}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
           <Button
@@ -46,6 +53,7 @@ export const DeleteTypeModal: React.FC<DeleteTypeModalProps> = ({
             shadow
             animate="scale"
             onClick={onConfirm}
+            disabled={isLoading}
           >
             Delete
           </Button>

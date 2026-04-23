@@ -3,13 +3,14 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { PaperSetup } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { PaperSetupRow } from "./PaperSetupRow";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { PaperSetupSkeleton } from "@components/ui-skeleton/PaperSetupSkeleton";
 
 interface PaperSetupTableProps {
   data: Partial<PaperSetup>[];
@@ -22,7 +23,6 @@ interface PaperSetupTableProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (paper: Partial<PaperSetup>) => void;
-  onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
   visibleColumns: string[];
 }
@@ -38,7 +38,6 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  onDelete,
   onViewDetails,
   visibleColumns,
 }) => {
@@ -48,7 +47,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-x-auto">
         <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 font-bold">
+          <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-muted-foreground font-bold">
             <TableRow>
               {isVisible("sr_no") && (
                 <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
@@ -69,23 +68,16 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  Loading papers...
-                </TableCell>
-              </TableRow>
+              <PaperSetupSkeleton
+                visibleColumns={visibleColumns}
+                rowCount={pageSize}
+              />
             ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={visibleColumns.length}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No papers found.
-                </TableCell>
-              </TableRow>
+              <EmptyState
+                colSpan={visibleColumns.length}
+                title="No papers found"
+                description="We couldn't find any test papers matching your filters. Try adding a new paper or adjusting your search."
+              />
             ) : (
               data.map((row, index) => (
                 <PaperSetupRow
@@ -97,7 +89,6 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
                   togglingId={togglingId}
                   onToggleStatus={onToggleStatus}
                   onEdit={onEdit}
-                  onDelete={onDelete}
                   onViewDetails={onViewDetails}
                   visibleColumns={visibleColumns}
                 />
@@ -107,15 +98,17 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
         </Table>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={Math.ceil(totalItems / pageSize) || 1}
-        onPageChange={onPageChange}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageSizeChange={onPageSizeChange}
-        className="mt-auto border-t border-border"
-      />
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalItems / pageSize) || 1}
+          onPageChange={onPageChange}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+          className="mt-auto border-t border-border"
+        />
+      )}
     </div>
   );
 };

@@ -8,12 +8,13 @@ from fastapi.staticfiles import StaticFiles
 from app.auth.router import router as auth_router
 from app.user_details.router import router as user_details_router
 from app.questions.router import router as questions_router
-from app.answer.router import router as answer_router
 from app.classifications.router import router as classifications_router
 from app.interview_attempts.router import router as interview_attempts_router
 from app.duplicates.router import router as duplicates_router
 from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
+from app.paper_assignments.router import router as paper_assignments_router
+from app.dashboard.router import router as dashboard_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -25,8 +26,13 @@ app = FastAPI(title="Talent Flow ATS")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://192.168.126.238:3000",
+        "http://192.168.126.238:3001",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -88,12 +94,13 @@ def health_check():
 app.include_router(auth_router)
 app.include_router(user_details_router)
 app.include_router(questions_router)
-app.include_router(answer_router)
 app.include_router(classifications_router)
 app.include_router(interview_attempts_router)
 app.include_router(duplicates_router)
 app.include_router(departments_router)
 app.include_router(papers_router)
+app.include_router(paper_assignments_router)
+app.include_router(dashboard_router)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

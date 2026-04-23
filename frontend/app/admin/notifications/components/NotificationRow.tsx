@@ -5,7 +5,7 @@ import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import { type NotificationItem } from "@lib/api";
+import { type NotificationItem } from "@types";
 import { DuplicateUserCards } from "./DuplicateUserCards";
 import { MatchBreakdownAnalysis } from "./MatchBreakdownAnalysis";
 

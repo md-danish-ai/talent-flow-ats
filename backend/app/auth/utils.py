@@ -9,7 +9,10 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(password.encode(), hashed_password.encode())
+    try:
+        return bcrypt.checkpw(password.encode(), hashed_password.encode())
+    except ValueError:
+        return False
 
 
 def generate_jwt(user: dict):

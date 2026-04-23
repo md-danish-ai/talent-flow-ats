@@ -75,14 +75,18 @@ export const Alert = ({
             {title}
           </Typography>
         )}
-        <Typography
-          variant="body5"
-          weight="medium"
-          color="text-inherit"
-          className="opacity-90 leading-relaxed"
-        >
-          {description}
-        </Typography>
+        {typeof description === "string" ? (
+          <Typography
+            variant="body5"
+            weight="medium"
+            color="text-inherit"
+            className="opacity-90 leading-relaxed"
+          >
+            {description}
+          </Typography>
+        ) : (
+          description
+        )}
       </div>
       {onClose && (
         <button

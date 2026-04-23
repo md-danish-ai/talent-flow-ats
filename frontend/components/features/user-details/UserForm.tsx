@@ -28,8 +28,8 @@ import {
   useUserDetails,
   useSaveUserDetails,
   useUpdateUserDetails,
-} from "@lib/react-query/user-details/use-user-details";
-import type { UserDetails } from "@lib/api/user-details";
+} from "@hooks/api/user-details/use-user-details";
+import type { UserDetails } from "@types";
 
 interface UserFormProps {
   initialData?: UserDetails;
@@ -132,6 +132,8 @@ export function UserForm({
       try {
         const formattedData: UserDetails = {
           is_submitted: true,
+          is_interview_submitted:
+            existingDetails?.is_interview_submitted ?? false,
           personalDetails: {
             firstName: value.firstName,
             lastName: value.lastName,

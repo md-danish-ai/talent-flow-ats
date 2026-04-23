@@ -13,9 +13,10 @@ import { Textarea } from "@components/ui-elements/Textarea";
 import { getErrorMessage } from "@lib/utils";
 import { HelpCircle, Loader2 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
+import { type Classification, type QuestionCreate } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { type QuestionCreate } from "@lib/api/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const TypingTestForm = ({
   initialData,
@@ -28,30 +29,6 @@ export const TypingTestForm = ({
 }) => {
   const [subjects, setSubjects] = React.useState<Classification[]>([]);
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
-
-  React.useEffect(() => {
-    const fetchClassifications = async () => {
-      try {
-        const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({
-            type: "subject",
-            is_active: true,
-            limit: 100,
-          }),
-          classificationsApi.getClassifications({
-            type: "exam_level",
-            is_active: true,
-            limit: 100,
-          }),
-        ]);
-        setSubjects(subjectsRes.data || []);
-        setExamLevels(examLevelsRes.data || []);
-      } catch (error) {
-        console.error("Failed to fetch classifications:", error);
-      }
-    };
-    fetchClassifications();
-  }, []);
 
   const form = useForm({
     defaultValues:
@@ -103,6 +80,41 @@ export const TypingTestForm = ({
     },
   });
 
+  React.useEffect(() => {
+    const fetchClassifications = async () => {
+      try {
+        const [subjectsRes, examLevelsRes] = await Promise.all([
+          classificationsApi.getClassifications({
+            type: "subject",
+            is_active: true,
+            limit: 100,
+          }),
+          classificationsApi.getClassifications({
+            type: "exam_level",
+            is_active: true,
+            limit: 100,
+          }),
+        ]);
+
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.TYPING_TEST,
+        );
+        setSubjects(filteredSubjects);
+
+        // Auto-select if there is exactly one match (normal for exclusive subjects)
+        if (filteredSubjects.length === 1 && !initialData?.subject) {
+          form.setFieldValue("subject", filteredSubjects[0].code);
+        }
+
+        setExamLevels(examLevelsRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch classifications:", error);
+      }
+    };
+    fetchClassifications();
+  }, [form, initialData?.subject]);
+
   return (
     <form
       onSubmit={(e) => {
@@ -144,6 +156,7 @@ export const TypingTestForm = ({
                     }))}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
+                    disabled
                   />
                   {field.state.meta.errors.length > 0 && (
                     <Typography

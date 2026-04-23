@@ -4,7 +4,7 @@ import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { AddQuestionForm } from "@features/questions/AddQuestionForm";
 import { type MCQFormValues } from "@lib/validations/question";
-import { Question, QuestionOption } from "@lib/api/questions";
+import { Question, QuestionOption } from "@types";
 
 interface EditQuestionModalProps {
   isOpen: boolean;

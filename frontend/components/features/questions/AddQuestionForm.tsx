@@ -11,9 +11,10 @@ import { OptionInput } from "@components/ui-elements/OptionInput";
 import { Plus, MessageSquareText, HelpCircle, Loader2 } from "lucide-react";
 import { cn, getErrorMessage } from "@lib/utils";
 import { questionsApi } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
-import { type QuestionCreate } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
+import { type Classification, type QuestionCreate } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const AddQuestionForm = ({
   initialData,
@@ -42,7 +43,12 @@ export const AddQuestionForm = ({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.MULTIPLE_CHOICE,
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);

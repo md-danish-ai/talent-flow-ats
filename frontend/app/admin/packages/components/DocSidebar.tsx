@@ -29,7 +29,7 @@ const DocNavItem = ({
         "relative overflow-hidden w-full text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group flex items-center justify-between",
         activeItem === item.id
           ? "text-brand-primary bg-brand-primary/10 dark:bg-brand-primary/20 shadow-sm ring-1 ring-brand-primary/20"
-          : "text-slate-600 dark:text-slate-400 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary",
+          : "text-muted-foreground dark:text-slate-100 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary",
       )}
     >
       <span className="relative z-10 flex items-center gap-2">{item.name}</span>
@@ -59,7 +59,7 @@ export const DocSidebar = ({ activeItem }: DocSidebarProps) => (
           </Typography>
           <Typography
             variant="body5"
-            className="text-muted-foreground text-[9px] font-black uppercase tracking-widest opacity-50"
+            className="text-foreground/50 text-[9px] font-black uppercase tracking-widest"
           >
             Design Portal
           </Typography>
@@ -73,7 +73,7 @@ export const DocSidebar = ({ activeItem }: DocSidebarProps) => (
           <Typography
             variant="body5"
             weight="black"
-            className="text-muted-foreground uppercase tracking-[0.2em] mb-3 block px-3 text-[10px] opacity-60"
+            className="text-foreground/40 uppercase tracking-[0.2em] mb-3 block px-3 text-[10px]"
           >
             {cat.name}
           </Typography>

@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { TypingTestForm } from "@components/features/questions/TypingTestForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { type TypingTestFormValues } from "@lib/validations/question";
 
 interface EditTypingTestModalProps {

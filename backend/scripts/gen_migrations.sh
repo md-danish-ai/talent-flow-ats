@@ -31,14 +31,18 @@ echo "DB: $DB_USER@$DB_HOST:$DB_PORT/$DB_NAME"
 echo "================================================="
 
 # =================================================
-# Activate virtual environment
+# Resolve Python interpreter for Alembic
 # =================================================
-if [ ! -d "venv" ]; then
-  echo "❌ Python virtualenv not found (venv/)"
+if [ -x "venv/bin/python" ]; then
+  ALEMBIC_PYTHON="venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+  ALEMBIC_PYTHON="python3"
+else
+  echo "❌ Python 3 not found. Please install Python or create backend/venv."
   exit 1
 fi
 
-source venv/bin/activate
+echo "🐍 Using Python: $ALEMBIC_PYTHON"
 
 # =================================================
 # Set migration author from git config
@@ -51,7 +55,7 @@ export MIGRATION_AUTHOR
 # =================================================
 # Run Alembic
 # =================================================
-alembic revision --autogenerate -m "$MIGRATION_NAME"
+"$ALEMBIC_PYTHON" -m alembic revision --autogenerate -m "$MIGRATION_NAME"
 
 echo "================================================="
 echo "✅ Migration generated successfully"

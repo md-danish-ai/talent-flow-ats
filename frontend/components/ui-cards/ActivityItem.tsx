@@ -1,44 +1,61 @@
 import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
+import { cn } from "@lib/utils";
 
 interface ActivityItemProps {
-  user: string;
-  action: string;
-  target: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
   time: string;
-  avatar: string;
+  color?: string;
+  className?: string;
 }
 
 export const ActivityItem: React.FC<ActivityItemProps> = ({
-  user,
-  action,
-  target,
+  icon,
+  title,
+  description,
   time,
-  avatar,
+  color = "text-brand-primary",
+  className,
 }) => {
   return (
-    <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-muted/50 transition-all group">
-      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold group-hover:bg-background border border-transparent group-hover:border-border transition-all shadow-sm">
-        {avatar}
+    <div
+      className={cn(
+        "flex items-start gap-4 p-4 rounded-2xl hover:bg-muted/30 transition-all group border border-transparent hover:border-border/40",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
+          color,
+        )}
+      >
+        {icon}
       </div>
+
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-1.5 flex-wrap">
-          <Typography variant="body3" weight="bold" className="text-foreground">
-            {user}
-          </Typography>
-          <Typography variant="body3" className="text-muted-foreground">
-            {action}
-          </Typography>
+        <div className="flex items-start justify-between gap-2 mb-1">
           <Typography
             variant="body3"
             weight="bold"
-            className="text-brand-primary"
+            className="text-foreground leading-snug line-clamp-1"
           >
-            {target}
+            {title}
+          </Typography>
+          <Typography
+            variant="body5"
+            className="text-muted-foreground/50 whitespace-nowrap pt-0.5"
+          >
+            {time}
           </Typography>
         </div>
-        <Typography variant="body5" className="text-muted-foreground/60 mt-0.5">
-          {time}
+        <Typography
+          variant="body4"
+          className="text-muted-foreground/80 leading-relaxed line-clamp-2"
+        >
+          {description}
         </Typography>
       </div>
     </div>

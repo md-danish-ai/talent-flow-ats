@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { PaperSetupForm } from "@components/features/paper-setup";
-import { papersApi, PaperSetup, PaperSetupCreate } from "@lib/api/papers";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup, PaperSetupCreate } from "@types";
 import { toast } from "@lib/toast";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@components/ui-elements/Button";
 import {
   Table,
@@ -11,51 +11,70 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { Plus, Users } from "lucide-react";
+import { toast } from "@lib/toast";
+import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { AddAdminModal } from "./AddAdminModal";
-import {
-  getUsersByRole,
-  UserListResponse,
-  toggleUserStatus,
-} from "@lib/api/auth";
+import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { Pagination } from "@components/ui-elements/Pagination";
+import { useListing } from "@hooks/useListing";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 
 interface AdminListingProps {
-  initialData?: UserListResponse[];
+  initialData?: {
+    data: UserListResponse[];
+    pagination: {
+      total_records: number;
+      total_pages: number;
+      current_page: number;
+      per_page: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+  };
 }
 
-export function AdminListing({ initialData = [] }: AdminListingProps) {
+export function AdminListing({ initialData }: AdminListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [users, setUsers] = useState<UserListResponse[]>(initialData);
-  const [loading, setLoading] = useState(!initialData.length);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
-  const fetchUsers = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getUsersByRole("admin");
-      setUsers(data);
-    } catch (error) {
-      console.error("Failed to fetch admins:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!initialData.length) {
-      fetchUsers();
-    } else {
-      setLoading(false);
-    }
-  }, [initialData, fetchUsers]);
+  const {
+    data: users,
+    isLoading: loading,
+    isBackgroundLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<UserListResponse, { search: string }>({
+    fetchFn: (params) => getUsersByRole("admin", params),
+    initialFilters: { search: "" },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
+    toastMessage: "Admin list refreshed successfully",
+  });
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      fetchUsers();
+      void refresh();
+      toast.success("Status updated successfully");
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -67,17 +86,28 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
     <>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <Users size={20} />
             </div>
             Admins
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            <ListingHeaderActions
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Admins"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
               color="primary"
@@ -87,80 +117,120 @@ export function AdminListing({ initialData = [] }: AdminListingProps) {
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Admin
             </Button>
           </div>
         }
       >
-        <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
-          <div className="flex-1 overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+        <div
+          className={cn(
+            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
+            isFilterOpen && "border-r border-border/50",
+          )}
+        >
+          <ListingTransition
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Mobile
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Email
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
                   </TableRow>
-                ) : !Array.isArray(users) || users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No admins found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  users.map((row, idx) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="font-medium text-center">
-                        {idx + 1}
-                      </TableCell>
-                      <TableCell>{row.username || "-"}</TableCell>
-                      <TableCell>{row.mobile}</TableCell>
-                      <TableCell>{row.email || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={row.is_active}
-                            onChange={() => handleToggleStatus(row)}
-                            size="sm"
-                            disabled={togglingId === row.id}
-                          />
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color={row.is_active ? "success" : "error"}
-                          >
-                            {row.is_active ? "Activate" : "Deactivate"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
+                  ) : !Array.isArray(users) || users.length === 0 ? (
+                    <EmptyState
+                      colSpan={5}
+                      title="No admins found"
+                      description="There are currently no administrative accounts registered in the system."
+                    />
+                  ) : (
+                    users.map((row, idx) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {row.username || "-"}
+                        </TableCell>
+                        <TableCell>{row.mobile}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.email || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={row.is_active}
+                              onChange={() => handleToggleStatus(row)}
+                              size="sm"
+                              disabled={togglingId === row.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={row.is_active ? "success" : "error"}
+                              className="text-[9px] font-bold"
+                            >
+                              {row.is_active ? "ACTIVE" : "INACTIVE"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {!loading && totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="admin-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={loading}
+        />
       </MainCard>
 
       <AddAdminModal
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          fetchUsers(); // Refresh after adding
+          void refresh();
         }}
       />
     </>

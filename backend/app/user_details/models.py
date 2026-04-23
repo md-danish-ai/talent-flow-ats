@@ -2,6 +2,7 @@ from sqlalchemy import (
     Column,
     Integer,
     Boolean,
+    Date,
     ForeignKey,
     TIMESTAMP,
     func,
@@ -25,6 +26,9 @@ class UserDetail(Base):
     other_details = Column(JSONB, nullable=True)
 
     is_submitted = Column(Boolean, server_default="false", nullable=False)
+    is_interview_submitted = Column(Boolean, server_default="false", nullable=False)
+    is_reinterview = Column(Boolean, server_default="false", nullable=False)
+    reinterview_date = Column(Date, nullable=True)
 
     updated_at = Column(
         TIMESTAMP,

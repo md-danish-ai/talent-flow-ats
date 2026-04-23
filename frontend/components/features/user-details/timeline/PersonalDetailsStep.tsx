@@ -199,7 +199,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                   }
                   value={field.state.value}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(val) => field.handleChange(val)}
                   error={
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0

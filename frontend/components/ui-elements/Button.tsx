@@ -19,6 +19,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   animate?: "none" | "scale" | "slide" | "rotate" | "spin";
   iconAnimation?: "none" | "rotate-90" | "rotate-180" | "rotate-360" | "spin";
   isActive?: boolean;
+  fullWidth?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
 }
@@ -34,6 +35,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       shadow = false,
       animate = "none",
       iconAnimation = "none",
+      fullWidth = false,
       startIcon,
       endIcon,
       children,
@@ -139,11 +141,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         onClick={handleButtonClick}
         className={cn(
-          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:pointer-events-none disabled:opacity-50",
+          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50",
           variantStyles,
           sizes[size],
           shadowClass,
           animationClass,
+          fullWidth && "w-full",
           iconAnimation !== "none" ? "group" : "",
           className,
         )}
@@ -152,7 +155,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <span
           className={cn(
             "relative z-10 flex items-center gap-2",
-            className?.includes("w-full") ? "w-full" : "",
+            fullWidth ? "w-full" : "",
             className?.includes("justify-between")
               ? "justify-between"
               : className?.includes("justify-start")

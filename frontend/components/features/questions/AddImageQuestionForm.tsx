@@ -6,11 +6,9 @@ import {
   imageMCQSchema,
   type ImageMCQFormValues,
 } from "@lib/validations/question";
-import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
+import { type QuestionCreate, type Classification } from "@types";
 import { Button } from "@components/ui-elements/Button";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -29,6 +27,7 @@ import {
 import Image from "next/image";
 import { toast } from "@lib/toast";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const AddImageQuestionForm = ({
   questionId,
@@ -46,12 +45,17 @@ export const AddImageQuestionForm = ({
 
   const getCanonicalImageUrl = (url?: string | null) => {
     if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("data:") ||
+      url.startsWith("blob:")
+    ) {
+      return url;
+    }
+    const base = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
+    ).replace(/\/$/, "");
     return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
   };
 
@@ -70,7 +74,11 @@ export const AddImageQuestionForm = ({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
@@ -218,6 +226,7 @@ export const AddImageQuestionForm = ({
                     className="hidden"
                     accept="image/*"
                     onChange={handleFileChange}
+                    title="Upload question image"
                   />
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (

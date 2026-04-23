@@ -28,10 +28,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={inputType}
           className={cn(
-            "w-full rounded-md border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+            "w-full rounded-md border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 dark:placeholder:text-white/40 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
-            "border-border",
+            "border-border dark:border-white/20",
             className,
             error &&
               "!border-red-500 ring-1 !ring-red-500/20 focus:!border-red-500 focus:!ring-red-500/20 hover:!border-red-500",

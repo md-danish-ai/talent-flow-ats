@@ -2,27 +2,93 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import {
-  DUMMY_SECTIONS,
-  INTERVIEW_PAPER_ID,
-  OVERALL_EXAM_DURATION_MINUTES,
-  OVERALL_EXAM_TOTAL_SECONDS,
-} from "./data";
+import { DUMMY_SECTIONS, OVERALL_EXAM_DURATION_MINUTES } from "./data";
 import { formatTime } from "./utils";
 import { InterviewOverview } from "./components/InterviewOverview";
 import { InterviewCompleted } from "./components/InterviewCompleted";
+import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
-import { questionsApi, type Question } from "@lib/api/questions";
+import { interviewAttemptsApi } from "@lib/api/interview-attempts";
+import { type AttemptSummaryResponse } from "@types";
 import {
-  interviewAttemptsApi,
-  type AttemptSummaryResponse,
-} from "@lib/api/interview-attempts";
+  paperAssignmentsApi,
+  type AssignedInterviewPaperResponse,
+} from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
+
+const buildSavedAnswersMap = (
+  savedResponses: {
+    question_id: number;
+    answer_text?: string | null;
+    is_attempted: boolean;
+  }[],
+) =>
+  savedResponses.reduce<Record<number, string>>((accumulator, response) => {
+    if (response.is_attempted && response.answer_text?.trim()) {
+      accumulator[response.question_id] = response.answer_text;
+    }
+    return accumulator;
+  }, {});
+
+const getResumePosition = (
+  sections: InterviewSection[],
+  touchedQuestionIds: Set<number>,
+) => {
+  for (
+    let sectionIndex = 0;
+    sectionIndex < sections.length;
+    sectionIndex += 1
+  ) {
+    const questionIndex = sections[sectionIndex]?.questions.findIndex(
+      (question) => !touchedQuestionIds.has(question.id),
+    );
+    if (questionIndex !== undefined && questionIndex >= 0) {
+      return { sectionIndex, questionIndex };
+    }
+  }
+
+  if (sections.length === 0) {
+    return { sectionIndex: 0, questionIndex: 0 };
+  }
+
+  const lastSectionIndex = sections.length - 1;
+  const lastQuestionIndex = Math.max(
+    (sections[lastSectionIndex]?.questions.length ?? 1) - 1,
+    0,
+  );
+
+  return {
+    sectionIndex: lastSectionIndex,
+    questionIndex: lastQuestionIndex,
+  };
+};
+
+const getResetSectionIndexes = (
+  sections: InterviewSection[],
+  touchedQuestionIds: Set<number>,
+) =>
+  new Set(
+    sections.reduce<number[]>((indexes, section, sectionIdx) => {
+      const hasResetQuestion = section.questions.some(
+        (question) => !touchedQuestionIds.has(question.id),
+      );
+      if (hasResetQuestion) indexes.push(sectionIdx);
+      return indexes;
+    }, []),
+  );
 
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
+  const [loadedSections, setLoadedSections] =
+    useState<InterviewSection[]>(DUMMY_SECTIONS);
+  const [assignedPaper, setAssignedPaper] =
+    useState<AssignedInterviewPaperResponse | null>(null);
+  const [isLoadingPaper, setIsLoadingPaper] = useState(true);
+  const [overallExamDurationMinutes, setOverallExamDurationMinutes] = useState(
+    OVERALL_EXAM_DURATION_MINUTES,
+  );
   const totalSections = sections.length;
   const emptyLockedSections = useMemo(
     () => sections.map(() => false),
@@ -43,19 +109,26 @@ export function InterviewTestClient() {
     useState(false);
   const [lockedSections, setLockedSections] =
     useState<boolean[]>(emptyLockedSections);
-  const [examRemainingSeconds, setExamRemainingSeconds] = useState(
-    OVERALL_EXAM_TOTAL_SECONDS,
+  const [, setExamRemainingSeconds] = useState(
+    OVERALL_EXAM_DURATION_MINUTES * 60,
   );
+  const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
+  const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] =
+    useState(0);
 
   const hasHandledOverallTimeoutRef = useRef(false);
+  const hasHandledSectionTimeoutRef = useRef(false);
   const latestAnswersRef = useRef<Record<number, string>>({});
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [finalSummary, setFinalSummary] =
     useState<AttemptSummaryResponse | null>(null);
 
-  const currentSection = sections[sectionIndex];
-  const currentQuestion = currentSection.questions[questionIndex];
-  const currentAnswer = answers[currentQuestion.id] || "";
+  const currentSection = sections[sectionIndex] ?? sections[0];
+  const currentQuestion =
+    currentSection?.questions[questionIndex] ?? currentSection?.questions[0];
+  const currentAnswer = currentQuestion
+    ? answers[currentQuestion.id] || ""
+    : "";
 
   const totalQuestions = useMemo(
     () =>
@@ -86,65 +159,196 @@ export function InterviewTestClient() {
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
   const progressPercent = Math.min(
     100,
-    Math.round((completedSteps / totalQuestions) * 100),
+    totalQuestions > 0
+      ? Math.round((completedSteps / totalQuestions) * 100)
+      : 0,
   );
 
-  const overallExamSpentRatio =
-    OVERALL_EXAM_TOTAL_SECONDS > 0
-      ? (OVERALL_EXAM_TOTAL_SECONDS - examRemainingSeconds) /
-        OVERALL_EXAM_TOTAL_SECONDS
+  const sectionSpentRatio =
+    currentSectionTotalSeconds > 0
+      ? (currentSectionTotalSeconds - sectionRemainingSeconds) /
+        currentSectionTotalSeconds
       : 0;
 
   const timerZone: "safe" | "warn" | "danger" =
-    overallExamSpentRatio >= 0.8
+    sectionSpentRatio >= 0.75
       ? "danger"
-      : overallExamSpentRatio >= 0.6
+      : sectionSpentRatio >= 0.5
         ? "warn"
         : "safe";
 
   const isLastQuestionInSection =
     questionIndex === currentSection.questions.length - 1;
-  const isLastSection = sectionIndex === DUMMY_SECTIONS.length - 1;
+  const isLastSection = useMemo(() => {
+    // A section is effectively the last one if no future sections are available (unlocked)
+    for (let i = sectionIndex + 1; i < sections.length; i++) {
+      if (!lockedSections[i]) return false;
+    }
+    return true;
+  }, [sectionIndex, sections, lockedSections]);
 
-  const persistAnswerToBackend = useCallback(
-    async (
-      questionId: number,
-      answerText: string,
-      isAutoSaved: boolean = false,
-    ) => {
+  const persistSubjectAnswers = useCallback(
+    async (sectionToSave: InterviewSection, isAutoSaved: boolean = false) => {
       if (!attemptId) return;
 
-      await interviewAttemptsApi.saveAnswer(attemptId, questionId, {
-        answer_text: answerText,
+      const answersToBatch = sectionToSave.questions.map((q) => ({
+        question_id: q.id,
+        answer_text: latestAnswersRef.current[q.id] || "",
         is_auto_saved: isAutoSaved,
-      });
+      }));
+
+      if (answersToBatch.length === 0) return;
+
+      try {
+        await interviewAttemptsApi.saveAnswersBatch(
+          attemptId,
+          { answers: answersToBatch },
+          { silentSuccess: true },
+        );
+      } catch (error) {
+        console.error("Failed to batch save answers:", error);
+        throw error;
+      }
     },
     [attemptId],
   );
 
+  useEffect(() => {
+    const loadAssignedPaper = async () => {
+      try {
+        setIsLoadingPaper(true);
+        const response = await paperAssignmentsApi.getMyInterviewPaper();
+        const mappedSections: InterviewSection[] = response.sections.map(
+          (section) => ({
+            id: section.id,
+            title: section.title,
+            durationMinutes: section.duration_minutes,
+            questions: section.questions.map((question) => ({
+              id: question.id,
+              type: question.type as InterviewQuestion["type"],
+              questionText: question.question_text,
+              subjectName: question.subject_name ?? undefined,
+              typeName: question.type_name ?? undefined,
+              description: undefined,
+              passage: question.passage || undefined,
+              imageUrl: question.image_url || undefined,
+              options: question.options,
+            })),
+          }),
+        );
+        const resolvedDuration =
+          response.overall_duration_minutes > 0
+            ? response.overall_duration_minutes
+            : OVERALL_EXAM_DURATION_MINUTES;
+
+        setAssignedPaper(response);
+        setLoadedSections(mappedSections);
+        setSections(mappedSections);
+        setLockedSections(mappedSections.map(() => false));
+        setOverallExamDurationMinutes(resolvedDuration);
+        setExamRemainingSeconds(resolvedDuration * 60);
+        setStartError(null);
+      } catch {
+        setAssignedPaper(null);
+        setLoadedSections(DUMMY_SECTIONS);
+        setSections(DUMMY_SECTIONS);
+        setLockedSections(DUMMY_SECTIONS.map(() => false));
+        setOverallExamDurationMinutes(OVERALL_EXAM_DURATION_MINUTES);
+        setExamRemainingSeconds(OVERALL_EXAM_DURATION_MINUTES * 60);
+        setStartError("No paper is assigned for today. Please contact admin.");
+      } finally {
+        setIsLoadingPaper(false);
+      }
+    };
+
+    void loadAssignedPaper();
+  }, []);
+
+  const finalizeInterview = useCallback(async () => {
+    if (!attemptId) return;
+    try {
+      const summary = await interviewAttemptsApi.submitAttempt(attemptId);
+      setFinalSummary(summary);
+    } catch {
+      setMessage(
+        "Interview finished locally, but final server submission failed.",
+      );
+    }
+  }, [attemptId]);
+
   const lockAndMoveToNextSection = useCallback(
-    (currentIndex: number, notice?: string) => {
+    async (currentIndex: number, notice?: string) => {
       setLockedSections((prev) => {
         const next = [...prev];
         next[currentIndex] = true;
         return next;
       });
 
-      if (currentIndex === totalSections - 1) {
+      // Find the next section that is NOT locked
+      let nextUnlockedIndex = -1;
+      for (let i = currentIndex + 1; i < totalSections; i++) {
+        if (!lockedSections[i]) {
+          nextUnlockedIndex = i;
+          break;
+        }
+      }
+
+      // Send batch answers for this subject before locking/submitting
+      if (attemptId && currentSection) {
+        try {
+          await persistSubjectAnswers(
+            currentSection,
+            notice?.includes("time") ?? false,
+          );
+
+          // Only skip if there's actually a next move (not finishing)
+          if (nextUnlockedIndex !== -1) {
+            await interviewAttemptsApi.skipSection(
+              attemptId,
+              currentSection.title,
+              { silentSuccess: true },
+            );
+          }
+        } catch {
+          console.error("Failed to sync subject answers or skip section");
+        }
+      }
+
+      if (nextUnlockedIndex === -1) {
         setCompletionReason("manual");
         setIsCompleted(true);
-        setMessage("Interview completed successfully.");
+        setMessage(
+          notice ??
+            "Interview completed. All remaining sections were already finished.",
+        );
+        await finalizeInterview();
         return;
       }
 
-      setSectionIndex(currentIndex + 1);
+      setSectionIndex(nextUnlockedIndex);
       setQuestionIndex(0);
       setMessage(
-        notice ?? "Section locked. You cannot return to this section.",
+        notice ?? "Section locked. Moving to the next available section.",
       );
     },
-    [totalSections],
+    [
+      attemptId,
+      currentSection,
+      lockedSections,
+      totalSections,
+      finalizeInterview,
+      persistSubjectAnswers,
+    ],
   );
+
+  useEffect(() => {
+    if (currentSection) {
+      const seconds = currentSection.durationMinutes * 60;
+      setSectionRemainingSeconds(seconds);
+      setCurrentSectionTotalSeconds(seconds);
+      hasHandledSectionTimeoutRef.current = false;
+    }
+  }, [sectionIndex, currentSection]);
 
   useEffect(() => {
     latestAnswersRef.current = answers;
@@ -157,15 +361,11 @@ export function InterviewTestClient() {
     const submitOnTimeout = async () => {
       try {
         if (attemptId) {
-          const snapshot = latestAnswersRef.current;
-          const saveRequests = allQuestions.map((question) =>
-            persistAnswerToBackend(
-              question.id,
-              snapshot[question.id] ?? "",
-              true,
-            ),
+          // Batch save everything
+          const allBatchRequests = sections.map((sec) =>
+            persistSubjectAnswers(sec, true),
           );
-          await Promise.all(saveRequests);
+          await Promise.allSettled(allBatchRequests);
 
           const summary =
             await interviewAttemptsApi.autoSubmitAttempt(attemptId);
@@ -189,12 +389,47 @@ export function InterviewTestClient() {
     };
 
     void submitOnTimeout();
-  }, [allLockedSections, allQuestions, attemptId, persistAnswerToBackend]);
+  }, [allLockedSections, sections, attemptId, persistSubjectAnswers]);
+
+  const handleSectionTimeOver = useCallback(() => {
+    if (hasHandledSectionTimeoutRef.current) return;
+    hasHandledSectionTimeoutRef.current = true;
+
+    const advanceSection = async () => {
+      lockAndMoveToNextSection(
+        sectionIndex,
+        `Time is up for ${currentSection.title}. Section auto-locked.`,
+      );
+    };
+
+    void advanceSection();
+  }, [lockAndMoveToNextSection, sectionIndex, currentSection]);
 
   useEffect(() => {
     if (!hasStarted || isCompleted) return;
 
+    // 1. Prevent refresh/close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue =
+        "Are you sure you want to leave? Your interview progress may be lost.";
+      return e.returnValue;
+    };
+
+    // 2. Prevent back button
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, "", window.location.href);
+      setMessage(
+        "Navigation is disabled during the assessment. Please stay on this page to complete your mission.",
+      );
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
     const timer = setInterval(() => {
+      // 1. Overall Exam Timer
       setExamRemainingSeconds((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
@@ -205,64 +440,77 @@ export function InterviewTestClient() {
         }
         return prev - 1;
       });
+
+      // 2. Section Timer
+      setSectionRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          setTimeout(() => {
+            handleSectionTimeOver();
+          }, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [handleOverallTimeOver, hasStarted, isCompleted]);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [handleOverallTimeOver, handleSectionTimeOver, hasStarted, isCompleted]);
 
-  const setCurrentAnswer = (value: string) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+  const setCurrentAnswer = useCallback(
+    (value: string) => {
+      if (!currentQuestion) return;
+      setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+      // Individual auto-save removed for subject-wise optimization
+    },
+    [currentQuestion],
+  );
 
-    const isChoiceQuestion =
-      currentQuestion.type === "MCQ" ||
-      currentQuestion.type === "IMAGE_MCQ" ||
-      currentQuestion.type === "PASSAGE_MCQ";
-
-    if (isChoiceQuestion) {
-      void persistAnswerToBackend(currentQuestion.id, value).catch(() => {
-        setMessage("Answer selected locally, but failed to sync with server.");
-      });
-    }
-  };
-
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (questionIndex === 0) return;
     setQuestionIndex((prev) => prev - 1);
     setMessage(null);
-  };
+  }, [questionIndex]);
 
-  const handleSaveAndNext = async () => {
+  const handleSaveAndNext = useCallback(async () => {
+    if (!currentQuestion) return;
     setMessage(null);
 
-    try {
-      await persistAnswerToBackend(currentQuestion.id, currentAnswer);
-    } catch {
-      setMessage("Answer saved locally, but failed to sync with server.");
-    }
+    // Question-level remote persist removed for subject-wise optimization
+    // Answers are kept in local state until subject completion
 
     if (!isLastQuestionInSection) {
       setQuestionIndex((prev) => prev + 1);
       return;
     }
 
-    if (!isLastSection) {
+    // Check if there are any MORE unlocked sections ahead
+    let hasNextUnlocked = false;
+    for (let i = sectionIndex + 1; i < sections.length; i++) {
+      if (!lockedSections[i]) {
+        hasNextUnlocked = true;
+        break;
+      }
+    }
+
+    if (hasNextUnlocked) {
       setIsSectionChangeConfirmOpen(true);
       return;
     }
 
-    try {
-      if (attemptId) {
-        const summary = await interviewAttemptsApi.submitAttempt(attemptId);
-        setFinalSummary(summary);
-      }
-    } catch {
-      setMessage(
-        "Interview finished locally, but final server submission failed.",
-      );
-    }
-
+    // No unlocked sections left, perform final submission via locking mechanism
     lockAndMoveToNextSection(sectionIndex);
-  };
+  }, [
+    currentQuestion,
+    isLastQuestionInSection,
+    sections,
+    lockedSections,
+    lockAndMoveToNextSection,
+    sectionIndex,
+  ]);
 
   const handleConfirmSectionChange = () => {
     setIsSectionChangeConfirmOpen(false);
@@ -272,124 +520,81 @@ export function InterviewTestClient() {
     );
   };
 
-  const handleReset = () => {
-    setSections(DUMMY_SECTIONS);
-    setHasStarted(false);
-    setIsCompleted(false);
-    setCompletionReason(null);
-    setAttemptId(null);
-    setFinalSummary(null);
-    setSectionIndex(0);
-    setQuestionIndex(0);
-    setAnswers({});
-    setMessage(null);
-    setStartError(null);
-    setIsSectionChangeConfirmOpen(false);
-    setLockedSections(emptyLockedSections);
-    setExamRemainingSeconds(OVERALL_EXAM_TOTAL_SECONDS);
-    hasHandledOverallTimeoutRef.current = false;
-    latestAnswersRef.current = {};
-  };
-
-  const resolveQuestionType = (
-    question: Question,
-  ): InterviewQuestion["type"] => {
-    const typeCode = question.question_type?.code || "";
-    if (typeCode === "IMAGE_MULTIPLE_CHOICE") return "IMAGE_MCQ";
-    if (typeCode === "SUBJECTIVE") return "SUBJECTIVE";
-    if (typeCode === "PASSAGE_MULTIPLE_CHOICE" || typeCode === "PASSAGE_MCQ") {
-      return "PASSAGE_MCQ";
-    }
-    if (typeCode === "MULTIPLE_CHOICE") return "MCQ";
-
-    if (question.passage) return "PASSAGE_MCQ";
-    if (question.image_url) return "IMAGE_MCQ";
-    if (question.options?.length) return "MCQ";
-    return "SUBJECTIVE";
-  };
-
-  const resolveQuestionOptions = (question: Question): string[] => {
-    if (!Array.isArray(question.options)) return [];
-    return question.options
-      .map((option) => {
-        const optionText = option.option_text;
-        if (typeof optionText === "string" && optionText.trim())
-          return optionText;
-        const optionLabel = option.option_label;
-        if (typeof optionLabel === "string" && optionLabel.trim())
-          return optionLabel;
-        return null;
-      })
-      .filter((value): value is string => Boolean(value));
-  };
-
-  const buildSectionsFromBackend = (
-    orderedQuestions: Question[],
-  ): InterviewSection[] => {
-    const sectionMap = new Map<string, InterviewSection>();
-
-    orderedQuestions.forEach((question) => {
-      const subjectCode = question.subject?.code || "GENERAL";
-      const sectionTitle = question.subject?.name || "General";
-
-      if (!sectionMap.has(subjectCode)) {
-        sectionMap.set(subjectCode, {
-          id: subjectCode.toLowerCase(),
-          title: sectionTitle,
-          durationMinutes: 0,
-          questions: [],
-        });
-      }
-
-      const mappedQuestion: InterviewQuestion = {
-        id: question.id,
-        type: resolveQuestionType(question),
-        questionText: question.question_text,
-        description: undefined,
-        passage: question.passage || undefined,
-        imageUrl: question.image_url || undefined,
-        options: resolveQuestionOptions(question),
-      };
-
-      sectionMap.get(subjectCode)!.questions.push(mappedQuestion);
-    });
-
-    return Array.from(sectionMap.values()).filter(
-      (section) => section.questions.length > 0,
-    );
-  };
-
   const handleStartInterview = async () => {
     try {
-      setStartError(null);
-      const startResponse =
-        await interviewAttemptsApi.startAttempt(INTERVIEW_PAPER_ID);
-      const paperQuestionIds = startResponse.paper_question_ids || [];
-      const fetchedQuestions = await Promise.all(
-        paperQuestionIds.map((questionId) =>
-          questionsApi.getQuestion(questionId).catch(() => null),
-        ),
-      );
-      const orderedQuestions = fetchedQuestions.filter(
-        (question): question is Question => question !== null,
-      );
+      if (!assignedPaper?.paper?.id) {
+        setStartError("No paper is assigned for today. Please contact admin.");
+        return;
+      }
 
-      if (orderedQuestions.length === 0) {
+      setStartError(null);
+      const startResponse = await interviewAttemptsApi.startAttempt(
+        assignedPaper.paper.id,
+      );
+      const restoredAnswers = buildSavedAnswersMap(
+        startResponse.saved_responses,
+      );
+      // touchedQuestionIds: ALL questions with any saved record (drives resume position)
+      const touchedQuestionIds = new Set(
+        startResponse.saved_responses.map((r) => r.question_id),
+      );
+      const resetSectionIndexes = startResponse.is_resumed
+        ? getResetSectionIndexes(loadedSections, touchedQuestionIds)
+        : new Set<number>();
+
+      if (startResponse.is_resumed && resetSectionIndexes.size === 0) {
         setStartError(
-          "No questions available for this paper. Please contact admin.",
+          "No unlocked questions were found for this resume session. Please ask admin to reset the subject again.",
         );
         return;
       }
 
-      const backendSections = buildSectionsFromBackend(orderedQuestions);
+      const resumePosition = getResumePosition(
+        loadedSections,
+        touchedQuestionIds,
+      );
+      const initialLockedSections = loadedSections.map((_, sectionIdx) =>
+        startResponse.is_resumed ? !resetSectionIndexes.has(sectionIdx) : false,
+      );
 
       setAttemptId(startResponse.attempt_id);
-      setSections(backendSections);
-      setLockedSections(backendSections.map(() => false));
-      setSectionIndex(0);
-      setQuestionIndex(0);
-      setAnswers({});
-      setMessage(null);
+      setSections(loadedSections);
+      setLockedSections(initialLockedSections);
+      setSectionIndex(
+        startResponse.is_resumed ? resumePosition.sectionIndex : 0,
+      );
+      setQuestionIndex(
+        startResponse.is_resumed ? resumePosition.questionIndex : 0,
+      );
+      setAnswers(restoredAnswers);
+      setMessage(
+        startResponse.is_resumed
+          ? "Resumed your in-progress interview with saved responses."
+          : null,
+      );
+
+      // Handle server-synced timer resumption
+      if (startResponse.is_resumed && startResponse.started_at) {
+        const startedAt = new Date(startResponse.started_at);
+        const now = new Date();
+        const secondsElapsed = Math.floor(
+          (now.getTime() - startedAt.getTime()) / 1000,
+        );
+        const totalDurationSeconds =
+          (startResponse.total_duration_minutes ?? overallExamDurationMinutes) *
+          60;
+        const remainingSeconds = Math.max(
+          0,
+          totalDurationSeconds - secondsElapsed,
+        );
+
+        setExamRemainingSeconds(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+          void handleOverallTimeOver();
+        }
+      }
+
       setHasStarted(true);
     } catch {
       setStartError(
@@ -409,9 +614,16 @@ export function InterviewTestClient() {
             finalSummary?.unattempted_count ?? notAttemptedCount
           }
           completionReason={completionReason}
-          overallExamDurationMinutes={OVERALL_EXAM_DURATION_MINUTES}
-          onReset={handleReset}
+          overallExamDurationMinutes={overallExamDurationMinutes}
         />
+      </PageContainer>
+    );
+  }
+
+  if (isLoadingPaper && !hasStarted) {
+    return (
+      <PageContainer className="py-2 sm:py-3 lg:py-4">
+        Loading assigned paper...
       </PageContainer>
     );
   }
@@ -420,8 +632,8 @@ export function InterviewTestClient() {
     return (
       <PageContainer className="py-2 sm:py-3 lg:py-4">
         <InterviewOverview
-          sections={DUMMY_SECTIONS}
-          overallExamDurationMinutes={OVERALL_EXAM_DURATION_MINUTES}
+          sections={sections}
+          overallExamDurationMinutes={overallExamDurationMinutes}
           startError={startError}
           onStart={() => {
             void handleStartInterview();
@@ -438,13 +650,10 @@ export function InterviewTestClient() {
           <QuestionWorkspace
             message={message}
             onCloseMessage={() => setMessage(null)}
-            sectionIndex={sectionIndex}
-            totalSections={totalSections}
             currentSection={currentSection}
             questionIndex={questionIndex}
-            progressPercent={progressPercent}
             timerZone={timerZone}
-            remainingTimeText={formatTime(examRemainingSeconds)}
+            remainingTimeText={formatTime(sectionRemainingSeconds)}
             currentQuestion={currentQuestion}
             currentAnswer={currentAnswer}
             isLastQuestionInSection={isLastQuestionInSection}
@@ -457,14 +666,22 @@ export function InterviewTestClient() {
 
         <div className="xl:col-span-4 2xl:col-span-3 min-w-0">
           <div className="xl:sticky xl:top-4 space-y-4">
+            <InterviewProgressCard
+              sectionIndex={sectionIndex}
+              totalSections={totalSections}
+              currentSection={currentSection}
+              progressPercent={progressPercent}
+              timerZone={timerZone}
+              remainingTimeText={formatTime(sectionRemainingSeconds)}
+            />
             <InterviewStatusCard
-              sections={DUMMY_SECTIONS}
+              sections={sections}
               sectionIndex={sectionIndex}
               lockedSections={lockedSections}
               timerZone={timerZone}
-              remainingTimeText={formatTime(examRemainingSeconds)}
               answeredCount={answeredCount}
               notAttemptedCount={notAttemptedCount}
+              questionIndex={questionIndex}
             />
           </div>
         </div>

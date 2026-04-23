@@ -16,6 +16,7 @@ from app.papers import models as paper_models  # noqa: F401
 from app.interview_attempts import models as interview_attempt_models  # noqa: F401
 from app.duplicates import models as duplicate_models  # noqa: F401
 from app.departments import models as department_models  # noqa: F401
+from app.paper_assignments import models as paper_assignment_models  # noqa: F401
 
 # ---------------------------------------------------------
 # Alembic Config object (reads alembic.ini)

@@ -37,7 +37,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
     questions: [
       {
         id: 101,
-        type: "MCQ",
+        type: "MULTIPLE_CHOICE",
         description: "Select the suitable answer out of the given options.",
         questionText:
           "She ______ in Switzerland for ten years when she was a child.",
@@ -58,7 +58,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
     questions: [
       {
         id: 201,
-        type: "MCQ",
+        type: "MULTIPLE_CHOICE",
         description: "Choose the correct option.",
         questionText:
           "If the marked price is reduced by 20% and then by another 10%, the final reduction is:",
@@ -66,7 +66,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
       },
       {
         id: 202,
-        type: "MCQ",
+        type: "MULTIPLE_CHOICE",
         description: "Choose the correct option.",
         questionText:
           "A train crosses a pole in 15 seconds and a 300m platform in 35 seconds. Train length is:",
@@ -81,7 +81,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
     questions: [
       {
         id: 301,
-        type: "PASSAGE_MCQ",
+        type: "PASSAGE_CONTENT",
         description: "Read the passage and answer the question.",
         passage:
           "A worker accidentally dropped a heavy sack on a chicken near a butcher shop. The owner demanded a very high compensation. A magistrate intervened and proposed a practical deal: the owner could keep the worker for two years, but only if he also covered the worker's food and shelter costs. Hearing this, the owner withdrew his demand immediately.",
@@ -130,7 +130,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
     questions: [
       {
         id: 501,
-        type: "IMAGE_MCQ",
+        type: "IMAGE_MULTIPLE_CHOICE",
         description: "Identify the brand associated with the shown logo.",
         questionText: "Choose the correct brand name from below.",
         imageUrl: "/blue_ag.png",
@@ -138,7 +138,7 @@ export const DUMMY_SECTIONS: InterviewSection[] = [
       },
       {
         id: 502,
-        type: "MCQ",
+        type: "MULTIPLE_CHOICE",
         description: "Choose the correct option.",
         questionText: "Which of the following is NOT a shopping website?",
         options: ["Amazon", "eBay", "Macy's", "None of these"],

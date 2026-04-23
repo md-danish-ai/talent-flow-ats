@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { NavSection } from "@lib/config/adminRoutes";
+import { NavSection } from "@lib/routes/types";
 import { NAV_ACTIVE, NAV_IDLE, ICON_ACTIVE, ICON_IDLE } from "./styles";
 import { Typography } from "@components/ui-elements/Typography";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";

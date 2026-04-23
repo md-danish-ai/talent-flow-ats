@@ -1,5 +1,5 @@
-// Base API client for making HTTP requests to the backend
 import { toast } from "@lib/toast";
+import { ENDPOINTS } from "./endpoints";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
@@ -18,6 +18,8 @@ export interface ApiRequestOptions {
   silentSuccess?: boolean;
   // Suppress the automatic error toast for this request
   silentError?: boolean;
+  // Query parameters for GET/DELETE requests
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 interface ValidationError {
@@ -123,7 +125,20 @@ export async function apiClient<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = `${BASE_URL}${endpoint}`;
+  // Construct URL with query parameters if present
+  let url = `${BASE_URL}${endpoint}`;
+  if (options.params) {
+    const searchParams = new URLSearchParams();
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
 
   const fetchOptions: RequestInit & { next?: NextFetchRequestConfig } = {
     method,
@@ -147,8 +162,8 @@ export async function apiClient<T>(
   if (!response.ok) {
     const apiErr = new ApiError(response.status, result as ApiErrorResponse);
     const isAuthRequest =
-      endpoint.startsWith("/auth/signin") ||
-      endpoint.startsWith("/auth/signup");
+      endpoint.startsWith(ENDPOINTS.AUTH.SIGN_IN) ||
+      endpoint.startsWith(ENDPOINTS.AUTH.SIGN_UP);
 
     if (
       response.status === 401 &&
@@ -178,7 +193,8 @@ export async function apiClient<T>(
   // Suppressed if silentSuccess is set (e.g. per-keystroke auto-saves).
   // Auth endpoints (signin/signup) are handled by the form itself.
   const isAuthEndpoint =
-    endpoint.startsWith("/auth/signin") || endpoint.startsWith("/auth/signup");
+    endpoint.startsWith(ENDPOINTS.AUTH.SIGN_IN) ||
+    endpoint.startsWith(ENDPOINTS.AUTH.SIGN_UP);
   if (
     !silentSuccess &&
     method !== "GET" &&
@@ -192,13 +208,19 @@ export async function apiClient<T>(
     toast.success(result.message);
   }
 
-  // Handle standard backend wrapper: { status, message, data }
+  // Handle standard backend wrapper: { status, message, data, pagination? }
   if (
     result &&
     typeof result === "object" &&
     "data" in result &&
     "status" in result
   ) {
+    if ("pagination" in result && result.pagination) {
+      return {
+        data: result.data,
+        pagination: result.pagination,
+      } as T;
+    }
     return result.data as T;
   }
 

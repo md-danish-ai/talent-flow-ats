@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
 from app.papers import repository, schemas
@@ -11,10 +12,9 @@ from app.utils.pagination import (
 )
 
 router = APIRouter(
-    prefix="/papers",
-    tags=["Papers"],
-    dependencies=[Depends(authenticate_user)]
+    prefix="/papers", tags=["Papers"], dependencies=[Depends(authenticate_user)]
 )
+
 
 def get_db():
     db = SessionLocal()
@@ -24,23 +24,33 @@ def get_db():
         db.close()
 
 
-@router.get("/get")
+@router.get("/get-papers")
 def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
+    department_id: Optional[int] = Query(None),
+    test_level_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
     offset = (pagination.page - 1) * pagination.limit
-    papers, total_records = repository.get_papers(db, skip=offset, limit=pagination.limit)
-    
+    papers, total_records = repository.get_papers(
+        db, 
+        skip=offset, 
+        limit=pagination.limit,
+        department_id=department_id,
+        test_level_id=test_level_id,
+        search=pagination.search
+    )
+
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization
     paper_list = [
         schemas.PaperResponse.model_validate(paper).model_dump() for paper in papers
     ]
-    
+
     paginated_data = create_paginated_response(paper_list, total_records, pagination)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
-@router.get("/get/{paper_id}")
+
+@router.get("/paper-details/{paper_id}")
 def read_paper(paper_id: int, db: Session = Depends(get_db)):
     db_paper = repository.get_paper(db, paper_id=paper_id)
     if db_paper is None:
@@ -51,7 +61,8 @@ def read_paper(paper_id: int, db: Session = Depends(get_db)):
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
-@router.post("/create")
+
+@router.post("/create-paper")
 def create_paper(
     paper: schemas.PaperCreate,
     db: Session = Depends(get_db),
@@ -64,8 +75,11 @@ def create_paper(
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
-@router.put("/update/{paper_id}")
-def update_paper(paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)):
+
+@router.put("/update-paper/{paper_id}")
+def update_paper(
+    paper_id: int, paper: schemas.PaperUpdate, db: Session = Depends(get_db)
+):
     db_paper = repository.update_paper(db=db, paper_id=paper_id, paper_update=paper)
     if db_paper is None:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
@@ -75,9 +89,29 @@ def update_paper(paper_id: int, paper: schemas.PaperUpdate, db: Session = Depend
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
-@router.delete("/delete/{paper_id}")
+
+@router.delete("/remove-paper/{paper_id}")
 def delete_paper(paper_id: int, db: Session = Depends(get_db)):
     success = repository.delete_paper(db=db, paper_id=paper_id)
     if not success:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.DELETED)
+
+
+@router.put("/grade-settings/{paper_id}")
+def update_grade_settings(
+    paper_id: int,
+    grade_settings: List[schemas.GradeSettingItem],
+    db: Session = Depends(get_db),
+):
+    grade_data = [item.model_dump() for item in grade_settings]
+    db_paper = repository.update_paper_grade_settings(
+        db=db, paper_id=paper_id, grade_settings=grade_data
+    )
+    if db_paper is None:
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.UPDATED,
+        data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
+    )

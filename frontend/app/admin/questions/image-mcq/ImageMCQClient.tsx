@@ -7,31 +7,45 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
   TableColumnToggle,
 } from "@components/ui-elements/Table";
-import { Filter, Plus, Image as ImageIcon, Loader2 } from "lucide-react";
+import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
+import { Plus, Image as ImageIcon, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { questionsApi, Question } from "@lib/api/questions";
+import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
-import { ApiError } from "@lib/api/client";
+import { classificationsApi, ApiError } from "@lib/api";
+import { Question, Classification } from "@types";
 import { useRouter } from "next/navigation";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { toast } from "@lib/toast";
 import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
 import ImageLightbox from "./components/ImageLightbox";
-import { ImageMCQFilters } from "./components/ImageMCQFilters";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { EmptyState } from "@components/ui-elements/EmptyState";
+import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface ImageMCQClientProps {
   initialData?: Question[];
   totalItems?: number;
 }
+
+type ImageMCQListingFilters = {
+  search: string;
+  subject: string;
+  examLevel: string;
+  marks: string;
+  status: string;
+};
 
 export function ImageMCQClient({
   initialData = [],
@@ -40,28 +54,13 @@ export function ImageMCQClient({
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [subjectFilter, setSubjectFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [examLevelFilter, setExamLevelFilter] = useState<
-    string | number | undefined
-  >("all");
-  const [marksFilter, setMarksFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [statusFilter, setStatusFilter] = useState<string | number | undefined>(
-    "all",
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<Question[]>(initialData || []);
-  const [totalItems, setTotalItems] = useState<number>(initialTotalItems || 0);
+
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -78,6 +77,44 @@ export function ImageMCQClient({
     },
     [router],
   );
+
+  const {
+    data: questions,
+    isLoading,
+    isBackgroundLoading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    filters,
+    activeFiltersCount,
+    handleSingleFilterChange,
+    handlePageChange,
+    handlePageSizeChange,
+    resetFilters,
+    refresh,
+  } = useListing<Question, ImageMCQListingFilters>({
+    fetchFn: (params) => questionsApi.getQuestions(params),
+    initialFilters: {
+      search: "",
+      subject: "all",
+      examLevel: "all",
+      marks: "all",
+      status: "all",
+    },
+    initialData,
+    initialTotalItems,
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? (f.subject as string) : undefined,
+      exam_level: f.examLevel !== "all" ? (f.examLevel as string) : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
+    toastMessage: "Image MCQ list refreshed successfully",
+    onError: handleAuthError,
+  });
 
   // Column Visibility State
   const allColumns = [
@@ -105,76 +142,11 @@ export function ImageMCQClient({
 
   const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
   };
-
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset page on search
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await questionsApi.getQuestions({
-        page: currentPage,
-        limit: pageSize,
-        search: debouncedSearch,
-        subject:
-          subjectFilter && subjectFilter !== "all"
-            ? (subjectFilter as string)
-            : undefined,
-        exam_level:
-          examLevelFilter && examLevelFilter !== "all"
-            ? (examLevelFilter as string)
-            : undefined,
-        marks:
-          marksFilter && marksFilter !== "all"
-            ? Number(marksFilter)
-            : undefined,
-        is_active:
-          statusFilter && statusFilter !== "all"
-            ? statusFilter === "true"
-            : undefined,
-        question_type: QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
-      });
-
-      setData(response.data || []);
-      if (response.pagination) {
-        setTotalItems(response.pagination.total_records);
-      }
-    } catch (error) {
-      if (handleAuthError(error)) return;
-      console.error("Error fetching questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearch,
-    subjectFilter,
-    examLevelFilter,
-    marksFilter,
-    statusFilter,
-    handleAuthError,
-  ]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   useEffect(() => {
     const fetchClassifications = async () => {
@@ -191,68 +163,78 @@ export function ImageMCQClient({
             limit: 100,
           }),
         ]);
-        setSubjects(subjectsRes.data || []);
+        const filteredSubjects = filterSubjectsForQuestionType(
+          subjectsRes.data || [],
+          QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
+        );
+        setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);
       } catch (err) {
-        if (handleAuthError(err)) return;
-        console.error("Failed to fetch classifications:", err);
+        if (!handleAuthError(err)) {
+          console.error("Failed to fetch classifications:", err);
+        }
       }
     };
-    fetchClassifications();
+    void fetchClassifications();
   }, [handleAuthError]);
 
   const handleToggleStatus = async (id: number) => {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      await fetchData();
+      void refresh();
       toast.success("Question status updated successfully");
     } catch (error) {
-      if (handleAuthError(error)) return;
-      toast.error("Failed to update status");
-      console.error("Failed to toggle status:", error);
+      if (!handleAuthError(error)) {
+        toast.error("Failed to update status");
+      }
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const handleAddSuccess = async () => {
-    setIsAddModalOpen(false);
-    setCurrentPage(1);
-    await fetchData();
   };
 
   return (
     <PageContainer animate>
       <MainCard
         title={
-          <>
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
               <ImageIcon size={20} />
             </div>
             Image-Based MCQs
-          </>
+          </div>
         }
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Questions"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={allColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
-            <div className="h-6 w-px bg-border mx-1" />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="action"
               size="rounded-icon"
-              isActive={isFilterOpen}
+              isActive={isBulkUploadOpen}
               animate="scale"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              title="Filter"
+              onClick={() => setIsBulkUploadOpen(true)}
+              title="Bulk Upload"
             >
-              <Filter size={18} />
+              <Upload size={18} />
             </Button>
             <Button
               variant="primary"
@@ -263,7 +245,7 @@ export function ImageMCQClient({
               iconAnimation="rotate-90"
               onClick={() => setIsAddModalOpen(true)}
               startIcon={<Plus size={18} />}
-              className="font-bold"
+              className="font-bold border-none"
             >
               Add Question
             </Button>
@@ -273,139 +255,125 @@ export function ImageMCQClient({
         <div
           className={cn(
             "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border",
+            isFilterOpen && "border-r border-border/50",
           )}
         >
-          {isLoading && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-            </div>
-          )}
-          <div className="flex-1 overflow-x-auto w-full min-h-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  {visibleColumns.includes("srNo") && (
-                    <TableHead className="w-[80px] text-center">
-                      Sr. No.
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("image") && (
-                    <TableHead className="w-[80px] text-center">
-                      Image
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("question") && (
-                    <TableHead>Question</TableHead>
-                  )}
-                  {visibleColumns.includes("subject") && (
-                    <TableHead>Subject</TableHead>
-                  )}
-                  {visibleColumns.includes("examLevel") && (
-                    <TableHead>Exam Level</TableHead>
-                  )}
-                  {visibleColumns.includes("marks") && (
-                    <TableHead className="w-[80px] text-center">
-                      Marks
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("createdBy") && (
-                    <TableHead>Created By</TableHead>
-                  )}
-                  {visibleColumns.includes("createdDate") && (
-                    <TableHead>Created Date</TableHead>
-                  )}
-                  {visibleColumns.includes("status") && (
-                    <TableHead className="w-[100px] text-center">
-                      Status
-                    </TableHead>
-                  )}
-                  {visibleColumns.includes("actions") && (
-                    <TableHead className="w-[140px] text-center">
-                      Action
-                    </TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.length === 0 && !isLoading ? (
+          <ListingTransition
+            isLoading={isLoading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full min-h-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={visibleColumns.length + 1}
-                      className="py-8 text-center text-muted-foreground"
-                    >
-                      No questions found.
-                    </TableCell>
+                    <TableHead className="w-[50px]"></TableHead>
+                    {visibleColumns.includes("srNo") && (
+                      <TableHead className="w-[80px] text-center">
+                        Sr. No.
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("image") && (
+                      <TableHead className="w-[80px] text-center">
+                        Image
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("question") && (
+                      <TableHead>Question</TableHead>
+                    )}
+                    {visibleColumns.includes("subject") && (
+                      <TableHead>Subject</TableHead>
+                    )}
+                    {visibleColumns.includes("examLevel") && (
+                      <TableHead>Exam Level</TableHead>
+                    )}
+                    {visibleColumns.includes("marks") && (
+                      <TableHead className="w-[80px] text-center">
+                        Marks
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("createdBy") && (
+                      <TableHead>Created By</TableHead>
+                    )}
+                    {visibleColumns.includes("createdDate") && (
+                      <TableHead>Created Date</TableHead>
+                    )}
+                    {visibleColumns.includes("status") && (
+                      <TableHead className="w-[100px] text-center">
+                        Status
+                      </TableHead>
+                    )}
+                    {visibleColumns.includes("actions") && (
+                      <TableHead className="w-[140px] text-center">
+                        Action
+                      </TableHead>
+                    )}
                   </TableRow>
-                ) : (
-                  data.map((row, index) => (
-                    <ImageMCQRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      currentPage={currentPage}
-                      pageSize={pageSize}
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <QuestionTableSkeleton
                       visibleColumns={visibleColumns}
-                      togglingId={togglingId}
-                      onToggleStatus={handleToggleStatus}
-                      onEdit={setEditingQuestion}
-                      onImageClick={setLightboxUrl}
+                      rowCount={pageSize}
+                      hasImage
                     />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : questions.length === 0 ? (
+                    <EmptyState
+                      colSpan={visibleColumns.length + 1}
+                      variant="search"
+                      title="No questions found"
+                      description="Try adjusting your filters or adding a new question."
+                    />
+                  ) : (
+                    questions.map((row, index) => (
+                      <ImageMCQRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                        visibleColumns={visibleColumns}
+                        togglingId={togglingId}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={setEditingQuestion}
+                        onImageClick={setLightboxUrl}
+                      />
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            className="mt-auto shrink-0"
-          />
+            {!isLoading && questions.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
 
-        <ImageMCQFilters
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          subjectFilter={subjectFilter}
-          onSubjectFilterChange={(val) => {
-            setSubjectFilter(val as string);
-            setCurrentPage(1);
-          }}
-          subjects={subjects}
-          examLevelFilter={examLevelFilter}
-          onExamLevelFilterChange={(val) => {
-            setExamLevelFilter(val as string);
-            setCurrentPage(1);
-          }}
-          examLevels={examLevels}
-          marksFilter={marksFilter}
-          onMarksFilterChange={(val) => {
-            setMarksFilter(val as string);
-            setCurrentPage(1);
-          }}
-          statusFilter={statusFilter}
-          onStatusFilterChange={(val) => {
-            setStatusFilter(val as string);
-            setCurrentPage(1);
-          }}
-          onReset={() => {
-            setSearchQuery("");
-            setSubjectFilter("all");
-            setExamLevelFilter("all");
-            setMarksFilter("all");
-            setStatusFilter("all");
-            setCurrentPage(1);
+          registryKey="question-bank-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+          dynamicOptions={{
+            subject: [
+              { id: "all", label: "All Subjects" },
+              ...subjects.map((s) => ({ id: s.code || "", label: s.name })),
+            ],
+            examLevel: [
+              { id: "all", label: "All Levels" },
+              ...examLevels.map((e) => ({ id: e.code || "", label: e.name })),
+            ],
           }}
         />
       </MainCard>
@@ -413,24 +381,30 @@ export function ImageMCQClient({
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={handleAddSuccess}
+        onSuccess={() => void refresh()}
       />
       {editingQuestion && (
         <EditImageQuestionModal
           isOpen={true}
           questionData={editingQuestion}
           onClose={() => setEditingQuestion(null)}
-          onSuccess={async () => {
-            await fetchData();
+          onSuccess={() => {
+            void refresh();
             setEditingQuestion(null);
           }}
         />
       )}
 
-      {/* Image lightbox: open when a row's image icon is clicked */}
       {lightboxUrl && (
         <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
+      />
     </PageContainer>
   );
 }

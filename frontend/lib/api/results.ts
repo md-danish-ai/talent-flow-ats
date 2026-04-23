@@ -1,115 +1,94 @@
 import { api } from "./index";
-
-export interface AdminUserLatestAttempt {
-  attempt_id: number;
-  status: string;
-  completion_reason?: "manual" | "time_over" | null;
-  submitted_at?: string | null;
-  total_questions: number;
-  attempted_count: number;
-  unattempted_count: number;
-  obtained_marks?: number | null;
-}
-
-export interface AdminUserResultListItem {
-  user_id: number;
-  username: string;
-  mobile: string;
-  email?: string | null;
-  attempts_count: number;
-  latest_attempt?: AdminUserLatestAttempt | null;
-}
-
-export interface AdminUserResultAnswer {
-  question_id: number;
-  question_type: string;
-  subject_type: string;
-  exam_level: string;
-  question_text: string;
-  passage?: string | null;
-  image_url?: string | null;
-  options?: Array<Record<string, unknown>> | null;
-  max_marks: number;
-  user_answer?: string | null;
-  correct_answer?: string | null;
-  status: "correct" | "incorrect" | "not_attempted";
-  marks_obtained: number;
-  is_attempted: boolean;
-  is_auto_saved: boolean;
-  saved_at: string;
-}
-
-export interface AdminUserResultDetail {
-  user: {
-    id: number;
-    username: string;
-    mobile: string;
-    email?: string | null;
-  };
-  attempt: {
-    attempt_id: number;
-    paper_id: number;
-    status: string;
-    completion_reason?: "manual" | "time_over" | null;
-    started_at: string;
-    submitted_at?: string | null;
-    total_questions: number;
-    attempted_count: number;
-    unattempted_count: number;
-    obtained_marks?: number | null;
-    is_auto_submitted: boolean;
-  };
-  summary: {
-    correct_count: number;
-    incorrect_count: number;
-    not_attempted_count: number;
-    total_marks_obtained: number;
-  };
-  answers: AdminUserResultAnswer[];
-}
-
-export interface AdminUserAttemptHistoryItem {
-  attempt_id: number;
-  paper_id: number;
-  status: string;
-  completion_reason?: "manual" | "time_over" | null;
-  started_at: string;
-  submitted_at?: string | null;
-  total_questions: number;
-  attempted_count: number;
-  unattempted_count: number;
-  obtained_marks?: number | null;
-  is_auto_submitted: boolean;
-}
-
-export interface AdminUserAttemptsResponse {
-  user: {
-    id: number;
-    username: string;
-    mobile: string;
-    email?: string | null;
-  };
-  attempts: AdminUserAttemptHistoryItem[];
-}
+import { ENDPOINTS } from "./endpoints";
+import {
+  PaginatedUserResults,
+  AdminUserResultDetail,
+  AdminUserAttemptsResponse,
+  GetUserResultsParams,
+} from "@types";
 
 export const resultsApi = {
-  getUserResults: async (search?: string) => {
-    const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return api.get<AdminUserResultListItem[]>(
-      `/interview-attempts/admin/users${query}`,
+  getUserResults: async ({
+    search,
+    page = 1,
+    limit = 10,
+    startDate,
+    endDate,
+    status,
+    completionReason,
+    overallGrade,
+  }: GetUserResultsParams) => {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    params.append("page", String(page));
+    params.append("limit", String(limit));
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    if (status && status !== "all") params.append("status", status);
+    if (completionReason && completionReason !== "all")
+      params.append("completion_reason", completionReason);
+    if (overallGrade && overallGrade !== "all")
+      params.append("overall_grade", overallGrade);
+
+    return api.get<PaginatedUserResults>(
+      `${ENDPOINTS.RESULTS.GET_ALL}?${params.toString()}`,
     );
   },
 
   getUserResultDetail: async (userId: number, attemptId?: number) => {
     const query = attemptId ? `?attempt_id=${attemptId}` : "";
     return api.get<AdminUserResultDetail>(
-      `/interview-attempts/admin/users/${userId}/result${query}`,
+      `${ENDPOINTS.RESULTS.USER_DETAIL(userId)}${query}`,
     );
   },
 
   getUserAttempts: async (userId: number) => {
     return api.get<AdminUserAttemptsResponse>(
-      `/interview-attempts/admin/users/${userId}/attempts`,
+      ENDPOINTS.RESULTS.USER_ATTEMPTS(userId),
     );
+  },
+
+  resetUserStatus: async (userId: number) => {
+    return api.post<{ message: string }>(
+      ENDPOINTS.RESULTS.RESET_ATTEMPT(userId),
+    );
+  },
+
+  resetUserDetails: async (userId: number) => {
+    return api.post<{ message: string }>(
+      ENDPOINTS.RESULTS.RESET_DETAILS(userId),
+    );
+  },
+
+  enableReInterview: async (userId: number) => {
+    return api.post<{ message: string; reinterview_date?: string }>(
+      ENDPOINTS.RESULTS.RE_INTERVIEW(userId),
+    );
+  },
+
+  resetUserSubjects: async (
+    userId: number,
+    attemptId: number,
+    sectionNames: string[],
+  ) => {
+    return api.post<{ message: string }>(
+      ENDPOINTS.RESULTS.RESET_SUBJECTS(userId),
+      { attempt_id: attemptId, section_names: sectionNames },
+    );
+  },
+
+  applyManualMarks: async (
+    userId: number,
+    attemptId: number,
+    questionId: number,
+    marks: number,
+  ) => {
+    return api.post<{
+      message: string;
+      manual_marks: number;
+      new_total_marks: number;
+    }>(ENDPOINTS.RESULTS.MANUAL_MARKS(userId, attemptId, questionId), {
+      marks,
+    });
   },
 };

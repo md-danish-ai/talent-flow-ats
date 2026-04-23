@@ -18,7 +18,7 @@ router = APIRouter(
 question_service = QuestionService()
 
 
-@router.get("/get")
+@router.get("/get-questions")
 async def get_questions(
     question_type: Optional[str] = None,
     subject: Optional[str] = None,
@@ -45,7 +45,7 @@ async def get_questions(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
 
 
-@router.get("/get/{question_id}")
+@router.get("/question-details/{question_id}")
 async def get_question(
     question_id: int,
 ):
@@ -61,7 +61,33 @@ async def get_questions_by_ids(
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
 
 
-@router.post("/create")
+@router.post("/auto-generate")
+async def auto_generate_questions(
+    payload: schemas.AutoGenerateRequest,
+):
+    """
+    Randomly select questions per type for a given subject + exam level.
+    Returns question_ids (flat list), per-type details, and warnings if
+    fewer questions were found than requested.
+    """
+    data = await question_service.auto_generate_questions(payload)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get("/type-counts")
+async def get_available_question_counts(
+    subject: str,
+    exam_level: str,
+):
+    """
+    Returns the total number of available active questions per type
+    for a given subject and exam level.
+    """
+    data = await question_service.get_available_question_counts(subject, exam_level)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.post("/create-question")
 async def create_question(
     payload: schemas.QuestionCreate, current_user: int = Depends(authenticate_user)
 ):
@@ -69,7 +95,7 @@ async def create_question(
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update/{question_id}")
+@router.put("/update-question/{question_id}")
 async def update_question(
     question_id: int,
     payload: schemas.QuestionUpdate,
@@ -79,7 +105,7 @@ async def update_question(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.put("/update-status/{question_id}")
+@router.put("/questions-status/{question_id}")
 async def update_question_status(
     question_id: int,
 ):
@@ -87,7 +113,7 @@ async def update_question_status(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/{question_id}")
+@router.delete("/remove-question/{question_id}")
 async def delete_question(
     question_id: int, current_user: int = Depends(authenticate_user)
 ):

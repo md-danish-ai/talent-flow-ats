@@ -3,9 +3,11 @@ import { Edit as EditIcon } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
+
+import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
 
 interface ContactDetailsRowProps {
   row: Question;
@@ -28,47 +30,14 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
   onToggleStatus,
   onEdit,
 }) => {
+  const options = (row.options as Record<string, unknown>) || {};
+
   return (
     <TableCollapsibleRow
       key={row.id}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
-      expandedContent={
-        <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40 grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Company Name:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.companyName || "N/A")}
-             </Typography>
-           </div>
-           <div>
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Website:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.websiteUrl || "N/A")}
-             </Typography>
-           </div>
-           <div className="md:col-span-2">
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Address:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.streetAddress || "")} {String((row.options as Record<string, unknown>)?.city || "")} {String((row.options as Record<string, unknown>)?.state || "")} {String((row.options as Record<string, unknown>)?.zipCode || "")}
-             </Typography>
-           </div>
-           <div className="md:col-span-2">
-             <Typography variant="body3" weight="bold" className="mb-1 text-slate-700 dark:text-slate-300">
-               Email / Phone / Facebook:
-             </Typography>
-             <Typography variant="body4" className="text-muted-foreground">
-               {String((row.options as Record<string, unknown>)?.generalEmail || "N/A")} / {String((row.options as Record<string, unknown>)?.companyPhoneNumber || "N/A")} / {String((row.options as Record<string, unknown>)?.facebookPage || "N/A")}
-             </Typography>
-           </div>
-        </div>
-      }
+      expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
         <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">
@@ -77,17 +46,76 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
-      {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[400px]">
+
+      {visibleColumns.includes("websiteUrl") && (
+        <TableCell>
           <Typography
             variant="body4"
-            weight="semibold"
-            className="truncate group-hover/row:text-brand-primary transition-colors"
+            className="truncate text-muted-foreground"
           >
-            {row.question_text}
+            {(options.websiteUrl as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
+
+      {visibleColumns.includes("companyName") && (
+        <TableCell>
+          <Typography
+            variant="body4"
+            weight="semibold"
+            className="text-foreground group-hover/row:text-brand-primary transition-colors"
+          >
+            {(options.companyName as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("name") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.companyName as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("title") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.title as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("primaryEmail") && (
+        <TableCell>
+          <Typography
+            variant="body4"
+            className="text-brand-primary font-medium"
+          >
+            {(options.generalEmail as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("secondaryEmail") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground/60">
+            {(options.secondaryEmail as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("linkedInUrl") && (
+        <TableCell>
+          <Typography
+            variant="body4"
+            className="text-blue-500 truncate max-w-[150px]"
+          >
+            {(options.linkedInUrl as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
       {visibleColumns.includes("subject") && (
         <TableCell>
           <Badge
@@ -101,6 +129,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("examLevel") && (
         <TableCell>
           <Badge
@@ -114,6 +143,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("marks") && (
         <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
           <Badge
@@ -126,6 +156,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
           </Badge>
         </TableCell>
       )}
+
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
           {row.created_at
@@ -137,6 +168,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
             : "N/A"}
         </TableCell>
       )}
+
       {visibleColumns.includes("status") && (
         <TableCell>
           <div className="flex flex-col items-center justify-center gap-1">
@@ -151,28 +183,27 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Activate" : "Deactivate"}
+              {row.is_active !== false ? "Active" : "Deactive"}
             </Badge>
           </div>
         </TableCell>
       )}
+
       {visibleColumns.includes("actions") && (
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              color="primary"
-              size="icon"
+            <TableIconButton
+              iconColor="blue"
+              btnSize="sm"
               animate="scale"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(row);
               }}
-              title="Edit Contact Details"
-              className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+              title="Edit Company Contact Details"
             >
               <EditIcon size={16} />
-            </Button>
+            </TableIconButton>
           </div>
         </TableCell>
       )}

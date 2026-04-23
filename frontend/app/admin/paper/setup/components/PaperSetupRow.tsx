@@ -1,18 +1,14 @@
 import React from "react";
-import {
-  Loader2,
-  Edit as EditIcon,
-  Trash2,
-  Settings,
-  GraduationCap,
-  Eye,
-} from "lucide-react";
+import { Loader2, Edit as EditIcon, Settings, Eye, Wand2 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableRow } from "@components/ui-elements/Table";
-import { PaperSetup } from "@lib/api/papers";
+import { PaperSetup } from "@types";
+import { GradeSettingsModal } from "./GradeSettingsModal";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -22,7 +18,6 @@ interface PaperSetupRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (paper: Partial<PaperSetup>) => void;
-  onDelete: (id: number) => void;
   onViewDetails: (id: number) => void;
   visibleColumns: string[];
 }
@@ -35,16 +30,17 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
-  onDelete,
   onViewDetails,
   visibleColumns,
 }) => {
+  const router = useRouter();
   const isVisible = (id: string) => visibleColumns.includes(id);
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
 
   return (
     <TableRow className="group/row border-b border-border transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
       {isVisible("sr_no") && (
-        <TableCell className="text-center font-bold text-[#b8c1cc]">
+        <TableCell className="text-center font-bold text-muted-foreground/60">
           {((currentPage - 1) * pageSize + index + 1)
             .toString()
             .padStart(2, "0")}
@@ -59,7 +55,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <Typography
               variant="body3"
               weight="bold"
-              className="text-slate-600 dark:text-slate-300"
+              className="text-foreground/80"
             >
               {row.paper_name}
             </Typography>
@@ -92,13 +88,16 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("description") && (
         <TableCell className="max-w-[180px]">
-          <Typography variant="body5" className="text-slate-400 truncate">
+          <Typography
+            variant="body5"
+            className="text-muted-foreground truncate"
+          >
             {row.description || "No description"}
           </Typography>
         </TableCell>
       )}
       {isVisible("timing") && (
-        <TableCell className="font-bold text-slate-600 dark:text-slate-400">
+        <TableCell className="font-bold text-foreground/70">
           {row.total_time}
         </TableCell>
       )}
@@ -126,52 +125,52 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("actions") && (
         <TableCell className="text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
+          <div className="flex items-center justify-center gap-3">
+            <TableIconButton
+              iconColor="slate"
+              animate="scale"
+              title="View Details & Manual Question Setup"
               onClick={() => onViewDetails(row.id!)}
-              title="View Details"
             >
               <Eye size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              title="Settings"
+            </TableIconButton>
+
+            <TableIconButton
+              iconColor="amber"
+              animate="scale"
+              title="Auto Question Setup"
+              onClick={() => router.push(`/admin/paper/setup/auto/${row.id}`)}
+            >
+              <Wand2 size={16} />
+            </TableIconButton>
+
+            <TableIconButton
+              iconColor="brand"
+              animate="scale"
+              title="Grade Settings"
+              onClick={() => setIsGradeModalOpen(true)}
             >
               <Settings size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-brand-primary group-hover/row:scale-110 transition-transform"
-              title="Grading"
-            >
-              <GraduationCap size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-blue-500 hover:text-blue-600 group-hover/row:scale-110 transition-transform"
+            </TableIconButton>
+
+            <TableIconButton
+              iconColor="blue"
+              animate="scale"
+              title="Edit Paper"
               onClick={() => onEdit(row)}
-              title="Edit"
             >
               <EditIcon size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-500 hover:text-red-600 group-hover/row:scale-110 transition-transform"
-              onClick={() => onDelete(row.id!)}
-              title="Delete"
-            >
-              <Trash2 size={16} />
-            </Button>
+            </TableIconButton>
           </div>
         </TableCell>
+      )}
+
+      {isGradeModalOpen && row.id && (
+        <GradeSettingsModal
+          isOpen={isGradeModalOpen}
+          onClose={() => setIsGradeModalOpen(false)}
+          paperId={row.id}
+        />
       )}
     </TableRow>
   );

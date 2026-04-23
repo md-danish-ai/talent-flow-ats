@@ -28,7 +28,9 @@ export function middleware(request: NextRequest) {
   // 1. Redirect to login if accessing protected routes without token
   if (
     !authToken &&
-    (pathname.startsWith("/admin") || pathname.startsWith("/user"))
+    (pathname.startsWith("/admin") ||
+      pathname.startsWith("/user") ||
+      pathname.startsWith("/project-lead"))
   ) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
@@ -37,6 +39,10 @@ export function middleware(request: NextRequest) {
   if (authToken && (pathname === "/sign-in" || pathname === "/")) {
     if (role === "admin") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    } else if (role === "project_lead") {
+      return NextResponse.redirect(
+        new URL("/project-lead/dashboard", request.url),
+      );
     } else {
       return NextResponse.redirect(new URL("/user/dashboard", request.url));
     }
@@ -44,10 +50,24 @@ export function middleware(request: NextRequest) {
 
   // 3. Ensure admins can't access user routes and vice versa
   if (authToken) {
-    if (role === "admin" && pathname.startsWith("/user")) {
+    if (
+      role === "admin" &&
+      (pathname.startsWith("/user") || pathname.startsWith("/project-lead"))
+    ) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
-    if (role === "user" && pathname.startsWith("/admin")) {
+    if (
+      role === "project_lead" &&
+      (pathname.startsWith("/user") || pathname.startsWith("/admin"))
+    ) {
+      return NextResponse.redirect(
+        new URL("/project-lead/dashboard", request.url),
+      );
+    }
+    if (
+      role === "user" &&
+      (pathname.startsWith("/admin") || pathname.startsWith("/project-lead"))
+    ) {
       return NextResponse.redirect(new URL("/user/dashboard", request.url));
     }
   }
@@ -56,5 +76,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/sign-in", "/admin/:path*", "/user/:path*"],
+  matcher: [
+    "/",
+    "/sign-in",
+    "/admin/:path*",
+    "/user/:path*",
+    "/project-lead/:path*",
+  ],
 };
