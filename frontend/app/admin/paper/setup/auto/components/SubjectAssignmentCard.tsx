@@ -206,7 +206,6 @@ export function SubjectAssignmentCard({
               {filterQuestionTypesForSubject(
                 questionTypes,
                 subjCode,
-                subjects,
               ).map((type) => {
                 const markCounts = counts[type.code] || {};
                 const markReqs = subjectReqs[type.code] || {};

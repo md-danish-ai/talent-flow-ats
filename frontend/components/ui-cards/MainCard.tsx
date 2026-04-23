@@ -66,7 +66,7 @@ export const MainCard: React.FC<MainCardProps> = ({
 
       <div
         className={cn(
-          "flex-1 flex overflow-hidden rounded-b-xl",
+          "flex-1 flex flex-col overflow-hidden rounded-b-xl",
           bodyClassName,
           !bodyClassName.includes("p-") && "p-5",
         )}

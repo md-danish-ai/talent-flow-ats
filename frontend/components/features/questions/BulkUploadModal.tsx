@@ -54,7 +54,6 @@ export function BulkUploadModal({
       const filteredSubjects = filterSubjectsForQuestionType(
         subjectsRes.data || [],
         questionType,
-        subjectsRes.data || [],
       );
       setSubjects(filteredSubjects);
       setExamLevels(examLevelsRes.data || []);

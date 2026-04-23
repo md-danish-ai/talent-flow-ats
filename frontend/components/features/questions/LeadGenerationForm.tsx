@@ -109,7 +109,6 @@ export const LeadGenerationForm = ({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.LEAD_GENERATION,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
 
