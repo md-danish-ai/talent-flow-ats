@@ -17,11 +17,11 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
+import { resultsApi } from "@lib/api/results";
 import {
-  resultsApi,
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
-} from "@lib/api/results";
+} from "@types";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 

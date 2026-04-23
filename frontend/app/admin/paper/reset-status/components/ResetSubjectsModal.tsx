@@ -5,8 +5,8 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Checkbox } from "@components/ui-elements/Checkbox";
-import { resultsApi, type AdminUserResultDetail, ApiError } from "@lib/api";
-import { UserListResponse } from "@lib/api/auth";
+import { resultsApi, ApiError } from "@lib/api";
+import { type AdminUserResultDetail, UserListResponse } from "@types";
 import { toast } from "@lib/toast";
 import {
   RefreshCw,

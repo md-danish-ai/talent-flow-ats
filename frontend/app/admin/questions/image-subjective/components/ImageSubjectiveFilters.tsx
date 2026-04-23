@@ -5,7 +5,7 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
-import { Classification } from "@lib/api/classifications";
+import { Classification } from "@types";
 
 interface ImageSubjectiveFiltersProps {
   isOpen: boolean;

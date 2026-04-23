@@ -32,11 +32,11 @@ import { Tooltip } from "@components/ui-elements/Tooltip";
 import { StatCard } from "@components/ui-cards/StatCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 
+import { resultsApi } from "@lib/api/results";
 import {
-  resultsApi,
   type AdminUserResultListItem,
   type PaginatedUserResults,
-} from "@lib/api/results";
+} from "@types";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 
@@ -271,7 +271,7 @@ export function UserResultsClient() {
   };
 
   return (
-    <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
+    <PageContainer className="space-y-8 max-w-7xl mx-auto">
       <motion.div
         variants={containerVariants}
         initial="hidden"

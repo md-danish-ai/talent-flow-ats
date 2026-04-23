@@ -20,14 +20,19 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { SearchInput } from "@components/ui-elements/SearchInput";
-import { departmentsApi, type Department } from "@lib/api/departments";
+import { departmentsApi } from "@lib/api/departments";
+import { type Department, PaginatedResponse } from "@types";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
 
-export function DepartmentListing() {
+interface DepartmentListingProps {
+  initialData?: PaginatedResponse<Department>;
+}
+
+export function DepartmentListing({ initialData }: DepartmentListingProps) {
   // Hook for standardized listing
   const {
     data: departments,
@@ -45,6 +50,8 @@ export function DepartmentListing() {
   } = useListing<Department, { search: string }>({
     fetchFn: departmentsApi.getDepartments,
     initialFilters: { search: "" },
+    initialData: initialData?.data,
+    initialTotalItems: initialData?.pagination?.total_records,
     initialPageSize: 10,
     toastMessage: "Department list refreshed successfully",
   });

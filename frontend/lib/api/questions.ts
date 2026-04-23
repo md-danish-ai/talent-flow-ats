@@ -1,95 +1,13 @@
 import { api } from "./index";
 import { ENDPOINTS } from "./endpoints";
-
-export interface QuestionOption {
-  option_label: string;
-  option_text: string;
-  is_correct: boolean;
-}
-
-export interface QuestionAnswer {
-  answer_text?: string | null;
-  explanation?: string | null;
-}
-
-export interface ClassificationRef {
-  id: number;
-  code: string;
-  type: string;
-  name: string;
-  metadata?: Record<string, unknown>;
-  is_active: boolean;
-  sort_order: number;
-}
-
-// ─── Auto-Generate Types ─────────────────────────────────────────────────────
-
-export interface AutoGenerateRequirement {
-  type_code: string;
-  count: number;
-  marks?: number;
-}
-
-export interface AutoGenerateRequest {
-  subject_code: string;
-  exam_level: string;
-  requirements: AutoGenerateRequirement[];
-}
-
-export interface AutoGenerateTypeDetail {
-  type_code: string;
-  requested: number;
-  found: number;
-  question_ids: number[];
-}
-
-export interface AutoGenerateResponse {
-  question_ids: number[];
-  details: AutoGenerateTypeDetail[];
-  warnings: string[];
-}
-
-export interface Question {
-  id: number;
-  question_text: string;
-  image_url?: string | null;
-  passage?: string | null;
-  marks: number;
-  is_active: boolean;
-  options: QuestionOption[] | Record<string, unknown> | null;
-  answer?: QuestionAnswer;
-  question_type?: ClassificationRef | null;
-  subject?: ClassificationRef | null;
-  exam_level?: ClassificationRef | null;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface OptionCreate {
-  option_label: string;
-  option_text: string;
-  is_correct: boolean;
-}
-
-export interface AnswerCreate {
-  answer_text?: string | null;
-  explanation?: string | null;
-}
-
-export interface QuestionCreate {
-  question_type: string;
-  subject: string;
-  exam_level: string;
-  question_text: string;
-  image_url?: string | null;
-  passage?: string | null;
-  marks: number;
-  is_active?: boolean;
-  options: QuestionOption[] | Record<string, unknown> | null;
-  answer: AnswerCreate;
-}
-
-import { type PaginatedResponse, type PaginationParams } from "./types";
+import {
+  Question,
+  QuestionCreate,
+  AutoGenerateRequest,
+  AutoGenerateResponse,
+  PaginatedResponse,
+  PaginationParams,
+} from "@types";
 
 export const questionsApi = {
   getQuestions: async (

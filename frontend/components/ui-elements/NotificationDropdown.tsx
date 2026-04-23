@@ -6,7 +6,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-import { type NotificationItem } from "@lib/api";
+import { type NotificationItem } from "@types";
 
 interface NotificationDropdownProps {
   isOpen: boolean;

@@ -6,11 +6,9 @@ import {
   imageSubjectiveSchema,
   type ImageSubjectiveFormValues,
 } from "@lib/validations/question";
-import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
+import { type QuestionCreate, type Classification } from "@types";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";

@@ -28,7 +28,9 @@
       "@components/ui-layout/*": ["components/ui-layout/*"],
       "@features/*": ["components/features/*"],
       "@hooks/*": ["hooks/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@types": ["types/index"],
+      "@types/*": ["types/*"]
     }
   },
   "include": [

@@ -9,7 +9,7 @@ import {
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { cn } from "@lib/utils";
-import { AdminUserLatestAttempt } from "@lib/api/results";
+import { type AdminUserLatestAttempt } from "@types";
 
 interface CollapsibleResultDetailProps {
   latest?: AdminUserLatestAttempt | null;

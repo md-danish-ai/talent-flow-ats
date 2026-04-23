@@ -19,11 +19,8 @@ import {
   FileText,
 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
-import { type QuestionCreate } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
+import { type Classification, type QuestionCreate } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 

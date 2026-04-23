@@ -17,9 +17,8 @@ import {
   getAllNotifications,
   markNotificationsRead,
   markNotificationsUnread,
-  type NotificationItem,
-  type NotificationResponse,
 } from "@lib/api";
+import { type NotificationItem, type NotificationResponse } from "@types";
 import { NotificationSummary } from "./components/NotificationSummary";
 import { NotificationRow } from "./components/NotificationRow";
 import { EmptyState } from "@components/ui-elements/EmptyState";

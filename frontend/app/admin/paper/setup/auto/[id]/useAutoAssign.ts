@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { papersApi, PaperSetup, PaperSubjectConfig } from "@lib/api/papers";
-import { questionsApi, Question } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup, PaperSubjectConfig, Question, Classification } from "@types";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 
 export function useAutoAssign(id: number) {

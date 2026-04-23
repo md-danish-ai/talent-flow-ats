@@ -8,14 +8,15 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { MultiSelectDropdown } from "@components/ui-elements/MultiSelectDropdown";
 import { DatePicker } from "@components/ui-elements/DatePicker";
 import { Switch } from "@components/ui-elements/Switch";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
 import {
   paperAssignmentsApi,
   AutoAssignmentRuleResponse,
   AutoAssignmentRulePayload,
 } from "@lib/api/paper-assignments";
-import { papersApi, type PaperSetup } from "@lib/api/papers";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { toast } from "@lib/toast";
 import { Loader2 } from "lucide-react";
 import { Alert } from "@components/ui-elements/Alert";

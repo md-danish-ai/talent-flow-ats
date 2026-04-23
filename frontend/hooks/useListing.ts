@@ -1,37 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@lib/toast";
 
-/**
- * Common shape for query parameters in our APIs.
- */
-export type QueryParams = Record<
-  string,
-  string | number | boolean | undefined | null | string[] | number[]
->;
+import { PaginatedResponse } from "@types";
 
-/**
- * Standard Pagination structure used across most APIs.
- */
-export interface BasePagination {
-  total_records: number;
-  total_pages: number;
-  current_page?: number;
-  per_page?: number;
-  has_next?: boolean;
-  has_previous?: boolean;
-}
-
-/**
- * Generic shape for paginated API responses.
- */
-export interface GenericPaginatedResponse<T> {
-  data: T[];
-  pagination: BasePagination;
-}
-
-interface UseListingProps<T, F, R extends GenericPaginatedResponse<T>> {
+interface UseListingProps<T, F, R extends PaginatedResponse<T>> {
   /** The API function to call. It should accept an object of QueryParams. */
-  fetchFn: (params: QueryParams) => Promise<R>;
+  fetchFn: (params: Record<string, unknown>) => Promise<R>;
   /** Initial filter values. */
   initialFilters: F;
   /** Optional initial data to skip first fetch. */
@@ -49,13 +23,13 @@ interface UseListingProps<T, F, R extends GenericPaginatedResponse<T>> {
   /** Optional callback on failed fetch. */
   onError?: (error: unknown) => void;
   /** Optional function to transform filters before API call. (e.g. "all" to undefined) */
-  filterMapping?: (filters: F) => QueryParams;
+  filterMapping?: (filters: F) => Record<string, unknown>;
 }
 
 export function useListing<
   T,
   F extends object,
-  R extends GenericPaginatedResponse<T> = GenericPaginatedResponse<T>,
+  R extends PaginatedResponse<T> = PaginatedResponse<T>,
 >({
   fetchFn,
   initialFilters,
@@ -130,9 +104,9 @@ export function useListing<
       try {
         const activeFilters = filterMappingRef.current
           ? filterMappingRef.current(filters)
-          : (filters as unknown as QueryParams);
+          : (filters as unknown as Record<string, unknown>);
 
-        const params: QueryParams = {
+        const params: Record<string, unknown> = {
           page: currentPage,
           limit: pageSize,
           ...activeFilters,
@@ -210,7 +184,9 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: () => void fetchItems(true),
+    refresh: () => {
+      fetchItems(true);
+    },
     handleFilterChange,
     handlePageChange,
     handlePageSizeChange,

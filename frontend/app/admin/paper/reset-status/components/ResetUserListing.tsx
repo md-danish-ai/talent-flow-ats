@@ -12,7 +12,8 @@ import {
 } from "@components/ui-elements/Table";
 import { ResetUserListingSkeleton } from "@components/ui-skeleton/ResetUserListingSkeleton";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { type UserListResponse, getUsersByRole } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
+import { UserListResponse, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
@@ -26,8 +27,8 @@ import { Badge } from "@components/ui-elements/Badge";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import {
@@ -45,17 +46,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { useListing } from "@hooks/useListing";
 
 interface ResetUserListingProps {
-  initialData?: {
-    data: UserListResponse[];
-    pagination: {
-      total_records: number;
-      total_pages: number;
-      current_page: number;
-      per_page: number;
-      has_next: boolean;
-      has_previous: boolean;
-    };
-  };
+  initialData?: PaginatedResponse<UserListResponse>;
 }
 
 interface UserListingFilters {
@@ -309,7 +300,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <CopyableText
-                            value={row.mobile}
+                            value={row.mobile || ""}
                             className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
                             title="Copy Phone Number"
                           >

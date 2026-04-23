@@ -23,11 +23,8 @@ import {
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
-import {
-  getUsersByRole,
-  type UserListResponse,
-  toggleUserStatus,
-} from "@lib/api/auth";
+import { getUsersByRole, toggleUserStatus,  } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Modal } from "@components/ui-elements/Modal";
@@ -39,8 +36,8 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { cn } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import { SearchInput } from "@components/ui-elements/SearchInput";
@@ -353,7 +350,7 @@ export function UserListing({ initialData }: UserListingProps) {
                       </TableCell>
                       <TableCell className="align-middle py-3">
                         <CopyableText
-                          value={row.mobile}
+                          value={row.mobile || ""}
                           className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary transition-colors hover:text-brand-primary dark:hover:text-brand-primary"
                           title="Copy Phone Number"
                         >

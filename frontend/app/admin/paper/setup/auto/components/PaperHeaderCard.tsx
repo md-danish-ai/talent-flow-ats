@@ -14,7 +14,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { PaperSetup } from "@lib/api/papers";
+import { PaperSetup } from "@types";
 import { StatsCard } from "./StatsCard";
 
 interface PaperHeaderCardProps {

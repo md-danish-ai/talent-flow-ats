@@ -1,35 +1,11 @@
 import { api, type ApiRequestOptions } from "./index";
 import { ENDPOINTS } from "./endpoints";
-
-export interface Department {
-  id: number;
-  name: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PaginatedDepartmentsResponse {
-  data: Department[];
-  pagination: {
-    total_records: number;
-    total_pages: number;
-    current_page: number;
-    per_page: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}
-
-export interface DepartmentCreate {
-  name: string;
-  is_active?: boolean;
-}
-
-export interface DepartmentUpdate {
-  name?: string;
-  is_active?: boolean;
-}
+import {
+  Department,
+  DepartmentCreate,
+  DepartmentUpdate,
+  PaginatedResponse,
+} from "@types";
 
 export const departmentsApi = {
   getDepartments: async (
@@ -51,7 +27,7 @@ export const departmentsApi = {
     }
     const queryString = queryParams.toString();
     const endpoint = `${ENDPOINTS.DEPARTMENTS.GET}${queryString ? `?${queryString}` : ""}`;
-    return api.get<PaginatedDepartmentsResponse>(endpoint, options);
+    return api.get<PaginatedResponse<Department>>(endpoint, options);
   },
 
   createDepartment: async (data: DepartmentCreate) => {

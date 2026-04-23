@@ -17,11 +17,8 @@ import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { AddAdminModal } from "./AddAdminModal";
-import {
-  getUsersByRole,
-  type UserListResponse,
-  toggleUserStatus,
-} from "@lib/api/auth";
+import { getUsersByRole, toggleUserStatus,  } from "@lib/api/auth";
+import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { EmptyState } from "@components/ui-elements/EmptyState";

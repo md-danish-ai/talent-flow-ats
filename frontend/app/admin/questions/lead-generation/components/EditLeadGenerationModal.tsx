@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { LeadGenerationForm } from "@components/features/questions/LeadGenerationForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { type LeadGenerationFormValues } from "@lib/validations/question";
 
 interface EditLeadGenerationModalProps {

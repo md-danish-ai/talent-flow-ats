@@ -12,7 +12,8 @@ import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
-import { api, type NotificationItem, getAllNotifications } from "@lib/api";
+import { api, getAllNotifications } from "@lib/api";
+import { type NotificationItem } from "@types";
 import { ENDPOINTS } from "@lib/api/endpoints";
 
 interface NavbarProps {

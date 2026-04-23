@@ -19,7 +19,7 @@ import {
 import Link from "next/link";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
-import type { UserDetails } from "@lib/api/user-details";
+import type { UserDetails } from "@types";
 import { Card } from "@components/ui-cards/Card";
 
 interface UserDetailViewProps {

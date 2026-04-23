@@ -25,9 +25,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
-import { papersApi, PaperSetup } from "@lib/api/papers";
-import { questionsApi, Question } from "@lib/api/questions";
-import { classificationsApi, Classification } from "@lib/api/classifications";
+import { papersApi } from "@lib/api/papers";
+import { PaperSetup, Question, Classification } from "@types";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 
 interface PaperSetupDetailProps {

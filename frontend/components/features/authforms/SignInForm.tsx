@@ -15,7 +15,7 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { toast } from "@lib/toast";
 import { signInSchema, type SignInFormValues } from "@lib/validations/auth";
-import { useSignIn } from "@lib/react-query/user/use-auth";
+import { useSignIn } from "@hooks/api/user/use-auth";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";

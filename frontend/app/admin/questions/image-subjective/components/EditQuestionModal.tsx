@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { AddImageSubjectiveQuestionForm } from "@components/features/questions/AddImageSubjectiveQuestionForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { ImageSubjectiveFormValues } from "@lib/validations/question";
 
 interface EditImageQuestionModalProps {

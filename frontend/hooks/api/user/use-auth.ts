@@ -10,14 +10,13 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { signIn, signUp, updateBasicInfo } from "@lib/api/auth";
-import type { AuthResponse, SignUpResponse } from "@lib/api/auth";
+import { AuthResponse, SignUpResponse, IApiError } from "@types";
 import type { SignInFormValues, SignUpFormValues } from "@lib/validations/auth";
-import type { ApiError } from "@lib/api/client";
 
 // ─── Sign Up Mutation ────────────────────────────────────────────────────
 
 export function useSignUp() {
-  return useMutation<SignUpResponse, ApiError, SignUpFormValues>({
+  return useMutation<SignUpResponse, IApiError, SignUpFormValues>({
     mutationFn: (data) => signUp(data),
     mutationKey: ["auth", "signup"],
   });
@@ -26,7 +25,7 @@ export function useSignUp() {
 // ─── Sign In Mutation ────────────────────────────────────────────────────
 
 export function useSignIn() {
-  return useMutation<AuthResponse, ApiError, SignInFormValues>({
+  return useMutation<AuthResponse, IApiError, SignInFormValues>({
     mutationFn: (data) => signIn(data),
     mutationKey: ["auth", "signin"],
   });
@@ -37,10 +36,10 @@ export function useSignIn() {
 export function useUpdateBasicInfo(userId: number | string) {
   return useMutation<
     { message: string; user_id: number },
-    ApiError,
+    IApiError,
     SignUpFormValues
   >({
-    mutationFn: (data) => updateBasicInfo(userId, data),
+    mutationFn: (data) => updateBasicInfo(Number(userId), data),
     mutationKey: ["auth", "update-basic", userId],
   });
 }

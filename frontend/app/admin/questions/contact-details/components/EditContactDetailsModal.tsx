@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { ContactDetailsForm } from "@components/features/questions/ContactDetailsForm";
-import { Question } from "@lib/api/questions";
+import { Question } from "@types";
 import { type ContactDetailsFormValues } from "@lib/validations/question";
 
 interface EditContactDetailsModalProps {

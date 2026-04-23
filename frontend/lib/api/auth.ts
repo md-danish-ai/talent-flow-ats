@@ -6,43 +6,15 @@ import type {
   SignUpFormValues,
   CreateAdminFormValues,
 } from "@lib/validations/auth";
-import type { UserDetails } from "./user-details";
 import type { CurrentUser } from "@lib/auth/user-utils";
-
-export interface AuthResponse {
-  access_token: string;
-  user: {
-    id: number | string;
-    username: string;
-    email?: string;
-    mobile?: string;
-    role: string;
-    department_id?: number | null;
-  };
-}
-
-export interface SignUpResponse {
-  message: string;
-  access_token: string;
-  user: {
-    id: number | string;
-    username: string;
-    email?: string;
-    mobile?: string;
-    role: string;
-    department_id?: number | null;
-  };
-}
-
-export interface CreateAdminResponse {
-  message: string;
-  access_token: string;
-  user: {
-    id: number | string;
-    username: string;
-    role: string;
-  };
-}
+import {
+  AuthResponse,
+  SignUpResponse,
+  CreateAdminResponse,
+  UserListResponse,
+  PaginatedResponse,
+  UserDetails,
+} from "@types";
 
 // POST /auth/signup - Register a new user account
 export async function signUp(
@@ -92,37 +64,7 @@ export async function createProjectLead(
     options,
   );
 }
-
-export interface UserListResponse {
-  id: number;
-  username: string;
-  mobile: string;
-  email: string | null;
-  role: string;
-  department_id?: number | null;
-  department_name?: string | null;
-  test_level_id?: number | null;
-  test_level_name?: string | null;
-  is_active: boolean;
-  is_reinterview?: boolean;
-  reinterview_date?: string | null;
-  user_type?: "new" | "returning";
-  assignment?: {
-    is_assigned: boolean;
-    paper_id: number | null;
-    paper_name?: string | null;
-    department_id: number | null;
-    department_name?: string | null;
-    test_level_id: number | null;
-    test_level_name?: string | null;
-    is_attempted: boolean;
-    has_started: boolean;
-  } | null;
-  is_details_submitted: boolean;
-  is_interview_submitted: boolean;
-}
-
-// GET /auth/get-all-users?role={role}&page={page}&limit={limit}&search={search}&date={date}&date_from={date_from}&date_to={date_to}
+// GET /auth/get-all-users
 export async function getUsersByRole(
   role: string,
   options?: Pick<ApiRequestOptions, "cookies"> & {
@@ -135,17 +77,7 @@ export async function getUsersByRole(
     department_id?: number | string;
     test_level_id?: number | string;
   },
-): Promise<{
-  data: UserListResponse[];
-  pagination: {
-    total_records: number;
-    total_pages: number;
-    current_page: number;
-    per_page: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}> {
+): Promise<PaginatedResponse<UserListResponse>> {
   const queryParams = new URLSearchParams({ role });
   if (options?.page) queryParams.append("page", options.page.toString());
   if (options?.limit) queryParams.append("limit", options.limit.toString());
@@ -170,17 +102,10 @@ export async function getUsersByRole(
     delete (apiOptions as { test_level_id?: number | string }).test_level_id;
   }
 
-  return api.get<{
-    data: UserListResponse[];
-    pagination: {
-      total_records: number;
-      total_pages: number;
-      current_page: number;
-      per_page: number;
-      has_next: boolean;
-      has_previous: boolean;
-    };
-  }>(`${ENDPOINTS.AUTH.GET_ALL_USERS}?${queryParams.toString()}`, apiOptions);
+  return api.get<PaginatedResponse<UserListResponse>>(
+    `${ENDPOINTS.AUTH.GET_ALL_USERS}?${queryParams.toString()}`,
+    apiOptions,
+  );
 }
 
 // PUT /auth/toggle-status/{user_id} - Toggle user's active status
@@ -208,7 +133,7 @@ export async function deleteUser(
 
 // PUT /auth/update-basic-info/{user_id} - Update basic user info
 export async function updateBasicInfo(
-  userId: number | string,
+  userId: number,
   data: SignUpFormValues,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ message: string; user_id: number }> {

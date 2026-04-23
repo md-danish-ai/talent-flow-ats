@@ -24,13 +24,10 @@ import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { questionsApi, type Question } from "@lib/api/questions";
+import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
-import { ApiError } from "@lib/api/client";
+import { classificationsApi, ApiError } from "@lib/api";
+import { Question, Classification } from "@types";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 import { MCQFilters } from "./components/MCQFilters";

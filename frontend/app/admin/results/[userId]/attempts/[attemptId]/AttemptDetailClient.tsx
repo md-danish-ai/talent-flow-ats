@@ -16,7 +16,8 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
-import { resultsApi, type AdminUserResultDetail } from "@lib/api/results";
+import { resultsApi } from "@lib/api/results";
+import { type AdminUserResultDetail } from "@types";
 import { motion, AnimatePresence } from "framer-motion";
 import { AttemptDetailSkeleton } from "@components/ui-skeleton/AttemptDetailSkeleton";
 

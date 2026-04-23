@@ -6,11 +6,9 @@ import {
   imageMCQSchema,
   type ImageMCQFormValues,
 } from "@lib/validations/question";
-import { questionsApi, type QuestionCreate } from "@lib/api/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
+import { questionsApi } from "@lib/api/questions";
+import { classificationsApi } from "@lib/api/classifications";
+import { type QuestionCreate, type Classification } from "@types";
 import { Button } from "@components/ui-elements/Button";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";

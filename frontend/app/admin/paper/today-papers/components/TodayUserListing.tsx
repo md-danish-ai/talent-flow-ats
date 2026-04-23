@@ -19,15 +19,16 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
-import { type UserListResponse, getUsersByRole } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
+import { UserListResponse, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
-import { useDepartments } from "@lib/react-query/departments/use-departments";
-import { useClassifications } from "@lib/react-query/classifications/use-classifications";
+import { useDepartments } from "@hooks/api/departments/use-departments";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { Badge } from "@components/ui-elements/Badge";
 import { useSearchParams } from "next/navigation";
 import { Tooltip } from "@components/ui-elements/Tooltip";
@@ -41,17 +42,7 @@ import { CopyableText } from "@components/ui-elements/CopyableText";
 import { useListing } from "@hooks/useListing";
 
 interface TodayUserListingProps {
-  initialData?: {
-    data: UserListResponse[];
-    pagination: {
-      total_records: number;
-      total_pages: number;
-      current_page: number;
-      per_page: number;
-      has_next: boolean;
-      has_previous: boolean;
-    };
-  };
+  initialData?: PaginatedResponse<UserListResponse>;
   initialLabel?: string;
 }
 
@@ -304,7 +295,7 @@ export function TodayUserListing({
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <CopyableText
-                            value={row.mobile}
+                            value={row.mobile || ""}
                             className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-brand-primary"
                             title="Copy Phone Number"
                           >
@@ -445,7 +436,7 @@ export function TodayUserListing({
               </Typography>
               <DateRangeHeaderActions
                 initialLabel={initialLabel}
-                onRefresh={() => void fetchItems()}
+                onRefresh={() => fetchItems()}
                 isLoading={loading}
                 showRefresh={false}
               />

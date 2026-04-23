@@ -24,11 +24,8 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { Badge } from "@components/ui-elements/Badge";
 import { SearchInput } from "@components/ui-elements/SearchInput";
 import { Switch } from "@components/ui-elements/Switch";
-import {
-  classificationsApi,
-  type Classification,
-  type PaginatedClassificationsResponse,
-} from "lib/api/classifications";
+import { classificationsApi } from "@lib/api/classifications";
+import { Classification, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { classificationSchema } from "@lib/validations/management";
@@ -51,8 +48,8 @@ interface TypesListingFilters {
 }
 
 interface TypesManagementClientProps {
-  initialSubjectData?: PaginatedClassificationsResponse;
-  initialLevelData?: PaginatedClassificationsResponse;
+  initialSubjectData?: PaginatedResponse<Classification>;
+  initialLevelData?: PaginatedResponse<Classification>;
 }
 
 export function TypesManagementClient({
@@ -236,11 +233,11 @@ export function TypesManagementClient({
 
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-lg border border-border shrink-0">
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-lg border border-border shrink-0">
           {(["all", "active", "inactive"] as const).map((status) => (
             <Button
               key={status}
-              variant={filters.status === status ? "primary" : "ghost"}
+              variant={filters.status === status ? "secondary" : "primary"}
               size="sm"
               onClick={() => handleFilterChange({ status: status })}
               className="h-8 px-3 text-xs border-none"

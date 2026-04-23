@@ -5,7 +5,8 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
-import { departmentsApi, Department } from "lib/api/departments";
+import { departmentsApi } from "@lib/api/departments";
+import { type Department } from "@types";
 import { departmentSchema } from "@lib/validations/management";
 
 interface ManageDepartmentModalProps {

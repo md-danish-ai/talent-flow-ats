@@ -8,7 +8,7 @@ import { Badge, type BadgeColor } from "@components/ui-elements/Badge";
 import { Input } from "@components/ui-elements/Input";
 import { Button } from "@components/ui-elements/Button";
 import { motion, AnimatePresence } from "framer-motion";
-import { type AdminUserResultAnswer } from "@lib/api/results";
+import { type AdminUserResultAnswer } from "@types";
 import { type ParsedOption } from "../utils";
 
 interface QuestionResultCardProps {

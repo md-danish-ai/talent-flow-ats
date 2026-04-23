@@ -16,12 +16,10 @@ import {
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { Plus, ListChecks, Filter, Upload, RefreshCcw } from "lucide-react";
-import { questionsApi, type Question } from "@lib/api/questions";
+import { questionsApi } from "@lib/api/questions";
+import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
-import {
-  classificationsApi,
-  type Classification,
-} from "@lib/api/classifications";
+import { classificationsApi,  } from "@lib/api/classifications";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
