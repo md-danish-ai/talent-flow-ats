@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import List
 
 class GradeCount(BaseModel):
     label: str

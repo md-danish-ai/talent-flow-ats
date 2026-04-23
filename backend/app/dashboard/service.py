@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 from sqlalchemy import func
 from app.database.db import SessionLocal
@@ -23,8 +23,8 @@ class DashboardService:
             # Standardizing role check to case-insensitive or common variants if needed, 
             # but User model default is 'user'
             total_candidates = db.query(User).filter(User.role == "user").count()
-            active_papers = db.query(Paper).filter(Paper.is_active == True).count()
-            total_questions = db.query(Question).filter(Question.is_active == True).count()
+            active_papers = db.query(Paper).filter(Paper.is_active).count()
+            total_questions = db.query(Question).filter(Question.is_active).count()
             
             # Today's Efforts / Attempts in range
             today_attempts_stat = db.query(InterviewRecord).filter(
@@ -47,7 +47,7 @@ class DashboardService:
             ).count()
             
             reinterviews_count = db.query(UserDetail).join(User, UserDetail.user_id == User.id).filter(
-                UserDetail.is_reinterview == True,
+                UserDetail.is_reinterview,
                 UserDetail.reinterview_date >= filter_start,
                 UserDetail.reinterview_date <= filter_end,
                 User.role == "user"
