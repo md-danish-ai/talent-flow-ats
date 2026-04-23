@@ -40,10 +40,13 @@ import {
   RefreshCcw,
   BookOpenCheck,
   Mail,
+  Loader2,
 } from "lucide-react";
 
 import { Typography } from "@components/ui-elements/Typography";
 import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface ResetUserListingProps {
   initialData?: PaginatedResponse<UserListResponse>;
@@ -70,6 +73,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const {
     data: users,
     isLoading: loading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
@@ -130,59 +134,16 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
         className="mb-6 flex flex-col overflow-hidden"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
-          <div className="flex items-center gap-3">
-            {loading ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} USERS
-              </Badge>
-            )}
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={loading}
-              >
-                <div className={cn(loading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Advanced Filters & Searching"
-              }
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-card">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
-          </div>
+          <ListingHeaderActions
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+            totalItems={totalItems}
+            itemLabel="Users"
+            onRefresh={refresh}
+            onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+            isFilterOpen={isFilterOpen}
+            activeFiltersCount={activeFiltersCount}
+          />
         }
       >
         <div
@@ -192,8 +153,12 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
           )}
         >
           <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <ListingTransition
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+            >
+              <div className="flex-1 overflow-x-auto w-full">
+                <Table>
                 <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
                   <TableRow>
                     <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">

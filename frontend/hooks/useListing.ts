@@ -57,6 +57,8 @@ export function useListing<
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [filters, setFilters] = useState<F>(initialFilters);
+  const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mount guard and stabilization refs
   const isFirstMount = useRef(true);
@@ -106,7 +108,21 @@ export function useListing<
       }
 
       isFetchingRef.current = true;
-      setIsLoading(true);
+
+      // Smooth UX: Use a small delay for the loading state to prevent flickering on fast responses
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+
+      if (data.length === 0) {
+        setIsLoading(true);
+      } else {
+        setIsBackgroundLoading(true);
+        // Delay full skeleton for refreshes to allow silent updates if fast
+        loadingTimeoutRef.current = setTimeout(() => {
+          setIsLoading(true);
+          setIsBackgroundLoading(false);
+        }, 300); // 300ms sweet spot for smoothness
+      }
+
       try {
         const activeFilters = filterMappingRef.current
           ? filterMappingRef.current(filters)
@@ -139,7 +155,9 @@ export function useListing<
         console.error("useListing fetch error:", error);
         if (onErrorRef.current) onErrorRef.current(error);
       } finally {
+        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
         setIsLoading(false);
+        setIsBackgroundLoading(false);
         isFetchingRef.current = false;
         isFirstMount.current = false;
       }
@@ -191,6 +209,7 @@ export function useListing<
   return {
     data,
     isLoading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
