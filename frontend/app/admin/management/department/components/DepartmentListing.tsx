@@ -93,7 +93,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     setIsDeleting(true);
     try {
       await departmentsApi.deleteDepartment(deptToDelete);
-      void fetchItems();
+      void refresh();
       setIsDeleteModalOpen(false);
       toast.success("Department deleted successfully");
     } catch (error) {
@@ -109,7 +109,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       await departmentsApi.updateDepartment(dept.id, {
         is_active: !dept.is_active,
       });
-      void fetchItems();
+      void refresh();
       toast.success(
         `Department ${!dept.is_active ? "activated" : "deactivated"}`,
       );
@@ -349,7 +349,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingDepartment={editingDepartment}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
       />
 
       <ConfirmModal

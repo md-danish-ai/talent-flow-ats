@@ -157,7 +157,7 @@ export function TypesManagementClient({
           metadata: metadataToSubmit,
         });
       }
-      void fetchItems();
+      void refresh();
       handleCloseModal();
     } catch {
       // Error toast is handled globally
@@ -176,7 +176,7 @@ export function TypesManagementClient({
       setIsLoading(true);
       try {
         await classificationsApi.deleteClassification(typeToDelete);
-        void fetchItems();
+        void refresh();
         setIsDeleteModalOpen(false);
         setTypeToDelete(null);
       } catch {
@@ -193,7 +193,7 @@ export function TypesManagementClient({
       await classificationsApi.updateClassification(item.id, {
         is_active: !item.is_active,
       });
-      void fetchItems();
+      void refresh();
     } catch {
       // Error toast is handled globally
     } finally {

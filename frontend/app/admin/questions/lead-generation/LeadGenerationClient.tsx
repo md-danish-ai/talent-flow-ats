@@ -155,7 +155,7 @@ export function LeadGenerationClient() {
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      void fetchItems();
+      void refresh();
       toast.success("Status updated successfully");
     } catch (error) {
       console.error("Failed to toggle question status:", error);
@@ -395,7 +395,7 @@ export function LeadGenerationClient() {
       <AddQuestionModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
       />
 
       {editingQuestion && (
@@ -403,14 +403,14 @@ export function LeadGenerationClient() {
           question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}
-          onSuccess={() => void fetchItems()}
+          onSuccess={() => void refresh()}
         />
       )}
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.LEAD_GENERATION}
       />
     </PageContainer>

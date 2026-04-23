@@ -75,7 +75,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      void fetchItems();
+      void refresh();
       toast.success("Status updated successfully");
     } catch (error) {
       console.error("Toggle failed:", error);
@@ -271,7 +271,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          void fetchItems();
+          void refresh();
         }}
       />
     </>

@@ -86,7 +86,7 @@ export function NotificationsClient() {
   }, []);
 
   useEffect(() => {
-    const handleUpdate = () => void fetchItems();
+    const handleUpdate = () => void refresh();
     window.addEventListener("notificationsUpdated", handleUpdate);
     return () =>
       window.removeEventListener("notificationsUpdated", handleUpdate);

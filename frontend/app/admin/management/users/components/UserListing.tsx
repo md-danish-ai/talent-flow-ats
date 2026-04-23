@@ -112,7 +112,7 @@ export function UserListing({ initialData }: UserListingProps) {
     setTogglingId(user.id);
     try {
       await toggleUserStatus(user.id);
-      void fetchItems();
+      void refresh();
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -500,7 +500,7 @@ export function UserListing({ initialData }: UserListingProps) {
           <SignUpForm
             onSuccess={() => {
               setIsAddModalOpen(false);
-              void fetchItems();
+              void refresh();
             }}
           />
         </div>
@@ -523,7 +523,7 @@ export function UserListing({ initialData }: UserListingProps) {
               }}
               onSuccess={() => {
                 setIsEditModalOpen(false);
-                void fetchItems();
+                void refresh();
               }}
             />
           )}

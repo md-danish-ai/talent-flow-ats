@@ -184,7 +184,7 @@ export function MCQClient({
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      void fetchItems();
+      void refresh();
       toast.success(
         `Question ${!currentStatus ? "activated" : "deactivated"} successfully`,
       );
@@ -415,7 +415,7 @@ export function MCQClient({
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
-          void fetchItems();
+          void refresh();
         }}
       />
 
@@ -425,7 +425,7 @@ export function MCQClient({
           questionData={editingQuestion}
           onClose={() => {
             setEditingQuestion(null);
-            void fetchItems();
+            void refresh();
           }}
         />
       )}
@@ -433,7 +433,7 @@ export function MCQClient({
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
       />
     </PageContainer>

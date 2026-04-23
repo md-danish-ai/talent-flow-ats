@@ -190,7 +190,7 @@ export function ImageMCQClient({
     setTogglingId(id);
     try {
       await questionsApi.toggleQuestionStatus(id);
-      void fetchItems();
+      void refresh();
       toast.success("Question status updated successfully");
     } catch (error) {
       if (!handleAuthError(error)) {
@@ -426,7 +426,7 @@ export function ImageMCQClient({
       <AddImageQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
       />
       {editingQuestion && (
         <EditImageQuestionModal
@@ -434,7 +434,7 @@ export function ImageMCQClient({
           questionData={editingQuestion}
           onClose={() => setEditingQuestion(null)}
           onSuccess={() => {
-            void fetchItems();
+            void refresh();
             setEditingQuestion(null);
           }}
         />
@@ -447,7 +447,7 @@ export function ImageMCQClient({
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
       />
     </PageContainer>
