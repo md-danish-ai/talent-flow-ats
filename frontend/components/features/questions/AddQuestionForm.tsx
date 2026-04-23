@@ -47,7 +47,6 @@ export const AddQuestionForm = ({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.MULTIPLE_CHOICE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

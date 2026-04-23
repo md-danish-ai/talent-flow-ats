@@ -117,7 +117,6 @@ export const ContactDetailsForm = ({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.CONTACT_DETAILS,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
 

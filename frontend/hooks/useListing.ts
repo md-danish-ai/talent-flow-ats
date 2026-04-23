@@ -3,9 +3,14 @@ import { toast } from "@lib/toast";
 
 import { PaginatedResponse } from "@types";
 
-interface UseListingProps<T, F, R extends PaginatedResponse<T>> {
+interface UseListingProps<
+  T,
+  F,
+  R extends PaginatedResponse<T>,
+  P = Record<string, unknown>,
+> {
   /** The API function to call. It should accept an object of QueryParams. */
-  fetchFn: (params: Record<string, unknown>) => Promise<R>;
+  fetchFn: (params: P) => Promise<R>;
   /** Initial filter values. */
   initialFilters: F;
   /** Optional initial data to skip first fetch. */
@@ -30,6 +35,7 @@ export function useListing<
   T,
   F extends object,
   R extends PaginatedResponse<T> = PaginatedResponse<T>,
+  P = Record<string, unknown>,
 >({
   fetchFn,
   initialFilters,
@@ -41,16 +47,18 @@ export function useListing<
   onSuccess,
   onError,
   filterMapping,
-}: UseListingProps<T, F, R>) {
-  const [data, setData] = useState<T[]>(initialData);
-  const [isLoading, setIsLoading] = useState(initialData.length === 0);
-  const [totalItems, setTotalItems] = useState(initialTotalItems);
+}: UseListingProps<T, F, R, P>) {
+  const [data, setData] = useState<T[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(initialTotalItems || 0);
   const [totalPages, setTotalPages] = useState(
     initialTotalItems ? Math.ceil(initialTotalItems / initialPageSize) : 1,
   );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [filters, setFilters] = useState<F>(initialFilters);
+  const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mount guard and stabilization refs
   const isFirstMount = useRef(true);
@@ -100,7 +108,21 @@ export function useListing<
       }
 
       isFetchingRef.current = true;
-      setIsLoading(true);
+
+      // Smooth UX: Use a small delay for the loading state to prevent flickering on fast responses
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+
+      if (data.length === 0) {
+        setIsLoading(true);
+      } else {
+        setIsBackgroundLoading(true);
+        // Delay full skeleton for refreshes to allow silent updates if fast
+        loadingTimeoutRef.current = setTimeout(() => {
+          setIsLoading(true);
+          setIsBackgroundLoading(false);
+        }, 300); // 300ms sweet spot for smoothness
+      }
+
       try {
         const activeFilters = filterMappingRef.current
           ? filterMappingRef.current(filters)
@@ -112,7 +134,7 @@ export function useListing<
           ...activeFilters,
         };
 
-        const response = await fetchFnRef.current(params);
+        const response = await fetchFnRef.current(params as unknown as P);
 
         const fetchedData = response.data || [];
         const pagination = response.pagination;
@@ -133,12 +155,14 @@ export function useListing<
         console.error("useListing fetch error:", error);
         if (onErrorRef.current) onErrorRef.current(error);
       } finally {
+        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
         setIsLoading(false);
+        setIsBackgroundLoading(false);
         isFetchingRef.current = false;
         isFirstMount.current = false;
       }
     },
-    [currentPage, pageSize, filters, initialData.length],
+    [currentPage, pageSize, filters, initialData.length, data.length],
   );
 
   // Auto-fetch data on state change
@@ -150,6 +174,14 @@ export function useListing<
     setFilters((prev) => ({ ...prev, ...newFilters }));
     setCurrentPage(1);
   }, []);
+
+  const handleSingleFilterChange = useCallback(
+    (key: string, value: unknown) => {
+      setFilters((prev) => ({ ...prev, [key]: value }) as F);
+      setCurrentPage(1);
+    },
+    [],
+  );
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -177,6 +209,7 @@ export function useListing<
   return {
     data,
     isLoading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
@@ -184,10 +217,11 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: () => {
-      fetchItems(true);
+    refresh: async () => {
+      await fetchItems(true);
     },
     handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,

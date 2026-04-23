@@ -23,7 +23,6 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
   const cookieStore = await cookies();
   const params = await searchParams;
 
-  const date = params.date;
   const date_from = params.date_from;
   const date_to = params.date_to;
   const initialLabel = params.label || "Today";
@@ -38,12 +37,11 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
   try {
     const todayDate = new Date().toISOString().split("T")[0];
 
-    // If no specific range is provided, default to today
+    // If no specific range is provided, default to today for both from and to
     const fetchOptions = {
       cookies: cookieString,
-      date: date_from || date_to ? undefined : date || todayDate,
-      date_from: date_from,
-      date_to: date_to,
+      date_from: date_from || (!date_to ? todayDate : undefined),
+      date_to: date_to || (!date_from ? todayDate : undefined),
       page: 1,
       limit: 10,
     };

@@ -19,9 +19,3 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: ApiResponsePagination;
 }
-
-export interface IApiError {
-  message: string;
-  status_code?: number;
-  errors?: Record<string, string[]>;
-}

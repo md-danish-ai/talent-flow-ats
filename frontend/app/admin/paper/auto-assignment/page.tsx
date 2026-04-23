@@ -13,7 +13,7 @@ import {
   AutoAssignmentRuleResponse,
 } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
-import { DatePicker } from "@components/ui-elements/DatePicker";
+import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 
 export default function AutoAssignmentDashboard() {
   const [rules, setRules] = useState<AutoAssignmentRuleResponse[]>([]);
@@ -21,28 +21,38 @@ export default function AutoAssignmentDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] =
     useState<AutoAssignmentRuleResponse | null>(null);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [dateFilter, setDateFilter] = useState<{
+    range?: { from?: string; to?: string };
+    label?: string;
+  }>({ label: "Today" });
 
   const fetchRules = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await paperAssignmentsApi.getAutoRules(selectedDate);
+      const dateFrom = dateFilter.range?.from;
+      const dateTo = dateFilter.range?.to;
+      const assignedDate =
+        !dateFrom && !dateTo
+          ? dateFilter.label === "Today" || !dateFilter.label
+            ? new Date().toISOString().split("T")[0]
+            : undefined
+          : undefined;
+
+      const response = await paperAssignmentsApi.getAutoRules({
+        assigned_date: assignedDate,
+        date_from: dateFrom,
+        date_to: dateTo,
+      });
       setRules(response);
     } catch {
       toast.error("Failed to fetch rules");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedDate]);
+  }, [dateFilter]);
 
-  const firstMountRef = React.useRef(true);
   useEffect(() => {
-    if (firstMountRef.current) {
-      firstMountRef.current = false;
-      fetchRules();
-    }
+    fetchRules();
   }, [fetchRules]);
 
   const handleEdit = (rule: AutoAssignmentRuleResponse) => {
@@ -99,10 +109,12 @@ export default function AutoAssignmentDashboard() {
           </div>
         }
         action={
-          <DatePicker
-            value={selectedDate}
-            onChange={setSelectedDate}
-            className="w-52"
+          <DateRangePicker
+            onRangeChange={(range, label) =>
+              setDateFilter({ range: range || undefined, label })
+            }
+            initialLabel={dateFilter.label || "Today"}
+            className="w-64 font-medium"
           />
         }
         bodyClassName="p-0"

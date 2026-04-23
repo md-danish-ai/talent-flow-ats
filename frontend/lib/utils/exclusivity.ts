@@ -1,6 +1,6 @@
 import { type Classification } from "@types";
 
-const normalize = (s: string) =>
+export const normalize = (s: string) =>
   (s || "")
     .toLowerCase()
     .replace(/_/g, " ")
@@ -8,18 +8,21 @@ const normalize = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const SPECIAL_CATEGORIES = [
-  "company contact detail",
-  "company contact details",
-  "lead generation",
-  "typing test",
-];
+/**
+ * Mapping between Question Type codes and their corresponding Exclusive Subject codes.
+ */
+const EXCLUSIVE_MAPPING: Record<string, string> = {
+  CONTACT_DETAILS: "COMPANY_CONTACT_DETAILS",
+  LEAD_GENERATION: "LEAD_GENERATION",
+  TYPING_TEST: "TYPING_TEST",
+};
 
-const SPECIAL_QUESTION_TYPE_CODES = [
-  "contact details", // normalized (no underscore)
-  "lead generation",
-  "typing test",
-];
+/**
+ * Reverse mapping to find Question Type for a given Subject.
+ */
+const REVERSE_EXCLUSIVE_MAPPING: Record<string, string> = Object.entries(
+  EXCLUSIVE_MAPPING,
+).reduce((acc, [qt, s]) => ({ ...acc, [s]: qt }), {});
 
 /**
  * Checks whether a given classification object or exact code/name is considered "exclusive".
@@ -29,25 +32,18 @@ export const isExclusiveClassification = (
 ): boolean => {
   if (!classificationOrName) return false;
 
-  if (typeof classificationOrName === "string") {
-    const n = normalize(classificationOrName);
-    return (
-      SPECIAL_CATEGORIES.some((c) => n.includes(c)) ||
-      SPECIAL_QUESTION_TYPE_CODES.some((c) => n.includes(c))
-    );
+  // Handle Object (Best way: check metadata from DB)
+  if (typeof classificationOrName === "object") {
+    if (classificationOrName.metadata?.is_exclusive === true) return true;
+
+    // Check if it's one of the exclusive Question Types
+    const code = (classificationOrName.code || "").toUpperCase();
+    return !!EXCLUSIVE_MAPPING[code] || !!REVERSE_EXCLUSIVE_MAPPING[code];
   }
 
-  if (classificationOrName.metadata?.is_exclusive === true) {
-    return true;
-  }
-
-  const nName = normalize(classificationOrName.name);
-  const nCode = normalize(classificationOrName.code);
-  return (
-    SPECIAL_CATEGORIES.some((c) => nName.includes(c)) ||
-    SPECIAL_QUESTION_TYPE_CODES.some((c) => nCode.includes(c)) ||
-    SPECIAL_CATEGORIES.some((c) => nCode.includes(c))
-  );
+  // Handle String (Code check)
+  const code = classificationOrName.toUpperCase().replace(/\s+/g, "_");
+  return !!EXCLUSIVE_MAPPING[code] || !!REVERSE_EXCLUSIVE_MAPPING[code];
 };
 
 /**
@@ -56,34 +52,25 @@ export const isExclusiveClassification = (
 export const filterSubjectsForQuestionType = (
   subjects: Classification[],
   currentQuestionType?: Classification | string,
-  questionTypesPool?: Classification[],
 ): Classification[] => {
   if (!currentQuestionType) return subjects;
 
-  const activeQT =
+  const activeQTCode = (
     typeof currentQuestionType === "string"
-      ? questionTypesPool?.find((t) => t.code === currentQuestionType) ||
-        currentQuestionType
-      : currentQuestionType;
+      ? currentQuestionType
+      : currentQuestionType.code || ""
+  ).toUpperCase();
 
-  if (isExclusiveClassification(activeQT)) {
-    const qtName =
-      typeof activeQT === "string" ? activeQT : activeQT.name || activeQT.code;
-    const nQT = normalize(qtName);
+  const targetSubjectCode = EXCLUSIVE_MAPPING[activeQTCode];
 
-    return subjects.filter((subject) => {
-      const nS = normalize(subject.name || subject.code);
-      return (
-        isExclusiveClassification(subject) &&
-        (nS === nQT ||
-          (nS.includes("company contact") && nQT.includes("contact")) ||
-          (nS.includes("typing") && nQT.includes("typing")) ||
-          (nS.includes("lead") && nQT.includes("lead")))
-      );
-    });
+  // If the Question Type is exclusive, only show its mapped Subject
+  if (targetSubjectCode) {
+    return subjects.filter((s) => s.code === targetSubjectCode);
   }
 
-  return subjects.filter((subject) => !isExclusiveClassification(subject));
+  // Otherwise, hide all exclusive subjects
+  const exclusiveSubjectCodes = Object.values(EXCLUSIVE_MAPPING);
+  return subjects.filter((s) => !exclusiveSubjectCodes.includes(s.code));
 };
 
 /**
@@ -92,31 +79,23 @@ export const filterSubjectsForQuestionType = (
 export const filterQuestionTypesForSubject = (
   types: Classification[],
   currentSubject?: Classification | string,
-  subjectsPool?: Classification[],
 ): Classification[] => {
   if (!currentSubject) return types;
 
-  const activeS =
+  const activeSCode = (
     typeof currentSubject === "string"
-      ? subjectsPool?.find((s) => s.code === currentSubject) || currentSubject
-      : currentSubject;
+      ? currentSubject
+      : currentSubject.code || ""
+  ).toUpperCase();
 
-  if (isExclusiveClassification(activeS)) {
-    const sName =
-      typeof activeS === "string" ? activeS : activeS.name || activeS.code;
-    const nS = normalize(sName);
+  const targetQTCode = REVERSE_EXCLUSIVE_MAPPING[activeSCode];
 
-    return types.filter((type) => {
-      const nT = normalize(type.name || type.code);
-      return (
-        isExclusiveClassification(type) &&
-        (nT === nS ||
-          (nT.includes("contact") && nS.includes("company contact")) ||
-          (nT.includes("typing") && nS.includes("typing")) ||
-          (nT.includes("lead") && nS.includes("lead")))
-      );
-    });
+  // If the Subject is exclusive, only show its mapped Question Type
+  if (targetQTCode) {
+    return types.filter((t) => t.code === targetQTCode);
   }
 
-  return types.filter((type) => !isExclusiveClassification(type));
+  // Otherwise, hide all exclusive question types
+  const exclusiveQTCodes = Object.keys(EXCLUSIVE_MAPPING);
+  return types.filter((t) => !exclusiveQTCodes.includes(t.code));
 };

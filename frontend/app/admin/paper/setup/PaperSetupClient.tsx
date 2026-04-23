@@ -6,7 +6,7 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Plus, FileText, Filter, RotateCcw, RefreshCcw } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
 import { papersApi } from "@lib/api/papers";
@@ -14,14 +14,11 @@ import { PaperSetup } from "@types";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { Badge } from "@components/ui-elements/Badge";
-import { Typography } from "@components/ui-elements/Typography";
-import { InlineDrawer } from "@components/ui-elements/InlineDrawer";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { cn } from "@lib/utils";
-import { SearchInput } from "@components/ui-elements/SearchInput";
-import { Tooltip } from "@components/ui-elements/Tooltip";
 import { useListing } from "@hooks/useListing";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -42,22 +39,22 @@ export function PaperSetupClient() {
   const {
     data: papers,
     isLoading,
+    isBackgroundLoading,
     totalItems,
     currentPage,
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
     resetFilters,
     refresh,
-    fetchItems,
   } = useListing<
     Partial<PaperSetup>,
     { search: string; department_id: string; test_level_id: string }
   >({
-    fetchFn: papersApi.getPapers,
+    fetchFn: (params) => papersApi.getPapers(params),
     initialFilters: {
       search: "",
       department_id: "all",
@@ -78,16 +75,6 @@ export function PaperSetupClient() {
     is_active: true,
   });
   const allLevels = classificationQuery.data?.data || [];
-
-  const deptOptions = [
-    { id: "all", label: "All Departments" },
-    ...allDepartments.map((d) => ({ id: String(d.id), label: d.name })),
-  ];
-
-  const levelOptions = [
-    { id: "all", label: "All Levels" },
-    ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
-  ];
 
   const columns = [
     { id: "sr_no", label: "Sr. No.", pinned: true },
@@ -111,7 +98,7 @@ export function PaperSetupClient() {
     setTogglingId(id);
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
-      void fetchItems();
+      void refresh();
       toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
       // Error is handled by API client
@@ -136,17 +123,16 @@ export function PaperSetupClient() {
         }
         action={
           <div className="flex items-center gap-3">
-            {isLoading ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} PAPERS
-              </Badge>
-            )}
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Papers"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
@@ -154,46 +140,6 @@ export function PaperSetupClient() {
               onToggle={handleToggleColumn}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <Tooltip
-              content={
-                activeFiltersCount > 0
-                  ? `Filters (${activeFiltersCount} active)`
-                  : "Open Filters"
-              }
-              side="bottom"
-            >
-              <Button
-                variant="action"
-                size="rounded-icon"
-                isActive={isFilterOpen}
-                animate="scale"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                {activeFiltersCount > 0 ? (
-                  <span className="relative">
-                    <Filter size={18} />
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-brand-primary text-white text-[8px] font-black flex items-center justify-center leading-none border border-white dark:border-slate-900">
-                      {activeFiltersCount}
-                    </span>
-                  </span>
-                ) : (
-                  <Filter size={18} />
-                )}
-              </Button>
-            </Tooltip>
             <Button
               variant="primary"
               color="primary"
@@ -219,104 +165,53 @@ export function PaperSetupClient() {
             isFilterOpen && "border-r border-border/50",
           )}
         >
-          <PaperSetupTable
-            data={papers}
-            totalItems={totalItems}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
+          <ListingTransition
             isLoading={isLoading}
-            togglingId={togglingId}
-            onToggleStatus={handleToggleStatus}
-            onEdit={(paper) =>
-              router.push(`/admin/paper/setup/edit/${paper.id}`)
-            }
-            onViewDetails={(id) =>
-              router.push(`/admin/paper/setup/detail/${id}`)
-            }
-            visibleColumns={visibleColumns}
-          />
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <PaperSetupTable
+              data={papers}
+              totalItems={totalItems}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+              togglingId={togglingId}
+              onToggleStatus={handleToggleStatus}
+              onEdit={(paper) =>
+                router.push(`/admin/paper/setup/edit/${paper.id}`)
+              }
+              onViewDetails={(id) =>
+                router.push(`/admin/paper/setup/detail/${id}`)
+              }
+              visibleColumns={visibleColumns}
+            />
+          </ListingTransition>
         </div>
 
-        <InlineDrawer
-          title="Filters"
+        <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-        >
-          <div className="p-6 flex flex-col gap-8">
-            {/* Search */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Quick Search
-              </Typography>
-              <SearchInput
-                placeholder="Paper name..."
-                value={filters.search}
-                onSearch={(val) => handleFilterChange({ search: val })}
-              />
-            </div>
-
-            {/* Department Filter */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Department
-              </Typography>
-              <SelectDropdown
-                options={deptOptions}
-                value={filters.department_id}
-                onChange={(val) =>
-                  handleFilterChange({ department_id: String(val) })
-                }
-                placeholder="Select Department"
-                isLoading={allDepartments.length === 0}
-              />
-            </div>
-
-            {/* Exam Level Filter */}
-            <div className="flex flex-col gap-3">
-              <Typography
-                variant="body5"
-                weight="bold"
-                className="uppercase tracking-widest text-muted-foreground"
-              >
-                Exam Level
-              </Typography>
-              <SelectDropdown
-                options={levelOptions}
-                value={filters.test_level_id}
-                onChange={(val) =>
-                  handleFilterChange({ test_level_id: String(val) })
-                }
-                placeholder="Select Level"
-                isLoading={classificationQuery.isLoading}
-              />
-            </div>
-
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-360"
-              startIcon={<RotateCcw size={18} />}
-              onClick={resetFilters}
-              className="font-bold w-full mt-auto"
-              title="Reset Filters"
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </InlineDrawer>
+          registryKey="paper-setup-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+          dynamicOptions={{
+            department_id: [
+              { id: "all", label: "All Departments" },
+              ...allDepartments.map((d) => ({
+                id: String(d.id),
+                label: d.name,
+              })),
+            ],
+            test_level_id: [
+              { id: "all", label: "All Levels" },
+              ...allLevels.map((l) => ({ id: String(l.id), label: l.name })),
+            ],
+          }}
+        />
       </MainCard>
     </PageContainer>
   );

@@ -48,7 +48,6 @@ export const SubjectiveQuestionForm = ({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.SUBJECTIVE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

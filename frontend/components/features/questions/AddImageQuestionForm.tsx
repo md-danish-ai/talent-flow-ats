@@ -77,7 +77,6 @@ export const AddImageQuestionForm = ({
         const filteredSubjects = filterSubjectsForQuestionType(
           subjectsRes.data || [],
           QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE,
-          subjectsRes.data || [],
         );
         setSubjects(filteredSubjects);
         setExamLevels(examLevelsRes.data || []);

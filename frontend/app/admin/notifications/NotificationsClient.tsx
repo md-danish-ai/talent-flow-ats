@@ -32,9 +32,9 @@ const getDateStr = (dateStr: string) => {
   return new Date(tzDate);
 };
 
-interface NotificationListingFilters {
+type NotificationListingFilters = {
   status: "all" | "unread" | "read";
-}
+};
 
 export function NotificationsClient() {
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
@@ -49,17 +49,16 @@ export function NotificationsClient() {
     currentPage,
     pageSize,
     filters,
-    handleFilterChange,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
-    fetchItems,
     refresh,
   } = useListing<
     NotificationItem,
     NotificationListingFilters,
     NotificationResponse
   >({
-    fetchFn: getAllNotifications,
+    fetchFn: (params) => getAllNotifications(params),
     initialFilters: {
       status: "all",
     },
@@ -84,11 +83,11 @@ export function NotificationsClient() {
   }, []);
 
   useEffect(() => {
-    const handleUpdate = () => void fetchItems();
+    const handleUpdate = () => void refresh();
     window.addEventListener("notificationsUpdated", handleUpdate);
     return () =>
       window.removeEventListener("notificationsUpdated", handleUpdate);
-  }, [fetchItems]);
+  }, [refresh]);
 
   const handleBulkAction = async (ids: number[], action: "read" | "unread") => {
     try {
@@ -185,7 +184,7 @@ export function NotificationsClient() {
           <NotificationSummary
             counts={counts}
             statusFilter={filters.status}
-            onFilterChange={(val) => handleFilterChange({ status: val })}
+            onFilterChange={(val) => handleSingleFilterChange("status", val)}
           />
 
           <div className="overflow-x-auto w-full">

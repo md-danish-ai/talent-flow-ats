@@ -12,14 +12,12 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2, RefreshCcw } from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Plus, Edit, Trash2, Building2 } from "lucide-react";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { SearchInput } from "@components/ui-elements/SearchInput";
 import { departmentsApi } from "@lib/api/departments";
 import { type Department, PaginatedResponse } from "@types";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
@@ -27,6 +25,9 @@ import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
+import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface DepartmentListingProps {
   initialData?: PaginatedResponse<Department>;
@@ -37,15 +38,17 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const {
     data: departments,
     isLoading,
+    isBackgroundLoading,
     totalItems,
     totalPages,
     currentPage,
     pageSize,
     filters,
-    handleFilterChange,
+    activeFiltersCount,
+    handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
-    fetchItems,
+    resetFilters,
     refresh,
   } = useListing<Department, { search: string }>({
     fetchFn: departmentsApi.getDepartments,
@@ -58,6 +61,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
 
   // Modals Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
   );
@@ -81,7 +85,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     setIsDeleting(true);
     try {
       await departmentsApi.deleteDepartment(deptToDelete);
-      void fetchItems();
+      void refresh();
       setIsDeleteModalOpen(false);
       toast.success("Department deleted successfully");
     } catch (error) {
@@ -97,7 +101,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       await departmentsApi.updateDepartment(dept.id, {
         is_active: !dept.is_active,
       });
-      void fetchItems();
+      void refresh();
       toast.success(
         `Department ${!dept.is_active ? "activated" : "deactivated"}`,
       );
@@ -120,43 +124,20 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
           </div>
         }
         className="mb-6 flex flex-col"
-        bodyClassName="p-0 flex flex-col items-stretch w-full"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-4">
-            {isLoading ? (
-              <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
-            ) : (
-              <Badge
-                variant="outline"
-                color="default"
-                className="font-bold border-border/50 bg-card"
-              >
-                {totalItems} DEPTS
-              </Badge>
-            )}
-            <div className="h-6 w-px bg-border/50 mx-1" />
-
-            <Tooltip content="Refresh Data" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                onClick={refresh}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <SearchInput
-              placeholder="Search departments..."
-              value={filters.search}
-              onSearch={(val) => handleFilterChange({ search: val })}
-              className="w-64"
+            <ListingHeaderActions
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Depts"
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
             />
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <Button
               variant="primary"
               size="md"
@@ -173,136 +154,155 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
           </div>
         }
       >
-        <div className="flex flex-col min-w-0 relative">
-          <div className="overflow-x-auto w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
-                    Sr. No.
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Department Name
-                  </TableHead>
-                  <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                    Status
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Created At
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                    Updated At
-                  </TableHead>
-                  <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <SimpleTableSkeleton
-                    rowCount={pageSize}
-                    columnCount={6}
-                    columnWidths={[
-                      "w-[80px] text-center",
-                      "font-semibold text-foreground",
-                      "text-center",
-                      "text-muted-foreground text-sm",
-                      "text-muted-foreground text-sm",
-                      "text-center w-[100px]",
-                    ]}
-                  />
-                ) : departments.length === 0 ? (
-                  <EmptyState
-                    colSpan={6}
-                    variant="database"
-                    title="No departments found"
-                    description="You haven't added any departments yet. Click on the 'Add Department' button to get started."
-                  />
-                ) : (
-                  departments.map((dept, idx) => (
-                    <TableRow key={dept.id}>
-                      <TableCell className="font-medium text-center">
-                        {(currentPage - 1) * pageSize + idx + 1}
-                      </TableCell>
-                      <TableCell className="font-semibold text-foreground">
-                        {dept.name}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Switch
-                            checked={dept.is_active}
-                            onChange={() => handleToggleStatus(dept)}
-                            size="sm"
-                            disabled={togglingId === dept.id}
-                          />
-                          <Badge
-                            variant="outline"
-                            shape="square"
-                            color={dept.is_active ? "success" : "error"}
-                          >
-                            {dept.is_active ? "Active" : "Inactive"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {dept.created_at
-                          ? new Date(dept.created_at).toLocaleString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {dept.updated_at
-                          ? new Date(dept.updated_at).toLocaleString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <TableIconButton
-                            iconColor="brand"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={() => handleOpenModal(dept)}
-                            title="Edit Department"
-                          >
-                            <Edit size={16} />
-                          </TableIconButton>
-                          <TableIconButton
-                            iconColor="red"
-                            btnSize="sm"
-                            animate="scale"
-                            onClick={() => handleDeleteClick(dept.id)}
-                            title="Delete Department"
-                          >
-                            <Trash2 size={16} />
-                          </TableIconButton>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {!isLoading && departments.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-auto shrink-0 border-t"
-            />
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0 relative",
+            isFilterOpen && "border-r border-border/50",
           )}
+        >
+          <ListingTransition
+            isLoading={isLoading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="overflow-x-auto w-full">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Sr. No.
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Department Name
+                    </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Created At
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                      Updated At
+                    </TableHead>
+                    <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <SimpleTableSkeleton
+                      rowCount={pageSize}
+                      columnCount={6}
+                      columnWidths={[
+                        "w-[80px] text-center",
+                        "font-semibold text-foreground",
+                        "text-center",
+                        "text-muted-foreground text-sm",
+                        "text-muted-foreground text-sm",
+                        "text-center w-[100px]",
+                      ]}
+                    />
+                  ) : departments.length === 0 ? (
+                    <EmptyState
+                      colSpan={6}
+                      variant="database"
+                      title="No departments found"
+                      description="You haven't added any departments yet. Click on the 'Add Department' button to get started."
+                    />
+                  ) : (
+                    departments.map((dept, idx) => (
+                      <TableRow key={dept.id}>
+                        <TableCell className="font-medium text-center">
+                          {(currentPage - 1) * pageSize + idx + 1}
+                        </TableCell>
+                        <TableCell className="font-semibold text-foreground">
+                          {dept.name}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={dept.is_active}
+                              onChange={() => handleToggleStatus(dept)}
+                              size="sm"
+                              disabled={togglingId === dept.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={dept.is_active ? "success" : "error"}
+                            >
+                              {dept.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {dept.created_at
+                            ? new Date(dept.created_at).toLocaleString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {dept.updated_at
+                            ? new Date(dept.updated_at).toLocaleString()
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1">
+                            <TableIconButton
+                              iconColor="brand"
+                              btnSize="sm"
+                              animate="scale"
+                              onClick={() => handleOpenModal(dept)}
+                              title="Edit Department"
+                            >
+                              <Edit size={16} />
+                            </TableIconButton>
+                            <TableIconButton
+                              iconColor="red"
+                              btnSize="sm"
+                              animate="scale"
+                              onClick={() => handleDeleteClick(dept.id)}
+                              title="Delete Department"
+                            >
+                              <Trash2 size={16} />
+                            </TableIconButton>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {!isLoading && departments.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-auto shrink-0 border-t"
+              />
+            )}
+          </ListingTransition>
         </div>
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="department-filters"
+          filters={filters}
+          onFilterChange={handleSingleFilterChange}
+          onReset={resetFilters}
+          isLoading={isLoading}
+        />
       </MainCard>
 
       <ManageDepartmentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingDepartment={editingDepartment}
-        onSuccess={() => void fetchItems()}
+        onSuccess={() => void refresh()}
       />
 
       <ConfirmModal

@@ -23,22 +23,22 @@ async def get_users(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1),
     search: str = Query(None),
-    date: str = Query(None, description="Single date filter (YYYY-MM-DD)"),
-    date_from: str = Query(None, description="Range start date (YYYY-MM-DD)"),
-    date_to: str = Query(None, description="Range end date (YYYY-MM-DD)"),
+    date_from: str = Query(None, description="Range start date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"),
+    date_to: str = Query(None, description="Range end date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"),
     department_id: int = Query(None),
     test_level_id: int = Query(None),
+    status: str = Query(None, description="Filter by status (active, inactive)"),
 ):
     data = get_users_by_role(
         role,
         page=page,
         limit=limit,
         search=search,
-        date=date,
         date_from=date_from,
         date_to=date_to,
         department_id=department_id,
-        test_level_id=test_level_id
+        test_level_id=test_level_id,
+        status=status
     )
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data["data"], pagination=data.get("pagination"))
 
