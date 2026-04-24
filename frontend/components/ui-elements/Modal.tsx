@@ -75,6 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
                   variant="body1"
                   weight="semibold"
                   color="text-foreground"
+                  as="div"
                 >
                   {title}
                 </Typography>

@@ -155,6 +155,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <span
           className={cn(
             "relative z-10 flex items-center gap-2",
+            iconAnimationClasses, // Apply icon animation to the container of children
             fullWidth ? "w-full" : "",
             className?.includes("justify-between")
               ? "justify-between"

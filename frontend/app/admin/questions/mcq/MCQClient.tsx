@@ -6,8 +6,9 @@ import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 
 import { toast } from "@lib/toast";
-import { AddQuestionModal } from "./components/AddQuestionModal";
 import { EditQuestionModal } from "./components/EditQuestionModal";
+import { AddQuestionForm } from "@components/features/questions/AddQuestionForm";
+import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -19,7 +20,12 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 
-import { Plus, ListChecks, Upload, Sparkles as SparklesIcon } from "lucide-react";
+import {
+  Plus,
+  ListChecks,
+  Upload,
+  Sparkles as SparklesIcon,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -33,10 +39,9 @@ import { MCQRow } from "./components/MCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { AIQuestionForm } from "@components/features/questions/AIQuestionForm";
-import { Modal } from "@components/ui-elements/Modal";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type MCQListingFilters = {
   search: string;
@@ -56,7 +61,7 @@ export function MCQClient({
   totalItems: initialTotalItems = 0,
 }: MCQClientProps) {
   const router = useRouter();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
@@ -64,7 +69,6 @@ export function MCQClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -82,20 +86,6 @@ export function MCQClient({
     [router],
   );
 
-  // Hook for standardized listing
-  const fetchFn = React.useMemo(() => 
-    (params: any) => questionsApi.getQuestions(params), 
-  []);
-
-  const filterMapping = React.useMemo(() => (f: MCQListingFilters) => ({
-    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
-    search: f.search || undefined,
-    subject: f.subject !== "all" ? f.subject : undefined,
-    exam_level: f.examLevel !== "all" ? f.examLevel : undefined,
-    marks: f.marks !== "all" ? Number(f.marks) : undefined,
-    is_active: f.status !== "all" ? f.status === "true" : undefined,
-  }), []);
-
   const {
     data: questions,
     isLoading,
@@ -112,7 +102,7 @@ export function MCQClient({
     resetFilters,
     refresh,
   } = useListing<Question, MCQListingFilters>({
-    fetchFn,
+    fetchFn: (params) => questionsApi.getQuestions(params),
     initialFilters: {
       search: "",
       subject: "all",
@@ -122,7 +112,14 @@ export function MCQClient({
     },
     initialData,
     initialTotalItems,
-    filterMapping,
+    filterMapping: (f) => ({
+      question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
+      search: f.search || undefined,
+      subject: f.subject !== "all" ? f.subject : undefined,
+      exam_level: f.examLevel !== "all" ? f.examLevel : undefined,
+      marks: f.marks !== "all" ? Number(f.marks) : undefined,
+      is_active: f.status !== "all" ? f.status === "true" : undefined,
+    }),
     toastMessage: "MCQ list refreshed successfully",
     onError: handleAuthError,
   });
@@ -219,15 +216,11 @@ export function MCQClient({
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="MCQs"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
@@ -236,43 +229,41 @@ export function MCQClient({
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isBulkUploadOpen}
-              animate="scale"
-              onClick={() => setIsBulkUploadOpen(true)}
-              title="Bulk Upload"
-            >
-              <Upload size={18} />
-            </Button>
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="outline"
-              color="primary"
-              size="md"
-              animate="scale"
-              onClick={() => setIsAIModalOpen(true)}
-              startIcon={<SparklesIcon size={18} />}
-              className="font-bold border-brand-primary/20 hover:bg-brand-primary/5"
-            >
-              Generate AI
-            </Button>
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddModalOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Question
-            </Button>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <ListingIcons
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Bulk Upload" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isBulkUploadOpen}
+                animate="scale"
+                iconAnimation="rotate-360"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload size={18} />
+              </Button>
+            </Tooltip>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Add Question" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-360"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -393,12 +384,15 @@ export function MCQClient({
         />
       </MainCard>
 
-      <AddQuestionModal
-        isOpen={isAddModalOpen}
-        onClose={() => {
-          setIsAddModalOpen(false);
-          void refresh();
-        }}
+      <QuestionCreationModal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="MCQ Question Management"
+        questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
+        onSuccess={() => void refresh()}
+        renderManualForm={(onSuccess) => (
+          <AddQuestionForm onSuccess={onSuccess} />
+        )}
       />
 
       {editingQuestion && (
@@ -418,26 +412,6 @@ export function MCQClient({
         onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
       />
-
-      <Modal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        title={
-          <div className="flex items-center gap-2">
-            <SparklesIcon size={20} className="text-brand-primary" />
-            AI Question Generator
-          </div>
-        }
-        className="max-w-4xl"
-      >
-        <AIQuestionForm
-          onSuccess={() => {
-            setIsAIModalOpen(false);
-            void refresh();
-            toast.success("AI questions added to the list");
-          }}
-        />
-      </Modal>
     </PageContainer>
   );
 }

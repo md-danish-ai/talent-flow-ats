@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm } from "@tanstack/react-form";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -12,6 +12,8 @@ import { ENDPOINTS } from "@lib/api/endpoints";
 import { classificationsApi } from "@lib/api/classifications";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { QUESTION_TYPES } from "@lib/constants/questions";
+import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { type Classification, type PaginatedResponse } from "@types";
 
 interface AIFormValues {
@@ -25,9 +27,13 @@ interface AIFormValues {
 
 interface AIQuestionFormProps {
   onSuccess?: () => void;
+  defaultQuestionTypeCode?: string;
 }
 
-export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
+export const AIQuestionForm = ({
+  onSuccess,
+  defaultQuestionTypeCode,
+}: AIQuestionFormProps) => {
   const [serverMessage, setServerMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -91,11 +97,12 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
           }),
         );
 
-        setClassifications({
+        setClassifications((prev) => ({
+          ...prev,
           subjects: fetchedSubjects,
           types: fetchedTypes,
           levels: fetchedLevels,
-        });
+        }));
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
       }
@@ -103,6 +110,7 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
     fetchClassifications();
   }, []);
 
+  // Filtered subjects based on selected question type
   const form = useForm({
     defaultValues: {
       question_type_id: 0,
@@ -115,9 +123,15 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
     onSubmit: async ({ value }) => {
       setServerMessage(null);
       try {
-        const selectedType = classifications.types.find(t => t.id === String(value.question_type_id));
-        const selectedSubject = classifications.subjects.find(s => s.id === String(value.subject_type_id));
-        const selectedLevel = classifications.levels.find(l => l.id === String(value.exam_level_id));
+        const selectedType = classifications.types.find(
+          (t) => t.id === String(value.question_type_id),
+        );
+        const selectedSubject = classifications.subjects.find(
+          (s) => s.id === String(value.subject_type_id),
+        );
+        const selectedLevel = classifications.levels.find(
+          (l) => l.id === String(value.exam_level_id),
+        );
 
         const payload = {
           question_type: selectedType,
@@ -144,6 +158,49 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
     },
   });
 
+  const selectedQuestionTypeId = useStore(form.store, (state) => state.values.question_type_id);
+
+  // Derived state using useMemo (prevents cascading renders)
+  const filteredSubjects = useMemo(() => {
+    const selectedType = classifications.types.find(t => t.id === String(selectedQuestionTypeId));
+    if (!selectedType) return [];
+
+    const subjectsAsClassifications: Classification[] = classifications.subjects.map(s => ({
+      id: Number(s.id),
+      name: s.label,
+      code: s.code,
+      type: "subject",
+      is_active: true
+    }));
+
+    const filtered = filterSubjectsForQuestionType(subjectsAsClassifications, selectedType.code);
+    return filtered.map(s => ({
+      id: String(s.id),
+      label: s.name,
+      code: s.code || ""
+    }));
+  }, [selectedQuestionTypeId, classifications.subjects, classifications.types]);
+
+  // Side effect to reset form field when dependencies change
+  useEffect(() => {
+    const currentSubjectId = form.getFieldValue("subject_type_id");
+    if (currentSubjectId !== 0 && !filteredSubjects.some(s => s.id === String(currentSubjectId))) {
+      form.setFieldValue("subject_type_id", 0);
+    }
+  }, [filteredSubjects, form]);
+
+  // Automatically set question_type_id when types are loaded if defaultQuestionTypeCode is provided
+  useEffect(() => {
+    if (defaultQuestionTypeCode && classifications.types.length > 0) {
+      const type = classifications.types.find(
+        (t) => t.code === defaultQuestionTypeCode,
+      );
+      if (type) {
+        form.setFieldValue("question_type_id", Number(type.id));
+      }
+    }
+  }, [defaultQuestionTypeCode, classifications.types, form]);
+
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
@@ -160,7 +217,7 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
             AI Question Generator
           </Typography>
           <Typography variant="body5" className="text-muted-foreground">
-            Generate questions automatically using AI (Llama 3.2)
+            Generate questions automatically using AI (Qwen 2.5)
           </Typography>
         </div>
       </div>
@@ -198,31 +255,33 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={cn("grid gap-4", defaultQuestionTypeCode ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3")}>
             {/* Question Type */}
-            <form.Field name="question_type_id">
-              {(field) => (
-                <div className="space-y-1.5">
-                  <Typography
-                    variant="body5"
-                    weight="semibold"
-                    className="text-muted-foreground uppercase tracking-wider"
-                  >
-                    Question Type
-                  </Typography>
-                  <SelectDropdown
-                    placeholder="Select Type"
-                    value={field.state.value ? String(field.state.value) : ""}
-                    onChange={(val) => field.handleChange(Number(val))}
-                    options={classifications.types.map((t) => ({
-                      id: t.id,
-                      label: t.label,
-                    }))}
-                    className="h-12 bg-muted/20 w-full border-border/60 hover:border-border"
-                  />
-                </div>
-              )}
-            </form.Field>
+            {!defaultQuestionTypeCode && (
+              <form.Field name="question_type_id">
+                {(field) => (
+                  <div className="space-y-1.5">
+                    <Typography
+                      variant="body5"
+                      weight="semibold"
+                      className="text-muted-foreground uppercase tracking-wider"
+                    >
+                      Question Type
+                    </Typography>
+                    <SelectDropdown
+                      placeholder="Select Type"
+                      value={field.state.value ? String(field.state.value) : ""}
+                      onChange={(val) => field.handleChange(Number(val))}
+                      options={classifications.types.map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                      }))}
+                      className="h-12 bg-muted/20 w-full border-border/60 hover:border-border"
+                    />
+                  </div>
+                )}
+              </form.Field>
+            )}
 
             {/* Subject */}
             <form.Field name="subject_type_id">
@@ -239,7 +298,7 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
                     placeholder="Select Subject"
                     value={field.state.value ? String(field.state.value) : ""}
                     onChange={(val) => field.handleChange(Number(val))}
-                    options={classifications.subjects.map((s) => ({
+                    options={filteredSubjects.map((s) => ({
                       id: s.id,
                       label: s.label,
                     }))}
@@ -353,15 +412,16 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
         </form.Field>
 
         {/* ── Submit ── */}
-        <div className="flex items-center justify-between pt-4 border-t border-border/30">
+        <div className="flex items-center flex-end justify-end gap-4">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
+            color="primary"
+            animate="scale"
             onClick={() => {
               form.reset();
               setServerMessage(null);
             }}
-            className="text-muted-foreground hover:text-foreground rounded-xl"
           >
             Reset
           </Button>
@@ -372,18 +432,20 @@ export const AIQuestionForm = ({ onSuccess }: AIQuestionFormProps) => {
             {([isSubmitting, canSubmit]) => (
               <Button
                 type="submit"
+                color="primary"
+                animate="scale"
+                size="md"
                 disabled={!canSubmit || isSubmitting}
-                className="min-w-[200px] h-12 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95 bg-brand-primary text-white hover:bg-brand-primary/90"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    GENERATING...
+                    Generating Questions...
                   </>
                 ) : (
                   <>
                     <Sparkles size={16} className="mr-2" />
-                    GENERATE WITH AI
+                    Generating Questions
                   </>
                 )}
               </Button>
