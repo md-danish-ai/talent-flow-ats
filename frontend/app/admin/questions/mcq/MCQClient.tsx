@@ -19,7 +19,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 
-import { Plus, ListChecks, Upload } from "lucide-react";
+import { Plus, ListChecks, Upload, Sparkles as SparklesIcon } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -35,6 +35,8 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { AIQuestionForm } from "@components/features/questions/AIQuestionForm";
+import { Modal } from "@components/ui-elements/Modal";
 
 type MCQListingFilters = {
   search: string;
@@ -62,6 +64,7 @@ export function MCQClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -80,6 +83,19 @@ export function MCQClient({
   );
 
   // Hook for standardized listing
+  const fetchFn = React.useMemo(() => 
+    (params: any) => questionsApi.getQuestions(params), 
+  []);
+
+  const filterMapping = React.useMemo(() => (f: MCQListingFilters) => ({
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
+    search: f.search || undefined,
+    subject: f.subject !== "all" ? f.subject : undefined,
+    exam_level: f.examLevel !== "all" ? f.examLevel : undefined,
+    marks: f.marks !== "all" ? Number(f.marks) : undefined,
+    is_active: f.status !== "all" ? f.status === "true" : undefined,
+  }), []);
+
   const {
     data: questions,
     isLoading,
@@ -96,7 +112,7 @@ export function MCQClient({
     resetFilters,
     refresh,
   } = useListing<Question, MCQListingFilters>({
-    fetchFn: (params) => questionsApi.getQuestions(params),
+    fetchFn,
     initialFilters: {
       search: "",
       subject: "all",
@@ -106,14 +122,7 @@ export function MCQClient({
     },
     initialData,
     initialTotalItems,
-    filterMapping: (f) => ({
-      question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
-      search: f.search || undefined,
-      subject: f.subject !== "all" ? f.subject : undefined,
-      exam_level: f.examLevel !== "all" ? f.examLevel : undefined,
-      marks: f.marks !== "all" ? Number(f.marks) : undefined,
-      is_active: f.status !== "all" ? f.status === "true" : undefined,
-    }),
+    filterMapping,
     toastMessage: "MCQ list refreshed successfully",
     onError: handleAuthError,
   });
@@ -237,6 +246,18 @@ export function MCQClient({
               title="Bulk Upload"
             >
               <Upload size={18} />
+            </Button>
+            <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="outline"
+              color="primary"
+              size="md"
+              animate="scale"
+              onClick={() => setIsAIModalOpen(true)}
+              startIcon={<SparklesIcon size={18} />}
+              className="font-bold border-brand-primary/20 hover:bg-brand-primary/5"
+            >
+              Generate AI
             </Button>
             <div className="h-6 w-px bg-border mx-1" />
             <Button
@@ -397,6 +418,26 @@ export function MCQClient({
         onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
       />
+
+      <Modal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <SparklesIcon size={20} className="text-brand-primary" />
+            AI Question Generator
+          </div>
+        }
+        className="max-w-4xl"
+      >
+        <AIQuestionForm
+          onSuccess={() => {
+            setIsAIModalOpen(false);
+            void refresh();
+            toast.success("AI questions added to the list");
+          }}
+        />
+      </Modal>
     </PageContainer>
   );
 }
