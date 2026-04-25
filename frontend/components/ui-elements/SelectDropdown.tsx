@@ -165,7 +165,7 @@ export function SelectDropdown({
                     key={option.id}
                     type="button"
                     variant="ghost"
-                    color="default"
+                    creativeHover={false}
                     onClick={() => {
                       onChange(option.id);
                       setIsOpen(false);
@@ -205,9 +205,9 @@ export function SelectDropdown({
         ref={triggerRef}
         type="button"
         variant="ghost"
-        color="default"
         size="auto"
         fullWidth
+        creativeHover={false}
         onClick={toggleDropdown}
         disabled={disabled}
         className={cn(
