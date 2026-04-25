@@ -60,8 +60,6 @@ class AIClient:
         """Generates an image from a prompt and returns the relative URL."""
         import uuid
         import os
-        from PIL import Image
-        import io
 
         try:
             print(f"DEBUG: Generating image for prompt: {image_prompt[:100]}...")

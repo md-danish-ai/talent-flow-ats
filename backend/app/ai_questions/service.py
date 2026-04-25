@@ -1,4 +1,3 @@
-import json
 import re
 from typing import List, Optional
 from fastapi import HTTPException
@@ -25,7 +24,7 @@ class AIQuestionService:
         e_level = self.db.get(Classification, int(request.exam_level.get("id")))
 
         if not q_type or not s_type or not e_level:
-            error_msg = f"Missing classification metadata. Ensure the database is seeded."
+            error_msg = "Missing classification metadata. Ensure the database is seeded."
             raise HTTPException(status_code=400, detail=error_msg)
 
         # 2. Build Combined Instructions from 'description' metadata
@@ -72,7 +71,7 @@ class AIQuestionService:
             # Check against what we just saw in this batch
             batch_key = self._normalize_text(text_to_check + (passage_to_check or ""))
             if batch_key in seen_in_batch:
-                print(f"Skipping: Duplicate found within current AI response batch.")
+                print("Skipping: Duplicate found within current AI response batch.")
                 continue
                 
             if self._is_duplicate(text_to_check, passage_to_check):
