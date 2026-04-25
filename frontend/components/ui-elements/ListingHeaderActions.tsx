@@ -98,7 +98,7 @@ export function ListingIcons({
             size="rounded-icon"
             isActive={isFilterOpen}
             animate="scale"
-            iconAnimation="rotate-360"
+            iconAnimation="none"
             onClick={onToggleFilter}
             aria-label="Toggle filters"
             aria-expanded={isFilterOpen}

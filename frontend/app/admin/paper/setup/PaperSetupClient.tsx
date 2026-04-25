@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Button } from "@components/ui-elements/Button";
 import { Plus, FileText } from "lucide-react";
 import { toast } from "@lib/toast";
@@ -116,8 +117,10 @@ export function PaperSetupClient() {
 
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <FileText size={20} className="text-brand-primary" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <FileText size={18} />
+            </div>
             Active Test Papers
           </div>
         }
@@ -133,27 +136,25 @@ export function PaperSetupClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              onClick={() => {
-                router.push("/admin/paper/setup/create");
-              }}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Create New Paper
-            </Button>
+            <Tooltip content="Create New Paper" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => {
+                  router.push("/admin/paper/setup/create");
+                }}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
         className="mt-6 flex flex-col"

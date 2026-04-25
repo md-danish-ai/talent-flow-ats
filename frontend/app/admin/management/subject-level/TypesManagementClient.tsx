@@ -17,6 +17,7 @@ import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
@@ -215,7 +216,14 @@ export function TypesManagementClient({
 
       <MainCard
         title={
-          <div className="flex items-center">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+                <Layers size={18} />
+              </div>
+              Subject & Level Definitions
+            </div>
+            <div className="h-8 w-px bg-border/50" />
             <Tabs
               tabs={tabs}
               activeTab={activeTab}
@@ -239,22 +247,19 @@ export function TypesManagementClient({
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="primary"
-              size="md"
-              color="primary"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => handleOpenModal()}
-              disabled={isLoading || isFetching}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-              aria-label={`Add new ${currentEntityName}`}
-            >
-              Add {activeTab === "subjects" ? "Subject" : "Level"}
-            </Button>
+            <Tooltip content={`Add ${activeTab === "subjects" ? "Subject" : "Level"}`} side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => handleOpenModal()}
+                disabled={isLoading || isFetching}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >

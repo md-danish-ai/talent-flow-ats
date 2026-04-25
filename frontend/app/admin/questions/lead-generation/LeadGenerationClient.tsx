@@ -36,7 +36,11 @@ import { BulkUploadModal } from "@components/features/questions/BulkUploadModal"
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingHeaderActions,
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type LeadGenerationListingFilters = {
@@ -172,9 +176,9 @@ export function LeadGenerationClient() {
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <ListChecks size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <ListChecks size={18} />
             </div>
             Lead Generation Questions
           </div>
@@ -205,27 +209,25 @@ export function LeadGenerationClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
                 size="rounded-icon"
                 isActive={isBulkUploadOpen}
                 animate="scale"
-                iconAnimation="rotate-360"
+                iconAnimation="none"
                 onClick={() => setIsBulkUploadOpen(true)}
               >
                 <Upload size={18} />
               </Button>
             </Tooltip>
-            <div className="h-6 w-px bg-border/50 mx-1" />
             <Tooltip content="Add Question" side="top">
               <Button
                 variant="action"
                 color="primary"
                 size="rounded-icon"
                 animate="scale"
-                iconAnimation="rotate-360"
+                iconAnimation="rotate-90"
                 onClick={() => setIsAddOpen(true)}
               >
                 <Plus size={20} />
@@ -244,8 +246,8 @@ export function LeadGenerationClient() {
             isLoading={isLoading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-muted/30">
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>

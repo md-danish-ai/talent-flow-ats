@@ -126,9 +126,9 @@ export function NotificationsClient() {
     <div className="flex flex-col gap-6">
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <Bell size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Bell size={18} />
             </div>
             Recent Notifications
           </div>
@@ -140,6 +140,7 @@ export function NotificationsClient() {
                 variant="action"
                 size="rounded-icon"
                 animate="scale"
+                iconAnimation="rotate-180"
                 onClick={refresh}
                 disabled={isLoading}
               >

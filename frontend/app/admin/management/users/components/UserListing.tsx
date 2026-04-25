@@ -9,7 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, UserPlus, Mail, UserCog, FileText } from "lucide-react";
+import {
+  Users,
+  Eye,
+  UserPlus,
+  Mail,
+  UserCog,
+  FileText,
+  Plus,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -33,6 +41,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface UserListingProps {
   initialData?: {
@@ -124,17 +133,10 @@ export function UserListing({ initialData }: UserListingProps) {
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={22} />
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Users size={18} />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
-                Candidate Management
-              </h2>
-              <p className="text-[11px] text-muted-foreground -mt-1 font-medium italic opacity-70">
-                Manage all registered users and their account status
-              </p>
-            </div>
+            Candidate Management
           </div>
         }
         action={
@@ -149,19 +151,18 @@ export function UserListing({ initialData }: UserListingProps) {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-
-            <div className="h-6 w-px bg-border/50 mx-1" />
-
-            <Button
-              variant="primary"
-              color="primary"
-              startIcon={<UserPlus size={16} />}
-              onClick={() => setIsAddModalOpen(true)}
-              animate="scale"
-              className="font-bold border-none"
-            >
-              Add Candidate
-            </Button>
+            <Tooltip content="Add Candidate" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
         bodyClassName="p-0 flex flex-row items-stretch w-full"
@@ -176,8 +177,8 @@ export function UserListing({ initialData }: UserListingProps) {
             isLoading={loading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
                   <TableRow>
                     <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">

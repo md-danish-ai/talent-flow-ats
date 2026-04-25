@@ -25,7 +25,11 @@ import { StatCard } from "@components/ui-cards/StatCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingHeaderActions,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 
 import { resultsApi } from "@lib/api/results";
 import {
@@ -307,18 +311,25 @@ export function UserResultsClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={loading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Results"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
 
-            <div className="h-6 w-px bg-border mx-1" />
+            {viewMode === "table" && (
+              <>
+                <div className="h-6 w-px bg-border/50 mx-1" />
+                <TableColumnToggle
+                  columns={availableColumns}
+                  visibleColumns={visibleColumns}
+                  onToggle={toggleColumn}
+                  onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
+                />
+                <div className="h-6 w-px bg-border/50 mx-1" />
+              </>
+            )}
 
             <div className="flex items-center gap-2">
               <Tooltip content="Switch to Card View" side="bottom">
@@ -345,17 +356,14 @@ export function UserResultsClient() {
               </Tooltip>
             </div>
 
-            {viewMode === "table" && (
-              <>
-                <div className="h-6 w-px bg-border mx-1" />
-                <TableColumnToggle
-                  columns={availableColumns}
-                  visibleColumns={visibleColumns}
-                  onToggle={toggleColumn}
-                  onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
-                />
-              </>
-            )}
+            <ListingIcons
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
           </div>
         }
       >
