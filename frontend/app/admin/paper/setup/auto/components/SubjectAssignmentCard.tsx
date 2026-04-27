@@ -77,7 +77,7 @@ export function SubjectAssignmentCard({
               weight="black"
               className="text-slate-800 dark:text-white uppercase tracking-tight group-hover/header:text-brand-primary transition-colors"
             >
-              {(subj.subject_name || `Subject ${subjCode}`).replace(/_/g, " ")}
+              {(subj.subject_name || `${subjCode} Subject`).replace(/_/g, " ")}
             </Typography>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">

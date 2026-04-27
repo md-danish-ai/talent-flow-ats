@@ -93,9 +93,23 @@ export function useAutoAssign(id: number) {
           }),
         ]);
 
-        setPaper(paperRes);
+        const activeSubjects = subjectsRes.data || [];
+        setSubjects(activeSubjects);
+
+        // Filter paper subjects to only include active ones
+        const filteredSubjectData = (paperRes.subject_ids_data || []).filter(
+          (ps: PaperSubjectConfig) =>
+            activeSubjects.some((s: Classification) => s.id === ps.subject_id),
+        );
+
+        // Update paper object with only active subjects for this view
+        const updatedPaper = {
+          ...paperRes,
+          subject_ids_data: filteredSubjectData,
+        };
+
+        setPaper(updatedPaper);
         setQuestionTypes(typesRes.data || []);
-        setSubjects(subjectsRes.data || []);
 
         // Fetch availability for each subject
         const countsMap: Record<
@@ -108,8 +122,8 @@ export function useAutoAssign(id: number) {
         > = {};
 
         await Promise.all(
-          paperRes.subject_ids_data.map(async (subj: PaperSubjectConfig) => {
-            const subject = subjectsRes.data.find(
+          filteredSubjectData.map(async (subj: PaperSubjectConfig) => {
+            const subject = activeSubjects.find(
               (s: Classification) => s.id === subj.subject_id,
             );
             const subjCode = subject?.code || subj.subject_id.toString();
@@ -150,11 +164,17 @@ export function useAutoAssign(id: number) {
                 const typeCode = q.question_type?.code;
                 const marks = q.marks || 0;
                 if (subjCode && typeCode) {
-                  if (!initialReqs[subjCode]) initialReqs[subjCode] = {};
-                  if (!initialReqs[subjCode][typeCode])
-                    initialReqs[subjCode][typeCode] = {};
-                  initialReqs[subjCode][typeCode][marks] =
-                    (initialReqs[subjCode][typeCode][marks] || 0) + 1;
+                  // Only add to requirements if the subject is in our filtered list
+                  if (filteredSubjectData.some(fs => {
+                    const s = activeSubjects.find(as => as.id === fs.subject_id);
+                    return s?.code === subjCode;
+                  })) {
+                    if (!initialReqs[subjCode]) initialReqs[subjCode] = {};
+                    if (!initialReqs[subjCode][typeCode])
+                      initialReqs[subjCode][typeCode] = {};
+                    initialReqs[subjCode][typeCode][marks] =
+                      (initialReqs[subjCode][typeCode][marks] || 0) + 1;
+                  }
                 }
               });
             }
@@ -168,8 +188,8 @@ export function useAutoAssign(id: number) {
 
         // Default state: All subject cards COLLAPSED
         const initialCollapse: Record<string, boolean> = {};
-        paperRes.subject_ids_data.forEach((subj) => {
-          const matchingSubject = subjectsRes.data.find(
+        filteredSubjectData.forEach((subj) => {
+          const matchingSubject = activeSubjects.find(
             (s: Classification) => s.id === subj.subject_id,
           );
           const subjCode = matchingSubject?.code || subj.subject_id.toString();
@@ -213,7 +233,7 @@ export function useAutoAssign(id: number) {
     });
   };
 
-  const handleAutoAssign = async () => {
+  const handleAutoAssign = async (targetSubjectCode?: string) => {
     if (!paper) return;
 
     try {
@@ -222,7 +242,14 @@ export function useAutoAssign(id: number) {
       let totalWarnings: string[] = [];
       const generatingSubjectCodes = new Set<string>();
 
-      for (const subj of paper.subject_ids_data) {
+      // Filter subjects to only process the target one if provided
+      const subjectsToProcess = targetSubjectCode
+        ? paper.subject_ids_data.filter(
+            (s) => getSubjectCode(s.subject_id) === targetSubjectCode,
+          )
+        : paper.subject_ids_data;
+
+      for (const subj of subjectsToProcess) {
         const subjCode = getSubjectCode(subj.subject_id);
         const typeReqs = requirements[subjCode] || {};
 
@@ -305,7 +332,7 @@ export function useAutoAssign(id: number) {
       });
 
       toast.success(
-        `Successfully assigned ${newGeneratedIds.length} questions!`,
+        `Successfully assigned ${newGeneratedIds.length} questions for ${targetSubjectCode || "selected subjects"}!`,
       );
       if (totalWarnings.length > 0) {
         totalWarnings.forEach((w) => console.warn(w));
