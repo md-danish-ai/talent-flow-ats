@@ -24,7 +24,6 @@ import {
   Plus,
   ListChecks,
   Upload,
-  Sparkles as SparklesIcon,
 } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -39,7 +38,10 @@ import { MCQRow } from "./components/MCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 

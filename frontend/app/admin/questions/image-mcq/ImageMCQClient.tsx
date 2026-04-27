@@ -13,12 +13,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
-import {
-  Plus,
-  Image as ImageIcon,
-  Upload,
-  Sparkles as SparklesIcon,
-} from "lucide-react";
+import { Plus, Image as ImageIcon, Upload } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -38,7 +33,10 @@ import { BulkUploadModal } from "@components/features/questions/BulkUploadModal"
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ImageMCQClientProps {

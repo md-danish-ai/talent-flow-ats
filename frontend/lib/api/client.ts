@@ -180,7 +180,8 @@ export async function apiClient<T>(
         // Clear all auth cookies on 401 Unauthorized
         document.cookie =
           "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        document.cookie =
+          "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
         document.cookie =
           "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 

@@ -14,12 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  Plus,
-  ListChecks,
-  Upload,
-  Sparkles as SparklesIcon,
-} from "lucide-react";
+import { Plus, ListChecks, Upload } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
@@ -37,7 +32,6 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import {
-  ListingHeaderActions,
   ListingBadge,
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";

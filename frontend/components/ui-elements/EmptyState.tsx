@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Inbox, SearchX, Database, LucideIcon, Sparkles, Plus } from "lucide-react";
+import { Inbox, SearchX, Database, LucideIcon, Sparkles } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Typography } from "./Typography";
 
@@ -47,23 +47,23 @@ export function EmptyState({
     >
       {/* Dynamic Ambient Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.2, 1],
             opacity: [0.03, 0.08, 0.03],
-            rotate: [0, 90, 180, 270, 360]
+            rotate: [0, 90, 180, 270, 360],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,var(--brand-primary)_0%,transparent_70%)] blur-[100px]"
         />
-        
+
         {/* Modern Dot Grid */}
-        <div 
-          className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]" 
-          style={{ 
+        <div
+          className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]"
+          style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, #f96331 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }} 
+            backgroundSize: "40px 40px",
+          }}
         />
       </div>
 
@@ -75,13 +75,17 @@ export function EmptyState({
             <motion.div
               key={i}
               animate={{ rotate: [rotation, rotation + 360] }}
-              transition={{ duration: 10 + i * 2, repeat: Infinity, ease: "linear" }}
+              transition={{
+                duration: 10 + i * 2,
+                repeat: Infinity,
+                ease: "linear",
+              }}
               className="absolute w-[220px] h-[220px] border border-dashed border-brand-primary/10 rounded-full"
             >
-              <motion.div 
+              <motion.div
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-primary/30 rounded-full blur-[1px]" 
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-primary/30 rounded-full blur-[1px]"
               />
             </motion.div>
           ))}
@@ -90,20 +94,20 @@ export function EmptyState({
         {/* Main Composition */}
         <div className="relative group">
           {/* Back Glowing Layer */}
-          <motion.div 
+          <motion.div
             animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.1, 0.3, 0.1] }}
             transition={{ duration: 4, repeat: Infinity }}
             className="absolute inset-[-40%] bg-brand-primary/40 blur-[80px] rounded-full"
           />
-          
+
           {/* Glass Card Container */}
           <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
             className="relative flex h-40 w-40 items-center justify-center rounded-[3.5rem] bg-gradient-to-tr from-white/80 via-white/40 to-white/10 dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-800/10 border border-white/60 dark:border-white/5 shadow-[0_30px_70px_-10px_rgba(249,99,49,0.2)] backdrop-blur-2xl transition-all duration-500 overflow-hidden"
           >
             {/* Internal Shimmer */}
-            <motion.div 
-              animate={{ x: ['-200%', '200%'] }}
+            <motion.div
+              animate={{ x: ["-200%", "200%"] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent skew-x-[-20deg]"
             />
@@ -112,14 +116,18 @@ export function EmptyState({
             <div className="relative flex flex-col items-center justify-center gap-3">
               <motion.div
                 animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 <FinalIcon
                   className="h-16 w-16 text-brand-primary drop-shadow-[0_10px_15px_rgba(249,99,49,0.4)]"
                   strokeWidth={1}
                 />
               </motion.div>
-              
+
               {/* Secondary Floating Sparkles */}
               <motion.div
                 animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}

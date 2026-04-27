@@ -14,12 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  Plus,
-  ListChecks,
-  Upload,
-  Sparkles as SparklesIcon,
-} from "lucide-react";
+import { Plus, ListChecks, Upload } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi } from "@lib/api/classifications";
@@ -27,17 +22,15 @@ import { Question, Classification } from "@types";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditQuestionModal from "./component/EditQuestionModal";
 import { SubjectiveQuestionForm } from "@components/features/questions/SubjectiveQuestionForm";
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { SubjectiveRow } from "./component/SubjectiveRow";
-import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import EditQuestionModal from "./component/EditQuestionModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import {
-  ListingHeaderActions,
   ListingBadge,
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
@@ -358,6 +351,15 @@ export function SubjectiveClient() {
           <SubjectiveQuestionForm onSuccess={onSuccess} />
         )}
       />
+
+      {editingQuestion && (
+        <EditQuestionModal
+          isOpen={true}
+          onClose={() => setEditingQuestion(null)}
+          question={editingQuestion}
+          onSuccess={() => void refresh()}
+        />
+      )}
     </PageContainer>
   );
 }

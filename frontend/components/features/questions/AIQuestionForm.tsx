@@ -12,7 +12,6 @@ import { ENDPOINTS } from "@lib/api/endpoints";
 import { classificationsApi } from "@lib/api/classifications";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Loader2, Sparkles, HelpCircle } from "lucide-react";
-import { QUESTION_TYPES } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { type Classification, type PaginatedResponse } from "@types";
 
@@ -158,33 +157,45 @@ export const AIQuestionForm = ({
     },
   });
 
-  const selectedQuestionTypeId = useStore(form.store, (state) => state.values.question_type_id);
+  const selectedQuestionTypeId = useStore(
+    form.store,
+    (state) => state.values.question_type_id,
+  );
 
   // Derived state using useMemo (prevents cascading renders)
   const filteredSubjects = useMemo(() => {
-    const selectedType = classifications.types.find(t => t.id === String(selectedQuestionTypeId));
+    const selectedType = classifications.types.find(
+      (t) => t.id === String(selectedQuestionTypeId),
+    );
     if (!selectedType) return [];
 
-    const subjectsAsClassifications: Classification[] = classifications.subjects.map(s => ({
-      id: Number(s.id),
-      name: s.label,
-      code: s.code,
-      type: "subject",
-      is_active: true
-    }));
+    const subjectsAsClassifications: Classification[] =
+      classifications.subjects.map((s) => ({
+        id: Number(s.id),
+        name: s.label,
+        code: s.code,
+        type: "subject",
+        is_active: true,
+      }));
 
-    const filtered = filterSubjectsForQuestionType(subjectsAsClassifications, selectedType.code);
-    return filtered.map(s => ({
+    const filtered = filterSubjectsForQuestionType(
+      subjectsAsClassifications,
+      selectedType.code,
+    );
+    return filtered.map((s) => ({
       id: String(s.id),
       label: s.name,
-      code: s.code || ""
+      code: s.code || "",
     }));
   }, [selectedQuestionTypeId, classifications.subjects, classifications.types]);
 
   // Side effect to reset form field when dependencies change
   useEffect(() => {
     const currentSubjectId = form.getFieldValue("subject_type_id");
-    if (currentSubjectId !== 0 && !filteredSubjects.some(s => s.id === String(currentSubjectId))) {
+    if (
+      currentSubjectId !== 0 &&
+      !filteredSubjects.some((s) => s.id === String(currentSubjectId))
+    ) {
       form.setFieldValue("subject_type_id", 0);
     }
   }, [filteredSubjects, form]);
@@ -255,7 +266,14 @@ export const AIQuestionForm = ({
             </Typography>
           </div>
 
-          <div className={cn("grid gap-4", defaultQuestionTypeCode ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3")}>
+          <div
+            className={cn(
+              "grid gap-4",
+              defaultQuestionTypeCode
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-3",
+            )}
+          >
             {/* Question Type */}
             {!defaultQuestionTypeCode && (
               <form.Field name="question_type_id">

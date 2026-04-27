@@ -2,7 +2,7 @@ type LoadingListener = (isLoading: boolean) => void;
 
 /**
  * A vanilla JS state manager to track active API requests globally.
- * This file does NOT use "use client" so it can be safely imported 
+ * This file does NOT use "use client" so it can be safely imported
  * in both Server and Client components.
  */
 class LoadingStateManager {

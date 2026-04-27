@@ -9,7 +9,7 @@ export function GlobalProgressBar() {
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
   const isCustomApiLoading = useIsApiLoading();
-  
+
   const isLoading = isFetching > 0 || isMutating > 0 || isCustomApiLoading;
 
   return (
@@ -19,9 +19,9 @@ export function GlobalProgressBar() {
           key="global-progress-bar"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ 
+          exit={{
             opacity: [1, 1, 0],
-            transition: { duration: 0.6, times: [0, 0.8, 1] }
+            transition: { duration: 0.6, times: [0, 0.8, 1] },
           }}
           className="fixed top-0 left-0 w-screen z-[999999] h-[5px] pointer-events-none"
         >
@@ -31,17 +31,17 @@ export function GlobalProgressBar() {
           {/* The Progress Bar */}
           <motion.div
             initial={{ width: "0%" }}
-            animate={{ 
+            animate={{
               width: ["0%", "30%", "65%", "85%", "94%"],
             }}
-            exit={{ 
+            exit={{
               width: "100%",
-              transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
+              transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] },
             }}
-            transition={{ 
-              duration: 20, 
+            transition={{
+              duration: 20,
               times: [0, 0.05, 0.4, 0.8, 1],
-              ease: [0.16, 1, 0.3, 1] 
+              ease: [0.16, 1, 0.3, 1],
             }}
             className="absolute left-0 top-0 h-full bg-[#e85526] shadow-[0_4px_12px_rgba(232,85,38,0.4)]"
           >

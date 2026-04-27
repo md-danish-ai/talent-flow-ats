@@ -14,29 +14,25 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import {
-  Plus,
-  ListChecks,
-  Upload,
-  Sparkles as SparklesIcon,
-} from "lucide-react";
+import { Plus, ListChecks, Upload } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
-import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditQuestionModal from "./components/EditTypingTestModal";
 import { TypingTestForm } from "@components/features/questions/TypingTestForm";
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { TypingTestRow } from "./components/TypingTestRow";
-import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import EditTypingTestModal from "./components/EditTypingTestModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type TypingTestListingFilters = {
@@ -54,7 +50,6 @@ export function TypingTestClient() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
-  const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
   const {
@@ -124,23 +119,11 @@ export function TypingTestClient() {
   useEffect(() => {
     const fetchClassifications = async () => {
       try {
-        const [subjectsRes, examLevelsRes] = await Promise.all([
-          classificationsApi.getClassifications({
-            type: "subject",
-            is_active: true,
-            limit: 100,
-          }),
-          classificationsApi.getClassifications({
-            type: "exam_level",
-            is_active: true,
-            limit: 100,
-          }),
-        ]);
-        const filteredSubjects = filterSubjectsForQuestionType(
-          subjectsRes.data || [],
-          QUESTION_TYPES.TYPING_TEST,
-        );
-        setSubjects(filteredSubjects);
+        const examLevelsRes = await classificationsApi.getClassifications({
+          type: "exam_level",
+          is_active: true,
+          limit: 100,
+        });
         setExamLevels(examLevelsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch classifications:", error);
@@ -325,16 +308,12 @@ export function TypingTestClient() {
         <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          registryKey="question-bank-filters"
+          registryKey="no-subject-question-filters"
           filters={filters}
           onFilterChange={handleSingleFilterChange}
           onReset={resetFilters}
           isLoading={isLoading}
           dynamicOptions={{
-            subject: [
-              { id: "all", label: "All Subjects" },
-              ...subjects.map((s) => ({ id: s.code || "", label: s.name })),
-            ],
             examLevel: [
               { id: "all", label: "All Levels" },
               ...examLevels.map((e) => ({ id: e.code || "", label: e.name })),
@@ -353,6 +332,15 @@ export function TypingTestClient() {
           <TypingTestForm onSuccess={onSuccess} />
         )}
       />
+
+      {editingQuestion && (
+        <EditTypingTestModal
+          isOpen={true}
+          onClose={() => setEditingQuestion(null)}
+          question={editingQuestion}
+          onSuccess={() => void refresh()}
+        />
+      )}
     </PageContainer>
   );
 }

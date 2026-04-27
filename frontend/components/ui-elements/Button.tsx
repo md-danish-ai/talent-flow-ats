@@ -20,7 +20,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   iconAnimation?: "none" | "rotate-90" | "rotate-180" | "rotate-360" | "spin";
   isActive?: boolean;
   fullWidth?: boolean;
-  creativeHover?: boolean; // New prop to toggle the fill effect
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
 }
@@ -37,7 +36,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       animate = "none",
       iconAnimation = "none",
       fullWidth = false,
-      creativeHover = true,
       startIcon,
       endIcon,
       children,
@@ -143,28 +141,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         onClick={handleButtonClick}
         className={cn(
-          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50 group",
+          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50",
           variantStyles,
           sizes[size],
           shadowClass,
           animationClass,
           fullWidth && "w-full",
+          iconAnimation !== "none" ? "group" : "",
           className,
         )}
         {...props}
       >
-        {/* Creative Hover Liquid Fill - Enabled if creativeHover is true and not a link variant */}
-        {creativeHover && variant !== "link" && (
-          <span className={cn(
-            "absolute inset-0 -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-none",
-            variant === "primary" ? "bg-black/20" : "bg-brand-primary/20 dark:bg-brand-primary/30"
-          )} />
-        )}
-
         <span
           className={cn(
             "relative z-10 flex items-center gap-2",
-            (fullWidth || className?.includes("w-full")) ? "w-full" : "",
+            fullWidth ? "w-full" : "",
             className?.includes("justify-between")
               ? "justify-between"
               : className?.includes("justify-start")
@@ -181,10 +172,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               {startIcon}
             </span>
           )}
-          
-          {/* Main Content - No extra span wrapper here to preserve layout spacing */}
-          {children}
-
+          {size === "icon" || size === "icon-sm" || size === "rounded-icon" ? (
+            <span
+              className={cn(
+                "inline-flex items-center justify-center",
+                iconAnimationClasses,
+              )}
+            >
+              {children}
+            </span>
+          ) : (
+            children
+          )}
           {endIcon && (
             <span
               className={cn("inline-flex self-center", iconAnimationClasses)}

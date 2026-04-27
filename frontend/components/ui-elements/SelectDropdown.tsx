@@ -160,36 +160,39 @@ export function SelectDropdown({
                   </Typography>
                 </div>
               ) : (
-                options.map((option) => (
-                  <Button
-                    key={option.id}
-                    type="button"
-                    variant="ghost"
-                    creativeHover={false}
-                    onClick={() => {
-                      onChange(option.id);
-                      setIsOpen(false);
-                    }}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
-                      String(value) === String(option.id)
-                        ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
-                        : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
+                options.map((option, index) => (
+                  <React.Fragment key={option.id}>
+                    {index > 0 && (
+                      <div className="mx-2 my-0.5 border-t border-slate-100 dark:border-white/5" />
                     )}
-                  >
-                    <Typography
-                      variant="body4"
-                      weight="semibold"
-                      as="span"
-                      color="inherit"
-                      className="flex-1 text-left leading-tight pr-4"
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        onChange(option.id);
+                        setIsOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
+                        String(value) === String(option.id)
+                          ? "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+                          : "text-slate-600 dark:text-white hover:bg-brand-primary/5 dark:hover:bg-brand-primary/10 hover:text-brand-primary transition-colors",
+                      )}
                     >
-                      {option.label}
-                    </Typography>
-                    {String(value) === String(option.id) && (
-                      <Check className="h-4 w-4 flex-shrink-0" />
-                    )}
-                  </Button>
+                      <Typography
+                        variant="body4"
+                        weight="semibold"
+                        as="span"
+                        color="inherit"
+                        className="flex-1 text-left leading-tight pr-4"
+                      >
+                        {option.label}
+                      </Typography>
+                      {String(value) === String(option.id) && (
+                        <Check className="h-4 w-4 flex-shrink-0" />
+                      )}
+                    </Button>
+                  </React.Fragment>
                 ))
               )}
             </div>
@@ -207,7 +210,6 @@ export function SelectDropdown({
         variant="ghost"
         size="auto"
         fullWidth
-        creativeHover={false}
         onClick={toggleDropdown}
         disabled={disabled}
         className={cn(

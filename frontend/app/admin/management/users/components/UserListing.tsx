@@ -9,15 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import {
-  Users,
-  Eye,
-  UserPlus,
-  Mail,
-  UserCog,
-  FileText,
-  Plus,
-} from "lucide-react";
+import { Users, Eye, Mail, UserCog, FileText, Plus } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";

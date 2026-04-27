@@ -18,7 +18,6 @@ import {
   Plus,
   ListChecks,
   Upload,
-  Sparkles as SparklesIcon,
 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
@@ -37,7 +36,10 @@ import { BulkUploadModal } from "@components/features/questions/BulkUploadModal"
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions, ListingBadge, ListingIcons } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type ImageSubjectiveListingFilters = {

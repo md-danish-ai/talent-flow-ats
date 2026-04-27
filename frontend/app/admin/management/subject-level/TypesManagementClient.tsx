@@ -247,7 +247,10 @@ export function TypesManagementClient({
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <Tooltip content={`Add ${activeTab === "subjects" ? "Subject" : "Level"}`} side="top">
+            <Tooltip
+              content={`Add ${activeTab === "subjects" ? "Subject" : "Level"}`}
+              side="top"
+            >
               <Button
                 variant="action"
                 color="primary"

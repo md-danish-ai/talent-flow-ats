@@ -25,7 +25,10 @@ export function ListingBadge({
   isBackgroundLoading,
   totalItems,
   itemLabel = "Records",
-}: Pick<ListingHeaderActionsProps, "isLoading" | "isBackgroundLoading" | "totalItems" | "itemLabel">) {
+}: Pick<
+  ListingHeaderActionsProps,
+  "isLoading" | "isBackgroundLoading" | "totalItems" | "itemLabel"
+>) {
   return (
     <AnimatePresence mode="popLayout">
       {isLoading || isBackgroundLoading ? (
@@ -66,7 +69,15 @@ export function ListingIcons({
   onToggleFilter,
   isFilterOpen,
   activeFiltersCount = 0,
-}: Pick<ListingHeaderActionsProps, "isLoading" | "isBackgroundLoading" | "onRefresh" | "onToggleFilter" | "isFilterOpen" | "activeFiltersCount">) {
+}: Pick<
+  ListingHeaderActionsProps,
+  | "isLoading"
+  | "isBackgroundLoading"
+  | "onRefresh"
+  | "onToggleFilter"
+  | "isFilterOpen"
+  | "activeFiltersCount"
+>) {
   return (
     <div className="flex items-center gap-2">
       <Tooltip content="Refresh Data" side="bottom">
@@ -79,7 +90,9 @@ export function ListingIcons({
           disabled={isLoading}
           aria-label="Refresh list"
         >
-          <div className={cn((isLoading || isBackgroundLoading) && "animate-spin")}>
+          <div
+            className={cn((isLoading || isBackgroundLoading) && "animate-spin")}
+          >
             <RefreshCcw size={18} />
           </div>
         </Button>
@@ -161,7 +174,7 @@ export function ListingHeaderActions({
           <div className="h-6 w-px bg-border/50 mx-1" />
         </>
       )}
-      
+
       {icons}
 
       {badgePosition === "right" && (
