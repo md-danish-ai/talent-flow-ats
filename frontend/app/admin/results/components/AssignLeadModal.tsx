@@ -82,6 +82,7 @@ export function AssignLeadModal({
       setSelectedLead("");
       void fetchAssignedLeads();
       if (onSuccess) onSuccess();
+      onClose(); // Close the modal after success
     } catch (err) {
       console.error("Assignment failed", err);
       toast.error("Failed to assign lead.");
@@ -108,8 +109,9 @@ export function AssignLeadModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Assign Project Lead (Round 2)"
+      className="max-w-xl"
     >
-      <div className="p-4 space-y-6">
+      <div className="space-y-6">
         <div className="p-4 rounded-2xl bg-brand-primary/5 border border-brand-primary/10 flex items-center gap-3">
           <UserCheck className="text-brand-primary" size={24} />
           <div>

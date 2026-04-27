@@ -39,10 +39,53 @@ def assign_interviews(payload: schemas.InterviewEvaluationCreate, db: Session = 
         return ResponseHandler.error(message=str(e))
 
 @router.get("/my-tasks/{lead_id}")
-def get_lead_tasks(lead_id: int, status: str = None, db: Session = Depends(get_db)):
+def get_lead_tasks(
+    lead_id: int, 
+    status: str = None, 
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db)
+):
     try:
-        tasks = repository.get_evaluations_by_lead(db, lead_id, status)
-        return ResponseHandler.success(data=tasks)
+        tasks, total = repository.get_evaluations_by_lead(db, lead_id, status, page, limit)
+        return ResponseHandler.success(
+            data=tasks,
+            pagination={
+                "total_records": total,
+                "current_page": page,
+                "total_pages": (total + limit - 1) // limit,
+                "page_size": limit
+            }
+        )
+    except Exception as e:
+        return ResponseHandler.error(message=str(e))
+
+@router.get("/get-detail/{evaluation_id}")
+def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
+    try:
+        eval_obj = repository.get_evaluation(db, evaluation_id)
+        if not eval_obj:
+            raise HTTPException(status_code=StatusCode.NOT_FOUND, detail="Evaluation record not found")
+        
+        # Convert SQLAlchemy object to dict for serialization
+        data = {
+            "id": eval_obj.id,
+            "user_id": eval_obj.user_id,
+            "project_lead_id": eval_obj.project_lead_id,
+            "attempt_id": eval_obj.attempt_id,
+            "round_type": eval_obj.round_type,
+            "status": eval_obj.status,
+            "evaluation_data": eval_obj.evaluation_data,
+            "overall_grade": eval_obj.overall_grade,
+            "final_verdict_id": eval_obj.final_verdict_id,
+            "comments": eval_obj.comments,
+            "created_at": eval_obj.created_at,
+            "updated_at": eval_obj.updated_at
+        }
+        
+        return ResponseHandler.success(data=data)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 

@@ -15,7 +15,9 @@ interface ProjectLeadDashboardClientProps {
   leadId: number;
 }
 
-export default function ProjectLeadDashboardClient({ leadId }: ProjectLeadDashboardClientProps) {
+export default function ProjectLeadDashboardClient({
+  leadId,
+}: ProjectLeadDashboardClientProps) {
   const [tasks, setTasks] = useState<EvaluationTask[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +26,7 @@ export default function ProjectLeadDashboardClient({ leadId }: ProjectLeadDashbo
       try {
         setLoading(true);
         const res = await evaluationsApi.getLeadTasks(leadId);
-        setTasks(res || []);
+        setTasks(res.data || []);
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);
       } finally {
@@ -34,8 +36,8 @@ export default function ProjectLeadDashboardClient({ leadId }: ProjectLeadDashbo
     if (leadId) fetchTasks();
   }, [leadId]);
 
-  const pendingCount = tasks.filter(t => t.status === "pending").length;
-  const completedCount = tasks.filter(t => t.status === "completed").length;
+  const pendingCount = tasks.filter((t) => t.status === "pending").length;
+  const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   return (
     <PageContainer className="space-y-8 max-w-7xl mx-auto">
@@ -44,7 +46,8 @@ export default function ProjectLeadDashboardClient({ leadId }: ProjectLeadDashbo
           Project Lead Dashboard
         </Typography>
         <Typography variant="body4" className="text-muted-foreground">
-          Welcome back! Here's an overview of your assigned interview tasks.
+          Welcome back! Here&apos;s an overview of your assigned interview
+          tasks.
         </Typography>
       </div>
 
@@ -82,16 +85,16 @@ export default function ProjectLeadDashboardClient({ leadId }: ProjectLeadDashbo
       >
         <div className="p-8 flex flex-col items-center justify-center min-h-[240px] text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-             <Users size={32} />
+            <Users size={32} />
           </div>
           <div className="max-w-md">
             <Typography variant="h4" className="font-bold mb-2">
-              {pendingCount > 0 
-                ? `You have ${pendingCount} pending interviews` 
+              {pendingCount > 0
+                ? `You have ${pendingCount} pending interviews`
                 : "All caught up!"}
             </Typography>
             <Typography variant="body4" className="text-muted-foreground mb-6">
-              {pendingCount > 0 
+              {pendingCount > 0
                 ? "Start evaluating your assigned candidates to finalize their recruitment process."
                 : "You have completed all your currently assigned interview evaluations."}
             </Typography>

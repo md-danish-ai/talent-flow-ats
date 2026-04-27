@@ -30,7 +30,7 @@ def get_evaluations_by_candidate(db: Session, user_id: int):
         .all()
     )
 
-def get_evaluations_by_lead(db: Session, lead_id: int, status: str = None):
+def get_evaluations_by_lead(db: Session, lead_id: int, status: str = None, page: int = 1, limit: int = 10):
     query = (
         db.query(
             InterviewEvaluation.id,
@@ -43,10 +43,13 @@ def get_evaluations_by_lead(db: Session, lead_id: int, status: str = None):
         .join(User, User.id == InterviewEvaluation.user_id)
         .filter(InterviewEvaluation.project_lead_id == lead_id)
     )
-    if status:
+    if status and status != "all":
         query = query.filter(InterviewEvaluation.status == status)
     
-    return [dict(r._asdict()) for r in query.order_by(desc(InterviewEvaluation.created_at)).all()]
+    total = query.count()
+    results = query.order_by(desc(InterviewEvaluation.created_at)).offset((page - 1) * limit).limit(limit).all()
+    
+    return [dict(r._asdict()) for r in results], total
 
 def update_evaluation(db: Session, evaluation_id: int, obj_in: InterviewEvaluationUpdate):
     db_obj = get_evaluation(db, evaluation_id)

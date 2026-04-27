@@ -9,6 +9,7 @@ import {
   Phone,
   LayoutDashboard,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
@@ -24,7 +25,7 @@ import {
 } from "@types";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
-import { Tabs, TabItem } from "@components/ui-elements/Tabs";
+import { Tabs } from "@components/ui-elements/Tabs";
 import { Round2History } from "./Round2History";
 
 interface UserResultDetailClientProps {
@@ -132,7 +133,7 @@ export function UserResultDetailClient({
     {
       label: "Completed",
       value: submittedAttempts,
-      subValue: `${((submittedAttempts / totalAttempts) * 100).toFixed(0)}% completion rate`,
+      subValue: `${totalAttempts > 0 ? ((submittedAttempts / totalAttempts) * 100).toFixed(0) : 0}% completion rate`,
       icon: <CheckCircle2 size={20} />,
       color: "text-emerald-600",
       bg: "bg-emerald-500/10",
@@ -146,6 +147,19 @@ export function UserResultDetailClient({
       color: "text-amber-600",
       bg: "bg-amber-500/10",
       border: "border-amber-500/20",
+    },
+  ];
+
+  const TABS = [
+    {
+      value: "round1",
+      label: "Round 1 (Technical)",
+      icon: <History size={16} />,
+    },
+    {
+      value: "round2",
+      label: "Round 2 (F2F Interview)",
+      icon: <UserCheck size={16} />,
     },
   ];
 
@@ -170,14 +184,6 @@ export function UserResultDetailClient({
           </Typography>
         </div>
         <div className="flex items-center gap-3">
-          {/* <Button
-            variant="outline"
-            color="primary"
-            className="shadow-sm"
-            startIcon={<ExternalLink size={16} />}
-          >
-            Export Report
-          </Button> */}
           <Link href="/admin/results">
             <Button
               color="primary"
@@ -303,21 +309,16 @@ export function UserResultDetailClient({
 
       {/* Tabs for Round 1 and Round 2 */}
       <Tabs
+        tabs={TABS}
         activeTab={activeTab}
         onChange={setActiveTab}
         variant="pills"
         className="w-full"
-      >
-        <TabItem
-          id="round1"
-          label={
-            <div className="flex items-center gap-2">
-              <History size={16} />
-              <span>Round 1 (Technical)</span>
-            </div>
-          }
-        >
-          <div className="space-y-6 mt-8">
+      />
+
+      <div className="mt-8">
+        {activeTab === "round1" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
@@ -375,22 +376,12 @@ export function UserResultDetailClient({
               </div>
             )}
           </div>
-        </TabItem>
+        )}
 
-        <TabItem
-          id="round2"
-          label={
-            <div className="flex items-center gap-2">
-              <UserCheck size={16} />
-              <span>Round 2 (F2F Interview)</span>
-            </div>
-          }
-        >
-          <div className="mt-8">
-            <Round2History userId={userId} />
-          </div>
-        </TabItem>
-      </Tabs>
+        {activeTab === "round2" && (
+          <Round2History userId={userId} />
+        )}
+      </div>
     </PageContainer>
   );
 }

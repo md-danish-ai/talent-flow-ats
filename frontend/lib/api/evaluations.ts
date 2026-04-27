@@ -4,6 +4,8 @@ import {
   SubmitEvaluationPayload,
   EvaluationHistoryItem,
   EvaluationTask,
+  InterviewEvaluation,
+  PaginatedResponse,
 } from "@types";
 
 export const evaluationsApi = {
@@ -13,11 +15,17 @@ export const evaluationsApi = {
 
   getLeadTasks: async (
     leadId: number,
-    status?: string,
-  ): Promise<EvaluationTask[]> => {
+    params?: { status?: string; page?: number; limit?: number },
+  ): Promise<PaginatedResponse<EvaluationTask>> => {
     return api.get(`/evaluations/my-tasks/${leadId}`, {
-      params: { status },
+      params,
     });
+  },
+
+  getEvaluationDetail: async (
+    evaluationId: number,
+  ): Promise<InterviewEvaluation> => {
+    return api.get(`/evaluations/get-detail/${evaluationId}`);
   },
 
   submitEvaluation: async (

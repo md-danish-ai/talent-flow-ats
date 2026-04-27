@@ -83,7 +83,7 @@ async def get_attempt_summary(
 
 @router.get(
     "/admin/results/get-all-results",
-    dependencies=[Depends(require_roles(["admin"]))],
+    dependencies=[Depends(require_roles(["admin", "project_lead"]))],
 )
 async def get_admin_user_results(
     search: str | None = Query(default=None),
@@ -112,7 +112,7 @@ async def get_admin_user_results(
 
 @router.get(
     "/admin/results/user-result-details/{user_id}",
-    dependencies=[Depends(require_roles(["admin"]))],
+    dependencies=[Depends(require_roles(["admin", "project_lead"]))],
 )
 async def get_admin_user_result_detail(
     user_id: int,
