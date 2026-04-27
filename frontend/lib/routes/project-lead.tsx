@@ -9,4 +9,18 @@ export const PROJECT_LEAD_ROUTES: NavSection[] = [
     href: "/project-lead/dashboard",
     items: [],
   },
+  {
+    title: "Candidates",
+    icon: <LayoutDashboard className="w-5 h-5" />, // Will change icon later
+    type: "item",
+    href: "/project-lead/users",
+    items: [],
+  },
+  {
+    title: "Notifications",
+    icon: <LayoutDashboard className="w-5 h-5" />, // Will change icon later
+    type: "item",
+    href: "/project-lead/notifications",
+    items: [],
+  },
 ];

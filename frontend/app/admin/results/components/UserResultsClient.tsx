@@ -30,10 +30,12 @@ import {
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
 
-import { resultsApi } from "@lib/api/results";
+import { resultsApi, managementApi } from "@lib/api";
 import {
   type AdminUserResultListItem,
   type PaginatedUserResults,
+  type FilterOption,
+  type UserListResponse,
 } from "@types";
 import { useListing } from "@hooks/useListing";
 
@@ -72,6 +74,7 @@ type ResultsFilters = {
   status: string;
   completionReason: string;
   overallGrade: string;
+  project_lead_id: string;
 };
 
 export function UserResultsClient() {
@@ -91,6 +94,7 @@ export function UserResultsClient() {
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
+      { id: "project_lead", label: "Interviewer(s)" },
       { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
     ],
@@ -111,6 +115,18 @@ export function UserResultsClient() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
     DEFAULT_VISIBLE_COLUMNS,
   );
+
+  const [leadsOptions, setLeadsOptions] = useState<FilterOption[]>([]);
+
+  useMemo(() => {
+    managementApi.getProjectLeads({ limit: 100 }).then((res) => {
+      const options = (res.data || []).map((l: UserListResponse) => ({
+        id: l.id.toString(),
+        label: l.username,
+      }));
+      setLeadsOptions([{ id: "all", label: "All Leads" }, ...options]);
+    });
+  }, []);
 
   const {
     data: items,
@@ -138,6 +154,7 @@ export function UserResultsClient() {
         status: "all",
         completionReason: "all",
         overallGrade: "all",
+        project_lead_id: "all",
       },
       filterMapping: (f) => ({
         search: f.search || undefined,
@@ -147,6 +164,8 @@ export function UserResultsClient() {
         completionReason:
           f.completionReason !== "all" ? f.completionReason : undefined,
         overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
+        project_lead_id:
+          f.project_lead_id !== "all" ? f.project_lead_id : undefined,
       }),
       onSuccess: (res) => {
         if (res.summary_stats) setSummaryStatsData(res.summary_stats);
@@ -395,6 +414,7 @@ export function UserResultsClient() {
                   visibleColumns={visibleColumns}
                   isLoading={loading}
                   limit={pageSize}
+                  onRefresh={refresh}
                 />
               )}
             </div>
@@ -431,6 +451,9 @@ export function UserResultsClient() {
           }}
           onReset={resetFilters}
           isLoading={loading}
+          dynamicOptions={{
+            project_lead_id: leadsOptions,
+          }}
         />
       </MainCard>
     </PageContainer>

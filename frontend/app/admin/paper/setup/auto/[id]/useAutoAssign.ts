@@ -165,10 +165,14 @@ export function useAutoAssign(id: number) {
                 const marks = q.marks || 0;
                 if (subjCode && typeCode) {
                   // Only add to requirements if the subject is in our filtered list
-                  if (filteredSubjectData.some(fs => {
-                    const s = activeSubjects.find(as => as.id === fs.subject_id);
-                    return s?.code === subjCode;
-                  })) {
+                  if (
+                    filteredSubjectData.some((fs) => {
+                      const s = activeSubjects.find(
+                        (as) => as.id === fs.subject_id,
+                      );
+                      return s?.code === subjCode;
+                    })
+                  ) {
                     if (!initialReqs[subjCode]) initialReqs[subjCode] = {};
                     if (!initialReqs[subjCode][typeCode])
                       initialReqs[subjCode][typeCode] = {};

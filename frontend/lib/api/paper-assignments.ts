@@ -1,4 +1,4 @@
-import { api } from "./index";
+import { api } from "./base";
 import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 

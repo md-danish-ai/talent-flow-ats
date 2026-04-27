@@ -24,6 +24,8 @@ import {
 } from "@types";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
+import { Tabs, TabItem } from "@components/ui-elements/Tabs";
+import { Round2History } from "./Round2History";
 
 interface UserResultDetailClientProps {
   userId: number;
@@ -36,6 +38,7 @@ export function UserResultDetailClient({
     useState<AdminUserAttemptsResponse | null>(null);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("round1");
 
   useEffect(() => {
     const fetchAttempts = async () => {
@@ -298,65 +301,96 @@ export function UserResultDetailClient({
         ))}
       </div>
 
-      {/* Attempt History List */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
-              <History size={20} />
+      {/* Tabs for Round 1 and Round 2 */}
+      <Tabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        variant="pills"
+        className="w-full"
+      >
+        <TabItem
+          id="round1"
+          label={
+            <div className="flex items-center gap-2">
+              <History size={16} />
+              <span>Round 1 (Technical)</span>
             </div>
-            <div>
-              <Typography variant="h4" className="font-bold leading-none">
-                Attempt History
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground mt-1"
+          }
+        >
+          <div className="space-y-6 mt-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
+                  <History size={20} />
+                </div>
+                <div>
+                  <Typography variant="h4" className="font-bold leading-none">
+                    Attempt History
+                  </Typography>
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground mt-1"
+                  >
+                    Recent interview sessions and their scoring outcomes.
+                  </Typography>
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
               >
-                Recent interview sessions and their scoring outcomes.
-              </Typography>
+                {totalAttempts} Total
+              </Badge>
             </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
-          >
-            {totalAttempts} Total
-          </Badge>
-        </div>
 
-        {attemptData.attempts.length === 0 ? (
-          <EmptyState
-            variant="database"
-            title="No attempts found"
-            description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {attemptData.attempts.map((attempt, index) => (
-              <AttemptHistoryCard
-                key={attempt.attempt_id}
-                attemptId={attempt.attempt_id}
-                paperId={attempt.paper_id}
-                paperName={attempt.paper_name}
-                userId={userId}
-                index={index}
-                totalAttempts={totalAttempts}
-                status={attempt.status}
-                statusBadge={renderAttemptStatusBadge(attempt)}
-                isAutoSubmitted={attempt.is_auto_submitted}
-                completionReason={attempt.completion_reason ?? undefined}
-                startedAt={attempt.started_at ?? ""}
-                submittedAt={attempt.submitted_at ?? undefined}
-                attemptedCount={attempt.attempted_count}
-                totalQuestions={attempt.total_questions}
-                unattemptedCount={attempt.unattempted_count}
-                typingStats={attempt.typing_stats}
+            {attemptData.attempts.length === 0 ? (
+              <EmptyState
+                variant="database"
+                title="No attempts found"
+                description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
               />
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {attemptData.attempts.map((attempt, index) => (
+                  <AttemptHistoryCard
+                    key={attempt.attempt_id}
+                    attemptId={attempt.attempt_id}
+                    paperId={attempt.paper_id}
+                    paperName={attempt.paper_name}
+                    userId={userId}
+                    index={index}
+                    totalAttempts={totalAttempts}
+                    status={attempt.status}
+                    statusBadge={renderAttemptStatusBadge(attempt)}
+                    isAutoSubmitted={attempt.is_auto_submitted}
+                    completionReason={attempt.completion_reason ?? undefined}
+                    startedAt={attempt.started_at ?? ""}
+                    submittedAt={attempt.submitted_at ?? undefined}
+                    attemptedCount={attempt.attempted_count}
+                    totalQuestions={attempt.total_questions}
+                    unattemptedCount={attempt.unattempted_count}
+                    typingStats={attempt.typing_stats}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabItem>
+
+        <TabItem
+          id="round2"
+          label={
+            <div className="flex items-center gap-2">
+              <UserCheck size={16} />
+              <span>Round 2 (F2F Interview)</span>
+            </div>
+          }
+        >
+          <div className="mt-8">
+            <Round2History userId={userId} />
+          </div>
+        </TabItem>
+      </Tabs>
     </PageContainer>
   );
 }

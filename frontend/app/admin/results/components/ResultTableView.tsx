@@ -19,6 +19,9 @@ import { Badge } from "@components/ui-elements/Badge";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
+import { UserPlus } from "lucide-react";
+import { AssignLeadModal } from "./AssignLeadModal";
+import { useState } from "react";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -32,7 +35,20 @@ export function ResultTableView({
   visibleColumns,
   isLoading,
   limit = 10,
-}: ResultTableViewProps) {
+  onRefresh,
+}: ResultTableViewProps & { onRefresh?: () => void }) {
+  const [assignModal, setAssignModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    attemptId: number;
+    name: string;
+  }>({
+    isOpen: false,
+    userId: 0,
+    attemptId: 0,
+    name: "",
+  });
+
   return (
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
@@ -76,8 +92,13 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("status") && (
-              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80 text-center">
                 Latest Status
+              </TableHead>
+            )}
+            {visibleColumns.includes("project_lead") && (
+              <TableHead className="min-w-[150px] whitespace-nowrap font-bold text-foreground/80">
+                Interviewer(s)
               </TableHead>
             )}
             {visibleColumns.includes("date") && (
@@ -291,7 +312,7 @@ export function ResultTableView({
                     </TableCell>
                   )}
                   {visibleColumns.includes("status") && (
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         color={
@@ -308,6 +329,33 @@ export function ResultTableView({
                       >
                         {latest?.status?.replace("_", " ") || "NOT STARTED"}
                       </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("project_lead") && (
+                    <TableCell className="align-middle">
+                      <div className="flex flex-wrap gap-1.5 max-w-[180px]">
+                        {latest?.interviewers &&
+                        latest.interviewers.length > 0 ? (
+                          latest.interviewers.map(([name, status], idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              color={
+                                status === "completed" ? "success" : "default"
+                              }
+                              shape="square"
+                              className="text-[10px] font-bold py-0.5 px-1.5 whitespace-nowrap"
+                            >
+                              {name}
+                              {status === "completed" && " ✓"}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground/40 text-[11px] font-medium italic">
+                            Not Assigned
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                   )}
                   {visibleColumns.includes("date") && (
@@ -344,15 +392,35 @@ export function ResultTableView({
                   )}
                   {visibleColumns.includes("actions") && (
                     <TableCell className="text-right">
-                      <Link href={detailHref}>
-                        <TableIconButton
-                          iconColor="brand"
-                          animate="scale"
-                          title="View Result"
-                        >
-                          <Eye size={16} />
-                        </TableIconButton>
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        {latest?.status === "submitted" && (
+                          <TableIconButton
+                            iconColor="green"
+                            animate="scale"
+                            title="Assign to Project Lead"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAssignModal({
+                                isOpen: true,
+                                userId: item.user_id,
+                                attemptId: latest.attempt_id,
+                                name: item.username,
+                              });
+                            }}
+                          >
+                            <UserPlus size={16} />
+                          </TableIconButton>
+                        )}
+                        <Link href={detailHref}>
+                          <TableIconButton
+                            iconColor="brand"
+                            animate="scale"
+                            title="View Result"
+                          >
+                            <Eye size={16} />
+                          </TableIconButton>
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                 </TableCollapsibleRow>
@@ -361,6 +429,15 @@ export function ResultTableView({
           )}
         </TableBody>
       </Table>
+
+      <AssignLeadModal
+        isOpen={assignModal.isOpen}
+        onClose={() => setAssignModal((prev) => ({ ...prev, isOpen: false }))}
+        userId={assignModal.userId}
+        attemptId={assignModal.attemptId}
+        candidateName={assignModal.name}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }

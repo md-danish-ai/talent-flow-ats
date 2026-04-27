@@ -25,7 +25,10 @@ export function AutoAssignSkeleton() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-border/40">
+            <div
+              key={i}
+              className="flex items-center gap-4 p-4 rounded-2xl border border-border/40"
+            >
               <Skeleton className="h-6 w-6 rounded" />
               <div className="space-y-1">
                 <Skeleton className="h-2 w-12 rounded" />
@@ -50,7 +53,10 @@ export function AutoAssignSkeleton() {
       {/* Subject Card Skeletons */}
       <div className="grid grid-cols-1 gap-8">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-[2rem] border border-border/40 bg-white dark:bg-slate-900 shadow-sm p-6 overflow-hidden">
+          <div
+            key={i}
+            className="rounded-[2rem] border border-border/40 bg-white dark:bg-slate-900 shadow-sm p-6 overflow-hidden"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Skeleton className="w-1.5 h-6 rounded-full" />

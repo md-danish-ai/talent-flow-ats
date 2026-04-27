@@ -180,6 +180,13 @@ filterRegistry.register("results-filters", [
       { id: "Poor", label: "Poor" },
     ],
   },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
 ]);
 
 // 5. Admin Management

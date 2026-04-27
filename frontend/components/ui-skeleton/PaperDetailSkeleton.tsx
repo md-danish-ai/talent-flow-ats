@@ -1,6 +1,13 @@
 import React from "react";
 import { Skeleton } from "@components/ui-elements/Skeleton";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@components/ui-elements/Table";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@components/ui-elements/Table";
 
 export function PaperDetailSkeleton() {
   return (
@@ -22,7 +29,10 @@ export function PaperDetailSkeleton() {
           {/* Metadata Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-slate-50/10">
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-slate-50/10"
+              >
                 <Skeleton className="h-10 w-10 rounded-xl" />
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-16 rounded" />
@@ -61,24 +71,53 @@ export function PaperDetailSkeleton() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-12"></TableHead>
-                <TableHead className="w-20"><Skeleton className="h-4 w-12 mx-auto" /></TableHead>
-                <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-                <TableHead><Skeleton className="h-4 w-32" /></TableHead>
-                <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-                <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-                <TableHead className="w-20"><Skeleton className="h-4 w-12 mx-auto" /></TableHead>
+                <TableHead className="w-20">
+                  <Skeleton className="h-4 w-12 mx-auto" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-32" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+                <TableHead className="w-20">
+                  <Skeleton className="h-4 w-12 mx-auto" />
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="hover:bg-transparent border-b-border/40">
-                  <TableCell className="w-12"><Skeleton className="h-4 w-4 rounded-sm mx-auto opacity-40" /></TableCell>
-                  <TableCell className="text-center"><Skeleton className="h-5 w-8 mx-auto" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-20 rounded" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-12" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                  <TableCell className="text-center"><Skeleton className="h-9 w-9 rounded-full mx-auto" /></TableCell>
+                <TableRow
+                  key={i}
+                  className="hover:bg-transparent border-b-border/40"
+                >
+                  <TableCell className="w-12">
+                    <Skeleton className="h-4 w-4 rounded-sm mx-auto opacity-40" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-20 rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-12" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-16" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-9 w-9 rounded-full mx-auto" />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

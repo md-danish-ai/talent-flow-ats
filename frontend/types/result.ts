@@ -38,6 +38,7 @@ export interface AdminUserLatestAttempt {
   overall_grade?: string;
   typing_stats?: TypingStats | null;
   subject_results?: SubjectResult[];
+  interviewers?: Array<[string, string]>;
 }
 
 export interface AdminUserResultListItem {
@@ -162,4 +163,5 @@ export interface GetUserResultsParams {
   status?: string;
   completionReason?: string;
   overallGrade?: string;
+  project_lead_id?: string;
 }
