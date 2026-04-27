@@ -788,9 +788,11 @@ def get_admin_user_results(
     status: str | None = None,
     completion_reason: str | None = None,
     overall_grade: str | None = None,
+    project_lead_id: int | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict:
+    from app.evaluations.models import InterviewEvaluation
     db = SessionLocal()
     try:
         latest_record_ids_query = (
@@ -865,6 +867,15 @@ def get_admin_user_results(
             records_query = records_query.filter(InterviewRecord.completion_reason == completion_reason)
         if overall_grade and overall_grade != "all":
             records_query = records_query.filter(InterviewRecord.overall_grade == overall_grade)
+        
+        if project_lead_id and project_lead_id != "all":
+            records_query = records_query.filter(
+                InterviewRecord.id.in_(
+                    db.query(InterviewEvaluation.attempt_id)
+                    .filter(InterviewEvaluation.project_lead_id == project_lead_id)
+                    .subquery()
+                )
+            )
 
         total_items = records_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
@@ -921,6 +932,12 @@ def get_admin_user_results(
                     "overall_grade": record.overall_grade,
                     "typing_stats": typing_stats,
                     "subject_results": record.subject_grades,
+                    "interviewers": (
+                        db.query(User.username, InterviewEvaluation.status)
+                        .join(InterviewEvaluation, InterviewEvaluation.project_lead_id == User.id)
+                        .filter(InterviewEvaluation.attempt_id == record.id)
+                        .all()
+                    ),
                 },
             })
 
