@@ -41,7 +41,7 @@ export function EmptyState({
       className={cn(
         "relative flex flex-col items-center justify-center py-20 px-10 text-center w-full flex-1 h-full min-h-[500px] overflow-hidden transition-all duration-700",
         !colSpan &&
-          "bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl rounded-[4rem] border border-white/40 dark:border-white/5 shadow-[0_40px_80px_-20px_rgba(249,99,49,0.08)]",
+          "bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl rounded-[16px] border border-white/40 dark:border-white/5 shadow-[0_40px_80px_-20px_rgba(249,99,49,0.08)]",
         className,
       )}
     >

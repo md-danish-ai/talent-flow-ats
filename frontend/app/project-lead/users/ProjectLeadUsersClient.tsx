@@ -11,6 +11,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { EvaluationModal } from "./components/EvaluationModal";
 
 import { EvaluationTask } from "@types";
 
@@ -22,6 +23,8 @@ export default function ProjectLeadUsersClient({
   leadId,
 }: ProjectLeadUsersClientProps) {
   const [counts, setCounts] = useState({ pending: 0, completed: 0 });
+  const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: tasks,
@@ -58,7 +61,7 @@ export default function ProjectLeadUsersClient({
       }
     };
     if (leadId) fetchCounts();
-  }, [leadId, tasks]); // Refresh counts when tasks change
+  }, [leadId, tasks]);
 
   const activeTab = filters.status;
 
@@ -77,6 +80,20 @@ export default function ProjectLeadUsersClient({
 
   const handleTabChange = (val: string) => {
     handleFilterChange({ status: val });
+  };
+
+  const handleEvaluate = (task: EvaluationTask) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
+  };
+
+  const handleEvaluationSuccess = () => {
+    void refresh();
   };
 
   return (
@@ -121,7 +138,7 @@ export default function ProjectLeadUsersClient({
         }
       >
         <ListingTransition isLoading={loading} isBackgroundLoading={isBackgroundLoading}>
-          <CandidateList tasks={tasks} />
+          <CandidateList tasks={tasks} onEvaluate={handleEvaluate} />
           
           {!loading && totalItems > 0 && (
             <Pagination
@@ -136,6 +153,14 @@ export default function ProjectLeadUsersClient({
           )}
         </ListingTransition>
       </MainCard>
+
+      <EvaluationModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        userId={selectedTask?.user_id || 0}
+        evaluationId={selectedTask?.id || 0}
+        onSuccess={handleEvaluationSuccess}
+      />
     </PageContainer>
   );
 }

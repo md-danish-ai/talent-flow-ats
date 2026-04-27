@@ -1,10 +1,8 @@
-"use client";
-import { UserCheck, User } from "lucide-react";
-import Link from "next/link";
+import { UserCheck, User, Eye } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
-import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import {
   Table,
   TableHeader,
@@ -17,16 +15,17 @@ import { EvaluationTask } from "@types";
 
 interface CandidateListProps {
   tasks: EvaluationTask[];
+  onEvaluate: (task: EvaluationTask) => void;
 }
 
-export function CandidateList({ tasks }: CandidateListProps) {
+export function CandidateList({ tasks, onEvaluate }: CandidateListProps) {
   if (tasks.length === 0) {
     return (
       <EmptyState
         variant="database"
         title="No candidates found"
         description="You don't have any assigned candidates in this category."
-        className="py-12"
+        // className="py-12"
       />
     );
   }
@@ -76,20 +75,34 @@ export function CandidateList({ tasks }: CandidateListProps) {
               </Badge>
             </TableCell>
             <TableCell className="text-right pr-6">
-              <Link
-                href={`/project-lead/users/${task.user_id}?evaluation_id=${task.id}`}
-              >
-                <Button
-                  size="sm"
-                  className="rounded-xl font-bold px-5"
-                  variant={task.status === "completed" ? "outline" : "primary"}
-                  color={task.status === "completed" ? "default" : "primary"}
-                  startIcon={<UserCheck size={16} />}
-                  animate="scale"
+              <div className="flex items-center justify-end gap-2">
+                <TableIconButton
+                  title="View Results"
+                  iconColor="amber"
+                  btnSize="sm"
                 >
-                  {task.status === "completed" ? "View" : "Evaluate"}
-                </Button>
-              </Link>
+                  <Eye size={18} />
+                </TableIconButton>
+                {task.status === "completed" ? (
+                  <TableIconButton
+                    title="View Results"
+                    iconColor="brand"
+                    btnSize="sm"
+                    onClick={() => onEvaluate(task)}
+                  >
+                    <UserCheck size={18} />
+                  </TableIconButton>
+                ) : (
+                  <TableIconButton
+                    title="Start Evaluation"
+                    iconColor="brand"
+                    btnSize="sm"
+                    onClick={() => onEvaluate(task)}
+                  >
+                    <UserCheck size={18} />
+                  </TableIconButton>
+                )}
+              </div>
             </TableCell>
           </TableRow>
         ))}

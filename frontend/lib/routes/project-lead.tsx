@@ -1,4 +1,4 @@
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Bell } from "lucide-react";
 import { NavSection } from "./types";
 
 export const PROJECT_LEAD_ROUTES: NavSection[] = [
@@ -18,7 +18,7 @@ export const PROJECT_LEAD_ROUTES: NavSection[] = [
   },
   {
     title: "Notifications",
-    icon: <LayoutDashboard className="w-5 h-5" />, // Will change icon later
+    icon: <Bell className="w-5 h-5" />, // Will change icon later
     type: "item",
     href: "/project-lead/notifications",
     items: [],
