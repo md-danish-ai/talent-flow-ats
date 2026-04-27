@@ -38,7 +38,7 @@ interface SubjectAssignmentCardProps {
     marks: number,
     val: number,
   ) => void;
-  onAutoAssign: () => void;
+  onAutoAssign: () => void | Promise<void>;
 }
 
 export function SubjectAssignmentCard({
