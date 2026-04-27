@@ -9,10 +9,11 @@ __pycache__/
 # Virtual Environments
 # -----------------------
 venv/
-.env/
-.env.local/
-.env.production/
-.venv/
+.env
+.env.local
+.env.production
+.venv
+backend/.env
 
 # -----------------------
 # FastAPI / Uvicorn

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
+  title?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   closeOnOutsideClick?: boolean;
@@ -75,6 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
                   variant="body1"
                   weight="semibold"
                   color="text-foreground"
+                  as="div"
                 >
                   {title}
                 </Typography>

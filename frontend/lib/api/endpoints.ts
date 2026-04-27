@@ -121,4 +121,7 @@ export const ENDPOINTS = {
   DASHBOARD: {
     OVERVIEW: "/admin/dashboard/overview",
   },
+  AI_QUESTIONS: {
+    GENERATE: "/ai_questions/generate",
+  },
 } as const;

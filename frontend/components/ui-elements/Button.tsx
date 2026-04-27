@@ -172,7 +172,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               {startIcon}
             </span>
           )}
-          {children}
+          {size === "icon" || size === "icon-sm" || size === "rounded-icon" ? (
+            <span
+              className={cn(
+                "inline-flex items-center justify-center",
+                iconAnimationClasses,
+              )}
+            >
+              {children}
+            </span>
+          ) : (
+            children
+          )}
           {endIcon && (
             <span
               className={cn("inline-flex self-center", iconAnimationClasses)}

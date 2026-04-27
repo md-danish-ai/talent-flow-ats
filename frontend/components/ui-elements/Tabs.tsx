@@ -71,14 +71,14 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
 
       // Variant Backgrounds
       variant === "pills" &&
-        "bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50",
+        "bg-muted/40 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl border border-border/40 p-1.5 shadow-inner",
       variant === "glass" &&
-        "bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 shadow-xl",
+        "bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 shadow-xl p-1.5",
       variant === "bordered" &&
-        "bg-transparent border-2 border-border/40 rounded-xl",
+        "bg-transparent border-2 border-border/40 rounded-xl p-1",
       variant === "underline" &&
         "bg-transparent border-none p-0 gap-8 rounded-none",
-      variant === "gradient" && "bg-muted/20 rounded-xl",
+      variant === "gradient" && "bg-muted/20 rounded-xl p-1",
 
       className,
     );
@@ -103,13 +103,15 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
               key={tab.value}
               onClick={handleTabClick}
               className={cn(
-                "relative font-semibold transition-all duration-300 rounded-lg outline-none group overflow-hidden",
+                "relative font-bold transition-all duration-500 rounded-xl outline-none group overflow-hidden whitespace-nowrap",
                 sizeStyles[size],
                 fullWidth ? "flex-1" : "flex-none",
                 variant === "underline" && "rounded-none",
                 isActive
-                  ? "text-brand-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? variant === "pills"
+                    ? "text-brand-primary"
+                    : "text-brand-primary"
+                  : "text-muted-foreground/80 hover:text-foreground",
                 isVertical && "w-full",
               )}
             >
@@ -130,6 +132,12 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                   </span>
                 )}
                 <span>{tab.label}</span>
+                {isActive && variant === "pills" && (
+                  <motion.div
+                    layoutId="active-glow"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-brand-primary/40 blur-sm rounded-full"
+                  />
+                )}
               </div>
 
               {isActive && (
@@ -138,7 +146,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                   className={cn(
                     "absolute z-0",
                     variant === "pills" &&
-                      "inset-0 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-border/20",
+                      "inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-border/50",
                     variant === "glass" &&
                       "inset-0 bg-white/40 dark:bg-white/10 rounded-xl shadow-lg border border-white/30",
                     variant === "bordered" &&

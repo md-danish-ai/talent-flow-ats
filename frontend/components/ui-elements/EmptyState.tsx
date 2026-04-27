@@ -34,91 +34,146 @@ export function EmptyState({
 
   const content = (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 1.05 }}
+      transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
       className={cn(
-        "relative flex flex-col items-center justify-center p-16 text-center w-full overflow-hidden transition-all duration-500",
+        "relative flex flex-col items-center justify-center py-20 px-10 text-center w-full flex-1 h-full min-h-[500px] overflow-hidden transition-all duration-700",
         !colSpan &&
-          "bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-[3rem] border border-white/20 dark:border-white/5 shadow-2xl shadow-brand-primary/5",
+          "bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl rounded-[4rem] border border-white/40 dark:border-white/5 shadow-[0_40px_80px_-20px_rgba(249,99,49,0.08)]",
         className,
       )}
     >
-      {/* Decorative Orbs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none select-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[40%] h-[40%] bg-brand-primary/10 blur-[100px] rounded-full animate-pulse" />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[40%] h-[40%] bg-brand-primary/5 blur-[100px] rounded-full animate-pulse delay-700" />
-      </div>
-
-      <div className="relative group cursor-default">
-        {/* Animated Glow Layers */}
-        <div className="absolute inset-0 bg-brand-primary/30 blur-[45px] rounded-full scale-150 opacity-40 group-hover:opacity-70 group-hover:scale-[1.8] transition-all duration-700 animate-pulse" />
-        <div className="absolute inset-0 bg-brand-primary/10 blur-[20px] rounded-full scale-110 opacity-60 group-hover:opacity-90 transition-all duration-500" />
-
-        {/* Icon Container */}
+      {/* Dynamic Ambient Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
         <motion.div
           animate={{
-            y: [0, -8, 0],
+            scale: [1, 1.2, 1],
+            opacity: [0.03, 0.08, 0.03],
+            rotate: [0, 90, 180, 270, 360],
           }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="relative flex h-24 w-24 items-center justify-center rounded-[2.5rem] bg-gradient-to-br from-white/90 to-white/40 dark:from-slate-800/90 dark:to-slate-800/40 border border-white/50 dark:border-white/10 shadow-[0_20px_50px_-15px_rgba(249,99,49,0.25)] backdrop-blur-xl"
-        >
-          <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-brand-primary/10 to-transparent opacity-50" />
-          <FinalIcon
-            className="h-11 w-11 text-brand-primary drop-shadow-sm"
-            strokeWidth={1.5}
-          />
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,var(--brand-primary)_0%,transparent_70%)] blur-[100px]"
+        />
 
-          {/* Floating Sparkles for extra flair */}
-          <motion.div
-            animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-            className="absolute -top-1 -right-1 text-brand-primary/40"
-          >
-            <Sparkles size={16} />
-          </motion.div>
-        </motion.div>
+        {/* Modern Dot Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, #f96331 1px, transparent 0)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
       </div>
 
-      <div className="relative mt-10 z-10">
-        <Typography
-          variant="h2"
-          weight="black"
-          className="mb-4 text-slate-800 dark:text-slate-50 tracking-tighter"
-        >
-          {title}
-        </Typography>
+      {/* Hero Illustration */}
+      <div className="relative mb-14">
+        {/* Orbiting Elements */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          {[0, 120, 240].map((rotation, i) => (
+            <motion.div
+              key={i}
+              animate={{ rotate: [rotation, rotation + 360] }}
+              transition={{
+                duration: 10 + i * 2,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute w-[220px] h-[220px] border border-dashed border-brand-primary/10 rounded-full"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-primary/30 rounded-full blur-[1px]"
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Main Composition */}
+        <div className="relative group">
+          {/* Back Glowing Layer */}
+          <motion.div
+            animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 4, repeat: Infinity }}
+            className="absolute inset-[-40%] bg-brand-primary/40 blur-[80px] rounded-full"
+          />
+
+          {/* Glass Card Container */}
+          <motion.div
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="relative flex h-40 w-40 items-center justify-center rounded-[3.5rem] bg-gradient-to-tr from-white/80 via-white/40 to-white/10 dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-800/10 border border-white/60 dark:border-white/5 shadow-[0_30px_70px_-10px_rgba(249,99,49,0.2)] backdrop-blur-2xl transition-all duration-500 overflow-hidden"
+          >
+            {/* Internal Shimmer */}
+            <motion.div
+              animate={{ x: ["-200%", "200%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent skew-x-[-20deg]"
+            />
+
+            {/* Icon Wrapper */}
+            <div className="relative flex flex-col items-center justify-center gap-3">
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <FinalIcon
+                  className="h-16 w-16 text-brand-primary drop-shadow-[0_10px_15px_rgba(249,99,49,0.4)]"
+                  strokeWidth={1}
+                />
+              </motion.div>
+
+              {/* Secondary Floating Sparkles */}
+              <motion.div
+                animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute -top-4 -right-4 text-brand-primary/40"
+              >
+                <Sparkles size={24} />
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Textual Information */}
+      <div className="relative z-10 space-y-6 max-w-[500px]">
+        <div className="space-y-3">
+          <Typography
+            variant="h1"
+            weight="black"
+            className="text-slate-900 dark:text-white tracking-tight leading-[1.1] text-4xl"
+          >
+            {title}
+          </Typography>
+          <div className="h-1 w-12 bg-brand-primary/40 mx-auto rounded-full" />
+        </div>
 
         <Typography
-          variant="body2"
-          className="max-w-[420px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mx-auto opacity-90"
+          variant="body1"
+          className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed opacity-80"
         >
           {description}
         </Typography>
       </div>
 
-      {/* Modern Status Indicator dots */}
-      <div className="mt-12 flex items-center justify-center gap-4">
-        <span className="flex h-2 w-2 animate-bounce rounded-full bg-brand-primary" />
-        <span className="flex h-2 w-2 animate-bounce rounded-full bg-brand-primary/60 [animation-delay:0.2s]" />
-        <span className="flex h-2 w-2 animate-bounce rounded-full bg-brand-primary/30 [animation-delay:0.4s]" />
-      </div>
-
-      {/* Background radial highlight */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-brand-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* Ambient Floor Highlight */}
+      <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-full h-[40%] bg-gradient-to-t from-brand-primary/5 to-transparent blur-[100px] rounded-full pointer-events-none" />
     </motion.div>
   );
 
   if (colSpan) {
     return (
-      <tr className="border-none hover:bg-transparent">
-        <td colSpan={colSpan} className="p-0 border-none">
-          <div className="bg-transparent">{content}</div>
+      <tr className="border-none hover:bg-transparent h-full">
+        <td colSpan={colSpan} className="p-0 border-none h-full align-middle">
+          <div className="bg-transparent h-full flex flex-col items-center justify-center min-h-[550px]">
+            {content}
+          </div>
         </td>
       </tr>
     );

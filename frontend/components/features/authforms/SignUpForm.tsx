@@ -84,89 +84,91 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
         <Alert
           variant="error"
           description={serverError}
-          className="mb-4"
+          className="mb-5"
           onClose={() => setServerError(null)}
         />
       )}
 
       <form
-        className="space-y-5"
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
           form.handleSubmit();
         }}
       >
-        <form.Field name="name">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Full Name
-              </Typography>
-              <div className="relative">
+        {/* Row 1: Name and Mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form.Field name="name">
+            {(field) => (
+              <div className="group">
+                <Typography
+                  as="label"
+                  variant="h6"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Full Name
+                </Typography>
                 <Input
                   name="name"
                   type="text"
                   placeholder="John Doe"
-                  startIcon={<User className="h-[18px] w-[18px]" />}
+                  startIcon={<User size={18} />}
                   error={field.state.meta.errors.length > 0}
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  className="h-11 font-medium"
                 />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-semibold text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
               </div>
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="mt-1 font-medium text-red-500"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
 
-        <form.Field name="mobile">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Mobile Number
-              </Typography>
-              <div className="relative">
+          <form.Field name="mobile">
+            {(field) => (
+              <div className="group">
+                <Typography
+                  as="label"
+                  variant="h6"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Mobile Number
+                </Typography>
                 <Input
                   name="mobile"
                   type="tel"
                   placeholder="9999999999"
-                  startIcon={<Phone className="h-[18px] w-[18px]" />}
+                  startIcon={<Phone size={18} />}
                   error={field.state.meta.errors.length > 0}
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  className="h-11 font-medium"
                 />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-semibold text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
               </div>
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="mt-1 font-medium text-red-500"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+        </div>
 
+        {/* Row 2: Email */}
         <form.Field name="email">
           {(field) => (
             <div className="group">
@@ -176,63 +178,26 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                 className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
                 Email Address{" "}
-                <Typography
-                  variant="body5"
-                  as="span"
-                  className="font-normal normal-case opacity-50"
-                >
+                <span className="font-normal normal-case opacity-40">
                   (optional)
-                </Typography>
+                </span>
               </Typography>
-              <div className="relative">
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="name@company.com"
-                  startIcon={<Mail className="h-[18px] w-[18px]" />}
-                  error={field.state.meta.errors.length > 0}
-                  value={field.state.value ?? ""}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              </div>
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="mt-1 font-medium text-red-500"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field name="test_level_id">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Select Your Test Level
-              </Typography>
-              <SelectDropdown
-                options={levels}
-                value={field.state.value}
-                onChange={(val) => field.handleChange(String(val))}
-                placeholder="Choose Level"
-                isLoading={isLoadingLevels}
-                disabled={isLoadingLevels}
-                placement="top"
+              <Input
+                name="email"
+                type="email"
+                placeholder="name@company.com"
+                startIcon={<Mail size={18} />}
+                error={field.state.meta.errors.length > 0}
+                value={field.state.value ?? ""}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="h-11 font-medium"
               />
               {field.state.meta.isTouched &&
                 field.state.meta.errors.length > 0 && (
                   <Typography
                     variant="body5"
-                    className="mt-1 font-medium text-red-500"
+                    className="mt-1 font-semibold text-red-500"
                   >
                     {getErrorMessage(field.state.meta.errors[0])}
                   </Typography>
@@ -241,39 +206,74 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </form.Field>
 
-        <form.Field name="department_id">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                Select Department
-              </Typography>
-              <div className="relative">
+        {/* Row 3: Department and Test Level */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form.Field name="department_id">
+            {(field) => (
+              <div className="group">
+                <Typography
+                  as="label"
+                  variant="h6"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Department
+                </Typography>
                 <SelectDropdown
                   options={deptOptions}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(String(val))}
-                  placeholder="Choose Department"
+                  placeholder="Department"
                   isLoading={isLoadingDepts}
                   disabled={isLoadingDepts}
                   placement="top"
+                  className="h-11 py-0"
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
                     <Typography
                       variant="body5"
-                      className="mt-1 font-medium text-red-500"
+                      className="mt-1 font-semibold text-red-500"
                     >
                       {getErrorMessage(field.state.meta.errors[0])}
                     </Typography>
                   )}
               </div>
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+
+          <form.Field name="test_level_id">
+            {(field) => (
+              <div className="group">
+                <Typography
+                  as="label"
+                  variant="h6"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Exam Level
+                </Typography>
+                <SelectDropdown
+                  options={levels}
+                  value={field.state.value}
+                  onChange={(val) => field.handleChange(String(val))}
+                  placeholder="Exam Level"
+                  isLoading={isLoadingLevels}
+                  disabled={isLoadingLevels}
+                  placement="top"
+                  className="h-11 py-0"
+                />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <Typography
+                      variant="body5"
+                      className="mt-1 font-semibold text-red-500"
+                    >
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </Typography>
+                  )}
+              </div>
+            )}
+          </form.Field>
+        </div>
 
         <form.Subscribe
           selector={(state) => [state.isSubmitting, state.canSubmit]}
@@ -286,50 +286,41 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
               shadow
               disabled={isSubmitting || !canSubmit}
               animate="scale"
-              className="w-full py-3.5 text-medium font-bold mt-2"
+              className="w-full py-3.5 text-medium font-bold mt-2 shadow-lg shadow-brand-primary/20"
             >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center gap-3">
                   <Loader2 className="h-5 w-5 animate-spin text-white" />
-                  <Typography
-                    variant="span"
-                    weight="bold"
-                    className="text-white"
-                  >
-                    Creating Account…
-                  </Typography>
-                </>
+                  <span>Creating Account...</span>
+                </div>
               ) : (
-                <>
-                  <Typography
-                    variant="span"
-                    weight="bold"
-                    className="text-white"
-                  >
-                    Create Account
-                  </Typography>
-                  <ChevronRight className="h-5 w-5 text-white transition-transform group-hover:translate-x-1" />
-                </>
+                <div className="flex items-center gap-2">
+                  <span>Create Account</span>
+                  <ChevronRight
+                    size={18}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
+                </div>
               )}
             </Button>
           )}
         </form.Subscribe>
       </form>
 
-      <Link
-        href="/sign-in"
-        className="mt-6 flex items-center justify-center gap-1 text-small text-slate-400 dark:text-slate-500 transition-colors hover:text-brand-primary"
-      >
-        Already have an account?{" "}
+      <div className="mt-6 text-center">
         <Typography
-          variant="body3"
-          weight="bold"
-          as="span"
-          className="text-brand-primary"
+          variant="body4"
+          className="text-slate-400 dark:text-slate-500 font-medium"
         >
-          Sign In
+          Already have an account?{" "}
+          <Link
+            href="/sign-in"
+            className="font-bold text-brand-primary hover:underline transition-all"
+          >
+            Sign In
+          </Link>
         </Typography>
-      </Link>
+      </div>
     </div>
   );
 }

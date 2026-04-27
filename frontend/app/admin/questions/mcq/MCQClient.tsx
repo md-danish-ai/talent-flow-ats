@@ -6,8 +6,9 @@ import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 
 import { toast } from "@lib/toast";
-import { AddQuestionModal } from "./components/AddQuestionModal";
 import { EditQuestionModal } from "./components/EditQuestionModal";
+import { AddQuestionForm } from "@components/features/questions/AddQuestionForm";
+import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import {
   Table,
@@ -19,7 +20,11 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 
-import { Plus, ListChecks, Upload } from "lucide-react";
+import {
+  Plus,
+  ListChecks,
+  Upload,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -33,8 +38,12 @@ import { MCQRow } from "./components/MCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type MCQListingFilters = {
   search: string;
@@ -54,7 +63,7 @@ export function MCQClient({
   totalItems: initialTotalItems = 0,
 }: MCQClientProps) {
   const router = useRouter();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
@@ -79,7 +88,6 @@ export function MCQClient({
     [router],
   );
 
-  // Hook for standardized listing
   const {
     data: questions,
     isLoading,
@@ -199,9 +207,9 @@ export function MCQClient({
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <ListChecks size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <ListChecks size={18} />
             </div>
             Multiple Choice Questions
           </div>
@@ -210,48 +218,50 @@ export function MCQClient({
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="MCQs"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={availableColumns}
               visibleColumns={visibleColumns}
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isBulkUploadOpen}
-              animate="scale"
-              onClick={() => setIsBulkUploadOpen(true)}
-              title="Bulk Upload"
-            >
-              <Upload size={18} />
-            </Button>
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddModalOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Question
-            </Button>
+            <ListingIcons
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <Tooltip content="Bulk Upload" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isBulkUploadOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload size={18} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Add Question" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -265,8 +275,8 @@ export function MCQClient({
             isLoading={isLoading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full min-h-0">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full min-h-0 h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
@@ -372,12 +382,15 @@ export function MCQClient({
         />
       </MainCard>
 
-      <AddQuestionModal
-        isOpen={isAddModalOpen}
-        onClose={() => {
-          setIsAddModalOpen(false);
-          void refresh();
-        }}
+      <QuestionCreationModal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="MCQ Question Management"
+        questionType={QUESTION_TYPES.MULTIPLE_CHOICE}
+        onSuccess={() => void refresh()}
+        renderManualForm={(onSuccess) => (
+          <AddQuestionForm onSuccess={onSuccess} />
+        )}
       />
 
       {editingQuestion && (

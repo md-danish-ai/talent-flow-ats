@@ -19,6 +19,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
       SECRET_KEY: supersecretkey1234567890123456
+      HF_TOKEN: ${HF_TOKEN}
     volumes:
       - ./backend:/backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 4000 --reload

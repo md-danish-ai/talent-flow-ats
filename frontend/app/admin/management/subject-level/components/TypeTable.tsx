@@ -52,8 +52,11 @@ export function TypeTable({
   const colSpan = isSubject ? 7 : 5;
 
   return (
-    <div className="overflow-x-auto w-full">
-      <Table aria-label={`${isSubject ? "Subjects" : "Levels"} table`}>
+    <div className="overflow-x-auto w-full h-full flex flex-col">
+      <Table
+        aria-label={`${isSubject ? "Subjects" : "Levels"} table`}
+        className="h-full"
+      >
         <TableHeader className="bg-muted/30">
           <TableRow>
             <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">

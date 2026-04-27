@@ -30,6 +30,7 @@ import { PaperSetup, Question, Classification } from "@types";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
+import { PaperDetailSkeleton } from "@components/ui-skeleton/PaperDetailSkeleton";
 
 interface PaperSetupDetailProps {
   paperId: number;
@@ -80,14 +81,30 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [paperData, classificationsData] = await Promise.all([
+        const [paperData, subjectsRes] = await Promise.all([
           papersApi.getPaperById(paperId),
           classificationsApi.getClassifications({
+            type: "subject",
+            is_active: true,
             limit: 100,
           }),
         ]);
-        setPaper(paperData);
-        setAllClassifications(classificationsData.data);
+
+        const activeSubjects = subjectsRes.data || [];
+        setAllClassifications(activeSubjects);
+
+        // Filter paper subjects to only include active ones
+        const filteredSubjectData = (paperData.subject_ids_data || []).filter(
+          (ps) => activeSubjects.some((s) => s.id === ps.subject_id),
+        );
+
+        // Update paper object with only active subjects for this view
+        const updatedPaper = {
+          ...paperData,
+          subject_ids_data: filteredSubjectData,
+        };
+
+        setPaper(updatedPaper);
       } catch (error) {
         console.error("Failed to fetch details:", error);
         toast.error("Failed to load paper details");
@@ -173,11 +190,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
-      </div>
-    );
+    return <PaperDetailSkeleton />;
   }
 
   if (!paper) {

@@ -340,6 +340,52 @@ filterRegistry.register("paper-setup-filters", [
     label: "Exam Level",
     type: "select",
     placeholder: "All Levels",
+  },
+]);
+
+// 12. Questions without Subject filter (Typing Test, Lead Gen, Contact Details)
+filterRegistry.register("no-subject-question-filters", [
+  {
+    id: "search",
+    label: "Search Questions",
+    type: "search",
+    placeholder: "Search by question content...",
+  },
+  {
+    id: "examLevel",
+    label: "Exam Level",
+    type: "select",
+    placeholder: "Filter by Level",
     options: [{ id: "all", label: "All Levels" }],
+  },
+  {
+    id: "marks",
+    label: "Marks",
+    type: "select",
+    placeholder: "Filter by Marks",
+    options: [
+      { id: "all", label: "All Marks" },
+      { id: "1", label: "1 Mark" },
+      { id: "2", label: "2 Marks" },
+      { id: "3", label: "3 Marks" },
+      { id: "4", label: "4 Marks" },
+      { id: "5", label: "5 Marks" },
+      { id: "6", label: "6 Marks" },
+      { id: "7", label: "7 Marks" },
+      { id: "8", label: "8 Marks" },
+      { id: "9", label: "9 Marks" },
+      { id: "10", label: "10 Marks" },
+    ],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Status" },
+      { id: "true", label: "Active" },
+      { id: "false", label: "Inactive" },
+    ],
   },
 ]);
