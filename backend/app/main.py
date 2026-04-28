@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import traceback
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +17,7 @@ from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
 from app.paper_assignments.router import router as paper_assignments_router
 from app.dashboard.router import router as dashboard_router
+from app.evaluations.router import router as evaluations_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -72,7 +74,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     print(f"CRITICAL ERROR: {str(exc)}")
-    import traceback
 
     traceback.print_exc()
     return api_response(
@@ -103,6 +104,7 @@ app.include_router(departments_router)
 app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
+app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

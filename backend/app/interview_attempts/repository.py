@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import desc, func
+from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -21,6 +21,9 @@ from app.users.models import User
 from app.utils.status_codes import StatusCode
 from app.user_details.models import UserDetail
 from .models import InterviewRecord
+from app.evaluations.models import InterviewEvaluation
+from app.utils.grade_utils import GradeLabel
+from datetime import date as dt_date
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -788,6 +791,7 @@ def get_admin_user_results(
     status: str | None = None,
     completion_reason: str | None = None,
     overall_grade: str | None = None,
+    project_lead_id: int | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict:
@@ -847,15 +851,18 @@ def get_admin_user_results(
             InterviewRecord.status, 
             InterviewRecord.overall_grade
         ).all()
-
         summary_stats = {
             "total": sum(s[2] for s in stats_data),
             "active": sum(s[2] for s in stats_data if s[0] == "started"),
-            "completed": sum(s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]),
-            "excellent": sum(s[2] for s in stats_data if s[1] == "Excellent"),
-            "good": sum(s[2] for s in stats_data if s[1] == "Good"),
-            "average": sum(s[2] for s in stats_data if s[1] == "Average"),
-            "poor": sum(s[2] for s in stats_data if s[1] == "Poor"),
+            "completed": sum(
+                s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]
+            ),
+            "excellent": sum(
+                s[2] for s in stats_data if s[1] == GradeLabel.EXCELLENT
+            ),
+            "good": sum(s[2] for s in stats_data if s[1] == GradeLabel.GOOD),
+            "average": sum(s[2] for s in stats_data if s[1] == GradeLabel.AVERAGE),
+            "poor": sum(s[2] for s in stats_data if s[1] == GradeLabel.POOR),
         }
 
         # 2. Apply post-subquery filters on the actual record columns for LISTING ONLY
@@ -865,6 +872,15 @@ def get_admin_user_results(
             records_query = records_query.filter(InterviewRecord.completion_reason == completion_reason)
         if overall_grade and overall_grade != "all":
             records_query = records_query.filter(InterviewRecord.overall_grade == overall_grade)
+        
+        if project_lead_id and project_lead_id != "all":
+            records_query = records_query.filter(
+                InterviewRecord.id.in_(
+                    db.query(InterviewEvaluation.attempt_id)
+                    .filter(InterviewEvaluation.project_lead_id == project_lead_id)
+                    .subquery()
+                )
+            )
 
         total_items = records_query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
@@ -921,6 +937,22 @@ def get_admin_user_results(
                     "overall_grade": record.overall_grade,
                     "typing_stats": typing_stats,
                     "subject_results": record.subject_grades,
+                    "interviewers": [
+                        {"name": row[0], "status": row[1]}
+                        for row in (
+                            db.query(User.username, InterviewEvaluation.status)
+                            .join(InterviewEvaluation, InterviewEvaluation.project_lead_id == User.id)
+                            .filter(InterviewEvaluation.attempt_id == record.id)
+                            .order_by(
+                                case(
+                                    (InterviewEvaluation.status == "completed", 0),
+                                    else_=1,
+                                ),
+                                InterviewEvaluation.updated_at.asc(),
+                            )
+                            .all()
+                        )
+                    ],
                 },
             })
 
@@ -1219,7 +1251,6 @@ def reset_user_details(user_id: int) -> dict:
 
 
 def reset_user_for_reinterview(user_id: int) -> dict:
-    from datetime import date as dt_date
     db = SessionLocal()
     try:
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()

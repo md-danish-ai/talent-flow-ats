@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   LayoutGrid,
@@ -11,7 +11,7 @@ import {
   BadgeCheck,
   Target,
 } from "lucide-react";
-import { cn } from "@lib/utils";
+import { cn, getGradeConfig } from "@lib/utils";
 import { motion } from "framer-motion";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -30,10 +30,12 @@ import {
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
 
-import { resultsApi } from "@lib/api/results";
+import { resultsApi, managementApi } from "@lib/api";
 import {
   type AdminUserResultListItem,
   type PaginatedUserResults,
+  type FilterOption,
+  type UserListResponse,
 } from "@types";
 import { useListing } from "@hooks/useListing";
 
@@ -72,6 +74,7 @@ type ResultsFilters = {
   status: string;
   completionReason: string;
   overallGrade: string;
+  project_lead_id: string;
 };
 
 export function UserResultsClient() {
@@ -91,6 +94,7 @@ export function UserResultsClient() {
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
+      { id: "project_lead", label: "Project Lead" },
       { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
     ],
@@ -103,14 +107,25 @@ export function UserResultsClient() {
     "attempts",
     "marks",
     "grade",
-    "typing_wpm",
     "status",
-    "date",
+    "project_lead",
     "actions",
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
     DEFAULT_VISIBLE_COLUMNS,
   );
+
+  const [leadsOptions, setLeadsOptions] = useState<FilterOption[]>([]);
+
+  useEffect(() => {
+    managementApi.getProjectLeads({ limit: 100 }).then((res) => {
+      const options = (res.data || []).map((l: UserListResponse) => ({
+        id: l.id.toString(),
+        label: l.username,
+      }));
+      setLeadsOptions([{ id: "all", label: "All Leads" }, ...options]);
+    });
+  }, []);
 
   const {
     data: items,
@@ -138,6 +153,7 @@ export function UserResultsClient() {
         status: "all",
         completionReason: "all",
         overallGrade: "all",
+        project_lead_id: "all",
       },
       filterMapping: (f) => ({
         search: f.search || undefined,
@@ -147,6 +163,8 @@ export function UserResultsClient() {
         completionReason:
           f.completionReason !== "all" ? f.completionReason : undefined,
         overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
+        project_lead_id:
+          f.project_lead_id !== "all" ? f.project_lead_id : undefined,
       }),
       onSuccess: (res) => {
         if (res.summary_stats) setSummaryStatsData(res.summary_stats);
@@ -194,47 +212,26 @@ export function UserResultsClient() {
     [summaryStatsData],
   );
 
-  const gradeStats = useMemo(
-    () => [
-      {
-        id: "excellent",
-        label: "Excellent",
-        value: summaryStatsData?.excellent || 0,
-        color: "text-emerald-500",
-        bg: "bg-emerald-500/10",
-        border: "border-emerald-500/20",
-        icon: <Trophy />,
-      },
-      {
-        id: "good",
-        label: "Good",
-        value: summaryStatsData?.good || 0,
-        color: "text-blue-500",
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/20",
-        icon: <BadgeCheck />,
-      },
-      {
-        id: "average",
-        label: "Average",
-        value: summaryStatsData?.average || 0,
-        color: "text-amber-500",
-        bg: "bg-amber-500/10",
-        border: "border-amber-500/20",
-        icon: <Target />,
-      },
-      {
-        id: "poor",
-        label: "Poor",
-        value: summaryStatsData?.poor || 0,
-        color: "text-rose-500",
-        bg: "bg-rose-500/10",
-        border: "border-rose-500/20",
-        icon: <UserX />,
-      },
-    ],
-    [summaryStatsData],
-  );
+  const gradeStats = useMemo(() => {
+    const grades: Array<{ id: string; label: string; icon: React.ReactNode }> =
+      [
+        { id: "excellent", label: "Excellent", icon: <Trophy /> },
+        { id: "good", label: "Good", icon: <BadgeCheck /> },
+        { id: "average", label: "Average", icon: <Target /> },
+        { id: "poor", label: "Poor", icon: <UserX /> },
+      ];
+
+    return grades.map((g) => {
+      const config = getGradeConfig(g.label);
+      return {
+        ...g,
+        value: summaryStatsData?.[g.id as keyof typeof summaryStatsData] || 0,
+        color: config.color,
+        bg: config.bg,
+        border: config.border,
+      };
+    });
+  }, [summaryStatsData]);
 
   const handleStatClick = (filterObj: { type: string; value: string }) => {
     if (filterObj.type === "reset") {
@@ -395,6 +392,7 @@ export function UserResultsClient() {
                   visibleColumns={visibleColumns}
                   isLoading={loading}
                   limit={pageSize}
+                  onRefresh={refresh}
                 />
               )}
             </div>
@@ -431,6 +429,9 @@ export function UserResultsClient() {
           }}
           onReset={resetFilters}
           isLoading={loading}
+          dynamicOptions={{
+            project_lead_id: leadsOptions,
+          }}
         />
       </MainCard>
     </PageContainer>

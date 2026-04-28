@@ -1,4 +1,5 @@
 from typing import Optional
+from sqlalchemy import func as sql_func
 from sqlalchemy.orm import aliased
 from app.database.db import SessionLocal
 from app.questions.models import Question
@@ -409,8 +410,6 @@ def auto_generate_questions(
       should be covered by a composite index on (subject_type, exam_level,
       question_type, is_active).
     """
-    from sqlalchemy import func as sql_func
-
     db_session = SessionLocal()
     try:
         all_ids: list[int] = []
@@ -473,7 +472,6 @@ def get_available_question_counts(subject_code: str, exam_level: str):
     Returns the count of available active questions per question type
     for a specific subject and exam level.
     """
-    from sqlalchemy import func as sql_func
     db_session = SessionLocal()
     try:
         rows = (

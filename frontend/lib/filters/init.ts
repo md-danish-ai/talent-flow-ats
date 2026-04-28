@@ -180,6 +180,41 @@ filterRegistry.register("results-filters", [
       { id: "Poor", label: "Poor" },
     ],
   },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
+]);
+
+// 4.5. Face-to-Face Results
+filterRegistry.register("f2f-results-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "completed", label: "Completed" },
+      { id: "pending", label: "Pending" },
+    ],
+  },
 ]);
 
 // 5. Admin Management
@@ -226,6 +261,27 @@ filterRegistry.register("project-lead-filters", [
   },
 ]);
 
+// 7.5 Project Lead -> Users
+filterRegistry.register("project-lead-users-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "pending", label: "Pending" },
+      { id: "completed", label: "Completed" },
+    ],
+  },
+]);
+
 // 8. Management -> Departments
 filterRegistry.register("department-filters", [
   {
@@ -245,6 +301,7 @@ filterRegistry.register("type-management-filters", [
     options: [
       { id: "subjects", label: "Subjects" },
       { id: "levels", label: "Exam Levels" },
+      { id: "results", label: "Interview Results" },
     ],
     props: { variant: "pills", size: "sm" },
   },

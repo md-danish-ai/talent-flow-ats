@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 # ── App setup ────────────────────────────────────────────────────────────────
 # Adjust import path to match your project structure
@@ -62,7 +62,6 @@ class TestCreateAnswer:
     @patch("app.answer.repository.create_answer")
     def test_create_answer_question_not_found(self, mock_repo):
         """404 — question_id does not exist."""
-        from fastapi import HTTPException
 
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="Question 10 does not exist"
@@ -74,7 +73,6 @@ class TestCreateAnswer:
     @patch("app.answer.repository.create_answer")
     def test_create_answer_duplicate(self, mock_repo):
         """409 — answer already exists for this question."""
-        from fastapi import HTTPException
 
         mock_repo.side_effect = HTTPException(
             status_code=409, detail="Answer for question 10 already exists"
@@ -130,7 +128,6 @@ class TestGetAnswer:
     @patch("app.answer.repository.get_answer_by_question")
     def test_get_answer_not_found(self, mock_repo):
         """404 — no answer exists for this question."""
-        from fastapi import HTTPException
 
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="No answer found for question 99"
@@ -193,7 +190,6 @@ class TestUpdateAnswer:
     @patch("app.answer.repository.update_answer")
     def test_update_answer_not_found(self, mock_repo):
         """404 — no answer exists for this question."""
-        from fastapi import HTTPException
 
         mock_repo.side_effect = HTTPException(
             status_code=404, detail="No answer found for question 99"

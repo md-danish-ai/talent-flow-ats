@@ -11,6 +11,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+import json
 
 
 # revision identifiers, used by Alembic.
@@ -143,16 +144,6 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Excel",
-        "code": "EXCEL",
-        "is_active": False,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Proficient use of Microsoft Excel for data analysis. Focus on VLOOKUP, pivot tables, formulas, and data cleaning techniques."
-        },
-    },
-    {
-        "type": "subject",
         "name": "Food Industry",
         "code": "FOOD_INDUSTRY",
         "metadata": {
@@ -223,6 +214,45 @@ CLASSIFICATIONS = [
             "description": "Online retail operations."
         },
     },
+    # 4. Interview Results
+    {
+        "type": "interview_result",
+        "name": "Must Hire",
+        "code": "MUST_HIRE",
+        "metadata": {"description": "Top tier candidate, highly recommended."},
+    },
+    {
+        "type": "interview_result",
+        "name": "Good to Go",
+        "code": "GOOD_TO_GO",
+        "metadata": {"description": "Strong candidate, meets all primary requirements."},
+    },
+    {
+        "type": "interview_result",
+        "name": "Fit for Process",
+        "code": "FIT_FOR_PROCESS",
+        "metadata": {"description": "Meets basic criteria to continue in the process."},
+    },
+    {
+        "type": "interview_result",
+        "name": "Can be Given a Chance",
+        "code": "GIVEN_CHANCE",
+        "metadata": {"description": "Borderline candidate with potential."},
+    },
+    {
+        "type": "interview_result",
+        "name": "Not Fit - Try Other Task",
+        "code": "NOT_FIT_OTHER",
+        "metadata": {
+            "description": "Not suitable for this role but could fit elsewhere."
+        },
+    },
+    {
+        "type": "interview_result",
+        "name": "Not at all fit",
+        "code": "NOT_FIT",
+        "metadata": {"description": "Does not meet requirements."},
+    },
 ]
 
 # 4. Departments
@@ -235,7 +265,6 @@ DEPARTMENTS = [
 
 def upgrade() -> None:
     """Seed data in the specified order."""
-    import json
 
     conn = op.get_bind()
 

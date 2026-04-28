@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
-import { cn } from "@lib/utils";
+import { cn, getGradeConfig } from "@lib/utils";
 import { type AdminUserLatestAttempt } from "@types";
 
 interface CollapsibleResultDetailProps {
@@ -58,13 +58,7 @@ export function CollapsibleResultDetail({
                 <Badge
                   variant="fill"
                   shape="square"
-                  color={
-                    res.grade === "Excellent" || res.grade === "Good"
-                      ? "success"
-                      : res.grade === "Average"
-                        ? "warning"
-                        : "error"
-                  }
+                  color={getGradeConfig(res.grade).badgeColor}
                   className="text-[9px] px-1.5 py-0 h-5 shrink-0 font-bold tracking-wider"
                 >
                   {res.grade}
@@ -72,27 +66,23 @@ export function CollapsibleResultDetail({
               </div>
 
               <div className="flex flex-col gap-2 mt-auto">
-                <div className="flex items-end gap-1.5">
-                  <span className="text-xl font-black text-brand-primary leading-none">
+                <div className="flex items-center justify-center">
+                  <span className="text-xl font-black text-brand-primary leading-none flex items-baseline gap-1.5">
                     {res.obtained_marks}
-                  </span>
-                  <span className="text-[11px] font-bold text-muted-foreground/80 mb-[2px]">
-                    / {res.total_marks}
+                    <span className="text-muted-foreground/30 font-bold text-sm">
+                      /
+                    </span>
+                    {res.total_marks}
                   </span>
                 </div>
 
                 {/* Mini Progress Bar */}
-                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shrink-0">
+                <div className="w-full h-1.5 bg-slate-200/60 dark:bg-slate-700/50 rounded-full overflow-hidden shrink-0">
                   <div
-                    className={`h-full rounded-full transition-all duration-1000 ${
-                      res.percentage >= 80
-                        ? "bg-emerald-500"
-                        : res.percentage >= 60
-                          ? "bg-brand-primary"
-                          : res.percentage >= 40
-                            ? "bg-amber-500"
-                            : "bg-rose-500"
-                    }`}
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000",
+                      getGradeConfig(res.grade).barBg,
+                    )}
                     style={{ width: `${Math.min(res.percentage || 0, 100)}%` }}
                   />
                 </div>
@@ -123,8 +113,8 @@ export function CollapsibleResultDetail({
                 label: "Accuracy",
                 value: `${latest.typing_stats.accuracy}%`,
                 icon: <CheckCircle2 size={18} />,
-                color: "text-emerald-500",
-                bg: "bg-emerald-500/10",
+                color: getGradeConfig(latest?.overall_grade).color,
+                bg: getGradeConfig(latest?.overall_grade).bg,
               },
               {
                 label: "Total Errors",

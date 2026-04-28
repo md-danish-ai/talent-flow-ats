@@ -16,7 +16,7 @@ interface BaseType {
 interface ManageTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: "subject" | "level";
+  type: "subject" | "exam_level" | "interview_result";
   editingType: BaseType | null;
   formData: { name: string; description: string; is_exclusive: boolean };
   setFormData: (data: {
@@ -38,10 +38,20 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
-  const typeLabel = type === "subject" ? "Subject" : "Level";
-  const nameLabel = type === "subject" ? "Name" : "Level Name";
+  const typeLabel =
+    type === "subject"
+      ? "Subject"
+      : type === "exam_level"
+        ? "Level"
+        : "Interview Result";
+  const nameLabel =
+    type === "subject" ? "Name" : type === "exam_level" ? "Level Name" : "Verdict Name";
   const placeholder =
-    type === "subject" ? "e.g. Technical" : "e.g. Senior Developer";
+    type === "subject"
+      ? "e.g. Technical"
+      : type === "exam_level"
+        ? "e.g. Senior Developer"
+        : "e.g. Must Hire";
 
   return (
     <Modal

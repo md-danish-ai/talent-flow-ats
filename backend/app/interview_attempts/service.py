@@ -90,6 +90,7 @@ class InterviewAttemptService:
         status: str | None = None,
         completion_reason: str | None = None,
         overall_grade: str | None = None,
+        project_lead_id: int | None = None,
         page: int = 1,
         limit: int = 10,
     ):
@@ -101,6 +102,7 @@ class InterviewAttemptService:
                 status=status,
                 completion_reason=completion_reason,
                 overall_grade=overall_grade,
+                project_lead_id=project_lead_id,
                 page=page,
                 limit=limit,
             )

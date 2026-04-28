@@ -2,6 +2,7 @@
 
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
+import { cn, getGradeConfig } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
@@ -19,6 +20,10 @@ import { Badge } from "@components/ui-elements/Badge";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
+import { UserPlus } from "lucide-react";
+import { AssignLeadModal } from "./AssignLeadModal";
+import { useState } from "react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -32,7 +37,20 @@ export function ResultTableView({
   visibleColumns,
   isLoading,
   limit = 10,
-}: ResultTableViewProps) {
+  onRefresh,
+}: ResultTableViewProps & { onRefresh?: () => void }) {
+  const [assignModal, setAssignModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    attemptId: number;
+    name: string;
+  }>({
+    isOpen: false,
+    userId: 0,
+    attemptId: 0,
+    name: "",
+  });
+
   return (
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
@@ -76,8 +94,13 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("status") && (
-              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80 text-center">
                 Latest Status
+              </TableHead>
+            )}
+            {visibleColumns.includes("project_lead") && (
+              <TableHead className="min-w-[150px] whitespace-nowrap font-bold text-foreground/80">
+                Project Lead
               </TableHead>
             )}
             {visibleColumns.includes("date") && (
@@ -197,35 +220,22 @@ export function ResultTableView({
                   {visibleColumns.includes("marks") && (
                     <TableCell className="text-center">
                       {latest?.total_marks ? (
-                        <div className="flex flex-col items-center justify-center mx-auto gap-[5px] w-max min-w-[64px]">
-                          <div className="flex items-baseline justify-center gap-1 w-full">
-                            <span className="text-[15px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                        <div className="flex flex-col gap-1.5 min-w-[100px] mx-auto">
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-[12px] font-bold text-foreground flex items-baseline gap-1">
                               {latest.obtained_marks || 0}
-                            </span>
-                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-none">
-                              / {latest.total_marks}
+                              <span className="text-muted-foreground/40 font-medium">
+                                /
+                              </span>
+                              {latest.total_marks}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                          <div className="w-full bg-slate-200/60 dark:bg-slate-700/50 h-1.5 rounded-full overflow-hidden border border-border/5">
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                ((latest.obtained_marks || 0) /
-                                  latest.total_marks) *
-                                  100 >=
-                                80
-                                  ? "bg-emerald-500"
-                                  : ((latest.obtained_marks || 0) /
-                                        latest.total_marks) *
-                                        100 >=
-                                      60
-                                    ? "bg-brand-primary"
-                                    : ((latest.obtained_marks || 0) /
-                                          latest.total_marks) *
-                                          100 >=
-                                        40
-                                      ? "bg-amber-500"
-                                      : "bg-rose-500"
-                              }`}
+                              className={cn(
+                                "h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,0,0,0.05)]",
+                                getGradeConfig(latest.overall_grade).barBg,
+                              )}
                               style={{
                                 width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%`,
                               }}
@@ -246,15 +256,9 @@ export function ResultTableView({
                         <Badge
                           variant="outline"
                           color={
-                            latest.overall_grade === "Excellent" ||
-                            latest.overall_grade === "Good"
-                              ? "success"
-                              : latest.overall_grade === "Average"
-                                ? "warning"
-                                : "error"
+                            getGradeConfig(latest.overall_grade).badgeColor
                           }
                           shape="square"
-                          animate="pulse"
                         >
                           {latest.overall_grade}
                         </Badge>
@@ -291,7 +295,7 @@ export function ResultTableView({
                     </TableCell>
                   )}
                   {visibleColumns.includes("status") && (
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         color={
@@ -303,11 +307,93 @@ export function ResultTableView({
                               : "warning"
                         }
                         shape="square"
-                        animate="pulse"
+                        // animate="pulse"
                         className="font-bold uppercase tracking-wider"
                       >
                         {latest?.status?.replace("_", " ") || "NOT STARTED"}
                       </Badge>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("project_lead") && (
+                    <TableCell className="align-middle">
+                      <div className="flex flex-wrap gap-1.5 max-w-[180px]">
+                        {latest?.interviewers &&
+                        latest.interviewers.length > 0 ? (
+                          <Tooltip
+                            content={
+                              <div className="flex flex-col gap-2 p-1 min-w-[140px]">
+                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 border-b border-white/10 pb-1">
+                                  Full Panel
+                                </div>
+                                {latest.interviewers.map((lead, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <div className="relative shrink-0">
+                                      <Avatar
+                                        name={lead.name}
+                                        variant="brand"
+                                        className="w-5 h-5 text-[9px] rounded-sm border-none shadow-none"
+                                      />
+                                      <div
+                                        className={cn(
+                                          "absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-slate-900",
+                                          lead.status === "completed"
+                                            ? "bg-emerald-500"
+                                            : "bg-amber-500",
+                                        )}
+                                      />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-200 uppercase tracking-tight">
+                                      {lead.name}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            }
+                            side="top"
+                          >
+                            <div className="flex items-center gap-2 group cursor-default">
+                              <div className="relative shrink-0">
+                                <Avatar
+                                  name={latest.interviewers[0].name}
+                                  variant="brand"
+                                  className="w-6 h-6 text-[10px] rounded-md border-orange-200/50 dark:border-orange-900/30 shadow-sm"
+                                />
+                                <div
+                                  className={cn(
+                                    "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-slate-950",
+                                    latest.interviewers[0].status ===
+                                      "completed"
+                                      ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)]"
+                                      : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)] animate-pulse",
+                                  )}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
+                                  {latest.interviewers[0].name}
+                                </span>
+                                {latest.interviewers.length > 1 && (
+                                  <Badge
+                                    variant="outline"
+                                    color="default"
+                                    shape="square"
+                                    className="text-[9px] font-extrabold px-1 py-0 h-4 min-w-[18px] flex items-center justify-center border-border/50 text-muted-foreground/70"
+                                  >
+                                    +{latest.interviewers.length - 1}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </Tooltip>
+                        ) : (
+                          <span className="text-muted-foreground/40 text-[11px] font-medium italic">
+                            Not Assigned
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                   )}
                   {visibleColumns.includes("date") && (
@@ -344,15 +430,35 @@ export function ResultTableView({
                   )}
                   {visibleColumns.includes("actions") && (
                     <TableCell className="text-right">
-                      <Link href={detailHref}>
-                        <TableIconButton
-                          iconColor="brand"
-                          animate="scale"
-                          title="View Result"
-                        >
-                          <Eye size={16} />
-                        </TableIconButton>
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        {latest?.status === "submitted" && (
+                          <TableIconButton
+                            iconColor="green"
+                            animate="scale"
+                            title="Assign to Project Lead"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAssignModal({
+                                isOpen: true,
+                                userId: item.user_id,
+                                attemptId: latest.attempt_id,
+                                name: item.username,
+                              });
+                            }}
+                          >
+                            <UserPlus size={16} />
+                          </TableIconButton>
+                        )}
+                        <Link href={detailHref}>
+                          <TableIconButton
+                            iconColor="brand"
+                            animate="scale"
+                            title="View Result"
+                          >
+                            <Eye size={16} />
+                          </TableIconButton>
+                        </Link>
+                      </div>
                     </TableCell>
                   )}
                 </TableCollapsibleRow>
@@ -361,6 +467,15 @@ export function ResultTableView({
           )}
         </TableBody>
       </Table>
+
+      <AssignLeadModal
+        isOpen={assignModal.isOpen}
+        onClose={() => setAssignModal((prev) => ({ ...prev, isOpen: false }))}
+        userId={assignModal.userId}
+        attemptId={assignModal.attemptId}
+        candidateName={assignModal.name}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }

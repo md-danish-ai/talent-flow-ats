@@ -6,6 +6,7 @@ from app.utils.status_codes import StatusCode
 from app.user_details.schemas import UserDetailsSchema
 from app.user_details.models import UserDetail
 from app.users.models import User
+from app.duplicates.service import detect_duplicates
 
 
 def save_user_details(user_id: int, data: UserDetailsSchema):
@@ -61,8 +62,6 @@ def save_user_details(user_id: int, data: UserDetailsSchema):
         db_session.commit()
 
         try:
-            from app.duplicates.service import detect_duplicates
-
             detect_duplicates(db_session, int(user_id), data)
         except Exception as dup_err:
             print(f"Error detecting duplicates: {str(dup_err)}")

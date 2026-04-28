@@ -5,7 +5,7 @@ import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, Plus } from "lucide-react";
+import { Layers, Gauge, Plus, ShieldCheck } from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
@@ -63,7 +63,12 @@ export function TypesManagementClient({
     initialData: initialSubjectData?.data,
     initialTotalItems: initialSubjectData?.pagination?.total_records,
     filterMapping: (f) => ({
-      type: f.type === "subjects" ? "subject" : "exam_level",
+      type:
+        f.type === "subjects"
+          ? "subject"
+          : f.type === "levels"
+            ? "exam_level"
+            : "interview_result",
       search: f.search || undefined,
       is_active:
         f.status === "active"
@@ -103,13 +108,27 @@ export function TypesManagementClient({
   });
 
   const classificationType =
-    activeTab === "subjects" ? "subject" : "exam_level";
+    activeTab === "subjects"
+      ? "subject"
+      : activeTab === "levels"
+        ? "exam_level"
+        : "interview_result";
 
-  const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
+  const currentEntityName =
+    activeTab === "subjects"
+      ? "Subject"
+      : activeTab === "levels"
+        ? "Level"
+        : "Verdict";
 
   const tabs: TabItem[] = [
     { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
-    { label: "Levels", value: "levels", icon: <Gauge size={18} /> },
+    { label: "Exam Levels", value: "levels", icon: <Gauge size={18} /> },
+    {
+      label: "Interview Results",
+      value: "results",
+      icon: <ShieldCheck size={18} />,
+    },
   ];
 
   const handleTabChange = (newTab: string) => {
@@ -210,8 +229,8 @@ export function TypesManagementClient({
   return (
     <PageContainer animate>
       <PageHeader
-        title="Subject & Level Management"
-        description="Configure and manage subject categories and seniority levels in one place."
+        title="Master Data Management"
+        description="Configure and manage subjects, exam levels, and interview results in one place."
       />
 
       <MainCard
@@ -221,7 +240,7 @@ export function TypesManagementClient({
               <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
                 <Layers size={18} />
               </div>
-              Subject & Level Definitions
+              Master Data Definitions
             </div>
             <div className="h-8 w-px bg-border/50" />
             <Tabs
@@ -241,14 +260,26 @@ export function TypesManagementClient({
               isLoading={isFetching}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
-              itemLabel={activeTab === "subjects" ? "Subjects" : "Levels"}
+              itemLabel={
+                activeTab === "subjects"
+                  ? "Subjects"
+                  : activeTab === "levels"
+                    ? "Levels"
+                    : "Interview Results"
+              }
               onRefresh={refresh}
               onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
             <Tooltip
-              content={`Add ${activeTab === "subjects" ? "Subject" : "Level"}`}
+              content={`Add ${
+                activeTab === "subjects"
+                  ? "Subject"
+                  : activeTab === "levels"
+                    ? "Level"
+                    : "Verdict"
+              }`}
               side="top"
             >
               <Button
@@ -315,7 +346,13 @@ export function TypesManagementClient({
       <ManageTypeModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        type={activeTab === "subjects" ? "subject" : "level"}
+        type={
+          activeTab === "subjects"
+            ? "subject"
+            : activeTab === "levels"
+              ? "exam_level"
+              : "interview_result"
+        }
         editingType={editingType}
         formData={formData}
         setFormData={setFormData}
