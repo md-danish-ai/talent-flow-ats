@@ -14,7 +14,7 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/assign", status_code=StatusCode.CREATED)
+@router.post("/assign-lead-evaluation", status_code=StatusCode.CREATED)
 def assign_interviews(payload: schemas.InterviewEvaluationCreate, db: Session = Depends(get_db)):
     try:
         # Check if already assigned to this lead for this attempt
@@ -38,7 +38,7 @@ def assign_interviews(payload: schemas.InterviewEvaluationCreate, db: Session = 
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.get("/my-tasks/{lead_id}")
+@router.get("/list-lead-tasks/{lead_id}")
 def get_lead_tasks(
     lead_id: int, 
     status: str = None, 
@@ -60,7 +60,7 @@ def get_lead_tasks(
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.get("/get-detail/{evaluation_id}")
+@router.get("/get-evaluation-detail/{evaluation_id}")
 def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
     try:
         eval_obj = repository.get_evaluation(db, evaluation_id)
@@ -89,7 +89,7 @@ def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.post("/submit/{evaluation_id}")
+@router.post("/submit-evaluation-results/{evaluation_id}")
 def submit_evaluation(evaluation_id: int, payload: schemas.InterviewEvaluationUpdate, db: Session = Depends(get_db)):
     try:
         evaluation = repository.update_evaluation(db, evaluation_id, payload)
@@ -104,7 +104,7 @@ def submit_evaluation(evaluation_id: int, payload: schemas.InterviewEvaluationUp
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.get("/admin/list")
+@router.get("/list-admin-evaluations")
 def list_evaluations_for_admin(
     status: str | None = None,
     search: str | None = None,
@@ -137,7 +137,7 @@ def list_evaluations_for_admin(
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.get("/history/{user_id}")
+@router.get("/list-user-evaluations/{user_id}")
 def get_user_evaluation_history(user_id: int, db: Session = Depends(get_db)):
     try:
         results = repository.get_evaluations_by_candidate_with_details(db, user_id)
@@ -163,7 +163,7 @@ def get_user_evaluation_history(user_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.get("/history/{user_id}/{attempt_id}")
+@router.get("/list-user-evaluations/{user_id}/{attempt_id}")
 def get_evaluation_history(user_id: int, attempt_id: int, db: Session = Depends(get_db)):
     try:
         results = repository.get_evaluations_for_admin_results(db, user_id, attempt_id)
@@ -188,7 +188,7 @@ def get_evaluation_history(user_id: int, attempt_id: int, db: Session = Depends(
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
-@router.delete("/unassign/{evaluation_id}")
+@router.delete("/remove-lead-assignment/{evaluation_id}")
 def unassign_interview(evaluation_id: int, db: Session = Depends(get_db)):
     try:
         eval_obj = repository.get_evaluation(db, evaluation_id)

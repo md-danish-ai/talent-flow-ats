@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@lib/auth/get-current-user";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
-import { ProjectLeadUserListing } from "./components/ProjectLeadUserListing";
+import { UserListing } from "./components/UserListing";
 
 export default async function ProjectLeadUsersPage() {
   const user = await getCurrentUser();
@@ -18,7 +18,7 @@ export default async function ProjectLeadUsersPage() {
         </Typography>
       </div>
 
-      <ProjectLeadUserListing leadId={leadId} />
+      <UserListing leadId={leadId} />
     </PageContainer>
   );
 }

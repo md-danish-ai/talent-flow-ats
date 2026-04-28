@@ -1,4 +1,5 @@
 import { api } from "./base";
+import { ENDPOINTS } from "./endpoints";
 import {
   AssignLeadPayload,
   SubmitEvaluationPayload,
@@ -10,14 +11,14 @@ import {
 
 export const evaluationsApi = {
   assignLead: async (payload: AssignLeadPayload) => {
-    return api.post("/evaluations/assign", payload);
+    return api.post(ENDPOINTS.EVALUATIONS.ASSIGN, payload);
   },
 
   getLeadTasks: async (
     leadId: number,
     params?: { status?: string; page?: number; limit?: number; search?: string },
   ): Promise<PaginatedResponse<EvaluationTask>> => {
-    return api.get(`/evaluations/my-tasks/${leadId}`, {
+    return api.get(ENDPOINTS.EVALUATIONS.LEAD_TASKS(leadId), {
       params,
     });
   },
@@ -25,35 +26,32 @@ export const evaluationsApi = {
   getEvaluationDetail: async (
     evaluationId: number,
   ): Promise<InterviewEvaluation> => {
-    return api.get(`/evaluations/get-detail/${evaluationId}`);
+    return api.get(ENDPOINTS.EVALUATIONS.DETAIL(evaluationId));
   },
 
   submitEvaluation: async (
     evaluationId: number,
     payload: SubmitEvaluationPayload,
   ) => {
-    return api.post(`/evaluations/submit/${evaluationId}`, payload);
+    return api.post(ENDPOINTS.EVALUATIONS.SUBMIT(evaluationId), payload);
   },
 
   getEvaluationHistory: async (
     userId: number,
     attemptId?: number,
   ): Promise<EvaluationHistoryItem[]> => {
-    const url = attemptId
-      ? `/evaluations/history/${userId}/${attemptId}`
-      : `/evaluations/history/${userId}`;
-    return api.get<EvaluationHistoryItem[]>(url);
+    return api.get<EvaluationHistoryItem[]>(ENDPOINTS.EVALUATIONS.USER_HISTORY(userId, attemptId));
   },
 
   getAdminEvaluationList: async (
     params?: Record<string, unknown>,
   ): Promise<PaginatedResponse<EvaluationHistoryItem>> => {
-    return api.get<PaginatedResponse<EvaluationHistoryItem>>("/evaluations/admin/list", {
+    return api.get<PaginatedResponse<EvaluationHistoryItem>>(ENDPOINTS.EVALUATIONS.ADMIN_LIST, {
       params: params as Record<string, string | number | boolean | undefined>,
     });
   },
 
   unassignLead: async (evaluationId: number) => {
-    return api.delete(`/evaluations/unassign/${evaluationId}`);
+    return api.delete(ENDPOINTS.EVALUATIONS.UNASSIGN(evaluationId));
   },
 };

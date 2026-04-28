@@ -24,13 +24,13 @@ import { EvaluationModal } from "./EvaluationModal";
 import { cn } from "@lib/utils";
 import { EvaluationTask } from "@types";
 
-interface ProjectLeadUserListingProps {
+interface UserListingProps {
   leadId: number;
 }
 
-export const ProjectLeadUserListing = React.memo(
-  ({ leadId }: ProjectLeadUserListingProps) => {
-    const [counts, setCounts] = useState({ all: 0, pending: 0, completed: 0 });
+export const UserListing = React.memo(
+  ({ leadId }: UserListingProps) => {
+
     const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(
       null
     );
@@ -62,39 +62,7 @@ export const ProjectLeadUserListing = React.memo(
       toastMessage: "User list updated",
     });
 
-    // Fetch counts separately
-    useEffect(() => {
-      let isMounted = true;
 
-      const fetchCounts = async () => {
-        try {
-          const [allRes, pendingRes, completedRes] = await Promise.all([
-            evaluationsApi.getLeadTasks(leadId, { status: "all", limit: 1 }),
-            evaluationsApi.getLeadTasks(leadId, { status: "pending", limit: 1 }),
-            evaluationsApi.getLeadTasks(leadId, {
-              status: "completed",
-              limit: 1,
-            }),
-          ]);
-          
-          if (isMounted) {
-            setCounts({
-              all: allRes.pagination?.total_records || 0,
-              pending: pendingRes.pagination?.total_records || 0,
-              completed: completedRes.pagination?.total_records || 0,
-            });
-          }
-        } catch (err) {
-          console.error("Failed to fetch counts", err);
-        }
-      };
-
-      if (leadId) fetchCounts();
-
-      return () => {
-        isMounted = false;
-      };
-    }, [leadId, tasks]);
 
     const handleEvaluate = useCallback((task: EvaluationTask) => {
       setSelectedTask(task);
@@ -137,12 +105,12 @@ export const ProjectLeadUserListing = React.memo(
     const dynamicOptions = useMemo(
       () => ({
         status: [
-          { id: "all", label: `All (${counts.all})` },
-          { id: "pending", label: `Pending (${counts.pending})` },
-          { id: "completed", label: `Completed (${counts.completed})` },
+          { id: "all", label: "All" },
+          { id: "pending", label: "Pending" },
+          { id: "completed", label: "Completed" },
         ],
       }),
-      [counts]
+      []
     );
 
     return (
@@ -340,4 +308,4 @@ export const ProjectLeadUserListing = React.memo(
   }
 );
 
-ProjectLeadUserListing.displayName = "ProjectLeadUserListing";
+UserListing.displayName = "UserListing";

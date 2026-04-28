@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
@@ -23,13 +23,13 @@ interface EvaluationModalProps {
   onSuccess?: () => void;
 }
 
-export function EvaluationModal({
+export const EvaluationModal = React.memo(({
   isOpen,
   onClose,
   userId,
   evaluationId,
   onSuccess,
-}: EvaluationModalProps) {
+}: EvaluationModalProps) => {
   const [r1Data, setR1Data] = useState<AdminUserResultDetail | null>(null);
   const [verdicts, setVerdicts] = useState<Classification[]>([]);
   const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(
@@ -106,7 +106,7 @@ export function EvaluationModal({
 
   const isCompleted = evaluation?.status === "completed";
 
-  const handleSubmit = async (values: EvaluationFormValues) => {
+  const handleSubmit = useCallback(async (values: EvaluationFormValues) => {
     if (isCompleted) return;
 
     try {
@@ -121,7 +121,7 @@ export function EvaluationModal({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [isCompleted, evaluationId, onSuccess, onClose]);
 
   return (
     <Modal
@@ -170,4 +170,6 @@ export function EvaluationModal({
       )}
     </Modal>
   );
-}
+});
+
+EvaluationModal.displayName = "EvaluationModal";
