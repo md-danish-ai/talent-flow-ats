@@ -15,7 +15,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { evaluationsApi } from "@lib/api";
-import { cn } from "@lib/utils";
+import { cn, formatDate, formatTime, humanizeString } from "@lib/utils";
 
 import { EvaluationHistoryItem } from "@types";
 
@@ -108,11 +108,7 @@ export function Round2History({ userId }: Round2HistoryProps) {
                       variant="body5"
                       className="text-[11px] font-bold"
                     >
-                      {new Date(item.created_at).toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatDate(item.created_at)}
                     </Typography>
                   </div>
                   <div className="w-1 h-1 rounded-full bg-border" />
@@ -122,11 +118,7 @@ export function Round2History({ userId }: Round2HistoryProps) {
                       variant="body5"
                       className="text-[11px] font-bold uppercase"
                     >
-                      {new Date(item.created_at).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
+                      {formatTime(item.created_at)}
                     </Typography>
                   </div>
                 </div>
@@ -197,7 +189,7 @@ export function Round2History({ userId }: Round2HistoryProps) {
                             variant="body5"
                             className="text-muted-foreground font-bold mb-2 truncate uppercase text-[9px] tracking-tight"
                           >
-                            {metric.replace("_", " ")}
+                            {humanizeString(metric)}
                           </Typography>
                           <div className="flex items-center gap-2">
                             <div

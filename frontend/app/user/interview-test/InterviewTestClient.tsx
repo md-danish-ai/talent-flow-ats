@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { DUMMY_SECTIONS, OVERALL_EXAM_DURATION_MINUTES } from "./data";
-import { formatTime } from "./utils";
+import {
+  buildSavedAnswersMap,
+  getResumePosition,
+  getResetSectionIndexes,
+  formatSecondsToTime,
+} from "@lib/utils";
 import { InterviewOverview } from "./components/InterviewOverview";
 import { InterviewCompleted } from "./components/InterviewCompleted";
 import { InterviewProgressCard } from "./components/InterviewProgressCard";
@@ -18,66 +23,6 @@ import {
 } from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
-const buildSavedAnswersMap = (
-  savedResponses: {
-    question_id: number;
-    answer_text?: string | null;
-    is_attempted: boolean;
-  }[],
-) =>
-  savedResponses.reduce<Record<number, string>>((accumulator, response) => {
-    if (response.is_attempted && response.answer_text?.trim()) {
-      accumulator[response.question_id] = response.answer_text;
-    }
-    return accumulator;
-  }, {});
-
-const getResumePosition = (
-  sections: InterviewSection[],
-  touchedQuestionIds: Set<number>,
-) => {
-  for (
-    let sectionIndex = 0;
-    sectionIndex < sections.length;
-    sectionIndex += 1
-  ) {
-    const questionIndex = sections[sectionIndex]?.questions.findIndex(
-      (question) => !touchedQuestionIds.has(question.id),
-    );
-    if (questionIndex !== undefined && questionIndex >= 0) {
-      return { sectionIndex, questionIndex };
-    }
-  }
-
-  if (sections.length === 0) {
-    return { sectionIndex: 0, questionIndex: 0 };
-  }
-
-  const lastSectionIndex = sections.length - 1;
-  const lastQuestionIndex = Math.max(
-    (sections[lastSectionIndex]?.questions.length ?? 1) - 1,
-    0,
-  );
-
-  return {
-    sectionIndex: lastSectionIndex,
-    questionIndex: lastQuestionIndex,
-  };
-};
-
-const getResetSectionIndexes = (
-  sections: InterviewSection[],
-  touchedQuestionIds: Set<number>,
-) =>
-  new Set(
-    sections.reduce<number[]>((indexes, section, sectionIdx) => {
-      const hasResetQuestion = section.questions.some(
-        (question) => !touchedQuestionIds.has(question.id),
-      );
-      if (hasResetQuestion) indexes.push(sectionIdx);
-      return indexes;
-    }, []),
-  );
 
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
@@ -653,7 +598,7 @@ export function InterviewTestClient() {
             currentSection={currentSection}
             questionIndex={questionIndex}
             timerZone={timerZone}
-            remainingTimeText={formatTime(sectionRemainingSeconds)}
+            remainingTimeText={formatSecondsToTime(sectionRemainingSeconds)}
             currentQuestion={currentQuestion}
             currentAnswer={currentAnswer}
             isLastQuestionInSection={isLastQuestionInSection}
@@ -672,7 +617,7 @@ export function InterviewTestClient() {
               currentSection={currentSection}
               progressPercent={progressPercent}
               timerZone={timerZone}
-              remainingTimeText={formatTime(sectionRemainingSeconds)}
+              remainingTimeText={formatSecondsToTime(sectionRemainingSeconds)}
             />
             <InterviewStatusCard
               sections={sections}

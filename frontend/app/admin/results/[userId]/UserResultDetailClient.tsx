@@ -23,6 +23,7 @@ import {
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
 } from "@types";
+import { formatDate } from "@lib/utils";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 import { Tabs } from "@components/ui-elements/Tabs";
@@ -119,7 +120,7 @@ export function UserResultDetailClient({
     (a) => a.status === "submitted" || a.status === "auto_submitted",
   ).length;
   const lastAttemptDate = attemptData.attempts[0]?.started_at
-    ? new Date(attemptData.attempts[0].started_at).toLocaleDateString()
+    ? formatDate(attemptData.attempts[0].started_at)
     : "N/A";
 
   const stats = [

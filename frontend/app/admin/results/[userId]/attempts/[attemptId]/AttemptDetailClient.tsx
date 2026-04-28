@@ -31,8 +31,8 @@ import {
   normalizeText,
   extractOptionKey,
   parseQuestionOptions,
-  getCanonicalImageUrl,
-} from "./utils";
+} from "@lib/utils";
+import { getCanonicalImageUrl } from "@lib/utils/image";
 import { Button } from "@components/ui-elements/Button";
 
 interface AttemptDetailClientProps {

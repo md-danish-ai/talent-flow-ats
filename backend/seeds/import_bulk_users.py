@@ -94,7 +94,7 @@ def import_users():
                     username=real_name,
                     mobile=mobile,
                     email=email,
-                    password=default_hashed_password,
+                    password=password, # Use password from SQL file
                     role="user",
                     is_active=True,
                     department_id=kpo_dept.id,

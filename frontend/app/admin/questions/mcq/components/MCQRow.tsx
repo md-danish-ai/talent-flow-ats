@@ -7,6 +7,7 @@ import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
+import { formatDate } from "@lib/utils";
 
 interface MCQRowProps {
   row: Question;
@@ -109,13 +110,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
       )}
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+          {row.created_at ? formatDate(row.created_at) : "N/A"}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (

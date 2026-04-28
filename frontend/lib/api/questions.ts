@@ -1,4 +1,5 @@
 import { api } from "./base";
+import { BASE_URL } from "./client";
 import { ENDPOINTS } from "./endpoints";
 import {
   Question,
@@ -76,8 +77,6 @@ export const questionsApi = {
     const formData = new FormData();
     formData.append("image", file);
 
-    const BASE_URL =
-      process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
     const getCookie = (name: string) => {
       if (typeof document === "undefined") return undefined;

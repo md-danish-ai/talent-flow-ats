@@ -27,10 +27,6 @@ import { useListing } from "@hooks/useListing";
 import { cn } from "@lib/utils";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
-const getDateStr = (dateStr: string) => {
-  const tzDate = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
-  return new Date(tzDate);
-};
 
 type NotificationListingFilters = {
   status: "all" | "unread" | "read";
@@ -240,7 +236,6 @@ export function NotificationsClient() {
                       isExpanded={!!expandedRows[notif.id]}
                       onSelect={toggleSelection}
                       onExpand={toggleRow}
-                      getDateStr={getDateStr}
                     />
                   ))
                 )}
