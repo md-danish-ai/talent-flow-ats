@@ -124,16 +124,6 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Excel",
-        "code": "EXCEL",
-        "is_active": False,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Proficient use of Microsoft Excel for data analysis. Focus on VLOOKUP, pivot tables, formulas, and data cleaning techniques."
-        },
-    },
-    {
-        "type": "subject",
         "name": "Food Industry",
         "code": "FOOD_INDUSTRY",
         "metadata": {
