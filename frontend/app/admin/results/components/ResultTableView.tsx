@@ -220,16 +220,17 @@ export function ResultTableView({
                   {visibleColumns.includes("marks") && (
                     <TableCell className="text-center">
                       {latest?.total_marks ? (
-                        <div className="flex flex-col gap-1.5 min-w-[120px]">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[12px] font-bold text-foreground">
+                        <div className="flex flex-col gap-1.5 min-w-[100px] mx-auto">
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-[12px] font-bold text-foreground flex items-baseline gap-1">
                               {latest.obtained_marks || 0}
-                            </span>
-                            <span className="text-[10px] font-medium text-muted-foreground/80">
-                              / {latest.total_marks}
+                              <span className="text-muted-foreground/40 font-medium">
+                                /
+                              </span>
+                              {latest.total_marks}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden border border-border/10">
+                          <div className="w-full bg-slate-200/60 dark:bg-slate-700/50 h-1.5 rounded-full overflow-hidden border border-border/5">
                             <div
                               className={cn(
                                 "h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,0,0,0.05)]",

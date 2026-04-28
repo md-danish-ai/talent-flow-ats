@@ -66,17 +66,18 @@ export function CollapsibleResultDetail({
               </div>
 
               <div className="flex flex-col gap-2 mt-auto">
-                <div className="flex items-end gap-1.5">
-                  <span className="text-xl font-black text-brand-primary leading-none">
+                <div className="flex items-center justify-center">
+                  <span className="text-xl font-black text-brand-primary leading-none flex items-baseline gap-1.5">
                     {res.obtained_marks}
-                  </span>
-                  <span className="text-[11px] font-bold text-muted-foreground/80 mb-[2px]">
-                    / {res.total_marks}
+                    <span className="text-muted-foreground/30 font-bold text-sm">
+                      /
+                    </span>
+                    {res.total_marks}
                   </span>
                 </div>
 
                 {/* Mini Progress Bar */}
-                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shrink-0">
+                <div className="w-full h-1.5 bg-slate-200/60 dark:bg-slate-700/50 rounded-full overflow-hidden shrink-0">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-1000",
