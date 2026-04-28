@@ -6,17 +6,38 @@ import {
   Clock,
   MessageSquare,
   ShieldCheck,
+  Award,
+  Calendar,
+  ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { evaluationsApi } from "@lib/api";
+import { cn } from "@lib/utils";
 
 import { EvaluationHistoryItem } from "@types";
 
 interface Round2HistoryProps {
   userId: number;
 }
+
+const ratingColors: Record<string, { bg: string; text: string; dot: string }> =
+  {
+    Excellent: {
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-500",
+      dot: "bg-emerald-500",
+    },
+    Good: { bg: "bg-blue-500/10", text: "text-blue-500", dot: "bg-blue-500" },
+    Average: {
+      bg: "bg-amber-500/10",
+      text: "text-amber-500",
+      dot: "bg-amber-500",
+    },
+    Poor: { bg: "bg-rose-500/10", text: "text-rose-500", dot: "bg-rose-500" },
+  };
 
 export function Round2History({ userId }: Round2HistoryProps) {
   const [history, setHistory] = useState<EvaluationHistoryItem[]>([]);
@@ -43,7 +64,7 @@ export function Round2History({ userId }: Round2HistoryProps) {
         {[1, 2].map((i) => (
           <div
             key={i}
-            className="h-32 w-full rounded-2xl bg-muted animate-pulse"
+            className="h-48 w-full rounded-2xl bg-muted/40 animate-pulse border border-border/50"
           />
         ))}
       </div>
@@ -65,143 +86,209 @@ export function Round2History({ userId }: Round2HistoryProps) {
       {history.map((item) => (
         <div
           key={item.id}
-          className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md"
+          className="group relative overflow-hidden rounded-[24px] border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-brand-primary/5 hover:-translate-y-1"
         >
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                <UserCheck size={20} />
+          {/* Top Header Section */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-border/50 bg-muted/20">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shadow-inner">
+                <UserCheck size={24} />
               </div>
               <div>
-                <Typography variant="body4" className="font-bold">
+                <Typography
+                  variant="body3"
+                  className="font-black tracking-tight uppercase"
+                >
                   Interview with {item.lead_name}
                 </Typography>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock size={12} />
-                  <Typography variant="body5" className="text-[11px]">
-                    Assigned on {new Date(item.created_at).toLocaleDateString()}
-                  </Typography>
+                <div className="flex items-center gap-4 mt-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Calendar size={13} className="opacity-70" />
+                    <Typography
+                      variant="body5"
+                      className="text-[11px] font-bold"
+                    >
+                      {new Date(item.created_at).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </Typography>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-border" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock size={13} className="opacity-70" />
+                    <Typography
+                      variant="body5"
+                      className="text-[11px] font-bold uppercase"
+                    >
+                      Round 2
+                    </Typography>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-3">
               <Badge
                 variant="outline"
-                color={item.status === "completed" ? "success" : "warning"}
                 shape="square"
-                className="uppercase tracking-widest text-[10px] font-black"
+                color={item.status === "completed" ? "success" : "warning"}
+                className="uppercase  text-[10px] font-black h-7 px-3"
               >
                 {item.status}
               </Badge>
               {item.overall_grade && (
-                <Badge
-                  color="primary"
-                  variant="fill"
-                  shape="square"
-                  className="font-bold"
+                <div
+                  className={cn(
+                    "flex items-center gap-2 px-3 h-7 rounded-md shadow-lg",
+                    item.overall_grade === "Excellent"
+                      ? "bg-emerald-500 shadow-emerald-500/20"
+                      : item.overall_grade === "Good"
+                        ? "bg-blue-600 shadow-blue-500/20"
+                        : item.overall_grade === "Average"
+                          ? "bg-amber-500 shadow-amber-500/20"
+                          : "bg-rose-500 shadow-rose-500/20",
+                  )}
                 >
-                  {item.overall_grade}
-                </Badge>
+                  <Award size={14} className="text-white" />
+                  <Typography
+                    variant="body5"
+                    className="text-white font-black uppercase text-[10px] tracking-widest"
+                  >
+                    {item.overall_grade}
+                  </Typography>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Metrics Grid */}
-          {item.status === "completed" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-              {Object.entries(item.evaluation_data || {}).map(
-                ([metric, rating]: [string, string]) => (
-                  <div
-                    key={metric}
-                    className="p-3 rounded-xl bg-muted/30 border border-border/50"
-                  >
-                    <Typography
-                      variant="body5"
-                      className="text-muted-foreground font-medium mb-1 truncate capitalize"
-                    >
-                      {metric.replace("_", " ")}
-                    </Typography>
-                    <Typography
-                      variant="body4"
-                      className={`font-bold text-[13px] ${
-                        rating === "Excellent"
-                          ? "text-emerald-600"
-                          : rating === "Good"
-                            ? "text-blue-600"
-                            : rating === "Average"
-                              ? "text-amber-600"
-                              : "text-rose-600"
-                      }`}
-                    >
-                      {rating}
-                    </Typography>
-                  </div>
-                ),
-              )}
-            </div>
-          )}
-
-          {/* Verdict & Comments */}
-          {item.status === "completed" && (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-brand-primary/5 border border-brand-primary/10">
-                <ShieldCheck
-                  size={20}
-                  className="text-brand-primary shrink-0 mt-0.5"
-                />
-                <div>
+          <div className="p-6 space-y-6">
+            {/* Metrics Visualization */}
+            {item.status === "completed" && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp size={16} className="text-muted-foreground" />
                   <Typography
                     variant="body5"
-                    className="font-bold uppercase tracking-wider text-brand-primary/80 mb-1"
+                    className="font-black uppercase tracking-widest text-muted-foreground text-[10px]"
                   >
-                    Final Verdict
+                    Evaluation Metrics
                   </Typography>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {Object.entries(item.evaluation_data || {}).map(
+                    ([metric, rating]: [string, string]) => {
+                      const colors =
+                        ratingColors[rating] || ratingColors.Average;
+                      return (
+                        <div
+                          key={metric}
+                          className={cn(
+                            "group/metric relative p-4 rounded-2xl border transition-all duration-300",
+                            "bg-muted/30 border-border/50 hover:bg-white dark:hover:bg-white/5 hover:border-border hover:shadow-md",
+                          )}
+                        >
+                          <Typography
+                            variant="body5"
+                            className="text-muted-foreground font-bold mb-2 truncate uppercase text-[9px] tracking-tight"
+                          >
+                            {metric.replace("_", " ")}
+                          </Typography>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full shrink-0",
+                                colors.dot,
+                              )}
+                            />
+                            <Typography
+                              variant="body4"
+                              className={cn(
+                                "font-black text-[13px]",
+                                colors.text,
+                              )}
+                            >
+                              {rating}
+                            </Typography>
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Verdict & Comments Section */}
+            {item.status === "completed" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="relative group/verdict overflow-hidden p-5 rounded-[20px] bg-emerald-500/5 border border-emerald-500/10 transition-all hover:bg-emerald-500/10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600">
+                      <ShieldCheck size={18} />
+                    </div>
+                    <Typography
+                      variant="body5"
+                      className="font-black uppercase tracking-widest text-emerald-600/80 text-[10px]"
+                    >
+                      Final Verdict
+                    </Typography>
+                  </div>
                   <Typography
-                    variant="body4"
-                    className="font-black text-slate-900 dark:text-white"
+                    variant="body3"
+                    className="font-black text-emerald-900 dark:text-emerald-50 transition-colors"
                   >
                     {item.verdict_name || "Decision Pending"}
                   </Typography>
                 </div>
-              </div>
 
-              {item.comments && (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/20 border border-border/50">
-                  <MessageSquare
-                    size={20}
-                    className="text-muted-foreground shrink-0 mt-0.5"
-                  />
-                  <div>
+                <div className="relative group/comments overflow-hidden p-5 rounded-[20px] bg-slate-500/5 border border-slate-500/10 transition-all hover:bg-slate-500/10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-slate-500/20 flex items-center justify-center text-slate-600">
+                      <MessageSquare size={18} />
+                    </div>
                     <Typography
                       variant="body5"
-                      className="font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                      className="font-black uppercase tracking-widest text-slate-600/80 text-[10px]"
                     >
                       Interviewer Comments
                     </Typography>
-                    <Typography
-                      variant="body4"
-                      className="text-slate-700 dark:text-slate-300 italic"
-                    >
-                      {item.comments}
-                    </Typography>
                   </div>
+                  <Typography
+                    variant="body4"
+                    className="text-slate-700 dark:text-slate-300 italic line-clamp-2 hover:line-clamp-none transition-all cursor-default"
+                  >
+                    {item.comments}
+                  </Typography>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {(item.status === "pending" || !item.status) && (
-            <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
-              <Clock size={32} className="text-muted-foreground/30 mb-2" />
-              <Typography
-                variant="body5"
-                className="text-muted-foreground font-medium"
-              >
-                Waiting for Project Lead to submit evaluation...
-              </Typography>
-            </div>
-          )}
+            {/* Pending State */}
+            {(item.status === "pending" || !item.status) && (
+              <div className="flex flex-col items-center justify-center py-10 bg-muted/10 rounded-[20px] border border-dashed border-border/60">
+                <div className="w-12 h-12 rounded-full bg-muted/20 flex items-center justify-center mb-3 animate-pulse">
+                  <Clock size={24} className="text-muted-foreground/40" />
+                </div>
+                <Typography
+                  variant="body4"
+                  className="text-muted-foreground font-bold uppercase tracking-widest text-[11px]"
+                >
+                  Evaluation in Progress
+                </Typography>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground/60 mt-1"
+                >
+                  Waiting for {item.lead_name} to submit the report
+                </Typography>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom subtle bar */}
+          <div className="h-1 w-full bg-gradient-to-r from-transparent via-brand-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       ))}
     </div>
