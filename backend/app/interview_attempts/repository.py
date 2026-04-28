@@ -21,6 +21,9 @@ from app.users.models import User
 from app.utils.status_codes import StatusCode
 from app.user_details.models import UserDetail
 from .models import InterviewRecord
+from app.evaluations.models import InterviewEvaluation
+from app.utils.grade_utils import GradeLabel
+from datetime import date as dt_date
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -792,7 +795,6 @@ def get_admin_user_results(
     page: int = 1,
     limit: int = 10,
 ) -> dict:
-    from app.evaluations.models import InterviewEvaluation
     db = SessionLocal()
     try:
         latest_record_ids_query = (
@@ -849,8 +851,6 @@ def get_admin_user_results(
             InterviewRecord.status, 
             InterviewRecord.overall_grade
         ).all()
-
-        from app.utils.grade_utils import GradeLabel
         summary_stats = {
             "total": sum(s[2] for s in stats_data),
             "active": sum(s[2] for s in stats_data if s[0] == "started"),
@@ -1251,7 +1251,6 @@ def reset_user_details(user_id: int) -> dict:
 
 
 def reset_user_for_reinterview(user_id: int) -> dict:
-    from datetime import date as dt_date
     db = SessionLocal()
     try:
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()

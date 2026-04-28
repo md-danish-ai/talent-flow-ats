@@ -11,6 +11,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+import json
 
 
 # revision identifiers, used by Alembic.
@@ -264,7 +265,6 @@ DEPARTMENTS = [
 
 def upgrade() -> None:
     """Seed data in the specified order."""
-    import json
 
     conn = op.get_bind()
 

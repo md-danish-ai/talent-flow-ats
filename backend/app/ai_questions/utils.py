@@ -1,5 +1,7 @@
 import json
 import re
+import os
+import uuid
 from typing import Optional, List, Dict, Any
 from app.core.config import settings
 from huggingface_hub import InferenceClient
@@ -58,9 +60,6 @@ class AIClient:
 
     def generate_image(self, image_prompt: str) -> Optional[str]:
         """Generates an image from a prompt and returns the relative URL."""
-        import uuid
-        import os
-
         try:
             print(f"DEBUG: Generating image for prompt: {image_prompt[:100]}...")
             # Using FLUX.1-schnell for fast, high-quality generation

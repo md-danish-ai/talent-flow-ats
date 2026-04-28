@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+import traceback
 from sqlalchemy.orm import Session
 
 from .schemas import AIQuestionRequest, AIQuestionResponse
@@ -33,7 +34,5 @@ async def generate_questions(
             data=[{"id": q.id, "text": q.question_text} for q in questions],
         )
     except Exception as e:
-        import traceback
-
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

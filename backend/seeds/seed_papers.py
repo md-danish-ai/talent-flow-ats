@@ -11,14 +11,12 @@ from app.questions.models import Question
 from app.departments.models import Department
 from app.classifications.models import Classification
 from app.users.models import User
+from app.paper_assignments.models import PaperAssignment, AutoAssignmentRule
+from app.interview_attempts.models import InterviewRecord
 
 def seed_papers():
     db = SessionLocal()
     try:
-        # 1. Models Import (locally to avoid circular imports if any)
-        from app.paper_assignments.models import PaperAssignment, AutoAssignmentRule
-        from app.interview_attempts.models import InterviewRecord
-
         # 2. Clean Slate: Delete records, assignments, rules, and papers
         print("🗑️  Cleaning up existing data (InterviewRecords, Assignments, Rules, Papers)...")
         db.query(InterviewRecord).delete()

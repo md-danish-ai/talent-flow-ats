@@ -1,6 +1,7 @@
 # ruff: noqa
 from app.database.db import SessionLocal
 from app.classifications.models import Classification
+from app.departments.models import Department
 
 # Classification Data in Sequence: question_type, exam_level, subject
 CLASSIFICATIONS = [
@@ -245,7 +246,6 @@ DEPARTMENTS = [
 
 def seed():
     db = SessionLocal()
-    from app.departments.models import Department
 
     print("🚀 Starting master data sync in sequence...")
 
