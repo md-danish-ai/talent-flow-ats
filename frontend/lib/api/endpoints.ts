@@ -127,14 +127,18 @@ export const ENDPOINTS = {
 
   EVALUATIONS: {
     ASSIGN: "/evaluations/assign-lead-evaluation",
-    LEAD_TASKS: (leadId: string | number) => `/evaluations/list-lead-tasks/${leadId}`,
-    DETAIL: (evaluationId: string | number) => `/evaluations/get-evaluation-detail/${evaluationId}`,
-    SUBMIT: (evaluationId: string | number) => `/evaluations/submit-evaluation-results/${evaluationId}`,
-    USER_HISTORY: (userId: string | number, attemptId?: string | number) => 
-      attemptId 
+    LEAD_TASKS: (leadId: string | number) =>
+      `/evaluations/list-lead-tasks/${leadId}`,
+    DETAIL: (evaluationId: string | number) =>
+      `/evaluations/get-evaluation-detail/${evaluationId}`,
+    SUBMIT: (evaluationId: string | number) =>
+      `/evaluations/submit-evaluation-results/${evaluationId}`,
+    USER_HISTORY: (userId: string | number, attemptId?: string | number) =>
+      attemptId
         ? `/evaluations/list-user-evaluations/${userId}/${attemptId}`
         : `/evaluations/list-user-evaluations/${userId}`,
     ADMIN_LIST: "/evaluations/list-admin-evaluations",
-    UNASSIGN: (evaluationId: string | number) => `/evaluations/remove-lead-assignment/${evaluationId}`,
+    UNASSIGN: (evaluationId: string | number) =>
+      `/evaluations/remove-lead-assignment/${evaluationId}`,
   },
 } as const;

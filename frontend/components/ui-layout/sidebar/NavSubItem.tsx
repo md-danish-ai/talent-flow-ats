@@ -19,7 +19,8 @@ export const NavSubItem: React.FC<NavSubItemProps> = ({
   pathname,
   onClick,
 }) => {
-  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
+  const isActive =
+    pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
   const { ripples, createRipple, removeRipple } = useRipple();
 
   const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>) => {

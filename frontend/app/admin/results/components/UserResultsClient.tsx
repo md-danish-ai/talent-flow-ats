@@ -11,7 +11,7 @@ import {
   BadgeCheck,
   Target,
 } from "lucide-react";
-import { cn } from "@lib/utils";
+import { cn, getGradeConfig } from "@lib/utils";
 import { motion } from "framer-motion";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -212,47 +212,26 @@ export function UserResultsClient() {
     [summaryStatsData],
   );
 
-  const gradeStats = useMemo(
-    () => [
-      {
-        id: "excellent",
-        label: "Excellent",
-        value: summaryStatsData?.excellent || 0,
-        color: "text-emerald-500",
-        bg: "bg-emerald-500/10",
-        border: "border-emerald-500/20",
-        icon: <Trophy />,
-      },
-      {
-        id: "good",
-        label: "Good",
-        value: summaryStatsData?.good || 0,
-        color: "text-blue-500",
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/20",
-        icon: <BadgeCheck />,
-      },
-      {
-        id: "average",
-        label: "Average",
-        value: summaryStatsData?.average || 0,
-        color: "text-amber-500",
-        bg: "bg-amber-500/10",
-        border: "border-amber-500/20",
-        icon: <Target />,
-      },
-      {
-        id: "poor",
-        label: "Poor",
-        value: summaryStatsData?.poor || 0,
-        color: "text-rose-500",
-        bg: "bg-rose-500/10",
-        border: "border-rose-500/20",
-        icon: <UserX />,
-      },
-    ],
-    [summaryStatsData],
-  );
+  const gradeStats = useMemo(() => {
+    const grades: Array<{ id: string; label: string; icon: React.ReactNode }> =
+      [
+        { id: "excellent", label: "Excellent", icon: <Trophy /> },
+        { id: "good", label: "Good", icon: <BadgeCheck /> },
+        { id: "average", label: "Average", icon: <Target /> },
+        { id: "poor", label: "Poor", icon: <UserX /> },
+      ];
+
+    return grades.map((g) => {
+      const config = getGradeConfig(g.label);
+      return {
+        ...g,
+        value: summaryStatsData?.[g.id as keyof typeof summaryStatsData] || 0,
+        color: config.color,
+        bg: config.bg,
+        border: config.border,
+      };
+    });
+  }, [summaryStatsData]);
 
   const handleStatClick = (filterObj: { type: string; value: string }) => {
     if (filterObj.type === "reset") {

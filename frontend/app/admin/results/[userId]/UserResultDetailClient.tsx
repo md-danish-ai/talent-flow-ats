@@ -380,9 +380,7 @@ export function UserResultDetailClient({
           </div>
         )}
 
-        {activeTab === "round2" && (
-          <Round2History userId={userId} />
-        )}
+        {activeTab === "round2" && <Round2History userId={userId} />}
       </div>
     </PageContainer>
   );

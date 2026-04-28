@@ -26,8 +26,10 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
     const active = routes.find(
       (s: NavSection) =>
         s.type !== "item" &&
-        s.items.some((item: { href: string }) => 
-          pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"))
+        s.items.some(
+          (item: { href: string }) =>
+            pathname === item.href ||
+            (item.href !== "/" && pathname.startsWith(item.href + "/")),
         ),
     );
     return active ? active.title : null;

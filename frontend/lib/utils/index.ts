@@ -15,3 +15,4 @@ export function getErrorMessage(error: unknown): string {
 
 export * from "./dateUtils";
 export * from "./exclusivity";
+export * from "./gradeUtils";

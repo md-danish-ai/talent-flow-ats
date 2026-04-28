@@ -12,6 +12,7 @@ import {
 import { Badge } from "@components/ui-elements/Badge";
 import { ResultCard } from "@components/ui-cards/ResultCard";
 import { type AdminUserResultListItem } from "@types";
+import { getGradeConfig } from "@lib/utils";
 
 interface ResultCardViewProps {
   items: AdminUserResultListItem[];
@@ -90,16 +91,7 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                       ? latest.overall_grade
                       : "N/A",
                   icon: Award,
-                  color:
-                    latest?.overall_grade?.toLowerCase() === "excellent"
-                      ? "text-emerald-500"
-                      : latest?.overall_grade?.toLowerCase() === "good"
-                        ? "text-blue-500"
-                        : latest?.overall_grade?.toLowerCase() === "average"
-                          ? "text-amber-500"
-                          : latest?.overall_grade?.toLowerCase() === "poor"
-                            ? "text-rose-500"
-                            : "text-muted-foreground",
+                  color: getGradeConfig(latest?.overall_grade).color,
                 },
               ]}
               actionHref={detailHref}

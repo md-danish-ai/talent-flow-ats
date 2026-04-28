@@ -2,7 +2,7 @@
 
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@lib/utils";
+import { cn, getGradeConfig } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
@@ -220,28 +220,21 @@ export function ResultTableView({
                   {visibleColumns.includes("marks") && (
                     <TableCell className="text-center">
                       {latest?.total_marks ? (
-                        <div className="flex flex-col items-center justify-center mx-auto gap-[5px] w-max min-w-[64px]">
-                          <div className="flex items-baseline justify-center gap-1 w-full">
-                            <span className="text-[15px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                        <div className="flex flex-col gap-1.5 min-w-[120px]">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[12px] font-bold text-foreground">
                               {latest.obtained_marks || 0}
                             </span>
-                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-none">
+                            <span className="text-[10px] font-medium text-muted-foreground/80">
                               / {latest.total_marks}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden border border-border/10">
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                latest.overall_grade?.toLowerCase() === "excellent"
-                                  ? "bg-emerald-500"
-                                  : latest.overall_grade?.toLowerCase() === "good"
-                                    ? "bg-blue-500"
-                                    : latest.overall_grade?.toLowerCase() === "average"
-                                      ? "bg-amber-500"
-                                      : latest.overall_grade?.toLowerCase() === "poor"
-                                        ? "bg-rose-500"
-                                        : "bg-brand-primary"
-                              }`}
+                              className={cn(
+                                "h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,0,0,0.05)]",
+                                getGradeConfig(latest.overall_grade).barBg,
+                              )}
                               style={{
                                 width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%`,
                               }}
@@ -262,16 +255,9 @@ export function ResultTableView({
                         <Badge
                           variant="outline"
                           color={
-                            latest.overall_grade.toLowerCase() === "excellent"
-                              ? "success"
-                              : latest.overall_grade.toLowerCase() === "good"
-                                ? "blue"
-                                : latest.overall_grade.toLowerCase() === "average"
-                                  ? "warning"
-                                  : "error"
+                            getGradeConfig(latest.overall_grade).badgeColor
                           }
                           shape="square"
-                          // animate="pulse"
                         >
                           {latest.overall_grade}
                         </Badge>
@@ -354,7 +340,7 @@ export function ResultTableView({
                                           "absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-slate-900",
                                           lead.status === "completed"
                                             ? "bg-emerald-500"
-                                            : "bg-amber-500"
+                                            : "bg-amber-500",
                                         )}
                                       />
                                     </div>
@@ -380,7 +366,7 @@ export function ResultTableView({
                                     latest.interviewers[0].status ===
                                       "completed"
                                       ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)]"
-                                      : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)] animate-pulse"
+                                      : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)] animate-pulse",
                                   )}
                                 />
                               </div>

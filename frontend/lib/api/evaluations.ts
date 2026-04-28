@@ -16,7 +16,12 @@ export const evaluationsApi = {
 
   getLeadTasks: async (
     leadId: number,
-    params?: { status?: string; page?: number; limit?: number; search?: string },
+    params?: {
+      status?: string;
+      page?: number;
+      limit?: number;
+      search?: string;
+    },
   ): Promise<PaginatedResponse<EvaluationTask>> => {
     return api.get(ENDPOINTS.EVALUATIONS.LEAD_TASKS(leadId), {
       params,
@@ -40,15 +45,20 @@ export const evaluationsApi = {
     userId: number,
     attemptId?: number,
   ): Promise<EvaluationHistoryItem[]> => {
-    return api.get<EvaluationHistoryItem[]>(ENDPOINTS.EVALUATIONS.USER_HISTORY(userId, attemptId));
+    return api.get<EvaluationHistoryItem[]>(
+      ENDPOINTS.EVALUATIONS.USER_HISTORY(userId, attemptId),
+    );
   },
 
   getAdminEvaluationList: async (
     params?: Record<string, unknown>,
   ): Promise<PaginatedResponse<EvaluationHistoryItem>> => {
-    return api.get<PaginatedResponse<EvaluationHistoryItem>>(ENDPOINTS.EVALUATIONS.ADMIN_LIST, {
-      params: params as Record<string, string | number | boolean | undefined>,
-    });
+    return api.get<PaginatedResponse<EvaluationHistoryItem>>(
+      ENDPOINTS.EVALUATIONS.ADMIN_LIST,
+      {
+        params: params as Record<string, string | number | boolean | undefined>,
+      },
+    );
   },
 
   unassignLead: async (evaluationId: number) => {

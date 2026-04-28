@@ -850,14 +850,19 @@ def get_admin_user_results(
             InterviewRecord.overall_grade
         ).all()
 
+        from app.utils.grade_utils import GradeLabel
         summary_stats = {
             "total": sum(s[2] for s in stats_data),
             "active": sum(s[2] for s in stats_data if s[0] == "started"),
-            "completed": sum(s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]),
-            "excellent": sum(s[2] for s in stats_data if s[1] == "Excellent"),
-            "good": sum(s[2] for s in stats_data if s[1] == "Good"),
-            "average": sum(s[2] for s in stats_data if s[1] == "Average"),
-            "poor": sum(s[2] for s in stats_data if s[1] == "Poor"),
+            "completed": sum(
+                s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]
+            ),
+            "excellent": sum(
+                s[2] for s in stats_data if s[1] == GradeLabel.EXCELLENT
+            ),
+            "good": sum(s[2] for s in stats_data if s[1] == GradeLabel.GOOD),
+            "average": sum(s[2] for s in stats_data if s[1] == GradeLabel.AVERAGE),
+            "poor": sum(s[2] for s in stats_data if s[1] == GradeLabel.POOR),
         }
 
         # 2. Apply post-subquery filters on the actual record columns for LISTING ONLY
