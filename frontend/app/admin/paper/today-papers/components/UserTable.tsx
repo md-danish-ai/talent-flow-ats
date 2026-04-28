@@ -15,8 +15,7 @@ import { Avatar } from "@components/ui-elements/Avatar";
 import { Badge } from "@components/ui-elements/Badge";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import { Mail, ClipboardCheck } from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { UserListResponse } from "@types";
 
 interface UserTableProps {
@@ -216,32 +215,21 @@ export function UserTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-center align-middle py-3">
-                  <Tooltip
-                    content={
+                  <TableIconButton
+                    iconColor={row.assignment?.is_attempted ? "green" : "blue"}
+                    title={
                       row.assignment?.is_attempted
                         ? "Assessment Already Completed"
                         : "Assign Fresh Paper Set"
                     }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAssignPaper(row);
+                    }}
+                    aria-label={`Assign paper to ${row.username}`}
                   >
-                    <Button
-                      variant={
-                        row.assignment?.is_attempted ? "ghost" : "primary"
-                      }
-                      color={
-                        row.assignment?.is_attempted ? "success" : "primary"
-                      }
-                      size="icon"
-                      animate="scale"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAssignPaper(row);
-                      }}
-                      className={`h-9 w-9 rounded-xl ${row.assignment?.is_attempted ? "text-emerald-500 bg-emerald-50 opacity-90" : "text-blue-600 bg-blue-50"}`}
-                      aria-label={`Assign paper to ${row.username}`}
-                    >
-                      <ClipboardCheck size={18} />
-                    </Button>
-                  </Tooltip>
+                    <ClipboardCheck size={18} />
+                  </TableIconButton>
                 </TableCell>
               </TableRow>
             ))

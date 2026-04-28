@@ -118,8 +118,8 @@ def list_auto_rules(
     )
 
 
-@router.patch(
-    "/get-auto-rule-details/{rule_id}",
+@router.put(
+    "/update-auto-rule/{rule_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
 def update_auto_rule(

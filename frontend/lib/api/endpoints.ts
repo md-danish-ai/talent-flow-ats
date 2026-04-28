@@ -61,8 +61,10 @@ export const ENDPOINTS = {
     GET: "/paper-assignments/get-all-assignments",
     ASSIGN: "/paper-assignments/assign-new-paper",
     AUTO_RULES: "/paper-assignments/get-auto-rules",
-    AUTO_RULE_BY_ID: (id: string | number) =>
-      `/paper-assignments/get-auto-rule-details/${id}`,
+    UPDATE_AUTO_RULE: (id: string | number) =>
+      `/paper-assignments/update-auto-rule/${id}`,
+    DELETE_AUTO_RULE: (id: string | number) =>
+      `/paper-assignments/remove-auto-rule/${id}`,
     MY_INTERVIEW_PAPER: "/paper-assignments/get-my-assigned-paper",
   },
 

@@ -49,7 +49,27 @@ def import_users():
             return
 
         print(f"Using Department: {kpo_dept.name} (ID: {kpo_dept.id})")
-        print(f"Using Level: {fresher_level.name} (ID: {fresher_level.id})")
+        # Cleanup existing bulk users and their data
+        print("Cleaning up existing bulk users and their data...")
+        target_user_ids = [u.id for u in db.query(User.id).filter(User.email.like("%@talentflow.ats")).all()]
+        
+        if target_user_ids:
+            # Import models inside to avoid circular imports
+            from app.paper_assignments.models import PaperAssignment
+            from app.interview_attempts.models import InterviewRecord
+            from app.user_details.models import UserDetail
+            from app.evaluations.models import InterviewEvaluation
+            
+            # Delete in order of dependency
+            db.query(InterviewEvaluation).filter(InterviewEvaluation.user_id.in_(target_user_ids)).delete(synchronize_session=False)
+            db.query(PaperAssignment).filter(PaperAssignment.user_id.in_(target_user_ids)).delete(synchronize_session=False)
+            db.query(UserDetail).filter(UserDetail.user_id.in_(target_user_ids)).delete(synchronize_session=False)
+            db.query(InterviewRecord).filter(InterviewRecord.user_id.in_(target_user_ids)).delete(synchronize_session=False)
+            
+            # Now delete users
+            db.query(User).filter(User.id.in_(target_user_ids)).delete(synchronize_session=False)
+            db.commit()
+            print(f"Purged {len(target_user_ids)} existing users and their records.")
 
         # 2. Read SQL File
         sql_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backups", "users_1.sql")
@@ -94,7 +114,7 @@ def import_users():
                     username=real_name,
                     mobile=mobile,
                     email=email,
-                    password=password, # Use password from SQL file
+                    password=default_hashed_password,
                     role="user",
                     is_active=True,
                     department_id=kpo_dept.id,

@@ -48,7 +48,6 @@ def seed_data():
             "COMPREHENSION",
             "DATA_INTERPRETATION_ANALYTICS",
             "ENGLISH",
-            "EXCEL",
             "FOOD_INDUSTRY",
             "GRAMMAR",
             "INDUSTRY_AWARENESS",
