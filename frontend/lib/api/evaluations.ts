@@ -15,7 +15,7 @@ export const evaluationsApi = {
 
   getLeadTasks: async (
     leadId: number,
-    params?: { status?: string; page?: number; limit?: number },
+    params?: { status?: string; page?: number; limit?: number; search?: string },
   ): Promise<PaginatedResponse<EvaluationTask>> => {
     return api.get(`/evaluations/my-tasks/${leadId}`, {
       params,
