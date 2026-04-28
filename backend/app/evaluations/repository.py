@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy import desc, and_
+from sqlalchemy import desc
 from .models import InterviewEvaluation
 from .schemas import InterviewEvaluationCreate, InterviewEvaluationUpdate
 from app.users.models import User
 from app.classifications.models import Classification
-from app.interview_attempts.models import InterviewRecord
 
 def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
     db_obj = InterviewEvaluation(

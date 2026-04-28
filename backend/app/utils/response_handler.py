@@ -1,5 +1,5 @@
 from app.utils.status_codes import api_response, StatusCode, ResponseMessage
-from typing import Any, Optional
+from typing import Any
 
 class ResponseHandler:
     @staticmethod
