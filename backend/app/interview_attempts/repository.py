@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import desc, func
+from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -932,12 +932,22 @@ def get_admin_user_results(
                     "overall_grade": record.overall_grade,
                     "typing_stats": typing_stats,
                     "subject_results": record.subject_grades,
-                    "interviewers": (
-                        db.query(User.username, InterviewEvaluation.status)
-                        .join(InterviewEvaluation, InterviewEvaluation.project_lead_id == User.id)
-                        .filter(InterviewEvaluation.attempt_id == record.id)
-                        .all()
-                    ),
+                    "interviewers": [
+                        {"name": row[0], "status": row[1]}
+                        for row in (
+                            db.query(User.username, InterviewEvaluation.status)
+                            .join(InterviewEvaluation, InterviewEvaluation.project_lead_id == User.id)
+                            .filter(InterviewEvaluation.attempt_id == record.id)
+                            .order_by(
+                                case(
+                                    (InterviewEvaluation.status == "completed", 0),
+                                    else_=1,
+                                ),
+                                InterviewEvaluation.updated_at.asc(),
+                            )
+                            .all()
+                        )
+                    ],
                 },
             })
 

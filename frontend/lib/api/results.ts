@@ -17,6 +17,7 @@ export const resultsApi = {
     status,
     completionReason,
     overallGrade,
+    project_lead_id,
   }: GetUserResultsParams) => {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
@@ -29,6 +30,8 @@ export const resultsApi = {
       params.append("completion_reason", completionReason);
     if (overallGrade && overallGrade !== "all")
       params.append("overall_grade", overallGrade);
+    if (project_lead_id && project_lead_id !== "all")
+      params.append("project_lead_id", project_lead_id);
 
     return api.get<PaginatedUserResults>(
       `${ENDPOINTS.RESULTS.GET_ALL}?${params.toString()}`,

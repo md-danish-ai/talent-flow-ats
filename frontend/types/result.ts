@@ -38,7 +38,7 @@ export interface AdminUserLatestAttempt {
   overall_grade?: string;
   typing_stats?: TypingStats | null;
   subject_results?: SubjectResult[];
-  interviewers?: Array<[string, string]>;
+  interviewers?: Array<{ name: string; status: string }>;
 }
 
 export interface AdminUserResultListItem {

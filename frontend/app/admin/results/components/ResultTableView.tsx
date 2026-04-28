@@ -2,6 +2,7 @@
 
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
@@ -22,6 +23,7 @@ import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 import { UserPlus } from "lucide-react";
 import { AssignLeadModal } from "./AssignLeadModal";
 import { useState } from "react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -98,7 +100,7 @@ export function ResultTableView({
             )}
             {visibleColumns.includes("project_lead") && (
               <TableHead className="min-w-[150px] whitespace-nowrap font-bold text-foreground/80">
-                Interviewer(s)
+                Project Lead
               </TableHead>
             )}
             {visibleColumns.includes("date") && (
@@ -330,20 +332,75 @@ export function ResultTableView({
                       <div className="flex flex-wrap gap-1.5 max-w-[180px]">
                         {latest?.interviewers &&
                         latest.interviewers.length > 0 ? (
-                          latest.interviewers.map(([name, status], idx) => (
-                            <Badge
-                              key={idx}
-                              variant="outline"
-                              color={
-                                status === "completed" ? "success" : "default"
-                              }
-                              shape="square"
-                              className="text-[10px] font-bold py-0.5 px-1.5 whitespace-nowrap"
-                            >
-                              {name}
-                              {status === "completed" && " ✓"}
-                            </Badge>
-                          ))
+                          <Tooltip
+                            content={
+                              <div className="flex flex-col gap-2 p-1 min-w-[140px]">
+                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 border-b border-white/10 pb-1">
+                                  Full Panel
+                                </div>
+                                {latest.interviewers.map((lead, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <div className="relative shrink-0">
+                                      <Avatar
+                                        name={lead.name}
+                                        variant="brand"
+                                        className="w-5 h-5 text-[9px] rounded-sm border-none shadow-none"
+                                      />
+                                      <div
+                                        className={cn(
+                                          "absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-slate-900",
+                                          lead.status === "completed"
+                                            ? "bg-emerald-500"
+                                            : "bg-amber-500"
+                                        )}
+                                      />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-200 uppercase tracking-tight">
+                                      {lead.name}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            }
+                            side="top"
+                          >
+                            <div className="flex items-center gap-2 group cursor-default">
+                              <div className="relative shrink-0">
+                                <Avatar
+                                  name={latest.interviewers[0].name}
+                                  variant="brand"
+                                  className="w-6 h-6 text-[10px] rounded-md border-orange-200/50 dark:border-orange-900/30 shadow-sm"
+                                />
+                                <div
+                                  className={cn(
+                                    "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-slate-950",
+                                    latest.interviewers[0].status ===
+                                      "completed"
+                                      ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)]"
+                                      : "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)] animate-pulse"
+                                  )}
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
+                                  {latest.interviewers[0].name}
+                                </span>
+                                {latest.interviewers.length > 1 && (
+                                  <Badge
+                                    variant="outline"
+                                    color="default"
+                                    shape="square"
+                                    className="text-[9px] font-extrabold px-1 py-0 h-4 min-w-[18px] flex items-center justify-center border-border/50 text-muted-foreground/70"
+                                  >
+                                    +{latest.interviewers.length - 1}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </Tooltip>
                         ) : (
                           <span className="text-muted-foreground/40 text-[11px] font-medium italic">
                             Not Assigned

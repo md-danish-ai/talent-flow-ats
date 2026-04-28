@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   LayoutGrid,
@@ -94,7 +94,7 @@ export function UserResultsClient() {
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
-      { id: "project_lead", label: "Interviewer(s)" },
+      { id: "project_lead", label: "Project Lead" },
       { id: "date", label: "Interview Date" },
       { id: "actions", label: "Actions", pinned: true },
     ],
@@ -108,6 +108,7 @@ export function UserResultsClient() {
     "marks",
     "grade",
     "status",
+    "project_lead",
     "actions",
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
@@ -116,7 +117,7 @@ export function UserResultsClient() {
 
   const [leadsOptions, setLeadsOptions] = useState<FilterOption[]>([]);
 
-  useMemo(() => {
+  useEffect(() => {
     managementApi.getProjectLeads({ limit: 100 }).then((res) => {
       const options = (res.data || []).map((l: UserListResponse) => ({
         id: l.id.toString(),
