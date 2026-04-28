@@ -31,16 +31,24 @@ def get_evaluations_by_candidate(db: Session, user_id: int):
     )
 
 def get_evaluations_by_lead(db: Session, lead_id: int, status: str = None, page: int = 1, limit: int = 10):
+    Lead = aliased(User)
+    Candidate = aliased(User)
+    
     query = (
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.user_id,
             InterviewEvaluation.status,
+            InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
-            User.username.label("candidate_name"),
-            User.mobile.label("candidate_mobile")
+            Candidate.username.label("candidate_name"),
+            Candidate.mobile.label("candidate_mobile"),
+            Lead.username.label("lead_name"),
+            Classification.name.label("verdict_name")
         )
-        .join(User, User.id == InterviewEvaluation.user_id)
+        .join(Candidate, Candidate.id == InterviewEvaluation.user_id)
+        .join(Lead, Lead.id == InterviewEvaluation.project_lead_id)
+        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_verdict_id)
         .filter(InterviewEvaluation.project_lead_id == lead_id)
     )
     if status and status != "all":
@@ -73,7 +81,7 @@ def delete_evaluation(db: Session, evaluation_id: int):
         db.commit()
     return db_obj
 
-def get_all_evaluations_with_details(db: Session, status: str | None = None):
+def get_all_evaluations_with_details(db: Session, status: str | None = None, search: str | None = None, project_lead_id: str | None = None, limit: int = 10, offset: int = 0):
     Candidate = aliased(User)
     Lead = aliased(User)
     
@@ -97,7 +105,19 @@ def get_all_evaluations_with_details(db: Session, status: str | None = None):
     if status and status != "all":
         query = query.filter(InterviewEvaluation.status == status)
         
-    return [dict(r._asdict()) for r in query.order_by(desc(InterviewEvaluation.id)).all()]
+    if project_lead_id and project_lead_id != "all":
+        query = query.filter(InterviewEvaluation.project_lead_id == int(project_lead_id))
+        
+    if search:
+        query = query.filter(
+            (Candidate.username.ilike(f"%{search}%")) |
+            (Candidate.mobile.ilike(f"%{search}%"))
+        )
+        
+    total_records = query.count()
+    results = query.order_by(desc(InterviewEvaluation.id)).offset(offset).limit(limit).all()
+    
+    return [dict(r._asdict()) for r in results], total_records
 
 def get_evaluations_by_candidate_with_details(db: Session, user_id: int):
     return (

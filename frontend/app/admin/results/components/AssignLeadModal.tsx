@@ -130,26 +130,31 @@ export function AssignLeadModal({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Typography
-            variant="body5"
-            className="font-bold text-muted-foreground uppercase"
-          >
-            Select Project Lead
-          </Typography>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <SelectDropdown
-                options={leads.map((l) => ({ id: l.id, label: l.username }))}
-                placeholder="Choose a lead..."
-                value={selectedLead}
-                onChange={setSelectedLead}
-              />
-            </div>
-            <Button color="primary" onClick={handleAssign} disabled={loading}>
-              {loading ? "Assigning..." : "Assign"}
-            </Button>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Typography
+              variant="body5"
+              className="font-bold text-muted-foreground uppercase"
+            >
+              Select Project Lead
+            </Typography>
+            <SelectDropdown
+              options={leads.map((l) => ({ id: l.id, label: l.username }))}
+              placeholder="Choose a lead..."
+              value={selectedLead}
+              onChange={setSelectedLead}
+            />
           </div>
+          <Button
+            color="primary"
+            animate="scale"
+            onClick={handleAssign}
+            disabled={loading || !selectedLead}
+            fullWidth
+            className="py-3"
+          >
+            {loading ? "Assigning..." : "Assign to Project Lead"}
+          </Button>
         </div>
 
         <div className="space-y-3">

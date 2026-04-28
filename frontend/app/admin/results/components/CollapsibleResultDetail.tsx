@@ -59,11 +59,13 @@ export function CollapsibleResultDetail({
                   variant="fill"
                   shape="square"
                   color={
-                    res.grade === "Excellent" || res.grade === "Good"
+                    res.grade.toLowerCase() === "excellent"
                       ? "success"
-                      : res.grade === "Average"
-                        ? "warning"
-                        : "error"
+                      : res.grade.toLowerCase() === "good"
+                        ? "blue"
+                        : res.grade.toLowerCase() === "average"
+                          ? "warning"
+                          : "error"
                   }
                   className="text-[9px] px-1.5 py-0 h-5 shrink-0 font-bold tracking-wider"
                 >
@@ -85,11 +87,11 @@ export function CollapsibleResultDetail({
                 <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shrink-0">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${
-                      res.percentage >= 80
+                      res.grade.toLowerCase() === "excellent"
                         ? "bg-emerald-500"
-                        : res.percentage >= 60
-                          ? "bg-brand-primary"
-                          : res.percentage >= 40
+                        : res.grade.toLowerCase() === "good"
+                          ? "bg-blue-500"
+                          : res.grade.toLowerCase() === "average"
                             ? "bg-amber-500"
                             : "bg-rose-500"
                     }`}

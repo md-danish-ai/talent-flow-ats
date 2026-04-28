@@ -18,6 +18,8 @@ export interface InterviewEvaluation {
 export interface EvaluationTask extends InterviewEvaluation {
   candidate_name: string;
   candidate_mobile: string;
+  lead_name?: string;
+  verdict_name?: string;
 }
 
 export interface EvaluationHistoryItem extends InterviewEvaluation {

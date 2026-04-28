@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
 from . import repository, schemas
@@ -107,11 +107,33 @@ def submit_evaluation(evaluation_id: int, payload: schemas.InterviewEvaluationUp
 @router.get("/admin/list")
 def list_evaluations_for_admin(
     status: str | None = None,
+    search: str | None = None,
+    project_lead_id: str | None = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
     try:
-        results = repository.get_all_evaluations_with_details(db, status=status)
-        return ResponseHandler.success(data=results)
+        offset = (page - 1) * limit
+        results, total = repository.get_all_evaluations_with_details(
+            db, 
+            status=status, 
+            search=search,
+            project_lead_id=project_lead_id,
+            limit=limit, 
+            offset=offset
+        )
+        total_pages = (total + limit - 1) // limit
+        
+        return ResponseHandler.success(
+            data=results,
+            pagination={
+                "total_records": total,
+                "total_pages": total_pages,
+                "current_page": page,
+                "per_page": limit,
+            }
+        )
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 

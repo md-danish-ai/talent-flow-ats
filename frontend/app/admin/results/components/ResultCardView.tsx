@@ -90,7 +90,16 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                       ? latest.overall_grade
                       : "N/A",
                   icon: Award,
-                  color: "text-amber-500",
+                  color:
+                    latest?.overall_grade?.toLowerCase() === "excellent"
+                      ? "text-emerald-500"
+                      : latest?.overall_grade?.toLowerCase() === "good"
+                        ? "text-blue-500"
+                        : latest?.overall_grade?.toLowerCase() === "average"
+                          ? "text-amber-500"
+                          : latest?.overall_grade?.toLowerCase() === "poor"
+                            ? "text-rose-500"
+                            : "text-muted-foreground",
                 },
               ]}
               actionHref={detailHref}

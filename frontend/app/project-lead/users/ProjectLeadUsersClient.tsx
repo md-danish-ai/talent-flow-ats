@@ -2,16 +2,17 @@
 import React, { useState, useEffect } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
-import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 import { evaluationsApi } from "@lib/api";
-import { CandidateList } from "./CandidateList";
-import { Clock, CheckCircle, Users } from "lucide-react";
+import { UserList } from "./components/UserList";
+import { Users } from "lucide-react";
 import { useListing } from "@hooks/useListing";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
+import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { EvaluationModal } from "./components/EvaluationModal";
+import { cn } from "@lib/utils";
 
 import { EvaluationTask } from "@types";
 
@@ -22,9 +23,10 @@ interface ProjectLeadUsersClientProps {
 export default function ProjectLeadUsersClient({
   leadId,
 }: ProjectLeadUsersClientProps) {
-  const [counts, setCounts] = useState({ pending: 0, completed: 0 });
+  const [counts, setCounts] = useState({ all: 0, pending: 0, completed: 0 });
   const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const {
     data: tasks,
@@ -38,21 +40,26 @@ export default function ProjectLeadUsersClient({
     handlePageChange,
     handlePageSizeChange,
     refresh,
-  } = useListing<EvaluationTask, { status: string }>({
+  } = useListing<EvaluationTask, { status: string; search?: string }>({
     fetchFn: (params) => evaluationsApi.getLeadTasks(leadId, params),
-    initialFilters: { status: "pending" },
-    toastMessage: "Candidate list updated",
+    initialFilters: { status: "all", search: "" },
+    toastMessage: "User list updated",
   });
 
   // Fetch counts separately or just use the current tab's total
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const [pendingRes, completedRes] = await Promise.all([
+        const [allRes, pendingRes, completedRes] = await Promise.all([
+          evaluationsApi.getLeadTasks(leadId, { status: "all", limit: 1 }),
           evaluationsApi.getLeadTasks(leadId, { status: "pending", limit: 1 }),
-          evaluationsApi.getLeadTasks(leadId, { status: "completed", limit: 1 }),
+          evaluationsApi.getLeadTasks(leadId, {
+            status: "completed",
+            limit: 1,
+          }),
         ]);
         setCounts({
+          all: allRes.pagination?.total_records || 0,
           pending: pendingRes.pagination?.total_records || 0,
           completed: completedRes.pagination?.total_records || 0,
         });
@@ -63,24 +70,7 @@ export default function ProjectLeadUsersClient({
     if (leadId) fetchCounts();
   }, [leadId, tasks]);
 
-  const activeTab = filters.status;
 
-  const TABS: TabItem[] = [
-    {
-      value: "pending",
-      label: `Pending (${counts.pending})`,
-      icon: <Clock size={16} />,
-    },
-    {
-      value: "completed",
-      label: `Completed (${counts.completed})`,
-      icon: <CheckCircle size={16} />,
-    },
-  ];
-
-  const handleTabChange = (val: string) => {
-    handleFilterChange({ status: val });
-  };
 
   const handleEvaluate = (task: EvaluationTask) => {
     setSelectedTask(task);
@@ -100,10 +90,10 @@ export default function ProjectLeadUsersClient({
     <PageContainer className="space-y-6 max-w-7xl mx-auto" animate>
       <div className="flex flex-col gap-1">
         <Typography variant="h2" className="font-black tracking-tight">
-          Assigned Candidates
+          Assigned Users
         </Typography>
         <Typography variant="body4" className="text-muted-foreground">
-          Manage and evaluate candidates assigned to you for Round 2 interviews.
+          Manage and evaluate users assigned to you for Round 2 interviews.
         </Typography>
       </div>
 
@@ -114,45 +104,73 @@ export default function ProjectLeadUsersClient({
               <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
                 <Users size={18} />
               </div>
-              Candidates
+              Users
             </div>
-            <div className="h-8 w-px bg-border/50" />
-            <Tabs
-              tabs={TABS}
-              activeTab={activeTab}
-              onChange={handleTabChange}
-              variant="pills"
-              size="md"
-            />
           </div>
         }
-        bodyClassName="p-0"
+        bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <ListingHeaderActions
             isLoading={loading}
             isBackgroundLoading={isBackgroundLoading}
             totalItems={totalItems}
-            itemLabel="Candidates"
+            itemLabel="Users"
             onRefresh={refresh}
+            onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+            isFilterOpen={isFilterOpen}
+            activeFiltersCount={
+              Object.entries(filters).filter(([key, val]) => val && val !== "all").length
+            }
           />
         }
       >
-        <ListingTransition isLoading={loading} isBackgroundLoading={isBackgroundLoading}>
-          <CandidateList tasks={tasks} onEvaluate={handleEvaluate} />
-          
-          {!loading && totalItems > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={Math.ceil(totalItems / pageSize)}
-              onPageChange={handlePageChange}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              className="border-t border-border mt-auto"
-            />
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            isFilterOpen && "border-r border-border/50",
           )}
-        </ListingTransition>
+        >
+          <ListingTransition
+            isLoading={loading}
+            isBackgroundLoading={isBackgroundLoading}
+          >
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <UserList tasks={tasks} onEvaluate={handleEvaluate} />
+            </div>
+
+            {!loading && totalItems > 0 && (
+              <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30 mt-auto">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalItems / pageSize)}
+                  onPageChange={handlePageChange}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
+          </ListingTransition>
+        </div>
+
+        <ListingFiltersDrawer
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          registryKey="project-lead-users-filters"
+          filters={filters}
+          onFilterChange={(key, val) => handleFilterChange({ [key]: val })}
+          onReset={() => handleFilterChange({ status: "all", search: "" })}
+          dynamicOptions={{
+            status: [
+              { id: "all", label: `All (${counts.all})` },
+              { id: "pending", label: `Pending (${counts.pending})` },
+              { id: "completed", label: `Completed (${counts.completed})` },
+            ],
+          }}
+        />
       </MainCard>
+
+
 
       <EvaluationModal
         isOpen={isModalOpen}

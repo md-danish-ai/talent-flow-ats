@@ -46,10 +46,10 @@ export const evaluationsApi = {
   },
 
   getAdminEvaluationList: async (
-    status?: string,
-  ): Promise<EvaluationHistoryItem[]> => {
-    return api.get<EvaluationHistoryItem[]>("/evaluations/admin/list", {
-      params: { status },
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<EvaluationHistoryItem>> => {
+    return api.get<PaginatedResponse<EvaluationHistoryItem>>("/evaluations/admin/list", {
+      params: params as Record<string, string | number | boolean | undefined>,
     });
   },
 

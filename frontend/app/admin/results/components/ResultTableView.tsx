@@ -230,22 +230,15 @@ export function ResultTableView({
                           <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                ((latest.obtained_marks || 0) /
-                                  latest.total_marks) *
-                                  100 >=
-                                80
+                                latest.overall_grade?.toLowerCase() === "excellent"
                                   ? "bg-emerald-500"
-                                  : ((latest.obtained_marks || 0) /
-                                        latest.total_marks) *
-                                        100 >=
-                                      60
-                                    ? "bg-brand-primary"
-                                    : ((latest.obtained_marks || 0) /
-                                          latest.total_marks) *
-                                          100 >=
-                                        40
+                                  : latest.overall_grade?.toLowerCase() === "good"
+                                    ? "bg-blue-500"
+                                    : latest.overall_grade?.toLowerCase() === "average"
                                       ? "bg-amber-500"
-                                      : "bg-rose-500"
+                                      : latest.overall_grade?.toLowerCase() === "poor"
+                                        ? "bg-rose-500"
+                                        : "bg-brand-primary"
                               }`}
                               style={{
                                 width: `${Math.min(((latest.obtained_marks || 0) / latest.total_marks) * 100, 100)}%`,
@@ -267,15 +260,16 @@ export function ResultTableView({
                         <Badge
                           variant="outline"
                           color={
-                            latest.overall_grade === "Excellent" ||
-                            latest.overall_grade === "Good"
+                            latest.overall_grade.toLowerCase() === "excellent"
                               ? "success"
-                              : latest.overall_grade === "Average"
-                                ? "warning"
-                                : "error"
+                              : latest.overall_grade.toLowerCase() === "good"
+                                ? "blue"
+                                : latest.overall_grade.toLowerCase() === "average"
+                                  ? "warning"
+                                  : "error"
                           }
                           shape="square"
-                          animate="pulse"
+                          // animate="pulse"
                         >
                           {latest.overall_grade}
                         </Badge>
@@ -324,7 +318,7 @@ export function ResultTableView({
                               : "warning"
                         }
                         shape="square"
-                        animate="pulse"
+                        // animate="pulse"
                         className="font-bold uppercase tracking-wider"
                       >
                         {latest?.status?.replace("_", " ") || "NOT STARTED"}

@@ -107,9 +107,7 @@ export function UserResultsClient() {
     "attempts",
     "marks",
     "grade",
-    "typing_wpm",
     "status",
-    "date",
     "actions",
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(

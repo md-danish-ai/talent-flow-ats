@@ -189,6 +189,34 @@ filterRegistry.register("results-filters", [
   },
 ]);
 
+// 4.5. Face-to-Face Results
+filterRegistry.register("f2f-results-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "completed", label: "Completed" },
+      { id: "pending", label: "Pending" },
+    ],
+  },
+]);
+
 // 5. Admin Management
 filterRegistry.register("admin-filters", [
   {
@@ -230,6 +258,27 @@ filterRegistry.register("project-lead-filters", [
     label: "Search Project Leads",
     type: "search",
     placeholder: "Search by name, email or mobile...",
+  },
+]);
+
+// 7.5 Project Lead -> Users
+filterRegistry.register("project-lead-users-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "pending", label: "Pending" },
+      { id: "completed", label: "Completed" },
+    ],
   },
 ]);
 
