@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
 from . import repository, schemas
 from app.utils.response_handler import ResponseHandler
 from app.utils.status_codes import StatusCode
+from app.utils.dependencies import authenticate_user
 
 router = APIRouter()
 
@@ -138,12 +139,22 @@ def list_evaluations_for_admin(
         return ResponseHandler.error(message=str(e))
 
 @router.get("/list-user-evaluations/{user_id}")
-def get_user_evaluation_history(user_id: int, db: Session = Depends(get_db)):
+def get_user_evaluation_history(
+    user_id: int, 
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(authenticate_user)
+):
     try:
         results = repository.get_evaluations_by_candidate_with_details(db, user_id)
+        user_role = getattr(request.state, "user_role", None)
         
         history = []
         for eval_obj, lead_name, verdict_name in results:
+            # Role-based visibility: Project lead only sees their own feedback
+            if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
+                continue
+                
             history.append({
                 "id": eval_obj.id,
                 "project_lead_id": eval_obj.project_lead_id,
@@ -164,12 +175,23 @@ def get_user_evaluation_history(user_id: int, db: Session = Depends(get_db)):
         return ResponseHandler.error(message=str(e))
 
 @router.get("/list-user-evaluations/{user_id}/{attempt_id}")
-def get_evaluation_history(user_id: int, attempt_id: int, db: Session = Depends(get_db)):
+def get_evaluation_history(
+    user_id: int, 
+    attempt_id: int, 
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(authenticate_user)
+):
     try:
         results = repository.get_evaluations_for_admin_results(db, user_id, attempt_id)
+        user_role = getattr(request.state, "user_role", None)
         
         history = []
         for eval_obj, lead_name, verdict_name in results:
+            # Role-based visibility: Project lead only sees their own feedback
+            if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
+                continue
+                
             history.append({
                 "id": eval_obj.id,
                 "project_lead_id": eval_obj.project_lead_id,

@@ -30,10 +30,12 @@ import { Round2History } from "./Round2History";
 
 interface UserResultDetailClientProps {
   userId: number;
+  basePath?: string;
 }
 
 export function UserResultDetailClient({
   userId,
+  basePath = "/admin/results",
 }: UserResultDetailClientProps) {
   const [attemptData, setAttemptData] =
     useState<AdminUserAttemptsResponse | null>(null);
@@ -169,7 +171,7 @@ export function UserResultDetailClient({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <Link
-            href="/admin/results"
+            href={basePath}
             className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-colors mb-2"
           >
             <div className="p-1 rounded-full bg-muted group-hover:bg-brand-primary/10 transition-colors">
@@ -184,7 +186,7 @@ export function UserResultDetailClient({
           </Typography>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/admin/results">
+          <Link href={basePath}>
             <Button
               color="primary"
               className="shadow-lg shadow-brand-primary/20"

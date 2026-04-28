@@ -127,7 +127,7 @@ async def get_admin_user_result_detail(
 
 @router.get(
     "/admin/results/user-attempt-history/{user_id}",
-    dependencies=[Depends(require_roles(["admin"]))],
+    dependencies=[Depends(require_roles(["admin", "project_lead"]))],
 )
 async def get_admin_user_attempts(
     user_id: int,

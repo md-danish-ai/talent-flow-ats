@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { evaluationsApi } from "@lib/api";
 import { UserCheck, Eye, Phone, ShieldCheck, Calendar, Users } from "lucide-react";
@@ -30,7 +31,7 @@ interface UserListingProps {
 
 export const UserListing = React.memo(
   ({ leadId }: UserListingProps) => {
-
+    const router = useRouter();
     const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(
       null
     );
@@ -245,6 +246,7 @@ export const UserListing = React.memo(
                                   title="View Results"
                                   iconColor="amber"
                                   btnSize="sm"
+                                  onClick={() => router.push(`/project-lead/users/${task.user_id}`)}
                                 >
                                   <Eye size={18} />
                                 </TableIconButton>
