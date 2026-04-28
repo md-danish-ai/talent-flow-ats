@@ -124,6 +124,17 @@ export function AttemptDetailClient({
 
   const toggleSection = (section: string) => {
     setActiveSection((previous) => (previous === section ? null : section));
+    
+    // Use a bit more delay to allow the accordion to expand significantly
+    setTimeout(() => {
+      const element = document.getElementById(`section-card-${section}`);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 300);
   };
 
   if (loading) {
@@ -413,7 +424,8 @@ export function AttemptDetailClient({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.1 }}
-              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500"
+              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500 scroll-mt-24"
+              id={`section-card-${subject.section_name}`}
             >
               <button
                 onClick={() => toggleSection(subject.section_name)}
