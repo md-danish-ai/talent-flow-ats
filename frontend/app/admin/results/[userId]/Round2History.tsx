@@ -122,7 +122,11 @@ export function Round2History({ userId }: Round2HistoryProps) {
                       variant="body5"
                       className="text-[11px] font-bold uppercase"
                     >
-                      Round 2
+                      {new Date(item.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </Typography>
                   </div>
                 </div>
