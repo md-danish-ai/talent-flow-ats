@@ -43,11 +43,11 @@ def get_evaluations_by_lead(db: Session, lead_id: int, status: str = None, page:
             Candidate.username.label("candidate_name"),
             Candidate.mobile.label("candidate_mobile"),
             Lead.username.label("lead_name"),
-            Classification.name.label("verdict_name")
+            Classification.name.label("result_name")
         )
         .join(Candidate, Candidate.id == InterviewEvaluation.user_id)
         .join(Lead, Lead.id == InterviewEvaluation.project_lead_id)
-        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_verdict_id)
+        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_result_id)
         .filter(InterviewEvaluation.project_lead_id == lead_id)
     )
     if status and status != "all":
@@ -65,7 +65,7 @@ def update_evaluation(db: Session, evaluation_id: int, obj_in: InterviewEvaluati
     
     db_obj.evaluation_data = obj_in.evaluation_data
     db_obj.overall_grade = obj_in.overall_grade
-    db_obj.final_verdict_id = obj_in.final_verdict_id
+    db_obj.final_result_id = obj_in.final_result_id
     db_obj.comments = obj_in.comments
     db_obj.status = "completed"
     
@@ -94,11 +94,11 @@ def get_all_evaluations_with_details(db: Session, status: str | None = None, sea
             Candidate.id.label("candidate_id"),
             Candidate.mobile.label("candidate_mobile"),
             Lead.username.label("lead_name"),
-            Classification.name.label("verdict_name")
+            Classification.name.label("result_name")
         )
         .join(Candidate, Candidate.id == InterviewEvaluation.user_id)
         .join(Lead, Lead.id == InterviewEvaluation.project_lead_id)
-        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_verdict_id)
+        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_result_id)
     )
     
     if status and status != "all":
@@ -122,7 +122,7 @@ def get_evaluations_by_candidate_with_details(db: Session, user_id: int):
     return (
         db.query(InterviewEvaluation, User.username, Classification.name)
         .join(User, User.id == InterviewEvaluation.project_lead_id)
-        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_verdict_id)
+        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_result_id)
         .filter(InterviewEvaluation.user_id == user_id)
         .order_by(desc(InterviewEvaluation.created_at))
         .all()
@@ -133,7 +133,7 @@ def get_evaluations_for_admin_results(db: Session, user_id: int, attempt_id: int
     return (
         db.query(InterviewEvaluation, User.username, Classification.name)
         .join(User, User.id == InterviewEvaluation.project_lead_id)
-        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_verdict_id)
+        .outerjoin(Classification, Classification.id == InterviewEvaluation.final_result_id)
         .filter(
             InterviewEvaluation.user_id == user_id,
             InterviewEvaluation.attempt_id == attempt_id

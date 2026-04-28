@@ -16,7 +16,7 @@ export const evaluationSchema = z.object({
       .min(1, "Learning Ability rating is required"),
   }),
   overall_grade: z.string().min(1, "Overall grade is required"),
-  final_verdict_id: z.coerce.number().min(1, "Final verdict is required"),
+  final_result_id: z.coerce.number().min(1, "Final result is required"),
   comments: z.string().optional().or(z.literal("")),
 });
 

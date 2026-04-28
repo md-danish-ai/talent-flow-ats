@@ -17,7 +17,7 @@ import { Classification } from "@types";
 
 interface EvaluationFormProps {
   initialValues: EvaluationFormValues;
-  verdicts: Classification[];
+  results: Classification[];
   isCompleted: boolean;
   submitting: boolean;
   onSubmit: (values: EvaluationFormValues) => void;
@@ -42,7 +42,7 @@ const RATINGS = [
 
 export function EvaluationForm({
   initialValues,
-  verdicts,
+  results,
   isCompleted,
   submitting,
   onSubmit,
@@ -141,18 +141,18 @@ export function EvaluationForm({
           )}
         </form.Field>
 
-        <form.Field name="final_verdict_id">
+        <form.Field name="final_result_id">
           {(field) => (
             <div className="space-y-1.5">
               <Typography
                 variant="body5"
                 className="font-bold uppercase tracking-wider text-emerald-600 text-[10px]"
               >
-                Final Verdict
+                Final Result
               </Typography>
               <SelectDropdown
-                options={verdicts.map((v) => ({ id: v.id, label: v.name }))}
-                placeholder="Select Verdict"
+                options={results.map((v) => ({ id: v.id, label: v.name }))}
+                placeholder="Select Result"
                 value={field.state.value}
                 onChange={(val) => field.handleChange(Number(val))}
                 className="border-emerald-500/30"

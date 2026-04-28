@@ -21,7 +21,7 @@ class InterviewEvaluation(Base):
     
     # Results
     overall_grade = Column(String(20), nullable=True) # Excellent, Good, etc.
-    final_verdict_id = Column(Integer, ForeignKey("classifications.id"), nullable=True) # Must Hire, etc.
+    final_result_id = Column(Integer, ForeignKey("classifications.id"), nullable=True) # Must Hire, etc.
     
     comments = Column(String(1000), nullable=True)
     

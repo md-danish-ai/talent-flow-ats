@@ -301,6 +301,7 @@ filterRegistry.register("type-management-filters", [
     options: [
       { id: "subjects", label: "Subjects" },
       { id: "levels", label: "Exam Levels" },
+      { id: "results", label: "Interview Results" },
     ],
     props: { variant: "pills", size: "sm" },
   },

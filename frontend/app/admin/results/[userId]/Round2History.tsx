@@ -236,14 +236,14 @@ export function Round2History({ userId }: Round2HistoryProps) {
                       variant="body5"
                       className="font-black uppercase tracking-widest text-emerald-600/80 text-[10px]"
                     >
-                      Final Verdict
+                      Final Result
                     </Typography>
                   </div>
                   <Typography
                     variant="body3"
                     className="font-black text-emerald-900 dark:text-emerald-50 transition-colors"
                   >
-                    {item.verdict_name || "Decision Pending"}
+                    {item.result_name || "Decision Pending"}
                   </Typography>
                 </div>
 

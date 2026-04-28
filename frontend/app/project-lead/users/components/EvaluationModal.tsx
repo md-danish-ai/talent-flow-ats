@@ -32,7 +32,7 @@ export const EvaluationModal = React.memo(
     onSuccess,
   }: EvaluationModalProps) => {
     const [r1Data, setR1Data] = useState<AdminUserResultDetail | null>(null);
-    const [verdicts, setVerdicts] = useState<Classification[]>([]);
+    const [results, setResults] = useState<Classification[]>([]);
     const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(
       null,
     );
@@ -50,7 +50,7 @@ export const EvaluationModal = React.memo(
         "Learning Ability": "",
       },
       overall_grade: "",
-      final_verdict_id: 0,
+      final_result_id: 0,
       comments: "",
     });
 
@@ -60,21 +60,21 @@ export const EvaluationModal = React.memo(
 
         try {
           setLoading(true);
-          const [resR1, resVerdicts, resEval] = await Promise.all([
+          const [resR1, resResults, resEval] = await Promise.all([
             resultsApi.getUserResultDetail(userId),
             classificationsApi.getClassifications({
-              type: "interview_verdict",
+              type: "interview_result",
               is_active: true,
             }),
             evaluationsApi.getEvaluationDetail(evaluationId),
           ]);
 
           const evalData = resEval as InterviewEvaluation;
-          const rawVerdicts = resVerdicts?.data ?? resVerdicts ?? [];
-          const verdictOptions = Array.isArray(rawVerdicts) ? rawVerdicts : [];
+          const rawResults = resResults?.data ?? resResults ?? [];
+          const resultOptions = Array.isArray(rawResults) ? rawResults : [];
 
           setR1Data(resR1 as AdminUserResultDetail);
-          setVerdicts(verdictOptions);
+          setResults(resultOptions);
           setEvaluation(evalData);
 
           if (evalData) {
@@ -93,8 +93,8 @@ export const EvaluationModal = React.memo(
                   evalData.evaluation_data?.["Learning Ability"] || "",
               },
               overall_grade: evalData.overall_grade || "",
-              final_verdict_id: evalData.final_verdict_id
-                ? Number(evalData.final_verdict_id)
+              final_result_id: evalData.final_result_id
+                ? Number(evalData.final_result_id)
                 : 0,
               comments: evalData.comments || "",
             });
@@ -170,7 +170,7 @@ export const EvaluationModal = React.memo(
           <EvaluationForm
             key={JSON.stringify(initialValues)} // Reset form when initialValues change
             initialValues={initialValues}
-            verdicts={verdicts}
+            results={results}
             isCompleted={isCompleted}
             submitting={submitting}
             onSubmit={handleSubmit}

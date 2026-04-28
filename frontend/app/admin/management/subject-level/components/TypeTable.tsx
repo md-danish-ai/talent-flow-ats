@@ -49,7 +49,8 @@ export function TypeTable({
   onToggleStatus,
 }: TypeTableProps) {
   const isSubject = activeTab === "subjects";
-  const colSpan = isSubject ? 7 : 5;
+  const isLevel = activeTab === "levels";
+  const colSpan = isSubject ? 7 : isLevel ? 5 : 5;
 
   return (
     <div className="overflow-x-auto w-full h-full flex flex-col">
@@ -63,7 +64,11 @@ export function TypeTable({
               Sr. No.
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              {isSubject ? "Subject Name" : "Level Name"}
+              {isSubject
+                ? "Subject Name"
+                : isLevel
+                  ? "Level Name"
+                  : "Result"}
             </TableHead>
             {isSubject && (
               <TableHead className="font-bold text-slate-500 text-xs uppercase">

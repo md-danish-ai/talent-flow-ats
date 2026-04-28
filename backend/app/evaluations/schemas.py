@@ -14,7 +14,7 @@ class InterviewEvaluationBase(BaseModel):
     status: str = "pending"
     evaluation_data: Dict[str, str] = {}
     overall_grade: Optional[str] = None
-    final_verdict_id: Optional[int] = None
+    final_result_id: Optional[int] = None
     comments: Optional[str] = None
 
 class InterviewEvaluationCreate(BaseModel):
@@ -26,7 +26,7 @@ class InterviewEvaluationCreate(BaseModel):
 class InterviewEvaluationUpdate(BaseModel):
     evaluation_data: Dict[str, str]
     overall_grade: str
-    final_verdict_id: int
+    final_result_id: int
     comments: Optional[str] = None
     status: str = "completed"
 
@@ -38,7 +38,7 @@ class InterviewEvaluationResponse(InterviewEvaluationBase):
     # Optional fields for joined data
     candidate_name: Optional[str] = None
     lead_name: Optional[str] = None
-    verdict_name: Optional[str] = None
+    result_name: Optional[str] = None
 
     class Config:
         from_attributes = True

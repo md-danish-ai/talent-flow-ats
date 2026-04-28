@@ -78,7 +78,7 @@ def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
             "status": eval_obj.status,
             "evaluation_data": eval_obj.evaluation_data,
             "overall_grade": eval_obj.overall_grade,
-            "final_verdict_id": eval_obj.final_verdict_id,
+            "final_result_id": eval_obj.final_result_id,
             "comments": eval_obj.comments,
             "created_at": eval_obj.created_at,
             "updated_at": eval_obj.updated_at
@@ -150,7 +150,7 @@ def get_user_evaluation_history(
         user_role = getattr(request.state, "user_role", None)
         
         history = []
-        for eval_obj, lead_name, verdict_name in results:
+        for eval_obj, lead_name, result_name in results:
             # Role-based visibility: Project lead only sees their own feedback
             if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
                 continue
@@ -163,8 +163,8 @@ def get_user_evaluation_history(
                 "status": eval_obj.status,
                 "evaluation_data": eval_obj.evaluation_data,
                 "overall_grade": eval_obj.overall_grade,
-                "final_verdict_id": eval_obj.final_verdict_id,
-                "verdict_name": verdict_name,
+                "final_result_id": eval_obj.final_result_id,
+                "result_name": result_name,
                 "comments": eval_obj.comments,
                 "created_at": eval_obj.created_at,
                 "updated_at": eval_obj.updated_at
@@ -187,7 +187,7 @@ def get_evaluation_history(
         user_role = getattr(request.state, "user_role", None)
         
         history = []
-        for eval_obj, lead_name, verdict_name in results:
+        for eval_obj, lead_name, result_name in results:
             # Role-based visibility: Project lead only sees their own feedback
             if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
                 continue
@@ -199,8 +199,8 @@ def get_evaluation_history(
                 "status": eval_obj.status,
                 "evaluation_data": eval_obj.evaluation_data,
                 "overall_grade": eval_obj.overall_grade,
-                "final_verdict_id": eval_obj.final_verdict_id,
-                "verdict_name": verdict_name,
+                "final_result_id": eval_obj.final_result_id,
+                "result_name": result_name,
                 "comments": eval_obj.comments,
                 "created_at": eval_obj.created_at,
                 "updated_at": eval_obj.updated_at

@@ -168,7 +168,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                         <TableHead>Candidate</TableHead>
                         <TableHead className="text-center">Status</TableHead>
                         <TableHead className="text-center">Grade</TableHead>
-                        <TableHead>Verdict</TableHead>
+                        <TableHead>Result</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
@@ -227,10 +227,10 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                             )}
                           </TableCell>
                           <TableCell>
-                            {task.verdict_name ? (
+                            {task.result_name ? (
                               <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[13px]">
                                 <ShieldCheck size={14} />
-                                {task.verdict_name}
+                                {task.result_name}
                               </div>
                             ) : (
                               <span className="text-muted-foreground italic text-xs">

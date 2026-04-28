@@ -9,7 +9,7 @@ export interface InterviewEvaluation {
   status: "pending" | "completed";
   evaluation_data: Record<string, string>;
   overall_grade?: string;
-  final_verdict_id?: number;
+  final_result_id?: number;
   comments?: string;
   created_at: string;
   updated_at: string;
@@ -19,7 +19,7 @@ export interface EvaluationTask extends InterviewEvaluation {
   candidate_name: string;
   candidate_mobile: string;
   lead_name?: string;
-  verdict_name?: string;
+  result_name?: string;
 }
 
 export interface EvaluationHistoryItem extends InterviewEvaluation {
@@ -27,7 +27,7 @@ export interface EvaluationHistoryItem extends InterviewEvaluation {
   candidate_name: string;
   candidate_mobile: string;
   candidate_id?: number;
-  verdict_name?: string;
+  result_name?: string;
 }
 
 export interface AssignLeadPayload {
@@ -40,6 +40,6 @@ export interface AssignLeadPayload {
 export interface SubmitEvaluationPayload {
   evaluation_data: Record<string, string>;
   overall_grade: string;
-  final_verdict_id: number;
+  final_result_id: number;
   comments?: string;
 }
