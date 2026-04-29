@@ -186,8 +186,8 @@ export function UserResultsClient() {
         label: "Total Candidates",
         value: summaryStatsData?.total || 0,
         icon: <Users />,
-        color: "text-brand-primary",
-        bg: "bg-brand-primary/10",
+        color: "text-white",
+        bg: "bg-brand-primary",
         filter: { type: "reset", value: "all" },
       },
       {
