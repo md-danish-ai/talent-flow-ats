@@ -44,7 +44,6 @@ export const AddImageQuestionForm = ({
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-
   React.useEffect(() => {
     const fetchClassifications = async () => {
       try {

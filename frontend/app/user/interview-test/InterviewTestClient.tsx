@@ -23,7 +23,6 @@ import {
 } from "@lib/api/paper-assignments";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
-
 export function InterviewTestClient() {
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const [loadedSections, setLoadedSections] =

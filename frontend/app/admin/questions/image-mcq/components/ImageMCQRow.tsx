@@ -33,7 +33,6 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
   onEdit,
   onImageClick,
 }) => {
-
   return (
     <TableCollapsibleRow
       key={row.id}

@@ -2,7 +2,13 @@
 
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
-import { cn, getGradeConfig, formatLongDate, formatLongTime, humanizeString } from "@lib/utils";
+import {
+  cn,
+  getGradeConfig,
+  formatLongDate,
+  formatLongTime,
+  humanizeString,
+} from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
@@ -310,7 +316,9 @@ export function ResultTableView({
                         // animate="pulse"
                         className="font-bold uppercase tracking-wider"
                       >
-                        {latest?.status ? humanizeString(latest.status) : "NOT STARTED"}
+                        {latest?.status
+                          ? humanizeString(latest.status)
+                          : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}

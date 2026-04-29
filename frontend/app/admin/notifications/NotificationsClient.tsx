@@ -27,7 +27,6 @@ import { useListing } from "@hooks/useListing";
 import { cn } from "@lib/utils";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
-
 type NotificationListingFilters = {
   status: "all" | "unread" | "read";
 };

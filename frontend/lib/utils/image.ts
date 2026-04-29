@@ -4,7 +4,9 @@ import { BASE_URL } from "@lib/api/client";
  * Standardizes image URLs by prepending the backend BASE_URL if the path is relative,
  * and ensuring localhost/127.0.0.1 URLs are redirected to the current configured BASE_URL.
  */
-export const getCanonicalImageUrl = (url: string | null | undefined): string => {
+export const getCanonicalImageUrl = (
+  url: string | null | undefined,
+): string => {
   if (!url) return "";
 
   // If it's already an absolute URL (http/https)
@@ -28,7 +30,7 @@ export const getCanonicalImageUrl = (url: string | null | undefined): string => 
   }
 
   const base = (BASE_URL || "").replace(/\/$/, "");
-  
+
   // If the URL already contains the /images/ path
   if (url.includes("/images/")) {
     const path = url.startsWith("/") ? url : `/${url}`;

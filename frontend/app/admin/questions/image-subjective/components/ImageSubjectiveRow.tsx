@@ -34,7 +34,6 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
   onEdit,
   onImageClick,
 }) => {
-
   return (
     <TableCollapsibleRow
       key={row.id}

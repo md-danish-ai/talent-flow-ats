@@ -73,7 +73,7 @@ export function InterviewOverview({
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,99,49,0.12),transparent_45%)]" />
 
-      <div className="relative z-10 space-y-6">
+      <div className="relative z-10 space-y-5">
         <div className="flex flex-wrap items-center gap-2 px-1">
           <div className="flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-brand-primary shadow-sm shadow-brand-primary/10">
             <Sparkles size={12} className="opacity-80" />
@@ -85,7 +85,7 @@ export function InterviewOverview({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Typography variant="h1" className=" tracking-tight">
             Assess your potential with{" "}
             <span className="text-brand-primary">Confidence</span>
@@ -129,47 +129,62 @@ export function InterviewOverview({
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sections.map((section, index) => (
               <div
                 key={section.id}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-background/40 p-5 transition-all duration-300 hover:border-brand-primary/40 hover:bg-background/60 hover:shadow-xl hover:shadow-brand-primary/5"
+                className="group relative flex min-h-[4.5rem] h-auto items-stretch overflow-hidden rounded-xl border border-border/40 bg-background/20 transition-all duration-300 hover:border-brand-primary/30 hover:bg-background/40 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-brand-primary/5"
               >
-                <div className="absolute -top-3 -right-3 h-16 w-16 opacity-[0.03] transition-opacity group-hover:opacity-[0.08]">
+                {/* Creative Side Number */}
+                <div className="relative flex h-full w-16 shrink-0 items-center justify-center bg-brand-primary/5 border-r border-border/20">
+                  <div className="absolute left-0 top-0 h-full w-1 bg-brand-primary/40 group-hover:w-1.5 group-hover:bg-brand-primary transition-all" />
                   <Typography
                     variant="h1"
-                    className="text-8xl italic select-none"
+                    className="text-4xl font-black italic opacity-[0.08] select-none group-hover:opacity-[0.15] transition-opacity pr-1"
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    weight="black"
+                    className="absolute text-brand-primary/80 group-hover:text-brand-primary transition-colors"
                   >
                     {index + 1}
                   </Typography>
                 </div>
 
-                <div className="relative z-10 flex flex-col h-full justify-between gap-4">
-                  <div className="space-y-1">
-                    <Typography
-                      variant="body5"
-                      weight="bold"
-                      className="uppercase tracking-widest text-brand-primary/80"
-                    >
-                      Section {String(index + 1).padStart(2, "0")}
-                    </Typography>
-                    <Typography variant="h4" className="leading-tight">
-                      {section.title}
-                    </Typography>
-                  </div>
+                {/* Content Area */}
+                <div className="flex flex-1 flex-col justify-center px-4 py-3 gap-1.5">
+                  <Typography
+                    variant="body1"
+                    weight="bold"
+                    className="group-hover:text-brand-primary transition-colors tracking-tight uppercase text-xs md:text-sm leading-tight"
+                  >
+                    {section.title}
+                  </Typography>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                    <div className="flex items-center gap-1.5 text-foreground/60">
-                      <PlayCircle size={14} className="text-brand-primary/60" />
-                      <Typography variant="body5">
-                        {section.questions.length} Questions
-                      </Typography>
+                  <div className="flex items-center gap-5 shrink-0">
+                    <div className="flex items-center gap-1.5 group-hover:translate-y-[-1px] transition-transform">
+                      <PlayCircle size={14} className="text-brand-primary/40" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-foreground/40 uppercase tracking-wider">
+                          Qs
+                        </span>
+                        <span className="text-xs font-black text-foreground/80">
+                          {section.questions.length}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-foreground/60">
-                      <Clock3 size={14} className="text-brand-secondary/60" />
-                      <Typography variant="body5">
-                        {section.durationMinutes}m
-                      </Typography>
+                    <div className="flex items-center gap-1.5 group-hover:translate-y-[-1px] transition-transform delay-75">
+                      <Clock3 size={14} className="text-brand-secondary/40" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-foreground/40 uppercase tracking-wider">
+                          Time
+                        </span>
+                        <span className="text-xs font-black text-foreground/80">
+                          {section.durationMinutes}m
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -180,8 +195,8 @@ export function InterviewOverview({
 
         {/* Instructions Redesign */}
         <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.03] via-background to-brand-primary/[0.03] p-1 md:p-1.5">
-          <div className="rounded-[calc(1rem-2px)] border border-amber-500/10 bg-background/40 backdrop-blur-sm p-6 md:p-8">
-            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="rounded-[calc(1rem-2px)] border border-amber-500/10 bg-background/40 backdrop-blur-sm p-5 md:p-6">
+            <div className="mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20 shadow-inner">
                   <AlertCircle size={24} />
@@ -205,7 +220,7 @@ export function InterviewOverview({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
               {instructionItems.map((item, index) => (
                 <div
                   key={`instruction-${index + 1}`}

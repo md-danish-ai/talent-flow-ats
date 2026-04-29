@@ -45,7 +45,12 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
     <MainCard
       title="Question Workspace"
       action={
-        <Badge variant="outline" shape="square" color="violet" className="whitespace-nowrap">
+        <Badge
+          variant="outline"
+          shape="square"
+          color="violet"
+          className="whitespace-nowrap"
+        >
           <Typography variant="span" className="sm:hidden">
             Q {questionIndex + 1}/{currentSection.questions.length}
           </Typography>

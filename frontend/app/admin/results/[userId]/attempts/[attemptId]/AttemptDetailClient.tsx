@@ -124,7 +124,7 @@ export function AttemptDetailClient({
 
   const toggleSection = (section: string) => {
     setActiveSection((previous) => (previous === section ? null : section));
-    
+
     // Use a bit more delay to allow the accordion to expand significantly
     setTimeout(() => {
       const element = document.getElementById(`section-card-${section}`);
