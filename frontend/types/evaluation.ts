@@ -35,6 +35,13 @@ export interface AssignLeadPayload {
   round_type?: string;
 }
 
+export interface BulkAssignLeadPayload {
+  user_ids: number[];
+  attempt_ids: number[];
+  project_lead_id: number;
+  round_type?: string;
+}
+
 export interface SubmitEvaluationPayload {
   evaluation_data: Record<string, string>;
   overall_grade: string;

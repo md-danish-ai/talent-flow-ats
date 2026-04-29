@@ -18,6 +18,36 @@ def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
     db.refresh(db_obj)
     return db_obj
 
+def bulk_create_evaluations(db: Session, user_ids: list[int], attempt_ids: list[int], lead_id: int, round_type: str = "F2F"):
+    new_objs = []
+    for user_id, attempt_id in zip(user_ids, attempt_ids):
+        # Check if already assigned
+        existing = db.query(InterviewEvaluation).filter(
+            InterviewEvaluation.user_id == user_id,
+            InterviewEvaluation.project_lead_id == lead_id,
+            InterviewEvaluation.attempt_id == attempt_id
+        ).first()
+        
+        if existing:
+            continue
+            
+        db_obj = InterviewEvaluation(
+            user_id=user_id,
+            project_lead_id=lead_id,
+            attempt_id=attempt_id,
+            round_type=round_type or "F2F",
+            status="pending"
+        )
+        db.add(db_obj)
+        new_objs.append(db_obj)
+    
+    if new_objs:
+        db.commit()
+        for obj in new_objs:
+            db.refresh(obj)
+            
+    return new_objs
+
 def get_evaluation(db: Session, evaluation_id: int):
     return db.query(InterviewEvaluation).filter(InterviewEvaluation.id == evaluation_id).first()
 

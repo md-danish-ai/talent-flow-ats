@@ -104,7 +104,6 @@ export function UserResultsClient() {
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
     "paper",
-    "attempts",
     "marks",
     "grade",
     "status",

@@ -2,6 +2,7 @@ import { api } from "./base";
 import { ENDPOINTS } from "./endpoints";
 import {
   AssignLeadPayload,
+  BulkAssignLeadPayload,
   SubmitEvaluationPayload,
   EvaluationHistoryItem,
   EvaluationTask,
@@ -12,6 +13,10 @@ import {
 export const evaluationsApi = {
   assignLead: async (payload: AssignLeadPayload) => {
     return api.post(ENDPOINTS.EVALUATIONS.ASSIGN, payload);
+  },
+
+  bulkAssignLead: async (payload: BulkAssignLeadPayload) => {
+    return api.post(ENDPOINTS.EVALUATIONS.BULK_ASSIGN, payload);
   },
 
   getLeadTasks: async (
