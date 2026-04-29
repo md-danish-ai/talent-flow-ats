@@ -9,8 +9,7 @@ import { Input } from "@components/ui-elements/Input";
 import { Button } from "@components/ui-elements/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { type AdminUserResultAnswer } from "@types";
-import { humanizeString } from "@lib/utils";
-import { type ParsedOption } from "../utils";
+import { humanizeString, type ParsedOption } from "@lib/utils";
 
 interface QuestionResultCardProps {
   answer: AdminUserResultAnswer;
