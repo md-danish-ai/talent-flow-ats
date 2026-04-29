@@ -13,6 +13,7 @@ interface EmptyStateProps {
   className?: string;
   variant?: "default" | "search" | "database";
   colSpan?: number; // If provided, wraps in TableRow and TableCell
+  children?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -22,6 +23,7 @@ export function EmptyState({
   className,
   variant = "default",
   colSpan,
+  children,
 }: EmptyStateProps) {
   // Select default icon based on variant if no icon is provided
   const DefaultIcon = {
@@ -160,6 +162,8 @@ export function EmptyState({
         >
           {description}
         </Typography>
+
+        {children && <div className="mt-8">{children}</div>}
       </div>
 
       {/* Ambient Floor Highlight */}
