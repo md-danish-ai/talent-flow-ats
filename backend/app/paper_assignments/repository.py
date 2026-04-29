@@ -11,7 +11,8 @@ from app.questions import repository as question_repository
 from app.users.models import User
 from app.utils.status_codes import StatusCode
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
+from app.user_details.models import UserDetail
 from .models import PaperAssignment, AutoAssignmentRule
 from .schemas import (
     PaperAssignmentCreate,
@@ -175,14 +176,19 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     if not rule.is_active or not rule.paper_ids:
         return
 
-    # 1. Find all users matching Dept/Level
+    # 1. Find all users matching Dept/Level AND (Registration Date OR Re-interview Date)
     matching_users = (
         db.query(User.id)
+        .outerjoin(UserDetail, User.id == UserDetail.user_id)
         .filter(
             User.department_id == rule.department_id,
             User.test_level_id == rule.test_level_id,
             User.role == "user",
             User.is_active.is_(True),
+            or_(
+                func.date(User.created_at) == rule.assigned_date,
+                UserDetail.reinterview_date == rule.assigned_date
+            )
         )
         .all()
     )
@@ -206,9 +212,30 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         return
 
     # 3. Bulk Distribution Logic
-    paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
-    if not paper_ids:
+    raw_paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
+    if not raw_paper_ids:
         return
+
+    # Filter only ACTIVE papers from the pool
+    active_papers = (
+        db.query(Paper.id)
+        .filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True))
+        .all()
+    )
+    paper_ids = [p.id for p in active_papers]
+    
+    if not paper_ids:
+        # Log or handle case where all papers in rule are inactive
+        print(f"WARNING: All papers in Auto-Rule {rule.id} are inactive. Skipping assignment.")
+        return
+
+    # Fallback for assigned_by (Point 4)
+    # Check if the creator still exists, otherwise use the first available admin
+    assigner_id = rule.created_by
+    creator_exists = db.query(User.id).filter(User.id == assigner_id).first()
+    if not creator_exists:
+        fallback_admin = db.query(User.id).filter(User.role == "admin").first()
+        assigner_id = fallback_admin.id if fallback_admin else rule.created_by # Last resort: original ID
 
     # Get current counts for papers today
     counts = (
@@ -230,7 +257,8 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     new_assignments = []
     for uid in pending_user_ids:
         # Pick paper with minimum current/simulated assignments
-        best_paper_id = sorted(paper_ids, key=lambda p: count_map[p])[0]
+        # Use only active paper IDs for sorting
+        best_paper_id = sorted(paper_ids, key=lambda p: count_map.get(p, 0))[0]
         
         assignment = PaperAssignment(
             user_id=uid,
@@ -238,7 +266,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
             department_id=rule.department_id,
             test_level_id=rule.test_level_id,
             assigned_date=rule.assigned_date,
-            assigned_by=rule.created_by,
+            assigned_by=assigner_id,
             assignment_source="AUTO",
             auto_rule_id=rule.id,
         )
@@ -247,9 +275,15 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         # Increment counter in-memory to ensure even distribution during this loop
         count_map[best_paper_id] += 1
 
-    # 4. One Single Transaction for all assignments
+    # 4. One Single Transaction for all assignments and status updates
     if new_assignments:
         db.add_all(new_assignments)
+        
+        # Update process_status for all assigned users
+        db.query(User).filter(User.id.in_(pending_user_ids)).update(
+            {User.process_status: "ready"}, synchronize_session=False
+        )
+        
         db.commit()
 
 
@@ -275,12 +309,46 @@ def assign_best_paper(
     if not rule or not rule.paper_ids:
         return None
 
+    # 1.5 Verify if this specific user matches the Date criteria (Registration or Re-interview)
+    user_match = (
+        db.query(User.id)
+        .outerjoin(UserDetail, User.id == UserDetail.user_id)
+        .filter(
+            User.id == user_id,
+            or_(
+                func.date(User.created_at) == assigned_date,
+                UserDetail.reinterview_date == assigned_date
+            )
+        )
+        .first()
+    )
+    
+    if not user_match:
+        return None
+
     # 2. Sequential/Round-robin: Check assignment counts for papers in the pool
     # We want the paper with the MINIMUM number of assignments today
-    paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
+    raw_paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
+    if not raw_paper_ids:
+        return None
 
+    # Filter only ACTIVE papers from the pool (Point 1)
+    active_papers = (
+        db.query(Paper.id)
+        .filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True))
+        .all()
+    )
+    paper_ids = [p.id for p in active_papers]
+    
     if not paper_ids:
         return None
+
+    # Fallback for assigned_by (Point 4)
+    assigner_id = rule.created_by
+    creator_exists = db.query(User.id).filter(User.id == assigner_id).first()
+    if not creator_exists:
+        fallback_admin = db.query(User.id).filter(User.role == "admin").first()
+        assigner_id = fallback_admin.id if fallback_admin else rule.created_by
 
     # Subquery to get counts for these specific papers today
     counts = (
@@ -322,7 +390,7 @@ def assign_best_paper(
         department_id=department_id,
         test_level_id=test_level_id,
         assigned_date=assigned_date,
-        assigned_by=rule.created_by,  # Rule creator is the 'assigner'
+        assigned_by=assigner_id,  # Validated or fallback admin
         assignment_source="AUTO",
         auto_rule_id=rule.id,
     )

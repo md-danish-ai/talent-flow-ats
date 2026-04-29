@@ -9,11 +9,15 @@ from app.interview_attempts.models import InterviewRecord
 from app.paper_assignments.models import PaperAssignment
 from app.user_details.models import UserDetail
 from .schemas import DashboardOverviewResponse, DashboardStats, TodayPulse, GradeCount
+from app.utils.expiration import run_auto_expiration
 
 class DashboardService:
     async def get_overview(self, start_date: Optional[date] = None, end_date: Optional[date] = None) -> DashboardOverviewResponse:
         db = SessionLocal()
         try:
+            # Trigger Auto-Expiration on dashboard load to keep stats fresh
+            run_auto_expiration(db)
+
             # Default to today if no date range provided
             today = date.today()
             filter_start = start_date or today
