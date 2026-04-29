@@ -1,5 +1,3 @@
-import { getCanonicalImageUrl } from "./image";
-
 export interface ParsedOption {
   optionLabel: string;
   optionText: string;

@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Award,
   Calendar,
-  ChevronRight,
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";

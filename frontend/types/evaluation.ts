@@ -1,5 +1,3 @@
-import { Classification } from "./classification";
-
 export interface InterviewEvaluation {
   id: number;
   user_id: number;
