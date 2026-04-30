@@ -46,7 +46,7 @@ export function ResultTableView({
   isLoading,
   limit = 10,
   onRefresh,
-}: ResultTableViewProps & { onRefresh?: () => void }) {
+}: ResultTableViewProps & { onRefresh?: (silent?: boolean) => void }) {
   const [assignModal, setAssignModal] = useState<{
     isOpen: boolean;
     userId: number;
@@ -620,7 +620,7 @@ export function ResultTableView({
         selectedItems={assignModal.isBulk ? selectedItems : []}
         onSuccess={() => {
           setSelectedItems([]);
-          if (onRefresh) onRefresh();
+          if (onRefresh) onRefresh(true);
         }}
       />
     </div>

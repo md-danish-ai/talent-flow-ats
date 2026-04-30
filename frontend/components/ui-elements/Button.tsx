@@ -5,8 +5,7 @@ import { cn } from "@lib/utils";
 import { useRipple, RippleContainer } from "./Ripple";
 import { Loader2 } from "lucide-react";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
     | "primary"
     | "secondary"

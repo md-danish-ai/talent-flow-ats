@@ -227,7 +227,9 @@ export default function F2FResultsClient() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/admin/results/round-1/${item.candidate_id}`}>
+                          <Link
+                            href={`/admin/results/round-1/${item.candidate_id}`}
+                          >
                             <TableIconButton
                               iconColor="brand"
                               title="View Full Profile"

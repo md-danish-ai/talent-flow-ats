@@ -203,7 +203,9 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
               onClick={handleLogout}
               className={cn(
                 "w-full transition-all duration-300 group flex items-center text-slate-500 dark:text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20",
-                isCollapsed ? "justify-center h-10 p-0" : "justify-start px-3 h-11 gap-3 rounded-xl",
+                isCollapsed
+                  ? "justify-center h-10 p-0"
+                  : "justify-start px-3 h-11 gap-3 rounded-xl",
               )}
               title="Logout"
             >

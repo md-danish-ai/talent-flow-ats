@@ -13,7 +13,7 @@ interface ListingHeaderActionsProps {
   isBackgroundLoading?: boolean;
   totalItems: number;
   itemLabel?: string;
-  onRefresh: () => void;
+  onRefresh: (silent?: boolean) => void;
   onToggleFilter?: () => void;
   isFilterOpen?: boolean;
   activeFiltersCount?: number;
@@ -86,7 +86,7 @@ export function ListingIcons({
           size="rounded-icon"
           animate="scale"
           iconAnimation="rotate-180"
-          onClick={onRefresh}
+          onClick={() => onRefresh(false)}
           disabled={isLoading}
           aria-label="Refresh list"
         >

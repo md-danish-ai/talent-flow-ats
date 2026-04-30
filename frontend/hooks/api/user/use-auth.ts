@@ -9,12 +9,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import {
-  signIn,
-  signUp,
-  updateBasicInfo,
-  changePassword,
-} from "@lib/api/auth";
+import { signIn, signUp, updateBasicInfo, changePassword } from "@lib/api/auth";
 import { AuthResponse, SignUpResponse } from "@types";
 import { ApiError } from "@lib/api";
 import type {

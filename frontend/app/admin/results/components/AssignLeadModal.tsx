@@ -109,14 +109,12 @@ export function AssignLeadModal({
           project_lead_id: Number(selectedLead),
         });
       }
-      toast.success("Lead assigned successfully!");
       setSelectedLead("");
       if (!isBulk) void fetchAssignedLeads();
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       console.error("Assignment failed", err);
-      toast.error("Failed to assign lead.");
     } finally {
       setLoading(false);
     }
@@ -125,13 +123,10 @@ export function AssignLeadModal({
   const handleUnassign = async (evaluationId: number) => {
     try {
       await evaluationsApi.unassignLead(evaluationId);
-      toast.success("Lead unassigned.");
       void fetchAssignedLeads();
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof ApiError ? err.message : "Failed to unassign.";
-      toast.error(errorMessage);
+      console.error("Unassignment failed", err);
     }
   };
 
