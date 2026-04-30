@@ -2,12 +2,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Menu } from "lucide-react";
 import { NotificationDropdown } from "@components/ui-elements/NotificationDropdown";
 import { ProfileDropdown } from "@components/ui-elements/ProfileDropdown";
 import { Button } from "@components/ui-elements/Button";
-import { Typography } from "@components/ui-elements/Typography";
+import { Logo } from "@components/ui-elements/Logo";
 import { useSidebar } from "./sidebar";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
@@ -87,26 +86,10 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="relative overflow-hidden flex items-center gap-2 text-[var(--color-brand-primary)] px-3 py-1.5 rounded-xl transition-all hover:bg-brand-primary/5"
+              className="relative overflow-hidden block"
               onClick={createRipple}
             >
-              <div className="relative z-10 w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
-                <Image
-                  src="/bg.png"
-                  alt="ArcInterview"
-                  width={32}
-                  height={32}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <Typography
-                variant="body1"
-                weight="bold"
-                as="span"
-                className="relative z-10 text-foreground tracking-tight"
-              >
-                ArcInterview
-              </Typography>
+              <Logo size="md" className="px-2" />
               <RippleContainer
                 ripples={ripples}
                 onRemove={removeRipple}

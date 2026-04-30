@@ -5,7 +5,7 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { managementApi, evaluationsApi, ApiError } from "@lib/api";
+import { managementApi, evaluationsApi } from "@lib/api";
 import { UserCheck, ShieldAlert, X } from "lucide-react";
 import { toast } from "@lib/toast";
 import { Badge } from "@components/ui-elements/Badge";
