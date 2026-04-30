@@ -49,6 +49,17 @@ def insert_users():
         users = parse_sql_inserts(SQL_FILE_PATH)
         print(f"Found {len(users)} users in SQL file.")
         
+        # 1. Correct IDs dhundna (KPO aur FRESHER)
+        cur.execute("SELECT id FROM departments WHERE name ILIKE '%KPO%' LIMIT 1")
+        kpo_dept = cur.fetchone()
+        kpo_dept_id = kpo_dept[0] if kpo_dept else 1
+        
+        cur.execute("SELECT id FROM classifications WHERE type = 'exam_level' AND code = 'FRESHER' LIMIT 1")
+        fresher_level = cur.fetchone()
+        fresher_level_id = fresher_level[0] if fresher_level else 9
+
+        print(f"Using Department ID: {kpo_dept_id} (KPO), Level ID: {fresher_level_id} (FRESHER)")
+        
         base_date = datetime.now()
         
         for i, user in enumerate(users):
@@ -62,10 +73,11 @@ def insert_users():
             role = user[4]
             is_active = user[5].lower() == 'true'
             created_by = None 
-            department_id = int(user[9])
-            test_level_id = int(user[10])
             
-            # Use ON CONFLICT to update created_at if user already exists
+            # Override with KPO and FRESHER IDs
+            department_id = kpo_dept_id
+            test_level_id = fresher_level_id
+            
             query = """
                 INSERT INTO users (
                     username, mobile, email, password, role, is_active, 
@@ -74,26 +86,21 @@ def insert_users():
                 ON CONFLICT (mobile) DO UPDATE SET 
                     created_at = EXCLUDED.created_at,
                     updated_at = EXCLUDED.updated_at,
-                    email = EXCLUDED.email
+                    email = EXCLUDED.email,
+                    department_id = EXCLUDED.department_id,
+                    test_level_id = EXCLUDED.test_level_id
             """
             
-            try:
-                cur.execute(query, (
-                    username, mobile, email, password, role, is_active,
-                    created_by, current_date, current_date, department_id, test_level_id
-                ))
-            except Exception as e:
-                print(f"Skipping user {email} due to error: {e}")
-                conn.rollback() # Rollback the sub-transaction if needed, but in psycopg2 we need to be careful
-                # Actually, in psycopg2, a failed execute breaks the transaction.
-                # I'll use a savepoint or just handle it differently.
-                continue
+            cur.execute(query, (
+                username, mobile, email, password, role, is_active,
+                created_by, current_date, current_date, department_id, test_level_id
+            ))
             
             if (i + 1) % 10 == 0:
                 print(f"Processed {i + 1} users (Date: {current_date.split(' ')[0]})")
         
         conn.commit()
-        print("Success: Users processed with spread dates.")
+        print("Success: Users processed with KPO department and spread dates.")
         
     except Exception as e:
         conn.rollback()

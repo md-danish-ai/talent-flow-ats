@@ -1,4 +1,5 @@
 from datetime import date
+import random
 from typing import Any
 
 from fastapi import HTTPException
@@ -162,6 +163,11 @@ def delete_auto_assignment_rule(db: Session, rule_id: int) -> dict:
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
         )
 
+    # Set auto_rule_id to NULL in paper_assignments to avoid ForeignKeyViolation
+    db.query(PaperAssignment).filter(PaperAssignment.auto_rule_id == rule_id).update(
+        {PaperAssignment.auto_rule_id: None}, synchronize_session=False
+    )
+
     db.delete(rule)
     db.commit()
     return {"message": "Rule deleted successfully"}
@@ -196,69 +202,83 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     if not user_ids:
         return
 
-    # 2. Filter out users who ALREADY have an assignment for this date
-    existing_assignments = (
+    # 2. Identify users who ALREADY started the interview (Don't touch them)
+    started_assignments = (
         db.query(PaperAssignment.user_id)
         .filter(
             PaperAssignment.assigned_date == rule.assigned_date,
             PaperAssignment.user_id.in_(user_ids),
+            PaperAssignment.is_attempted == True,
         )
         .all()
     )
-    already_assigned_user_ids = {a.user_id for a in existing_assignments}
-    pending_user_ids = [uid for uid in user_ids if uid not in already_assigned_user_ids]
+    started_user_ids = {a.user_id for a in started_assignments}
+
+    # Potential users to assign or re-assign
+    assignable_user_ids = [uid for uid in user_ids if uid not in started_user_ids]
+    if not assignable_user_ids:
+        return
+
+    # 3. Delete existing AUTO assignments that HAVEN'T started yet
+    # This allows us to redistribute them across the updated paper pool
+    db.query(PaperAssignment).filter(
+        PaperAssignment.user_id.in_(assignable_user_ids),
+        PaperAssignment.assigned_date == rule.assigned_date,
+        PaperAssignment.is_attempted == False,
+        PaperAssignment.assignment_source == "AUTO"
+    ).delete(synchronize_session=False)
+
+    # CRITICAL: Flush deletions so the next count query doesn't include them
+    db.flush()
+
+    # Re-check for remaining assignments (e.g. MANUAL ones that we should respect)
+    remaining_assignments = (
+        db.query(PaperAssignment.user_id)
+        .filter(
+            PaperAssignment.assigned_date == rule.assigned_date,
+            PaperAssignment.user_id.in_(assignable_user_ids),
+        )
+        .all()
+    )
+    remaining_user_ids = {a.user_id for a in remaining_assignments}
+    
+    pending_user_ids = [uid for uid in assignable_user_ids if uid not in remaining_user_ids]
 
     if not pending_user_ids:
         return
 
-    # 3. Bulk Distribution Logic
+    # 4. Bulk Distribution Logic
     raw_paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
     if not raw_paper_ids:
+        db.commit() # Commit deletions if any
         return
 
-    # Filter only ACTIVE papers from the pool
-    active_papers = (
-        db.query(Paper.id)
-        .filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True))
-        .all()
-    )
-    paper_ids = [p.id for p in active_papers]
+    # Filter only ACTIVE papers while PRESERVING rule order and ensuring INT type
+    active_ids_query = db.query(Paper.id).filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True)).all()
+    active_paper_ids = {p.id for p in active_ids_query}
+    
+    # Ensure all IDs are treated as integers for robust matching
+    paper_ids = [int(pid) for pid in raw_paper_ids if int(pid) in active_paper_ids]
     
     if not paper_ids:
-        # Log or handle case where all papers in rule are inactive
-        print(f"WARNING: All papers in Auto-Rule {rule.id} are inactive. Skipping assignment.")
+        print(f"WARNING: No active papers found for Auto-Rule {rule.id}. Deletions committed.")
+        db.commit()
         return
 
-    # Fallback for assigned_by (Point 4)
-    # Check if the creator still exists, otherwise use the first available admin
+    # Fallback for assigned_by
     assigner_id = rule.created_by
     creator_exists = db.query(User.id).filter(User.id == assigner_id).first()
     if not creator_exists:
         fallback_admin = db.query(User.id).filter(User.role == "admin").first()
-        assigner_id = fallback_admin.id if fallback_admin else rule.created_by # Last resort: original ID
+        assigner_id = fallback_admin.id if fallback_admin else rule.created_by
 
-    # Get current counts for papers today
-    counts = (
-        db.query(
-            PaperAssignment.paper_id, func.count(PaperAssignment.id).label("total")
-        )
-        .filter(
-            PaperAssignment.assigned_date == rule.assigned_date,
-            PaperAssignment.paper_id.in_(paper_ids),
-        )
-        .group_by(PaperAssignment.paper_id)
-        .all()
-    )
-
-    count_map = {p_id: 0 for p_id in paper_ids}
-    for p_id, total in counts:
-        count_map[p_id] = total
+    # Sort pending users by ID for deterministic order
+    pending_user_ids.sort()
 
     new_assignments = []
-    for uid in pending_user_ids:
-        # Pick paper with minimum current/simulated assignments
-        # Use only active paper IDs for sorting
-        best_paper_id = sorted(paper_ids, key=lambda p: count_map.get(p, 0))[0]
+    for i, uid in enumerate(pending_user_ids):
+        # Strict Round-robin based on rule sequence
+        best_paper_id = paper_ids[i % len(paper_ids)]
         
         assignment = PaperAssignment(
             user_id=uid,
@@ -271,20 +291,15 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
             auto_rule_id=rule.id,
         )
         new_assignments.append(assignment)
-        
-        # Increment counter in-memory to ensure even distribution during this loop
-        count_map[best_paper_id] += 1
 
-    # 4. One Single Transaction for all assignments and status updates
     if new_assignments:
         db.add_all(new_assignments)
-        
-        # Update process_status for all assigned users
+        # Update status to ready
         db.query(User).filter(User.id.in_(pending_user_ids)).update(
             {User.process_status: "ready"}, synchronize_session=False
         )
-        
-        db.commit()
+    
+    db.commit()
 
 
 def assign_best_paper(

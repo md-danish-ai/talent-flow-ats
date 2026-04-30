@@ -150,10 +150,8 @@ export function RuleModal({
 
       if (editingRule) {
         await paperAssignmentsApi.updateAutoRule(editingRule.id, payload);
-        toast.success("Rule updated successfully");
       } else {
         await paperAssignmentsApi.createAutoRule(payload);
-        toast.success("Auto-assignment rule created");
       }
       onSuccess();
     } catch (error: unknown) {
