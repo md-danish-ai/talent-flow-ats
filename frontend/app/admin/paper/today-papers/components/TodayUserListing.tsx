@@ -210,7 +210,7 @@ export function TodayUserListing({
         <AssignPaperSetModal
           isOpen={isModalOpen}
           user={selectedUser}
-          onSuccess={() => void refresh(true)}
+          onSuccess={() => void refresh()}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
