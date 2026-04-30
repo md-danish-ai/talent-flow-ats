@@ -262,7 +262,7 @@ export function AttemptDetailClient({
       >
         <div className="space-y-4">
           <Link
-            href={`/admin/results/${userId}`}
+            href={`/admin/results/round-1/${userId}`}
             className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all mb-4 w-fit"
           >
             <div className="p-1.5 rounded-xl bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30">

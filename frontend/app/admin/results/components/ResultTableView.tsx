@@ -223,7 +223,7 @@ export function ResultTableView({
             items.map((item) => {
               const latest = item.latest_attempt;
               const interviewDate = latest?.submitted_at || latest?.started_at;
-              const detailHref = `/admin/results/${item.user_id}`;
+              const detailHref = `/admin/results/round-1/${item.user_id}`;
               const isSelectable =
                 latest?.status === "submitted" ||
                 latest?.status === "completed";

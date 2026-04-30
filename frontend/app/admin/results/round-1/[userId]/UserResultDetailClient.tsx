@@ -36,7 +36,7 @@ interface UserResultDetailClientProps {
 
 export function UserResultDetailClient({
   userId,
-  basePath = "/admin/results",
+  basePath = "/admin/results/round-1",
 }: UserResultDetailClientProps) {
   const [attemptData, setAttemptData] =
     useState<AdminUserAttemptsResponse | null>(null);
