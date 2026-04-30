@@ -136,7 +136,7 @@ export function NotificationsClient() {
                 size="rounded-icon"
                 animate="scale"
                 iconAnimation="rotate-180"
-                onClick={refresh}
+                onClick={() => refresh()}
                 disabled={isLoading}
               >
                 <div className={cn(isLoading && "animate-spin")}>

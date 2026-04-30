@@ -17,6 +17,7 @@ export const ENDPOINTS = {
     UPDATE_BASIC_INFO: (id: string | number) =>
       `/auth/update-user-profile/${id}`,
     USERS_BY_ROLE: (role: string) => `/auth/list-users-by-role/${role}`,
+    CHANGE_PASSWORD: "/auth/change-password",
   },
 
   CLASSIFICATIONS: {

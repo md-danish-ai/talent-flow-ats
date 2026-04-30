@@ -82,7 +82,7 @@ export function useListing<
   }, [fetchFn, onSuccess, onError, filterMapping, toastMessage]);
 
   const fetchItems = useCallback(
-    async (isRefresh = false, silent = false) => {
+    async (isRefresh = false) => {
       // Create current params string for comparison
       const currentParamsStr = JSON.stringify({
         currentPage,
@@ -198,8 +198,7 @@ export function useListing<
   }, [initialFilters]);
 
   // Derived state for active filter count
-  const activeFiltersCount = Object.keys(filters).filter((key) => {
-    const val = filters[key as keyof F];
+  const activeFiltersCount = Object.values(filters).filter((val) => {
     if (val === "all" || val === "" || val === undefined || val === null) {
       return false;
     }
@@ -226,8 +225,8 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: async (silent = false) => {
-      await fetchItems(true, silent);
+    refresh: async () => {
+      await fetchItems(true);
     },
     handleFilterChange,
     handleSingleFilterChange,

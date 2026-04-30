@@ -9,6 +9,8 @@ export interface CurrentUser {
   role: string;
   email?: string;
   mobile?: string;
+  department_id?: number | string;
+  test_level_id?: number | string;
   created_at?: string;
   is_submitted: boolean;
   is_interview_submitted: boolean;

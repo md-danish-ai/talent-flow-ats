@@ -101,8 +101,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
   }, [handleFilterChange]);
 
   const activeFiltersCount = useMemo(() => {
-    return Object.entries(filters).filter(([key, val]) => val && val !== "all")
-      .length;
+    return Object.values(filters).filter((val) => val && val !== "all").length;
   }, [filters]);
 
   const dynamicOptions = useMemo(
