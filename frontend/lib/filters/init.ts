@@ -99,6 +99,11 @@ filterRegistry.register("mcq-filters", [
 // 3. Reset Status Listing
 filterRegistry.register("reset-status-filters", [
   {
+    id: "date",
+    label: "Select Date Range",
+    type: "date-range",
+  },
+  {
     id: "search",
     label: "Search Candidates",
     type: "search",
@@ -230,10 +235,29 @@ filterRegistry.register("admin-filters", [
 // 6. Management -> Users
 filterRegistry.register("management-user-filters", [
   {
+    id: "date",
+    label: "Select Date Range",
+    type: "date-range",
+  },
+  {
     id: "search",
     label: "Quick Search",
     type: "search",
     placeholder: "Name, Mobile or Email...",
+  },
+  {
+    id: "status",
+    label: "Attempt Status",
+    type: "select",
+    placeholder: "Select Status",
+    options: [
+      { id: "all", label: "All Status" },
+      { id: "pending", label: "Pending Assignment" },
+      { id: "ready", label: "Ready" },
+      { id: "inprogress", label: "In Progress" },
+      { id: "submitted", label: "Submitted" },
+      { id: "expired", label: "Expired" },
+    ],
   },
   {
     id: "department_id",

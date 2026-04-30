@@ -138,6 +138,17 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [rangeFrom, setRangeFrom] = useState<Date | null>(null);
   const [rangeTo, setRangeTo] = useState<Date | null>(null);
 
+  // Sync state with prop changes (e.g. for resetting filters) without useEffect to avoid cascading renders
+  const [prevInitialLabel, setPrevInitialLabel] = useState(initialLabel);
+  if (initialLabel !== prevInitialLabel) {
+    setPrevInitialLabel(initialLabel);
+    setSelectedLabel(initialLabel);
+    if (initialLabel === "All Time") {
+      setRangeFrom(null);
+      setRangeTo(null);
+    }
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

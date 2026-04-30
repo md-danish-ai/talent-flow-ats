@@ -82,7 +82,7 @@ export function useListing<
   }, [fetchFn, onSuccess, onError, filterMapping, toastMessage]);
 
   const fetchItems = useCallback(
-    async (isRefresh = false) => {
+    async (isRefresh = false, silent = false) => {
       // Create current params string for comparison
       const currentParamsStr = JSON.stringify({
         currentPage,
@@ -203,6 +203,15 @@ export function useListing<
     if (val === "all" || val === "" || val === undefined || val === null) {
       return false;
     }
+    // Also ignore "All Time" date preset object
+    if (
+      typeof val === "object" &&
+      val !== null &&
+      "label" in val &&
+      (val as Record<string, unknown>).label === "All Time"
+    ) {
+      return false;
+    }
     return true;
   }).length;
 
@@ -217,8 +226,8 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: async () => {
-      await fetchItems(true);
+    refresh: async (silent = false) => {
+      await fetchItems(true, silent);
     },
     handleFilterChange,
     handleSingleFilterChange,

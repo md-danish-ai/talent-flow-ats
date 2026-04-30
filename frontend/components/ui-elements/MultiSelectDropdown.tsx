@@ -244,9 +244,7 @@ export function MultiSelectDropdown({
                 key={opt.id}
                 className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-primary/10 text-brand-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-sm border border-brand-primary/20 group/chip"
               >
-                <span className="leading-none">
-                  {opt.label}
-                </span>
+                <span className="leading-none">{opt.label}</span>
                 <X
                   className="h-3.5 w-3.5 cursor-pointer shrink-0 text-brand-primary/40 group-hover/chip:text-brand-primary transition-colors"
                   onClick={(e) => removeOption(e, opt.id)}

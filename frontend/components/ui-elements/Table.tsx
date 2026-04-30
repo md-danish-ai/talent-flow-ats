@@ -352,10 +352,9 @@ export const TableCollapsibleRowToggle = () => {
 };
 TableCollapsibleRowToggle.displayName = "TableCollapsibleRowToggle";
 
-export interface TableCollapsibleRowComponent
-  extends React.ForwardRefExoticComponent<
-    TableCollapsibleRowProps & React.RefAttributes<HTMLTableRowElement>
-  > {
+export interface TableCollapsibleRowComponent extends React.ForwardRefExoticComponent<
+  TableCollapsibleRowProps & React.RefAttributes<HTMLTableRowElement>
+> {
   Toggle: typeof TableCollapsibleRowToggle;
 }
 
@@ -461,6 +460,7 @@ const TableCollapsibleRowBase = React.forwardRef<
 );
 TableCollapsibleRowBase.displayName = "TableCollapsibleRowBase";
 
-export const TableCollapsibleRow = TableCollapsibleRowBase as TableCollapsibleRowComponent;
+export const TableCollapsibleRow =
+  TableCollapsibleRowBase as TableCollapsibleRowComponent;
 TableCollapsibleRow.Toggle = TableCollapsibleRowToggle;
 TableCollapsibleRow.displayName = "TableCollapsibleRow";

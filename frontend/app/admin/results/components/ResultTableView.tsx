@@ -77,7 +77,9 @@ export function ResultTableView({
   const allSelected =
     selectableItems.length > 0 &&
     selectableItems.every((item) =>
-      selectedItems.find((i) => i.attempt_id === item.latest_attempt?.attempt_id),
+      selectedItems.find(
+        (i) => i.attempt_id === item.latest_attempt?.attempt_id,
+      ),
     );
 
   const toggleSelectAll = () => {
@@ -95,7 +97,9 @@ export function ResultTableView({
         const newItems = selectableItems
           .filter(
             (item) =>
-              !prev.find((i) => i.attempt_id === item.latest_attempt?.attempt_id),
+              !prev.find(
+                (i) => i.attempt_id === item.latest_attempt?.attempt_id,
+              ),
           )
           .map((item) => ({
             user_id: item.user_id,
@@ -221,7 +225,8 @@ export function ResultTableView({
               const interviewDate = latest?.submitted_at || latest?.started_at;
               const detailHref = `/admin/results/${item.user_id}`;
               const isSelectable =
-                latest?.status === "submitted" || latest?.status === "completed";
+                latest?.status === "submitted" ||
+                latest?.status === "completed";
               return (
                 <TableCollapsibleRow
                   key={latest?.attempt_id ?? item.user_id}
