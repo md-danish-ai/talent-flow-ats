@@ -1,5 +1,4 @@
 from datetime import date
-import random
 from typing import Any
 
 from fastapi import HTTPException
@@ -208,7 +207,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         .filter(
             PaperAssignment.assigned_date == rule.assigned_date,
             PaperAssignment.user_id.in_(user_ids),
-            PaperAssignment.is_attempted == True,
+            PaperAssignment.is_attempted.is_(True),
         )
         .all()
     )
@@ -224,7 +223,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     db.query(PaperAssignment).filter(
         PaperAssignment.user_id.in_(assignable_user_ids),
         PaperAssignment.assigned_date == rule.assigned_date,
-        PaperAssignment.is_attempted == False,
+        PaperAssignment.is_attempted.is_(False),
         PaperAssignment.assignment_source == "AUTO"
     ).delete(synchronize_session=False)
 
