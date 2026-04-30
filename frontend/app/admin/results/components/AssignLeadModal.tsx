@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
-import { managementApi, evaluationsApi, ApiError } from "@lib/api";
+import { managementApi, evaluationsApi } from "@lib/api";
 import { UserCheck, ShieldAlert, X } from "lucide-react";
 import { toast } from "@lib/toast";
 import { Badge } from "@components/ui-elements/Badge";
@@ -15,9 +15,10 @@ import { EvaluationHistoryItem, UserListResponse } from "@types";
 interface AssignLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: number;
-  attemptId: number;
-  candidateName: string;
+  userId?: number;
+  attemptId?: number;
+  candidateName?: string;
+  selectedItems?: { user_id: number; attempt_id: number; name: string }[];
   onSuccess?: () => void;
 }
 
@@ -27,8 +28,16 @@ export function AssignLeadModal({
   userId,
   attemptId,
   candidateName,
+  selectedItems = [],
   onSuccess,
 }: AssignLeadModalProps) {
+  const isBulk = selectedItems.length > 0;
+  const displayUserId = isBulk ? selectedItems[0].user_id : userId;
+  const displayAttemptId = isBulk ? selectedItems[0].attempt_id : attemptId;
+  const displayCandidateName = isBulk
+    ? `${selectedItems.length} Candidates Selected`
+    : candidateName;
+
   const [leads, setLeads] = useState<UserListResponse[]>([]);
   const [selectedLead, setSelectedLead] = useState<string | number>("");
   const [loading, setLoading] = useState(false);
@@ -37,33 +46,46 @@ export function AssignLeadModal({
   );
   const [fetchingAssigned, setFetchingAssigned] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      void fetchLeads();
-      void fetchAssignedLeads();
-    }
-  }, [isOpen, userId, attemptId]);
-
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     try {
       const res = await managementApi.getProjectLeads({ limit: 100 });
-      setLeads(res.data || []); // managementApi.getProjectLeads returns PaginatedResponse, so .data is correct here
+      setLeads(res.data || []);
     } catch (err) {
       console.error("Failed to fetch leads", err);
     }
-  };
+  }, []);
 
-  const fetchAssignedLeads = async () => {
+  const fetchAssignedLeads = useCallback(async () => {
     try {
       setFetchingAssigned(true);
-      const res = await evaluationsApi.getEvaluationHistory(userId, attemptId);
+      if (!displayUserId || !displayAttemptId) return;
+      const res = await evaluationsApi.getEvaluationHistory(
+        displayUserId,
+        displayAttemptId,
+      );
       setAssignedLeads(res || []);
     } catch (err) {
       console.error("Failed to fetch assigned leads", err);
     } finally {
       setFetchingAssigned(false);
     }
-  };
+  }, [displayUserId, displayAttemptId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      void fetchLeads();
+      if (!isBulk && displayUserId && displayAttemptId) {
+        void fetchAssignedLeads();
+      }
+    }
+  }, [
+    isOpen,
+    displayUserId,
+    displayAttemptId,
+    isBulk,
+    fetchLeads,
+    fetchAssignedLeads,
+  ]);
 
   const handleAssign = async () => {
     if (!selectedLead) {
@@ -73,19 +95,26 @@ export function AssignLeadModal({
 
     try {
       setLoading(true);
-      await evaluationsApi.assignLead({
-        user_id: userId,
-        attempt_id: attemptId,
-        project_lead_id: Number(selectedLead),
-      });
-      toast.success("Lead assigned successfully!");
+      if (isBulk) {
+        await evaluationsApi.bulkAssignLead({
+          user_ids: selectedItems.map((i) => i.user_id),
+          attempt_ids: selectedItems.map((i) => i.attempt_id),
+          project_lead_id: Number(selectedLead),
+        });
+      } else {
+        if (!displayUserId || !displayAttemptId) return;
+        await evaluationsApi.assignLead({
+          user_id: displayUserId,
+          attempt_id: displayAttemptId,
+          project_lead_id: Number(selectedLead),
+        });
+      }
       setSelectedLead("");
-      void fetchAssignedLeads();
+      if (!isBulk) void fetchAssignedLeads();
       if (onSuccess) onSuccess();
-      onClose(); // Close the modal after success
+      onClose();
     } catch (err) {
       console.error("Assignment failed", err);
-      toast.error("Failed to assign lead.");
     } finally {
       setLoading(false);
     }
@@ -94,13 +123,10 @@ export function AssignLeadModal({
   const handleUnassign = async (evaluationId: number) => {
     try {
       await evaluationsApi.unassignLead(evaluationId);
-      toast.success("Lead unassigned.");
       void fetchAssignedLeads();
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof ApiError ? err.message : "Failed to unassign.";
-      toast.error(errorMessage);
+      console.error("Unassignment failed", err);
     }
   };
 
@@ -125,7 +151,7 @@ export function AssignLeadModal({
               variant="body3"
               className="font-black uppercase tracking-tight"
             >
-              {candidateName}
+              {displayCandidateName}
             </Typography>
           </div>
         </div>
@@ -157,55 +183,57 @@ export function AssignLeadModal({
           </Button>
         </div>
 
-        <div className="space-y-3">
-          <Typography
-            variant="body5"
-            className="font-bold text-muted-foreground uppercase"
-          >
-            Currently Assigned Interviewers
-          </Typography>
-          <div className="space-y-2">
-            {fetchingAssigned ? (
-              <div className="h-10 w-full bg-muted animate-pulse rounded-xl" />
-            ) : assignedLeads.length === 0 ? (
-              <div className="p-4 rounded-xl border border-dashed border-border flex items-center justify-center gap-2 text-muted-foreground italic text-sm">
-                <ShieldAlert size={16} />
-                No leads assigned yet
-              </div>
-            ) : (
-              assignedLeads.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm group"
-                >
-                  <div className="flex items-center gap-2">
-                    <Typography variant="body4" className="font-bold">
-                      {item.lead_name}
-                    </Typography>
-                    <Badge
-                      variant="outline"
-                      color={
-                        item.status === "completed" ? "success" : "warning"
-                      }
-                      className="text-[9px] font-black uppercase"
-                    >
-                      {item.status}
-                    </Badge>
-                  </div>
-                  {item.status !== "completed" && (
-                    <button
-                      onClick={() => handleUnassign(item.id)}
-                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Unassign Lead"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
+        {!isBulk && (
+          <div className="space-y-3">
+            <Typography
+              variant="body5"
+              className="font-bold text-muted-foreground uppercase"
+            >
+              Currently Assigned Interviewers
+            </Typography>
+            <div className="space-y-2">
+              {fetchingAssigned ? (
+                <div className="h-10 w-full bg-muted animate-pulse rounded-xl" />
+              ) : assignedLeads.length === 0 ? (
+                <div className="p-4 rounded-xl border border-dashed border-border flex items-center justify-center gap-2 text-muted-foreground italic text-sm">
+                  <ShieldAlert size={16} />
+                  No leads assigned yet
                 </div>
-              ))
-            )}
+              ) : (
+                assignedLeads.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Typography variant="body4" className="font-bold">
+                        {item.lead_name}
+                      </Typography>
+                      <Badge
+                        variant="outline"
+                        color={
+                          item.status === "completed" ? "success" : "warning"
+                        }
+                        className="text-[9px] font-black uppercase"
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+                    {item.status !== "completed" && (
+                      <button
+                        onClick={() => handleUnassign(item.id)}
+                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Unassign Lead"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Modal>
   );

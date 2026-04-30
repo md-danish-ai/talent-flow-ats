@@ -17,6 +17,7 @@ export const ENDPOINTS = {
     UPDATE_BASIC_INFO: (id: string | number) =>
       `/auth/update-user-profile/${id}`,
     USERS_BY_ROLE: (role: string) => `/auth/list-users-by-role/${role}`,
+    CHANGE_PASSWORD: "/auth/change-password",
   },
 
   CLASSIFICATIONS: {
@@ -61,8 +62,10 @@ export const ENDPOINTS = {
     GET: "/paper-assignments/get-all-assignments",
     ASSIGN: "/paper-assignments/assign-new-paper",
     AUTO_RULES: "/paper-assignments/get-auto-rules",
-    AUTO_RULE_BY_ID: (id: string | number) =>
-      `/paper-assignments/get-auto-rule-details/${id}`,
+    UPDATE_AUTO_RULE: (id: string | number) =>
+      `/paper-assignments/update-auto-rule/${id}`,
+    DELETE_AUTO_RULE: (id: string | number) =>
+      `/paper-assignments/remove-auto-rule/${id}`,
     MY_INTERVIEW_PAPER: "/paper-assignments/get-my-assigned-paper",
   },
 
@@ -127,6 +130,7 @@ export const ENDPOINTS = {
 
   EVALUATIONS: {
     ASSIGN: "/evaluations/assign-lead-evaluation",
+    BULK_ASSIGN: "/evaluations/bulk-assign-lead-evaluation",
     LEAD_TASKS: (leadId: string | number) =>
       `/evaluations/list-lead-tasks/${leadId}`,
     DETAIL: (evaluationId: string | number) =>

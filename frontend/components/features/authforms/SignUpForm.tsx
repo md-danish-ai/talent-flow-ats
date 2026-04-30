@@ -294,7 +294,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                   <span>Creating Account...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-white">
                   <span>Create Account</span>
                   <ChevronRight
                     size={18}

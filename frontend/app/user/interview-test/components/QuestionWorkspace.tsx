@@ -7,6 +7,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { QuestionInput } from "./QuestionInput";
+import { humanizeString } from "@lib/utils";
 import type { InterviewQuestion, InterviewSection, TimerZone } from "../types";
 
 interface QuestionWorkspaceProps {
@@ -44,7 +45,12 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
     <MainCard
       title="Question Workspace"
       action={
-        <Badge variant="outline" color="primary" className="whitespace-nowrap">
+        <Badge
+          variant="outline"
+          shape="square"
+          color="violet"
+          className="whitespace-nowrap"
+        >
           <Typography variant="span" className="sm:hidden">
             Q {questionIndex + 1}/{currentSection.questions.length}
           </Typography>
@@ -97,13 +103,14 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
               variant="body5"
               className="text-muted-foreground uppercase tracking-widest font-medium"
             >
-              Mode: {currentQuestion.type.replace(/_/g, " ")}
+              Mode: {humanizeString(currentQuestion.type)}
             </Typography>
           </div>
         </div>
         {currentQuestion.subjectName && (
           <Badge
             variant="outline"
+            shape="square"
             color="secondary"
             className="px-3 py-1 text-xs font-bold uppercase tracking-wider"
           >

@@ -27,7 +27,7 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { useListing } from "@hooks/useListing";
 import { managementApi } from "@lib/api/management";
-import { cn } from "@lib/utils";
+import { cn, formatDate } from "@lib/utils";
 import {
   EvaluationHistoryItem,
   PaginatedResponse,
@@ -223,11 +223,13 @@ export default function F2FResultsClient() {
                         <TableCell className="text-muted-foreground text-xs">
                           <div className="flex items-center gap-1">
                             <Calendar size={12} />
-                            {new Date(item.created_at).toLocaleDateString()}
+                            {formatDate(item.created_at)}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/admin/results/${item.candidate_id}`}>
+                          <Link
+                            href={`/admin/results/round-1/${item.candidate_id}`}
+                          >
                             <TableIconButton
                               iconColor="brand"
                               title="View Full Profile"

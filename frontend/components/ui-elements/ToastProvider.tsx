@@ -149,7 +149,7 @@ export function ToastProvider() {
   return createPortal(
     <div
       aria-live="polite"
-      className="fixed top-6 right-6 mt-[60px] z-[9999] flex flex-col gap-3 pointer-events-none"
+      className="fixed top-6 right-6 mt-[10px] z-[9999] flex flex-col gap-3 pointer-events-none"
     >
       {toasts.map((t) => (
         <div key={t.id} className="pointer-events-auto">

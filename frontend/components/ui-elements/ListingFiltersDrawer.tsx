@@ -35,7 +35,7 @@ export function ListingFiltersDrawer<F extends object>({
 
   return (
     <InlineDrawer isOpen={isOpen} onClose={onClose} title="Filters">
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8">
         {configs.map((config) => {
           // Merge static options with dynamic options if provided
           const mergedConfig: FilterConfig = {

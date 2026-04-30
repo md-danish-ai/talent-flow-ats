@@ -713,11 +713,14 @@ def finalize_attempt(
         if user_detail:
             user_detail.is_interview_submitted = True
 
-        # 6. Update PaperAssignment
-        today = datetime.utcnow().date()
+        # 6. Update PaperAssignment (matching the paper of this attempt)
         assignment = (
             db.query(PaperAssignment)
-            .filter(PaperAssignment.user_id == user_id, PaperAssignment.assigned_date == today)
+            .filter(
+                PaperAssignment.user_id == user_id,
+                PaperAssignment.paper_id == record.paper_id
+            )
+            .order_by(PaperAssignment.id.desc())
             .first()
         )
         if assignment:

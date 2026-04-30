@@ -203,6 +203,7 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
+            shape="square"
             color="secondary"
             className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >
@@ -210,6 +211,7 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
           </Badge>
           <Badge
             variant="outline"
+            shape="square"
             color="primary"
             className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >
@@ -217,6 +219,7 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
           </Badge>
           <Badge
             variant="outline"
+            shape="square"
             color="default"
             className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >

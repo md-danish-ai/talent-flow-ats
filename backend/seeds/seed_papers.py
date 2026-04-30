@@ -55,18 +55,26 @@ def seed_papers():
         available_subject_codes = list(questions_by_subject.keys())
         print(f"Grouping {len(all_questions)} questions into {len(available_subject_codes)} subjects.")
 
-        # 6. 4 पेपर्स बनाना
-        paper_names = ["KPO Standard Paper A", "KPO Standard Paper B", "KPO Standard Paper C", "KPO Standard Paper D"]
+        # 6. 4 पेपर्स बनाना (Subjects Distribution)
+        paper_data = [
+            {"name": "KPO Standard Paper A", "start": 0, "end": 4},
+            {"name": "KPO Standard Paper B", "start": 4, "end": 8},
+            {"name": "KPO Standard Paper C", "start": 8, "end": 12},
+            {"name": "KPO Standard Paper D", "start": 12, "end": 14},
+        ]
         
-        for name in paper_names:
+        for config in paper_data:
+            name = config["name"]
             selected_question_ids = []
             subject_config = []
             
-            # हर सब्जेक्ट से 4 सवाल चुनना
-            for i, sub_code in enumerate(available_subject_codes):
+            # Slice available subjects for this paper
+            paper_subjects = available_subject_codes[config["start"]:config["end"]]
+            
+            # हर सब्जेक्ट से 4 सवाल चुनna
+            for i, sub_code in enumerate(paper_subjects):
                 q_list = questions_by_subject[sub_code]
                 if len(q_list) < 4:
-                    print(f"Warning: Subject {sub_code} has only {len(q_list)} questions. Picking all.")
                     picked = q_list
                 else:
                     picked = random.sample(q_list, 4)
@@ -78,25 +86,25 @@ def seed_papers():
                     Classification.type == "subject",
                     Classification.code == sub_code
                 ).first()
-
+ 
                 if sub_obj:
                     subject_config.append({
                         "subject_id": sub_obj.id,
                         "is_selected": True,
                         "question_count": len(picked),
-                        "total_marks": len(picked) * 5, # 4 questions * 5 marks = 20
+                        "total_marks": len(picked) * 5,
                         "time_minutes": 15,
-                        "order": i
+                        "order": i + 1 # Order within this paper starts from 1
                     })
-
+ 
             new_paper = Paper(
                 paper_name=name,
-                description=f"Standard 20-marks per subject paper for KPO department. Total subjects: {len(subject_config)}.",
+                description=f"Standard 20-marks per subject paper for KPO department. Includes {len(subject_config)} subjects.",
                 department_id=kpo_dept.id,
                 test_level_id=fresher_level.id,
                 subject_ids_data=subject_config,
                 question_id=selected_question_ids,
-                total_time=str(len(subject_config) * 15), # 15 mins per subject
+                total_time=str(len(subject_config) * 15), 
                 total_marks=len(selected_question_ids) * 5,
                 is_active=True,
                 created_by=admin_id,
@@ -109,7 +117,7 @@ def seed_papers():
                 ]
             )
             db.add(new_paper)
-            print(f"✅ Created {name}: {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
+            print(f"✅ Created {name}: {len(subject_config)} subjects | {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
 
         db.commit()
         print("\n✨ Standardized Paper Seeding Complete!")

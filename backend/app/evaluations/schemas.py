@@ -23,6 +23,12 @@ class InterviewEvaluationCreate(BaseModel):
     attempt_id: int
     round_type: Optional[str] = "F2F"
 
+class BulkInterviewEvaluationCreate(BaseModel):
+    user_ids: list[int]
+    attempt_ids: list[int]
+    project_lead_id: int
+    round_type: Optional[str] = "F2F"
+
 class InterviewEvaluationUpdate(BaseModel):
     evaluation_data: Dict[str, str]
     overall_grade: str

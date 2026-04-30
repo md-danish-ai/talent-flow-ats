@@ -11,7 +11,12 @@ import {
   BadgeCheck,
   Target,
 } from "lucide-react";
-import { cn, getGradeConfig } from "@lib/utils";
+import {
+  cn,
+  getGradeConfig,
+  getTodayISODate,
+  getYesterdayISODate,
+} from "@lib/utils";
 import { motion } from "framer-motion";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -69,8 +74,7 @@ const itemVariants = {
 
 type ResultsFilters = {
   search: string;
-  startDate: string;
-  endDate: string;
+  date: { range?: { from?: string; to?: string }; label?: string } | null;
   status: string;
   completionReason: string;
   overallGrade: string;
@@ -104,7 +108,6 @@ export function UserResultsClient() {
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
     "paper",
-    "attempts",
     "marks",
     "grade",
     "status",
@@ -148,24 +151,38 @@ export function UserResultsClient() {
       fetchFn: resultsApi.getUserResults,
       initialFilters: {
         search: "",
-        startDate: "",
-        endDate: "",
+        date: { label: "All Time" },
         status: "all",
         completionReason: "all",
         overallGrade: "all",
         project_lead_id: "all",
       },
-      filterMapping: (f) => ({
-        search: f.search || undefined,
-        startDate: f.startDate || undefined,
-        endDate: f.endDate || undefined,
-        status: f.status !== "all" ? f.status : undefined,
-        completionReason:
-          f.completionReason !== "all" ? f.completionReason : undefined,
-        overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
-        project_lead_id:
-          f.project_lead_id !== "all" ? f.project_lead_id : undefined,
-      }),
+      filterMapping: (f) => {
+        let dateFrom = f.date?.range?.from;
+        let dateTo = f.date?.range?.to;
+
+        if (!dateFrom && !dateTo) {
+          if (f.date?.label === "Today") {
+            dateFrom = getTodayISODate();
+            dateTo = getTodayISODate();
+          } else if (f.date?.label === "Yesterday") {
+            dateFrom = getYesterdayISODate();
+            dateTo = getYesterdayISODate();
+          }
+        }
+
+        return {
+          search: f.search || undefined,
+          startDate: dateFrom || undefined,
+          endDate: dateTo || undefined,
+          status: f.status !== "all" ? f.status : undefined,
+          completionReason:
+            f.completionReason !== "all" ? f.completionReason : undefined,
+          overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
+          project_lead_id:
+            f.project_lead_id !== "all" ? f.project_lead_id : undefined,
+        };
+      },
       onSuccess: (res) => {
         if (res.summary_stats) setSummaryStatsData(res.summary_stats);
       },
@@ -186,8 +203,8 @@ export function UserResultsClient() {
         label: "Total Candidates",
         value: summaryStatsData?.total || 0,
         icon: <Users />,
-        color: "text-brand-primary",
-        bg: "bg-brand-primary/10",
+        color: "text-white",
+        bg: "bg-brand-primary",
         filter: { type: "reset", value: "all" },
       },
       {
@@ -416,17 +433,7 @@ export function UserResultsClient() {
           onClose={() => setIsFilterOpen(false)}
           registryKey="results-filters"
           filters={filters}
-          onFilterChange={(key, val) => {
-            if (key === "date") {
-              const dateVal = val as { range?: { from: string; to: string } };
-              handleFilterChange({
-                startDate: dateVal?.range?.from || "",
-                endDate: dateVal?.range?.to || "",
-              });
-            } else {
-              handleSingleFilterChange(key, val);
-            }
-          }}
+          onFilterChange={handleSingleFilterChange}
           onReset={resetFilters}
           isLoading={loading}
           dynamicOptions={{

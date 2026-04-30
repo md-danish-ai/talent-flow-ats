@@ -19,7 +19,10 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { cn } from "@lib/utils";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -126,35 +129,45 @@ export function PaperSetupClient() {
         }
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Papers"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
+
+            <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
             />
-            <Tooltip content="Create New Paper" side="top">
-              <Button
-                variant="action"
-                color="primary"
-                size="rounded-icon"
-                animate="scale"
-                iconAnimation="rotate-90"
-                onClick={() => {
-                  router.push("/admin/paper/setup/create");
-                }}
-              >
-                <Plus size={20} />
-              </Button>
-            </Tooltip>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+
+            <div className="flex items-center gap-2">
+              <ListingIcons
+                isLoading={isLoading}
+                isBackgroundLoading={isBackgroundLoading}
+                onRefresh={refresh}
+                onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+                isFilterOpen={isFilterOpen}
+                activeFiltersCount={activeFiltersCount}
+              />
+              <Tooltip content="Create New Paper" side="top">
+                <Button
+                  variant="action"
+                  color="primary"
+                  size="rounded-icon"
+                  animate="scale"
+                  iconAnimation="rotate-90"
+                  onClick={() => {
+                    router.push("/admin/paper/setup/create");
+                  }}
+                >
+                  <Plus size={20} />
+                </Button>
+              </Tooltip>
+            </div>
           </div>
         }
         className="mt-6 flex flex-col"

@@ -64,11 +64,7 @@ export function TypeTable({
               Sr. No.
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              {isSubject
-                ? "Subject Name"
-                : isLevel
-                  ? "Level Name"
-                  : "Result"}
+              {isSubject ? "Subject Name" : isLevel ? "Level Name" : "Result"}
             </TableHead>
             {isSubject && (
               <TableHead className="font-bold text-slate-500 text-xs uppercase">

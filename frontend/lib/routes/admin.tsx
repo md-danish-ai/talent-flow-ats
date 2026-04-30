@@ -51,8 +51,8 @@ export const ADMIN_ROUTES: NavSection[] = [
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
     items: [
-      { label: "Round 1 Results", href: "/admin/results" },
-      { label: "Round 2 (F2F) Results", href: "/admin/results/f2f" },
+      { label: "Round 1 Results", href: "/admin/results/round-1" },
+      { label: "Round 2 (F2F) Results", href: "/admin/results/round-2" },
     ],
   },
   {

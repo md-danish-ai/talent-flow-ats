@@ -14,6 +14,7 @@ import { questionsApi } from "@lib/api/questions";
 import { paperAssignmentsApi } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
 import { Loader2, User, Phone, Mail, BookOpen, Layers } from "lucide-react";
+import { getTodayISODate } from "@lib/utils";
 
 interface AssignPaperModalProps {
   isOpen: boolean;
@@ -174,7 +175,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayISODate();
 
       if (!testLevelId) {
         toast.error("Could not determine candidate's test level ID");

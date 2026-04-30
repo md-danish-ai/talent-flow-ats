@@ -9,6 +9,8 @@ import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
 import Image from "next/image";
 
+import { getCanonicalImageUrl } from "@lib/utils/image";
+
 interface ImageSubjectiveRowProps {
   row: Question;
   index: number;
@@ -32,17 +34,6 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
   onEdit,
   onImageClick,
 }) => {
-  const getCanonicalImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
-    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
-  };
-
   return (
     <TableCollapsibleRow
       key={row.id}

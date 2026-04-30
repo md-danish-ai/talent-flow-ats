@@ -10,6 +10,11 @@ import { Button } from "@components/ui-elements/Button";
 import { useSidebar } from "./SidebarProvider";
 import { NavItem } from "./NavItem";
 import { CollapsedNavItem } from "./CollapsedNavItem";
+import { useMe } from "@hooks/api/user/use-me";
+import { Avatar } from "@components/ui-elements/Avatar";
+import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { cn } from "@lib/utils";
 
 export const Sidebar = ({ role = "admin" }: { role?: string }) => {
   const pathname = usePathname();
@@ -21,6 +26,20 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
     closeMobileSidebar,
     expandSidebar,
   } = useSidebar();
+  const router = useRouter();
+  const { data: user } = useMe();
+
+  const handleLogout = () => {
+    // Clear all auth cookies
+    document.cookie =
+      "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie =
+      "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+
+    // Redirect to sign-in
+    router.push("/sign-in");
+  };
 
   const [expandedSection, setExpandedSection] = useState<string | null>(() => {
     const active = routes.find(
@@ -146,6 +165,61 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
               />
             ))}
           </nav>
+
+          {/* User Profile & Logout Section at Bottom */}
+          <div
+            className={cn(
+              "mt-auto border-t border-border/40 bg-slate-50/30 dark:bg-slate-900/10",
+              isCollapsed ? "p-2" : "p-4 space-y-3",
+            )}
+          >
+            {/* Profile Info */}
+            <div
+              className={cn(
+                "flex items-center gap-3",
+                isCollapsed ? "flex-col py-2" : "px-1",
+              )}
+            >
+              <Avatar
+                name={user?.username || "User"}
+                variant="brand"
+                size="sm"
+              />
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-950 dark:text-white truncate uppercase tracking-tight">
+                    {user?.username || "Loading..."}
+                  </p>
+                  <p className="text-[10px] font-bold text-brand-primary uppercase tracking-widest opacity-80">
+                    {role.replace("_", " ")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Logout Action */}
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className={cn(
+                "w-full transition-all duration-300 group flex items-center text-slate-500 dark:text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20",
+                isCollapsed
+                  ? "justify-center h-10 p-0"
+                  : "justify-start px-3 h-11 gap-3 rounded-xl",
+              )}
+              title="Logout"
+            >
+              <LogOut
+                size={18}
+                className="group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300 shrink-0"
+              />
+              {!isCollapsed && (
+                <span className="text-[11px] font-bold uppercase tracking-widest group-hover:translate-x-1 transition-transform duration-300">
+                  Sign Out
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
       </aside>
     </>

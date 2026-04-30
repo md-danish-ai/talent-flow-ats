@@ -16,6 +16,7 @@ from app.papers.models import Paper
 from app.departments.models import Department
 from app.classifications.models import Classification as Cls
 from app.utils.pagination import create_paginated_response, PaginationParams
+from app.utils.expiration import run_auto_expiration
 
 
 def signup_user(data):
@@ -113,13 +114,18 @@ def signin_user(data):
                     detail="The provided email and mobile number do not match.",
                 )
 
+        # 3. Auto-expiration Check (Before checking if active)
+        if user.role == "user":
+            run_auto_expiration(db_session)
+            db_session.refresh(user)
+
         if not user.is_active:
             raise HTTPException(
                 status_code=StatusCode.FORBIDDEN,
                 detail="Your account is currently inactive. Please contact the administrator.",
             )
 
-        # 3. Password Check
+        # 4. Password Check
         if not verify_password(data.password, user.password):
             raise HTTPException(
                 status_code=StatusCode.UNAUTHORIZED,
@@ -285,25 +291,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 return None
 
         # 1. AUTO-EXPIRATION LOGIC (Bulk update for expired tests)
-        today = dt_date.today()
-        # Users with assigned_date in past, who are 'ready' but haven't started/submitted
-        to_expire_query = (
-            db_session.query(User)
-            .join(PaperAssignment, User.id == PaperAssignment.user_id)
-            .filter(
-                User.role == "user",
-                User.is_active,
-                User.process_status == "ready",
-                PaperAssignment.assigned_date < today
-            )
-        )
-
-        for u in to_expire_query.all():
-            u.process_status = "expired"
-            u.is_active = False
-
-        if to_expire_query.count() > 0:
-            db_session.commit()
+        run_auto_expiration(db_session)
 
         # 2. DATA RETRIEVAL
         range_from = safe_parse_date(date_from)
@@ -571,6 +559,37 @@ def update_user_basic_info(user_id: int, data):
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
             detail=str(e),
+        )
+    finally:
+        db_session.close()
+
+
+def change_password(user_id: int, data):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+
+        if not verify_password(data.current_password, user.password):
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Incorrect current password.",
+            )
+
+        user.password = hash_password(data.new_password)
+        db_session.commit()
+        return {"message": "Password updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}",
         )
     finally:
         db_session.close()

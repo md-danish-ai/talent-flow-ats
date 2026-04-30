@@ -69,7 +69,12 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       {/* Backdrop Icon */}
-      <div className="absolute -top-1 -right-2 opacity-[0.04] dark:opacity-[0.07] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3">
+      <div
+        className={cn(
+          "absolute -top-1 -right-2 opacity-[0.08] dark:opacity-[0.12] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+          color === "text-white" ? "text-brand-primary" : color,
+        )}
+      >
         {React.isValidElement(icon)
           ? React.cloneElement(
               icon as React.ReactElement<{ size?: number | string }>,

@@ -52,7 +52,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           : icon}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative z-10">
         <Typography
           variant="h5"
           className="text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-80"
@@ -71,9 +71,24 @@ export const InsightCard: React.FC<InsightCardProps> = ({
       <div
         className={cn(
           "absolute inset-y-0 left-0 w-1.5 opacity-[0.2]",
-          color.replace("text-", "bg-"),
+          color.startsWith("text-") && color.replace("text-", "bg-"),
         )}
       />
+
+      {/* Backdrop Icon */}
+      <div
+        className={cn(
+          "absolute -top-1 -right-2 opacity-[0.08] dark:opacity-[0.12] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+          color,
+        )}
+      >
+        {React.isValidElement(icon)
+          ? React.cloneElement(
+              icon as React.ReactElement<{ size?: number | string }>,
+              { size: 100 },
+            )
+          : icon}
+      </div>
     </div>
   );
 };

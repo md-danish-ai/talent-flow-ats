@@ -68,7 +68,7 @@ export const ManageDepartmentModal: React.FC<ManageDepartmentModalProps> = ({
       title={editingDepartment ? "Edit Department" : "Add Department"}
       className="max-w-md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Typography variant="body4" weight="semibold">
             Department Name
@@ -87,7 +87,8 @@ export const ManageDepartmentModal: React.FC<ManageDepartmentModalProps> = ({
         <div className="flex justify-end gap-3 mt-6">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
+            color="primary"
             onClick={onClose}
             disabled={isLoading}
           >

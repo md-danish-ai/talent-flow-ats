@@ -2,7 +2,13 @@
 
 import { Eye, Phone } from "lucide-react";
 import Link from "next/link";
-import { cn, getGradeConfig } from "@lib/utils";
+import {
+  cn,
+  getGradeConfig,
+  formatLongDate,
+  formatLongTime,
+  humanizeString,
+} from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
@@ -20,10 +26,12 @@ import { Badge } from "@components/ui-elements/Badge";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
-import { UserPlus } from "lucide-react";
-import { AssignLeadModal } from "./AssignLeadModal";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Checkbox } from "@components/ui-elements/Checkbox";
+import { UserCheck, UserPlus } from "lucide-react";
+import { Button } from "@components/ui-elements/Button";
+import { AssignLeadModal } from "./AssignLeadModal";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -38,25 +46,108 @@ export function ResultTableView({
   isLoading,
   limit = 10,
   onRefresh,
-}: ResultTableViewProps & { onRefresh?: () => void }) {
+}: ResultTableViewProps & { onRefresh?: (silent?: boolean) => void }) {
   const [assignModal, setAssignModal] = useState<{
     isOpen: boolean;
     userId: number;
     attemptId: number;
     name: string;
+    isBulk?: boolean;
   }>({
     isOpen: false,
     userId: 0,
     attemptId: 0,
     name: "",
+    isBulk: false,
   });
+
+  const [selectedItems, setSelectedItems] = useState<
+    { user_id: number; attempt_id: number; name: string }[]
+  >([]);
+
+  // Only submitted results can be assigned a lead
+  const selectableItems = useMemo(() => {
+    return items.filter(
+      (item) =>
+        item.latest_attempt?.status === "submitted" ||
+        item.latest_attempt?.status === "completed",
+    );
+  }, [items]);
+
+  const allSelected =
+    selectableItems.length > 0 &&
+    selectableItems.every((item) =>
+      selectedItems.find(
+        (i) => i.attempt_id === item.latest_attempt?.attempt_id,
+      ),
+    );
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      // Remove current page's selectable items from selection
+      const selectableIds = selectableItems.map(
+        (i) => i.latest_attempt?.attempt_id,
+      );
+      setSelectedItems((prev) =>
+        prev.filter((i) => !selectableIds.includes(i.attempt_id)),
+      );
+    } else {
+      // Add current page's selectable items to selection (avoiding duplicates)
+      setSelectedItems((prev) => {
+        const newItems = selectableItems
+          .filter(
+            (item) =>
+              !prev.find(
+                (i) => i.attempt_id === item.latest_attempt?.attempt_id,
+              ),
+          )
+          .map((item) => ({
+            user_id: item.user_id,
+            attempt_id: item.latest_attempt!.attempt_id,
+            name: item.username,
+          }));
+        return [...prev, ...newItems];
+      });
+    }
+  };
+
+  const toggleSelectItem = (item: AdminUserResultListItem) => {
+    const latest = item.latest_attempt;
+    if (!latest) return;
+
+    setSelectedItems((prev) => {
+      const isSelected = prev.find((i) => i.attempt_id === latest.attempt_id);
+      if (isSelected) {
+        return prev.filter((i) => i.attempt_id !== latest.attempt_id);
+      } else {
+        return [
+          ...prev,
+          {
+            user_id: item.user_id,
+            attempt_id: latest.attempt_id,
+            name: item.username,
+          },
+        ];
+      }
+    });
+  };
 
   return (
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
         <TableHeader>
           <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
-            <TableHead className="w-[40px]"></TableHead>
+            <TableHead className="w-[100px]">
+              <div className="flex items-center gap-2">
+                <span className="w-[40px] shrink-0"></span>
+                <Checkbox
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  disabled={selectableItems.length === 0}
+                  className="w-4 h-4"
+                />
+              </div>
+            </TableHead>
             {visibleColumns.includes("candidate") && (
               <TableHead className="min-w-[200px] whitespace-nowrap font-bold text-foreground/80">
                 Candidate
@@ -132,7 +223,10 @@ export function ResultTableView({
             items.map((item) => {
               const latest = item.latest_attempt;
               const interviewDate = latest?.submitted_at || latest?.started_at;
-              const detailHref = `/admin/results/${item.user_id}`;
+              const detailHref = `/admin/results/round-1/${item.user_id}`;
+              const isSelectable =
+                latest?.status === "submitted" ||
+                latest?.status === "completed";
               return (
                 <TableCollapsibleRow
                   key={latest?.attempt_id ?? item.user_id}
@@ -143,7 +237,29 @@ export function ResultTableView({
                       attempts_count={item.attempts_count}
                     />
                   }
+                  showToggleCell={false}
                 >
+                  <TableCell className="w-[100px]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-[40px] shrink-0 flex justify-center">
+                        <TableCollapsibleRow.Toggle />
+                      </div>
+                      <Checkbox
+                        checked={
+                          !!selectedItems.find(
+                            (i) => i.attempt_id === latest?.attempt_id,
+                          )
+                        }
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleSelectItem(item);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={!isSelectable}
+                        className="w-4 h-4"
+                      />
+                    </div>
+                  </TableCell>
                   {visibleColumns.includes("candidate") && (
                     <TableCell className="align-middle py-3">
                       <div className="flex items-center gap-3">
@@ -310,7 +426,9 @@ export function ResultTableView({
                         // animate="pulse"
                         className="font-bold uppercase tracking-wider"
                       >
-                        {latest?.status?.replace("_", " ") || "NOT STARTED"}
+                        {latest?.status
+                          ? humanizeString(latest.status)
+                          : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}
@@ -401,24 +519,10 @@ export function ResultTableView({
                       {interviewDate ? (
                         <div className="flex flex-col">
                           <span className="font-semibold text-slate-700 dark:text-slate-300 text-[13px]">
-                            {new Date(interviewDate).toLocaleDateString(
-                              "en-GB",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )}
+                            {formatLongDate(interviewDate)}
                           </span>
                           <span className="text-[11px] text-muted-foreground/80 font-medium">
-                            {new Date(interviewDate).toLocaleTimeString(
-                              "en-US",
-                              {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                              },
-                            )}
+                            {formatLongTime(interviewDate)}
                           </span>
                         </div>
                       ) : (
@@ -468,13 +572,56 @@ export function ResultTableView({
         </TableBody>
       </Table>
 
+      {selectedItems.length > 0 && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-slate-900 dark:bg-slate-800 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-xl">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Bulk Actions
+              </span>
+              <span className="text-sm font-bold">
+                {selectedItems.length} Candidates Selected
+              </span>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <Button
+              color="primary"
+              size="sm"
+              className="rounded-xl px-4 py-2 flex items-center gap-2"
+              onClick={() =>
+                setAssignModal({
+                  isOpen: true,
+                  userId: 0,
+                  attemptId: 0,
+                  name: "",
+                  isBulk: true,
+                })
+              }
+            >
+              <UserCheck size={16} />
+              Assign Project Lead
+            </Button>
+            <button
+              onClick={() => setSelectedItems([])}
+              className="text-xs font-bold text-slate-400 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <AssignLeadModal
         isOpen={assignModal.isOpen}
         onClose={() => setAssignModal((prev) => ({ ...prev, isOpen: false }))}
         userId={assignModal.userId}
         attemptId={assignModal.attemptId}
         candidateName={assignModal.name}
-        onSuccess={onRefresh}
+        selectedItems={assignModal.isBulk ? selectedItems : []}
+        onSuccess={() => {
+          setSelectedItems([]);
+          if (onRefresh) onRefresh(true);
+        }}
       />
     </div>
   );

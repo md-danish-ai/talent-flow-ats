@@ -104,7 +104,8 @@ app.include_router(departments_router)
 app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
-app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
+app.include_router(evaluations_router,
+                   prefix="/evaluations", tags=["Evaluations"])
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

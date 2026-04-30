@@ -45,7 +45,11 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
         ? "Level"
         : "Interview Result";
   const nameLabel =
-    type === "subject" ? "Name" : type === "exam_level" ? "Level Name" : "Verdict Name";
+    type === "subject"
+      ? "Name"
+      : type === "exam_level"
+        ? "Level Name"
+        : "Verdict Name";
   const placeholder =
     type === "subject"
       ? "e.g. Technical"

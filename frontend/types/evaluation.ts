@@ -1,5 +1,3 @@
-import { Classification } from "./classification";
-
 export interface InterviewEvaluation {
   id: number;
   user_id: number;
@@ -34,6 +32,13 @@ export interface AssignLeadPayload {
   user_id: number;
   project_lead_id: number;
   attempt_id: number;
+  round_type?: string;
+}
+
+export interface BulkAssignLeadPayload {
+  user_ids: number[];
+  attempt_ids: number[];
+  project_lead_id: number;
   round_type?: string;
 }
 

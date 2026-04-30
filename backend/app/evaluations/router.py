@@ -39,6 +39,23 @@ def assign_interviews(payload: schemas.InterviewEvaluationCreate, db: Session = 
     except Exception as e:
         return ResponseHandler.error(message=str(e))
 
+@router.post("/bulk-assign-lead-evaluation", status_code=StatusCode.CREATED)
+def bulk_assign_interviews(payload: schemas.BulkInterviewEvaluationCreate, db: Session = Depends(get_db)):
+    try:
+        evaluations = repository.bulk_create_evaluations(
+            db, 
+            payload.user_ids, 
+            payload.attempt_ids, 
+            payload.project_lead_id, 
+            payload.round_type
+        )
+        return ResponseHandler.success(
+            data={"count": len(evaluations)},
+            message=f"Successfully assigned {len(evaluations)} interviews."
+        )
+    except Exception as e:
+        return ResponseHandler.error(message=str(e))
+
 @router.get("/list-lead-tasks/{lead_id}")
 def get_lead_tasks(
     lead_id: int, 

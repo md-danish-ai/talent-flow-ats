@@ -3,6 +3,7 @@
 import { User, Calendar, Clock, CheckCircle, History } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { motion } from "framer-motion";
+import { formatDate, formatTime, parseUTCDate } from "@lib/utils";
 
 interface ProfileSummaryStripProps {
   username: string;
@@ -19,30 +20,10 @@ export const ProfileSummaryStrip = ({
   startedAt,
   submittedAt,
 }: ProfileSummaryStripProps) => {
-  const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
-
-  const formatDate = (d: string) =>
-    parseUTC(d)
-      .toLocaleDateString([], {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-      .replace(/,/g, "");
-
-  const formatTime = (d: string) =>
-    parseUTC(d)
-      .toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-      .toLowerCase();
-
   const calculateDuration = (start: string, end?: string | null) => {
     if (!start || !end) return "N/A";
-    const s = parseUTC(start).getTime();
-    const e = parseUTC(end).getTime();
+    const s = parseUTCDate(start).getTime();
+    const e = parseUTCDate(end).getTime();
     const diff = Math.max(0, e - s);
     const mins = Math.floor(diff / 60000);
     const secs = Math.floor((diff % 60000) / 1000);

@@ -30,16 +30,10 @@ export function InterviewStatusCard({
 
   useEffect(() => {
     const activeElement = document.getElementById(`section-${sectionIndex}`);
-    if (activeElement && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const elementTop = activeElement.offsetTop;
-      const elementHeight = activeElement.offsetHeight;
-      const containerHeight = container.offsetHeight;
-
-      // Scroll so that active element is positioned nicely
-      container.scrollTo({
-        top: elementTop - containerHeight / 2 + elementHeight / 2,
+    if (activeElement) {
+      activeElement.scrollIntoView({
         behavior: "smooth",
+        block: "nearest",
       });
     }
   }, [sectionIndex]);
@@ -76,7 +70,7 @@ export function InterviewStatusCard({
               key={section.id}
               id={`section-${index}`}
               className={cn(
-                "group flex flex-col gap-2 rounded-xl border transition-all duration-300",
+                "group flex flex-col gap-2 rounded-lg border transition-all duration-300",
                 isCurrent
                   ? timerZone === "danger"
                     ? "border-red-500 bg-red-500/10 shadow-sm animate-[pulse_0.8s_infinite] p-3"
@@ -84,7 +78,7 @@ export function InterviewStatusCard({
                       ? "border-yellow-500 bg-yellow-500/10 shadow-sm animate-pulse p-3"
                       : "border-brand-primary bg-brand-primary/10 shadow-sm p-3"
                   : isLocked
-                    ? "border-emerald-500/30 bg-emerald-500/5 opacity-80 p-2.5"
+                    ? "border-emerald-500/50 bg-emerald-500/10 p-2.5"
                     : "border-border bg-muted/5 opacity-60 p-2.5",
               )}
             >
@@ -109,7 +103,8 @@ export function InterviewStatusCard({
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       variant="outline"
-                      color={isCurrent ? "primary" : "default"}
+                      shape="square"
+                      color={isLocked ? "success" : "warning"}
                       icon={<Clock3 size={11} />}
                       className={cn(
                         "text-[10px] py-0.5 px-2 font-bold",
@@ -122,7 +117,8 @@ export function InterviewStatusCard({
                     {isCurrent && (
                       <Badge
                         variant="fill"
-                        color="warning"
+                        shape="square"
+                        color="violet"
                         className="text-[10px] py-0.5 px-2 font-black shadow-sm"
                       >
                         QUESTION {questionIndex + 1}/{section.questions.length}
@@ -135,6 +131,7 @@ export function InterviewStatusCard({
                   {isCurrent && (
                     <Badge
                       color="primary"
+                      shape="square"
                       className="animate-pulse shadow-brand-200"
                     >
                       ACTIVE
@@ -143,6 +140,7 @@ export function InterviewStatusCard({
                   {isLocked && (
                     <Badge
                       variant="outline"
+                      shape="square"
                       color="success"
                       icon={<CheckCircle2 size={12} />}
                       className="bg-emerald-50"
@@ -153,7 +151,8 @@ export function InterviewStatusCard({
                   {!isCurrent && !isLocked && (
                     <Badge
                       variant="outline"
-                      color="default"
+                      shape="square"
+                      color="secondary"
                       icon={<Lock size={12} />}
                       className="bg-background"
                     >

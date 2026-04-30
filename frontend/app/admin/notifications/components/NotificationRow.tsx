@@ -6,6 +6,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
 import { type NotificationItem } from "@types";
+import { formatDateShort, formatTime, parseUTCDate } from "@lib/utils";
 import { DuplicateUserCards } from "./DuplicateUserCards";
 import { MatchBreakdownAnalysis } from "./MatchBreakdownAnalysis";
 
@@ -16,7 +17,6 @@ interface NotificationRowProps {
   isExpanded: boolean;
   onSelect: (id: number) => void;
   onExpand: (id: number) => void;
-  getDateStr: (dateStr: string) => Date;
 }
 
 export const NotificationRow = React.memo<NotificationRowProps>(
@@ -27,7 +27,6 @@ export const NotificationRow = React.memo<NotificationRowProps>(
     isExpanded,
     onSelect,
     onExpand,
-    getDateStr,
   }) => {
     return (
       <TableCollapsibleRow
@@ -106,8 +105,8 @@ export const NotificationRow = React.memo<NotificationRowProps>(
         </TableCell>
         <TableCell>
           <Typography variant="body5" className="text-muted-foreground">
-            {getDateStr(notif.created_at).toLocaleDateString()}{" "}
-            {getDateStr(notif.created_at).toLocaleTimeString()}
+            {formatDateShort(parseUTCDate(notif.created_at))}{" "}
+            {formatTime(parseUTCDate(notif.created_at))}
           </Typography>
         </TableCell>
         <TableCell>

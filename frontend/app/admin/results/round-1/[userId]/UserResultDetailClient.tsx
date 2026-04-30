@@ -15,18 +15,19 @@ import Link from "next/link";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
-import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import { resultsApi } from "@lib/api/results";
+import { resultsApi, ApiError } from "@lib/api";
 import {
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
 } from "@types";
+import { formatDate } from "@lib/utils";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 import { Tabs } from "@components/ui-elements/Tabs";
 import { Round2History } from "./Round2History";
+import { UserX, RefreshCcw } from "lucide-react";
 
 interface UserResultDetailClientProps {
   userId: number;
@@ -35,12 +36,15 @@ interface UserResultDetailClientProps {
 
 export function UserResultDetailClient({
   userId,
-  basePath = "/admin/results",
+  basePath = "/admin/results/round-1",
 }: UserResultDetailClientProps) {
   const [attemptData, setAttemptData] =
     useState<AdminUserAttemptsResponse | null>(null);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    status?: number;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState("round1");
 
   useEffect(() => {
@@ -50,8 +54,12 @@ export function UserResultDetailClient({
         setError(null);
         const result = await resultsApi.getUserAttempts(userId);
         setAttemptData(result);
-      } catch {
-        setError("Failed to load user attempts.");
+      } catch (err: unknown) {
+        if (err instanceof ApiError) {
+          setError({ message: err.message, status: err.status });
+        } else {
+          setError({ message: "An unexpected error occurred." });
+        }
       } finally {
         setLoadingAttempts(false);
       }
@@ -90,26 +98,41 @@ export function UserResultDetailClient({
 
   if (error || !attemptData) {
     return (
-      <PageContainer className="py-8">
-        <Alert
-          variant="error"
-          title="Error Loading Data"
-          description={
-            <div className="flex flex-col gap-3">
-              <Typography variant="body5">
-                {error || "Something went wrong while fetching user attempts."}
-              </Typography>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-fit"
-                onClick={() => window.location.reload()}
-              >
-                Retry Loading
-              </Button>
-            </div>
+      <PageContainer className="py-20 max-w-4xl mx-auto">
+        <EmptyState
+          icon={UserX}
+          title={
+            error?.status === 404 ? "Candidate Not Found" : "Error Loading Data"
           }
-        />
+          description={
+            error?.message ||
+            "Something went wrong while fetching user attempts."
+          }
+          className="shadow-2xl border-rose-500/10"
+        >
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              color="primary"
+              onClick={() => window.location.reload()}
+              className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+              startIcon={<RefreshCcw size={18} />}
+              animate="scale"
+            >
+              Retry Loading
+            </Button>
+            <Link href={basePath}>
+              <Button
+                variant="outline"
+                color="primary"
+                className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+                animate="scale"
+              >
+                Go Back to Results
+              </Button>
+            </Link>
+          </div>
+        </EmptyState>
       </PageContainer>
     );
   }
@@ -119,7 +142,7 @@ export function UserResultDetailClient({
     (a) => a.status === "submitted" || a.status === "auto_submitted",
   ).length;
   const lastAttemptDate = attemptData.attempts[0]?.started_at
-    ? new Date(attemptData.attempts[0].started_at).toLocaleDateString()
+    ? formatDate(attemptData.attempts[0].started_at)
     : "N/A";
 
   const stats = [

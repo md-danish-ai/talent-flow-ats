@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@lib/utils";
+import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 import {
   Table,
   TableBody,
@@ -48,6 +48,7 @@ type UserListingFilters = {
   department: string;
   level: string;
   status: string;
+  date: { range?: { from?: string; to?: string }; label?: string } | null;
 };
 
 export function ResetUserListing({ initialData }: ResetUserListingProps) {
@@ -83,15 +84,33 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
       department: "all",
       level: "all",
       status: "all",
+      date: { label: "All Time" },
     },
     initialData: initialData?.data,
     initialTotalItems: initialData?.pagination?.total_records,
-    filterMapping: (f) => ({
-      search: f.search || undefined,
-      department_name: f.department !== "all" ? f.department : undefined,
-      test_level_name: f.level !== "all" ? f.level : undefined,
-      status: f.status !== "all" ? f.status : undefined,
-    }),
+    filterMapping: (f) => {
+      let dateFrom = f.date?.range?.from;
+      let dateTo = f.date?.range?.to;
+
+      if (!dateFrom && !dateTo) {
+        if (f.date?.label === "Today") {
+          dateFrom = getTodayISODate();
+          dateTo = getTodayISODate();
+        } else if (f.date?.label === "Yesterday") {
+          dateFrom = getYesterdayISODate();
+          dateTo = getYesterdayISODate();
+        }
+      }
+
+      return {
+        search: f.search || undefined,
+        department_name: f.department !== "all" ? f.department : undefined,
+        test_level_name: f.level !== "all" ? f.level : undefined,
+        status: f.status !== "all" ? f.status : undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+      };
+    },
     toastMessage: "Candidate list refreshed successfully",
   });
 
@@ -159,14 +178,11 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                       <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
                         Contact Info
                       </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                        Department
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                        Target Profile
                       </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                        Test Level
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                        Status
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                        Attempt Status
                       </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
                         Action
@@ -194,11 +210,38 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                           </TableCell>
                           <TableCell className="align-middle py-3">
                             <div className="flex items-center gap-3">
-                              <Avatar
-                                name={row.username}
-                                variant="brand"
-                                size="sm"
-                              />
+                              <div className="relative">
+                                <Avatar
+                                  name={row.username}
+                                  variant="brand"
+                                  size="sm"
+                                />
+                                {/* Status Dot Indicators */}
+                                {(row.process_status === "submitted" ||
+                                  row.assignment?.is_attempted) && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                )}
+                                {(row.process_status === "inprogress" ||
+                                  row.assignment?.has_started) && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse shadow-sm" />
+                                )}
+                                {row.process_status === "ready" &&
+                                  !row.assignment?.has_started && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                  )}
+                                {row.process_status === "expired" && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                )}
+                                {(!row.process_status ||
+                                  row.process_status === "pending" ||
+                                  !row.assignment?.is_assigned) &&
+                                  row.process_status !== "submitted" &&
+                                  row.process_status !== "inprogress" &&
+                                  row.process_status !== "ready" &&
+                                  row.process_status !== "expired" && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                  )}
+                              </div>
                               <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
                                   <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
@@ -249,33 +292,23 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                             </CopyableText>
                           </TableCell>
                           <TableCell className="align-middle py-3 text-center">
-                            {row.department_name ||
-                            row.assignment?.department_name ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                                {row.department_name ||
+                                  row.assignment?.department_name ||
+                                  "N/A"}
+                              </span>
                               <Badge
-                                color="secondary"
-                                animate="pulse"
+                                color="primary"
                                 shape="square"
                                 variant="outline"
+                                className="text-[9px] font-bold py-0 h-4 px-1"
                               >
-                                {row.department_name ||
-                                  row.assignment?.department_name}
+                                {row.assignment?.test_level_name ||
+                                  row.test_level_name ||
+                                  "N/A"}
                               </Badge>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">
-                                No Dept
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="align-middle py-3 text-center">
-                            <Badge
-                              variant="outline"
-                              shape="square"
-                              color="primary"
-                            >
-                              {row.assignment?.test_level_name ||
-                                row.test_level_name ||
-                                "N/A"}
-                            </Badge>
+                            </div>
                           </TableCell>
                           <TableCell className="text-center align-middle py-3">
                             <div className="flex flex-col items-center justify-center gap-1">

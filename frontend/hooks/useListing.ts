@@ -82,7 +82,7 @@ export function useListing<
   }, [fetchFn, onSuccess, onError, filterMapping, toastMessage]);
 
   const fetchItems = useCallback(
-    async (isRefresh = false) => {
+    async (isRefresh = false, showToast = isRefresh) => {
       // Create current params string for comparison
       const currentParamsStr = JSON.stringify({
         currentPage,
@@ -145,7 +145,7 @@ export function useListing<
 
         if (onSuccessRef.current) onSuccessRef.current(response);
 
-        if (isRefresh) {
+        if (showToast) {
           toast.success(toastMessageRef.current, { title: "Data Updated" });
         }
 
@@ -198,9 +198,17 @@ export function useListing<
   }, [initialFilters]);
 
   // Derived state for active filter count
-  const activeFiltersCount = Object.keys(filters).filter((key) => {
-    const val = filters[key as keyof F];
+  const activeFiltersCount = Object.values(filters).filter((val) => {
     if (val === "all" || val === "" || val === undefined || val === null) {
+      return false;
+    }
+    // Also ignore "All Time" date preset object
+    if (
+      typeof val === "object" &&
+      val !== null &&
+      "label" in val &&
+      (val as Record<string, unknown>).label === "All Time"
+    ) {
       return false;
     }
     return true;
@@ -217,8 +225,10 @@ export function useListing<
     filters,
     activeFiltersCount,
     fetchItems,
-    refresh: async () => {
-      await fetchItems(true);
+    refresh: async (silent = true) => {
+      // Always pass true to fetchItems to bypass cache/param-check and force a refresh
+      // We'll handle the toast visibility inside fetchItems or here
+      await fetchItems(true, !silent);
     },
     handleFilterChange,
     handleSingleFilterChange,

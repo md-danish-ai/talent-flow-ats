@@ -8,6 +8,7 @@ import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
 import Image from "next/image";
+import { getCanonicalImageUrl, formatDate } from "@lib/utils";
 
 interface ImageMCQRowProps {
   row: Question;
@@ -32,17 +33,6 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
   onEdit,
   onImageClick,
 }) => {
-  const getCanonicalImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
-    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
-  };
-
   return (
     <TableCollapsibleRow
       key={row.id}
@@ -151,13 +141,7 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
       )}
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+          {row.created_at ? formatDate(row.created_at) : "N/A"}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (

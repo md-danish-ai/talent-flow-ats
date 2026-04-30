@@ -113,3 +113,14 @@ class CreateAdminSchema(BaseModel):
         if not re.match(r"^[0-9]{10}$", value):
             raise ValueError("Mobile must be 10 digits")
         return value
+
+
+class ChangePasswordSchema(BaseModel):
+    current_password: str
+    new_password: str
+
+    @validator("new_password")
+    def validate_password(cls, value):
+        if not re.match(r"^[0-9]{10}$", value):
+            raise ValueError("New password must be 10 digits")
+        return value
