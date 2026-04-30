@@ -22,15 +22,19 @@ import { Question, Classification } from "@types";
 import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
-import EditQuestionModal from "./component/EditQuestionModal";
-import { AddQuestionModal } from "./component/AddQuestionModal";
+import { SubjectiveQuestionForm } from "@components/features/questions/SubjectiveQuestionForm";
+import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { SubjectiveRow } from "./component/SubjectiveRow";
-import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import EditQuestionModal from "./component/EditQuestionModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type SubjectiveListingFilters = {
   search: string;
@@ -160,9 +164,9 @@ export function SubjectiveClient() {
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <ListChecks size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <ListChecks size={18} />
             </div>
             Subjective Questions
           </div>
@@ -171,15 +175,11 @@ export function SubjectiveClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Questions"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
@@ -188,31 +188,39 @@ export function SubjectiveClient() {
               onToggle={toggleColumn}
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isBulkUploadOpen}
-              animate="scale"
-              onClick={() => setIsBulkUploadOpen(true)}
-              title="Bulk Upload"
-            >
-              <Upload size={18} />
-            </Button>
-            <div className="h-6 w-px bg-border mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Question
-            </Button>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <ListingIcons
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <Tooltip content="Bulk Upload" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isBulkUploadOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload size={18} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Add Question" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -226,8 +234,8 @@ export function SubjectiveClient() {
             isLoading={isLoading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-muted/30">
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
@@ -333,27 +341,25 @@ export function SubjectiveClient() {
       </MainCard>
 
       {/* Modals */}
-      <AddQuestionModal
+      <QuestionCreationModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
+        title="Subjective Question Management"
+        questionType={QUESTION_TYPES.SUBJECTIVE}
         onSuccess={() => void refresh()}
+        renderManualForm={(onSuccess) => (
+          <SubjectiveQuestionForm onSuccess={onSuccess} />
+        )}
       />
 
       {editingQuestion && (
         <EditQuestionModal
-          question={editingQuestion}
           isOpen={true}
           onClose={() => setEditingQuestion(null)}
+          question={editingQuestion}
           onSuccess={() => void refresh()}
         />
       )}
-
-      <BulkUploadModal
-        isOpen={isBulkUploadOpen}
-        onClose={() => setIsBulkUploadOpen(false)}
-        onSuccess={() => void refresh()}
-        questionType={QUESTION_TYPES.SUBJECTIVE}
-      />
     </PageContainer>
   );
 }

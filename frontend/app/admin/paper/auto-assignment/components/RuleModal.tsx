@@ -20,6 +20,7 @@ import { PaperSetup } from "@types";
 import { toast } from "@lib/toast";
 import { Loader2 } from "lucide-react";
 import { Alert } from "@components/ui-elements/Alert";
+import { getTodayISODate } from "@lib/utils";
 
 interface RuleModalProps {
   isOpen: boolean;
@@ -48,7 +49,7 @@ export function RuleModal({
   const [formData, setFormData] = useState({
     department_id: "",
     test_level_id: "",
-    assigned_date: new Date().toISOString().split("T")[0],
+    assigned_date: getTodayISODate(),
     paper_ids: [] as number[],
     is_active: true,
   });
@@ -75,7 +76,7 @@ export function RuleModal({
         setFormData({
           department_id: "",
           test_level_id: "",
-          assigned_date: new Date().toISOString().split("T")[0],
+          assigned_date: getTodayISODate(),
           paper_ids: [],
           is_active: true,
         });
@@ -149,10 +150,8 @@ export function RuleModal({
 
       if (editingRule) {
         await paperAssignmentsApi.updateAutoRule(editingRule.id, payload);
-        toast.success("Rule updated successfully");
       } else {
         await paperAssignmentsApi.createAutoRule(payload);
-        toast.success("Auto-assignment rule created");
       }
       onSuccess();
     } catch (error: unknown) {

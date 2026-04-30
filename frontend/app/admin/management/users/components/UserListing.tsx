@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, UserPlus, Mail, UserCog, FileText } from "lucide-react";
+import { Users, Eye, Mail, UserCog, FileText, Plus } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -22,7 +22,7 @@ import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { cn } from "@lib/utils";
+import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
@@ -33,6 +33,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface UserListingProps {
   initialData?: {
@@ -67,7 +68,13 @@ export function UserListing({ initialData }: UserListingProps) {
     refresh,
   } = useListing<
     UserListResponse,
-    { search: string; department_id: string; test_level_id: string }
+    {
+      search: string;
+      department_id: string;
+      test_level_id: string;
+      status: string;
+      date: { range?: { from?: string; to?: string }; label?: string } | null;
+    }
   >({
     // Adaptation for getUsersByRole
     fetchFn: (params) => getUsersByRole("user", params),
@@ -75,16 +82,36 @@ export function UserListing({ initialData }: UserListingProps) {
       search: "",
       department_id: "all",
       test_level_id: "all",
+      status: "all",
+      date: { label: "All Time" },
     },
     initialData: initialData?.data,
     initialTotalItems: initialData?.pagination?.total_records,
-    filterMapping: (f) => ({
-      search: f.search || undefined,
-      department_id:
-        f.department_id === "all" ? undefined : Number(f.department_id),
-      test_level_id:
-        f.test_level_id === "all" ? undefined : Number(f.test_level_id),
-    }),
+    filterMapping: (f) => {
+      let dateFrom = f.date?.range?.from;
+      let dateTo = f.date?.range?.to;
+
+      if (!dateFrom && !dateTo) {
+        if (f.date?.label === "Today") {
+          dateFrom = getTodayISODate();
+          dateTo = getTodayISODate();
+        } else if (f.date?.label === "Yesterday") {
+          dateFrom = getYesterdayISODate();
+          dateTo = getYesterdayISODate();
+        }
+      }
+
+      return {
+        search: f.search || undefined,
+        department_id:
+          f.department_id === "all" ? undefined : Number(f.department_id),
+        test_level_id:
+          f.test_level_id === "all" ? undefined : Number(f.test_level_id),
+        status: f.status !== "all" ? f.status : undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+      };
+    },
     toastMessage: "Candidate list refreshed successfully",
   });
 
@@ -124,17 +151,10 @@ export function UserListing({ initialData }: UserListingProps) {
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={22} />
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Users size={18} />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
-                Candidate Management
-              </h2>
-              <p className="text-[11px] text-muted-foreground -mt-1 font-medium italic opacity-70">
-                Manage all registered users and their account status
-              </p>
-            </div>
+            Candidate Management
           </div>
         }
         action={
@@ -149,19 +169,18 @@ export function UserListing({ initialData }: UserListingProps) {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-
-            <div className="h-6 w-px bg-border/50 mx-1" />
-
-            <Button
-              variant="primary"
-              color="primary"
-              startIcon={<UserPlus size={16} />}
-              onClick={() => setIsAddModalOpen(true)}
-              animate="scale"
-              className="font-bold border-none"
-            >
-              Add Candidate
-            </Button>
+            <Tooltip content="Add Candidate" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
         bodyClassName="p-0 flex flex-row items-stretch w-full"
@@ -176,8 +195,8 @@ export function UserListing({ initialData }: UserListingProps) {
             isLoading={loading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
                   <TableRow>
                     <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
@@ -189,11 +208,11 @@ export function UserListing({ initialData }: UserListingProps) {
                     <TableHead className="font-bold text-slate-500 text-xs uppercase">
                       Mobile
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Department
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                      Target Profile
                     </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                      Level
+                      Attempt Status
                     </TableHead>
                     <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
                       Account Status
@@ -212,7 +231,7 @@ export function UserListing({ initialData }: UserListingProps) {
                         "w-[80px] text-center py-4",
                         "py-4",
                         "py-4",
-                        "py-4",
+                        "text-center py-4",
                         "text-center py-4",
                         "py-4 text-center",
                         "py-4 text-center",
@@ -236,11 +255,38 @@ export function UserListing({ initialData }: UserListingProps) {
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <div className="flex items-center gap-3">
-                            <Avatar
-                              name={row.username}
-                              variant="brand"
-                              size="sm"
-                            />
+                            <div className="relative">
+                              <Avatar
+                                name={row.username}
+                                variant="brand"
+                                size="sm"
+                              />
+                              {/* Status Dot Indicators */}
+                              {(row.process_status === "submitted" ||
+                                row.assignment?.is_attempted) && (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                              )}
+                              {(row.process_status === "inprogress" ||
+                                row.assignment?.has_started) && (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse shadow-sm" />
+                              )}
+                              {row.process_status === "ready" &&
+                                !row.assignment?.has_started && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                )}
+                              {row.process_status === "expired" && (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                              )}
+                              {(!row.process_status ||
+                                row.process_status === "pending" ||
+                                !row.assignment?.is_assigned) &&
+                                row.process_status !== "submitted" &&
+                                row.process_status !== "inprogress" &&
+                                row.process_status !== "ready" &&
+                                row.process_status !== "expired" && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                )}
+                            </div>
                             <div className="flex flex-col">
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
@@ -290,33 +336,78 @@ export function UserListing({ initialData }: UserListingProps) {
                             <span className="mb-[1px]">{row.mobile}</span>
                           </CopyableText>
                         </TableCell>
-                        <TableCell className="align-middle py-3">
-                          <Badge
-                            variant="outline"
-                            color={
-                              row.department_name ||
-                              row.assignment?.department_name
-                                ? "primary"
-                                : "default"
-                            }
-                            shape="square"
-                          >
-                            {row.department_name ||
-                              row.assignment?.department_name ||
-                              "NO DEPT"}
-                          </Badge>
+                        <TableCell className="align-middle py-3 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                              {row.department_name ||
+                                row.assignment?.department_name ||
+                                "N/A"}
+                            </span>
+                            <Badge
+                              color="primary"
+                              shape="square"
+                              variant="outline"
+                              className="text-[9px] font-bold py-0 h-4 px-1"
+                            >
+                              {row.assignment?.test_level_name ||
+                                row.test_level_name ||
+                                "N/A"}
+                            </Badge>
+                          </div>
                         </TableCell>
                         <TableCell className="align-middle py-3 text-center">
-                          <Badge
-                            variant="outline"
-                            color="default"
-                            shape="square"
-                            className="font-bold text-[9px] px-2 h-5 inline-flex items-center justify-center border-slate-300 dark:border-slate-800 uppercase"
-                          >
-                            {row.assignment?.test_level_name ||
-                              row.test_level_name ||
-                              "N/A"}
-                          </Badge>
+                          {row.process_status === "submitted" ||
+                          row.is_interview_submitted ||
+                          row.assignment?.is_attempted ? (
+                            <Badge
+                              variant="outline"
+                              color="success"
+                              animate="pulse"
+                              shape="square"
+                              className="font-bold text-[10px]"
+                            >
+                              SUBMITTED
+                            </Badge>
+                          ) : row.process_status === "inprogress" ||
+                            row.assignment?.has_started ? (
+                            <Badge
+                              variant="outline"
+                              color="violet"
+                              animate="pulse"
+                              shape="square"
+                              className="font-bold text-[10px]"
+                            >
+                              IN PROGRESS
+                            </Badge>
+                          ) : row.process_status === "ready" ? (
+                            <Badge
+                              variant="outline"
+                              color="primary"
+                              animate="pulse"
+                              shape="square"
+                              className="font-bold text-[10px]"
+                            >
+                              READY
+                            </Badge>
+                          ) : row.process_status === "expired" ? (
+                            <Badge
+                              variant="outline"
+                              color="error"
+                              shape="square"
+                              className="font-bold text-[10px]"
+                            >
+                              EXPIRED
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color="warning"
+                              className="font-bold text-[10px]"
+                            >
+                              PENDING
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <div className="flex flex-col items-center justify-center gap-1.5">

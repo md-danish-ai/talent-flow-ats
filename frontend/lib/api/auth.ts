@@ -1,10 +1,11 @@
-import { api } from "./index";
+import { api } from "./base";
 import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 import type {
   SignInFormValues,
   SignUpFormValues,
   CreateAdminFormValues,
+  ChangePasswordFormValues,
 } from "@lib/validations/auth";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import {
@@ -138,6 +139,18 @@ export async function updateBasicInfo(
 ): Promise<{ message: string; user_id: number }> {
   return api.put<{ message: string; user_id: number }>(
     ENDPOINTS.AUTH.UPDATE_BASIC_INFO(userId),
+    data,
+    options,
+  );
+}
+
+// PUT /auth/change-password - Change own password (Admin/Project Lead)
+export async function changePassword(
+  data: ChangePasswordFormValues,
+  options?: Pick<ApiRequestOptions, "cookies">,
+): Promise<{ message: string }> {
+  return api.put<{ message: string }>(
+    ENDPOINTS.AUTH.CHANGE_PASSWORD,
     data,
     options,
   );

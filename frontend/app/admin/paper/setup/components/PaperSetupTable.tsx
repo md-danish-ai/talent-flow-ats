@@ -45,8 +45,8 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-x-auto">
-        <Table>
+      <div className="flex-1 overflow-x-auto h-full flex flex-col">
+        <Table className="h-full">
           <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-muted-foreground font-bold">
             <TableRow>
               {isVisible("sr_no") && (

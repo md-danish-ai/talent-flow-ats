@@ -15,8 +15,7 @@ import { Avatar } from "@components/ui-elements/Avatar";
 import { Badge } from "@components/ui-elements/Badge";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import { Mail, ClipboardCheck } from "lucide-react";
-import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Button } from "@components/ui-elements/Button";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { UserListResponse } from "@types";
 
 interface UserTableProps {
@@ -49,13 +48,13 @@ export function UserTable({
               Contact Info
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-              Department
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Test Level
+              Target Profile
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               Assigned Paper
+            </TableHead>
+            <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+              Attempt Status
             </TableHead>
             <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
               Action
@@ -80,7 +79,34 @@ export function UserTable({
                 </TableCell>
                 <TableCell className="align-middle py-3">
                   <div className="flex items-center gap-3">
-                    <Avatar name={row.username} variant="brand" size="sm" />
+                    <div className="relative">
+                      <Avatar name={row.username} variant="brand" size="sm" />
+                      {/* Status Dot Indicators */}
+                      {(row.process_status === "submitted" ||
+                        row.assignment?.is_attempted) && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full" />
+                      )}
+                      {(row.process_status === "inprogress" ||
+                        row.assignment?.has_started) && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse" />
+                      )}
+                      {row.process_status === "ready" &&
+                        !row.assignment?.has_started && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full" />
+                        )}
+                      {row.process_status === "expired" && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full" />
+                      )}
+                      {(!row.process_status ||
+                        row.process_status === "pending" ||
+                        !row.assignment?.is_assigned) &&
+                        row.process_status !== "submitted" &&
+                        row.process_status !== "inprogress" &&
+                        row.process_status !== "ready" &&
+                        row.process_status !== "expired" && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full" />
+                        )}
+                    </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
@@ -92,7 +118,7 @@ export function UserTable({
                             color="violet"
                             animate="pulse"
                             shape="square"
-                            className="font-bold"
+                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             RETURNING
                           </Badge>
@@ -102,7 +128,7 @@ export function UserTable({
                             color="success"
                             animate="pulse"
                             shape="square"
-                            className="font-bold"
+                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             NEW
                           </Badge>
@@ -131,117 +157,117 @@ export function UserTable({
                   </CopyableText>
                 </TableCell>
                 <TableCell className="align-middle py-3 text-center">
-                  {row.department_name || row.assignment?.department_name ? (
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                      {row.department_name ||
+                        row.assignment?.department_name ||
+                        "N/A"}
+                    </span>
                     <Badge
-                      color="secondary"
-                      animate="pulse"
+                      color="primary"
                       shape="square"
                       variant="outline"
+                      className="text-[9px] font-bold py-0 h-4 px-1"
                     >
-                      {row.department_name || row.assignment?.department_name}
+                      {row.assignment?.test_level_name ||
+                        row.test_level_name ||
+                        "N/A"}
                     </Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="align-middle py-3">
+                  {row.assignment?.paper_name ? (
+                    <span className="text-[13px] font-extrabold text-slate-900 dark:text-slate-100">
+                      {row.assignment.paper_name}
+                    </span>
                   ) : (
-                    <span className="text-[10px] text-slate-400 italic">
-                      No Dept
+                    <span className="text-[11px] text-slate-400 italic">
+                      No Paper Set
                     </span>
                   )}
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline" shape="square" color="primary">
-                    {row.assignment?.test_level_name ||
-                      row.test_level_name ||
-                      "N/A"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="align-middle py-3">
-                  <div className="flex flex-col gap-1.5 items-start">
-                    {row.assignment?.paper_name && (
-                      <span className="text-[13px] font-extrabold text-slate-900 dark:text-slate-100">
-                        {row.assignment.paper_name}
-                      </span>
-                    )}
-
-                    {row.process_status === "submitted" ||
-                    row.is_interview_submitted ||
-                    row.assignment?.is_attempted ? (
-                      <Badge
-                        variant="outline"
-                        color="success"
-                        animate="pulse"
-                        shape="square"
-                        className="font-bold"
-                      >
-                        SUBMITTED
-                      </Badge>
-                    ) : row.process_status === "inprogress" ||
-                      row.assignment?.has_started ? (
-                      <Badge
-                        variant="outline"
-                        color="violet"
-                        animate="pulse"
-                        shape="square"
-                        className="font-bold"
-                      >
-                        IN PROGRESS
-                      </Badge>
-                    ) : row.process_status === "ready" ? (
-                      <Badge
-                        variant="outline"
-                        color="primary"
-                        animate="pulse"
-                        shape="square"
-                        className="font-bold"
-                      >
-                        READY
-                      </Badge>
-                    ) : row.process_status === "expired" ? (
-                      <Badge
-                        variant="outline"
-                        color="error"
-                        shape="square"
-                        className="font-bold"
-                      >
-                        EXPIRED
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color="warning"
-                        className="font-bold"
-                      >
-                        PENDING ASSIGNMENT
-                      </Badge>
-                    )}
-                  </div>
+                <TableCell className="align-middle py-3 text-center">
+                  {row.process_status === "submitted" ||
+                  row.is_interview_submitted ||
+                  row.assignment?.is_attempted ? (
+                    <Badge
+                      variant="outline"
+                      color="success"
+                      animate="pulse"
+                      shape="square"
+                      className="font-bold text-[10px]"
+                    >
+                      SUBMITTED
+                    </Badge>
+                  ) : row.process_status === "inprogress" ||
+                    row.assignment?.has_started ? (
+                    <Badge
+                      variant="outline"
+                      color="violet"
+                      animate="pulse"
+                      shape="square"
+                      className="font-bold text-[10px]"
+                    >
+                      IN PROGRESS
+                    </Badge>
+                  ) : row.process_status === "ready" ? (
+                    <Badge
+                      variant="outline"
+                      color="primary"
+                      animate="pulse"
+                      shape="square"
+                      className="font-bold text-[10px]"
+                    >
+                      READY
+                    </Badge>
+                  ) : row.process_status === "expired" ? (
+                    <Badge
+                      variant="outline"
+                      color="error"
+                      shape="square"
+                      className="font-bold text-[10px]"
+                    >
+                      EXPIRED
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      shape="square"
+                      color="warning"
+                      className="font-bold text-[10px]"
+                    >
+                      PENDING
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-center align-middle py-3">
-                  <Tooltip
-                    content={
+                  <TableIconButton
+                    iconColor={
+                      row.process_status === "submitted" ||
+                      row.assignment?.is_attempted
+                        ? "green"
+                        : row.process_status === "inprogress" ||
+                            row.assignment?.has_started
+                          ? "orange"
+                          : row.process_status === "ready"
+                            ? "blue"
+                            : row.process_status === "expired"
+                              ? "red"
+                              : "amber"
+                    }
+                    title={
                       row.assignment?.is_attempted
                         ? "Assessment Already Completed"
                         : "Assign Fresh Paper Set"
                     }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAssignPaper(row);
+                    }}
+                    aria-label={`Assign paper to ${row.username}`}
                   >
-                    <Button
-                      variant={
-                        row.assignment?.is_attempted ? "ghost" : "primary"
-                      }
-                      color={
-                        row.assignment?.is_attempted ? "success" : "primary"
-                      }
-                      size="icon"
-                      animate="scale"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAssignPaper(row);
-                      }}
-                      className={`h-9 w-9 rounded-xl ${row.assignment?.is_attempted ? "text-emerald-500 bg-emerald-50 opacity-90" : "text-blue-600 bg-blue-50"}`}
-                      aria-label={`Assign paper to ${row.username}`}
-                    >
-                      <ClipboardCheck size={18} />
-                    </Button>
-                  </Tooltip>
+                    <ClipboardCheck size={18} />
+                  </TableIconButton>
                 </TableCell>
               </TableRow>
             ))

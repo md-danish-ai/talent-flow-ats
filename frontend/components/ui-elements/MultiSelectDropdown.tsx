@@ -199,7 +199,7 @@ export function MultiSelectDropdown({
                           weight="semibold"
                           as="span"
                           color="inherit"
-                          className="flex-1 truncate"
+                          className="flex-1"
                         >
                           {option.label}
                         </Typography>
@@ -223,10 +223,11 @@ export function MultiSelectDropdown({
         variant="ghost"
         color="default"
         size="auto"
+        fullWidth
         onClick={toggleDropdown}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border bg-input py-2 px-4 min-h-[52px] text-left text-medium outline-none transition-all hover:bg-input/80",
+          "flex items-center justify-between rounded-md border bg-input py-2 px-4 min-h-[52px] text-left text-medium outline-none transition-all hover:bg-input/80",
           "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
@@ -236,41 +237,37 @@ export function MultiSelectDropdown({
             "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
-        <div className="flex w-full items-center justify-between gap-2 overflow-hidden">
-          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 py-1">
-            {selectedOptions.length > 0 ? (
-              selectedOptions.map((opt) => (
-                <div
-                  key={opt.id}
-                  className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-primary/10 text-brand-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-sm border border-brand-primary/20 whitespace-nowrap group/chip"
-                >
-                  <span className="max-w-[150px] truncate leading-none">
-                    {opt.label}
-                  </span>
-                  <X
-                    className="h-3.5 w-3.5 cursor-pointer shrink-0 text-brand-primary/40 group-hover/chip:text-brand-primary transition-colors"
-                    onClick={(e) => removeOption(e, opt.id)}
-                  />
-                </div>
-              ))
-            ) : (
-              <Typography
-                variant="body4"
-                weight="medium"
-                as="span"
-                className="text-muted-foreground/60 dark:text-white/40"
+        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 py-1">
+          {selectedOptions.length > 0 ? (
+            selectedOptions.map((opt) => (
+              <div
+                key={opt.id}
+                className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-primary/10 text-brand-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-sm border border-brand-primary/20 group/chip"
               >
-                {placeholder}
-              </Typography>
-            )}
-          </div>
-          <ChevronDown
-            className={cn(
-              "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
-              isOpen && "rotate-180 text-brand-primary",
-            )}
-          />
+                <span className="leading-none">{opt.label}</span>
+                <X
+                  className="h-3.5 w-3.5 cursor-pointer shrink-0 text-brand-primary/40 group-hover/chip:text-brand-primary transition-colors"
+                  onClick={(e) => removeOption(e, opt.id)}
+                />
+              </div>
+            ))
+          ) : (
+            <Typography
+              variant="body4"
+              weight="medium"
+              as="span"
+              className="text-muted-foreground/60 dark:text-white/40"
+            >
+              {placeholder}
+            </Typography>
+          )}
         </div>
+        <ChevronDown
+          className={cn(
+            "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
+            isOpen && "rotate-180 text-brand-primary",
+          )}
+        />
       </Button>
 
       {mounted && typeof document !== "undefined"

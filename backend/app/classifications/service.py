@@ -29,7 +29,7 @@ class ClassificationService:
         type_filter: str = None,
         is_active: bool = None,
         search: str = None,
-        sort_by: str = "sort_order",
+        sort_by: str = "code",
         order: str = "asc",
         limit: int = 10,
         offset: int = 0,

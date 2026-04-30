@@ -8,7 +8,15 @@ from app.users.models import User
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
 from app.paper_assignments.repository import assign_best_paper
-from datetime import date as dt_date
+from datetime import date as dt_date, datetime, time
+from sqlalchemy import func, or_
+from sqlalchemy.orm import aliased
+from app.paper_assignments.models import PaperAssignment
+from app.papers.models import Paper
+from app.departments.models import Department
+from app.classifications.models import Classification as Cls
+from app.utils.pagination import create_paginated_response, PaginationParams
+from app.utils.expiration import run_auto_expiration
 
 
 def signup_user(data):
@@ -106,13 +114,18 @@ def signin_user(data):
                     detail="The provided email and mobile number do not match.",
                 )
 
+        # 3. Auto-expiration Check (Before checking if active)
+        if user.role == "user":
+            run_auto_expiration(db_session)
+            db_session.refresh(user)
+
         if not user.is_active:
             raise HTTPException(
                 status_code=StatusCode.FORBIDDEN,
                 detail="Your account is currently inactive. Please contact the administrator.",
             )
 
-        # 3. Password Check
+        # 4. Password Check
         if not verify_password(data.password, user.password):
             raise HTTPException(
                 status_code=StatusCode.UNAUTHORIZED,
@@ -225,7 +238,6 @@ def get_user_by_id(user_id):
         }
 
         if user["role"] == "user":
-            from app.user_details.models import UserDetail
 
             details = (
                 db_session.query(UserDetail)
@@ -260,16 +272,6 @@ def get_user_by_id(user_id):
 def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
     db_session = SessionLocal()
     try:
-        from sqlalchemy import func, or_
-        from datetime import date as dt_date
-        from app.paper_assignments.models import PaperAssignment
-        from app.papers.models import Paper
-        from app.users.models import User as UserModel
-        from app.departments.models import Department
-        from app.classifications.models import Classification as Cls
-        from sqlalchemy.orm import aliased
-
-        from datetime import datetime, time
         def safe_parse_date(value: str):
             """Parse a date string safely, returning None for invalid/partial dates."""
             if not value or not isinstance(value, str):
@@ -289,25 +291,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 return None
 
         # 1. AUTO-EXPIRATION LOGIC (Bulk update for expired tests)
-        today = dt_date.today()
-        # Users with assigned_date in past, who are 'ready' but haven't started/submitted
-        to_expire_query = (
-            db_session.query(UserModel)
-            .join(PaperAssignment, UserModel.id == PaperAssignment.user_id)
-            .filter(
-                UserModel.role == "user",
-                UserModel.is_active,
-                UserModel.process_status == "ready",
-                PaperAssignment.assigned_date < today
-            )
-        )
-
-        for u in to_expire_query.all():
-            u.process_status = "expired"
-            u.is_active = False
-
-        if to_expire_query.count() > 0:
-            db_session.commit()
+        run_auto_expiration(db_session)
 
         # 2. DATA RETRIEVAL
         range_from = safe_parse_date(date_from)
@@ -354,7 +338,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
 
         results_query = (
             db_session.query(
-                UserModel,
+                User,
                 assignment_subq.c.paper_id.label("asgn_paper_id"),
                 assignment_subq.c.department_id.label("asgn_dept_id"),
                 assignment_subq.c.test_level_id.label("asgn_level_id"),
@@ -375,26 +359,26 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             )
             .outerjoin(
                 assignment_subq,
-                (UserModel.id == assignment_subq.c.user_id) & (
+                (User.id == assignment_subq.c.user_id) & (
                     assignment_subq.c.rn == 1),
             )
             .outerjoin(Paper, assignment_subq.c.paper_id == Paper.id)
             .outerjoin(Department, assignment_subq.c.department_id == Department.id)
-            .outerjoin(UserDept, UserModel.department_id == UserDept.id)
+            .outerjoin(UserDept, User.department_id == UserDept.id)
             .outerjoin(Cls, assignment_subq.c.test_level_id == Cls.id)
             .outerjoin(
                 attempt_subq,
-                (UserModel.id == attempt_subq.c.user_id) & (
+                (User.id == attempt_subq.c.user_id) & (
                     attempt_subq.c.rn == 1),
             )
-            .outerjoin(UserDetail, UserModel.id == UserDetail.user_id)
-            .filter(UserModel.role == role)
+            .outerjoin(UserDetail, User.id == UserDetail.user_id)
+            .filter(User.role == role)
         )
 
         # Apply Filters
         if department_id:
             results_query = results_query.filter(
-                or_(UserModel.department_id == department_id,
+                or_(User.department_id == department_id,
                     assignment_subq.c.department_id == department_id)
             )
         if test_level_id:
@@ -403,8 +387,8 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         if search:
             pattern = f"%{search}%"
             results_query = results_query.filter(
-                or_(UserModel.username.ilike(pattern), UserModel.email.ilike(
-                    pattern), UserModel.mobile.ilike(pattern))
+                or_(User.username.ilike(pattern), User.email.ilike(
+                    pattern), User.mobile.ilike(pattern))
             )
 
         # 3. DATE FILTERS (Strictly New Registrations or Re-interviews)
@@ -418,7 +402,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             
             results_query = results_query.filter(
                 or_(
-                    UserModel.created_at.between(start_ts, end_ts),
+                    User.created_at.between(start_ts, end_ts),
                     UserDetail.reinterview_date.between(start_date_obj, end_date_obj)
                 )
             )
@@ -427,14 +411,14 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         if status and status != "all":
             if status == "pending":
                 results_query = results_query.filter(
-                    or_(UserModel.process_status == "pending",
+                    or_(User.process_status == "pending",
                         assignment_subq.c.rn.is_(None))
                 )
             else:
-                results_query = results_query.filter(UserModel.process_status == status)
+                results_query = results_query.filter(User.process_status == status)
 
         total_records = results_query.count()
-        results = results_query.order_by(UserModel.id.desc()).offset(
+        results = results_query.order_by(User.id.desc()).offset(
             (page - 1) * limit).limit(limit).all()
 
         data = [
@@ -471,7 +455,6 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             for row in results
         ]
 
-        from app.utils.pagination import create_paginated_response, PaginationParams
         return create_paginated_response(
             data=data,
             total_records=total_records,
@@ -576,6 +559,37 @@ def update_user_basic_info(user_id: int, data):
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR,
             detail=str(e),
+        )
+    finally:
+        db_session.close()
+
+
+def change_password(user_id: int, data):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+
+        if not verify_password(data.current_password, user.password):
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Incorrect current password.",
+            )
+
+        user.password = hash_password(data.new_password)
+        db_session.commit()
+        return {"message": "Password updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}",
         )
     finally:
         db_session.close()

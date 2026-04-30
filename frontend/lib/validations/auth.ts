@@ -52,3 +52,20 @@ export const createAdminSchema = z.object({
 });
 
 export type CreateAdminFormValues = z.infer<typeof createAdminSchema>;
+
+// ─── Change Password Schema ─────────────────────────────────────────────
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Current password is required"),
+    new_password: z
+      .string()
+      .min(6, "New password must be at least 6 characters")
+      .max(128, "Password is too long"),
+    confirm_password: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
+
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

@@ -26,6 +26,7 @@ import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ProjectLeadListingProps {
   initialData?: {
@@ -86,9 +87,9 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
     <>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <Users size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Users size={18} />
             </div>
             Project Leads
           </div>
@@ -107,20 +108,18 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddModalOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Project Lead
-            </Button>
+            <Tooltip content="Add Project Lead" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -134,8 +133,8 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
             isLoading={loading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-muted/30">
                   <TableRow>
                     <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">

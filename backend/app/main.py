@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import traceback
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,12 +10,14 @@ from app.auth.router import router as auth_router
 from app.user_details.router import router as user_details_router
 from app.questions.router import router as questions_router
 from app.classifications.router import router as classifications_router
+from app.ai_questions.router import router as ai_questions_router
 from app.interview_attempts.router import router as interview_attempts_router
 from app.duplicates.router import router as duplicates_router
 from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
 from app.paper_assignments.router import router as paper_assignments_router
 from app.dashboard.router import router as dashboard_router
+from app.evaluations.router import router as evaluations_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -71,7 +74,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     print(f"CRITICAL ERROR: {str(exc)}")
-    import traceback
 
     traceback.print_exc()
     return api_response(
@@ -94,6 +96,7 @@ def health_check():
 app.include_router(auth_router)
 app.include_router(user_details_router)
 app.include_router(questions_router)
+app.include_router(ai_questions_router)
 app.include_router(classifications_router)
 app.include_router(interview_attempts_router)
 app.include_router(duplicates_router)
@@ -101,6 +104,8 @@ app.include_router(departments_router)
 app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
+app.include_router(evaluations_router,
+                   prefix="/evaluations", tags=["Evaluations"])
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

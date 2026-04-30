@@ -25,7 +25,11 @@ export const PulseCard: React.FC<PulseCardProps> = ({
   if (isLoading) return <PulseCardSkeleton />;
 
   return (
-    <div className="group relative flex items-center gap-6 p-6 rounded-[24px] bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden">
+    <div
+      className={cn(
+        "group relative flex items-center gap-6 p-6 rounded-[24px] bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
+      )}
+    >
       {/* Icon Box */}
       <div
         className={cn(
@@ -67,11 +71,26 @@ export const PulseCard: React.FC<PulseCardProps> = ({
         </Typography>
       </div>
 
+      {/* Backdrop Icon */}
+      <div
+        className={cn(
+          "absolute -top-1 -right-2 opacity-[0.08] dark:opacity-[0.12] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+          color,
+        )}
+      >
+        {React.isValidElement(icon)
+          ? React.cloneElement(
+              icon as React.ReactElement<{ size?: number | string }>,
+              { size: 100 },
+            )
+          : icon}
+      </div>
+
       {/* Subtle Gradient Glow */}
       <div
         className={cn(
           "absolute -right-4 -bottom-4 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-[0.08] transition-opacity duration-500",
-          color.replace("text-", "bg-"),
+          color.startsWith("text-") && color.replace("text-", "bg-"),
         )}
       />
     </div>

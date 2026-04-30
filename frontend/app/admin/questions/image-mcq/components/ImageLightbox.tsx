@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@components/ui-elements/Button";
 import { X } from "lucide-react";
+import { getCanonicalImageUrl } from "@lib/utils/image";
 
 interface ImageLightboxProps {
   url: string | null;
@@ -24,23 +25,6 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   }, [url, onClose]);
 
   if (!url) return null;
-
-  const getCanonicalImageUrl = (u: string | null) => {
-    if (!u) return null;
-    try {
-      // if absolute URL, return as-is
-      const parsed = new URL(u);
-      return parsed.href;
-    } catch {
-      // relative path: prefix with NEXT_PUBLIC_API_BASE_URL if available
-      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-        /\/$/,
-        "",
-      );
-      if (!base) return u;
-      return u.startsWith("/") ? `${base}${u}` : `${base}/${u}`;
-    }
-  };
 
   const src = getCanonicalImageUrl(url) || undefined;
 

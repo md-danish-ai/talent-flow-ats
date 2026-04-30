@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 
-import { Typography } from "@components/ui-elements/Typography";
+import { Logo } from "@components/ui-elements/Logo";
 
 interface SidebarLogoProps {
   isCollapsed: boolean;
@@ -16,27 +16,9 @@ export const SidebarLogo: React.FC<SidebarLogoProps> = ({
   isOpen,
   onClose,
 }) => {
-  const showFullLogo = !isCollapsed || isOpen;
-
   return (
-    <Link
-      href="/admin/dashboard"
-      className="flex items-center gap-2"
-      onClick={onClose}
-    >
-      <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-bold shrink-0">
-        A
-      </div>
-      {showFullLogo && (
-        <Typography
-          variant="body1"
-          weight="bold"
-          as="span"
-          className="text-foreground tracking-tight whitespace-nowrap"
-        >
-          ArcInterview
-        </Typography>
-      )}
+    <Link href="/admin/dashboard" className="block" onClick={onClose}>
+      <Logo iconOnly={isCollapsed && !isOpen} size="md" />
     </Link>
   );
 };

@@ -6,7 +6,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { getUsersByRole } from "@lib/api/auth";
 import { UserListResponse, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { cn } from "@lib/utils";
+import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import { useSearchParams } from "next/navigation";
@@ -74,19 +74,15 @@ export function TodayUserListing({
 
       // Handle presets like "Today", "Yesterday" etc.
       if (!dateFrom && !dateTo) {
-        const today = new Date().toISOString().split("T")[0];
         if (
           f.date?.label === "Today" ||
           (!f.date?.label && !searchParams.get("date_from"))
         ) {
-          dateFrom = today;
-          dateTo = today;
+          dateFrom = getTodayISODate();
+          dateTo = getTodayISODate();
         } else if (f.date?.label === "Yesterday") {
-          const yesterdayRaw = new Date();
-          yesterdayRaw.setDate(yesterdayRaw.getDate() - 1);
-          const yesterday = yesterdayRaw.toISOString().split("T")[0];
-          dateFrom = yesterday;
-          dateTo = yesterday;
+          dateFrom = getYesterdayISODate();
+          dateTo = getYesterdayISODate();
         } else {
           // Fallback to URL search params if any
           dateFrom = searchParams.get("date_from") || undefined;

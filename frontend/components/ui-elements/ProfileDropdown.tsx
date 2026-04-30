@@ -62,9 +62,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   // Derived display values — fall back gracefully if cookie not yet parsed
   const displayName = user?.username ?? "User";
-  const displayRole = user?.role
-    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
-    : "Guest";
   const initials = user?.username ? getInitials(user.username) : "?";
 
   const logout = () => {
@@ -128,10 +125,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 </Typography>
                 <Typography
                   variant="body5"
-                  weight="semibold"
-                  className="text-brand-primary mt-0.5 uppercase tracking-wide"
+                  weight="bold"
+                  className="text-brand-primary mt-0.5 uppercase tracking-widest text-[10px] opacity-80"
                 >
-                  {displayRole}
+                  {user?.role?.replace("_", " ") || "Guest"}
                 </Typography>
               </div>
             </div>
@@ -145,7 +142,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 Settings
               </Typography>
               <ProfileMenuLink
-                href={`/${user?.role === "admin" ? "admin" : "user"}/profile`}
+                href={`/${user?.role?.replace("_", "-")}/profile`}
                 onClick={onToggle}
                 icon={
                   <svg

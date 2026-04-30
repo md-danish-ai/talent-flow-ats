@@ -5,32 +5,7 @@ import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
 import { Modal } from "@components/ui-elements/Modal";
 
-const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
-
-function resolveImageUrl(url: string | null | undefined): string {
-  if (!url) return "";
-
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
-    if (!isLocal) return url;
-
-    const imagePath = url.split("/images/")[1];
-    if (imagePath) {
-      const base = BACKEND_BASE_URL.replace(/\/$/, "");
-      return `${base}/images/${imagePath}`;
-    }
-    return url;
-  }
-
-  const base = BACKEND_BASE_URL.replace(/\/$/, "");
-  if (url.includes("/images/")) {
-    const path = url.startsWith("/") ? url : `/${url}`;
-    return `${base}${path}`;
-  }
-
-  return `${base}/images/${url.startsWith("/") ? url.slice(1) : url}`;
-}
+import { getCanonicalImageUrl } from "@lib/utils/image";
 
 interface QuestionImageProps {
   imageUrl?: string;
@@ -72,7 +47,7 @@ export const QuestionImage = memo(function QuestionImage({
                 Image Unavailable
               </Typography>
               <Typography variant="body5" className="mt-1 opacity-70 italic">
-                {resolveImageUrl(effectiveUrl)}
+                {getCanonicalImageUrl(effectiveUrl)}
               </Typography>
             </div>
           ) : (
@@ -83,7 +58,7 @@ export const QuestionImage = memo(function QuestionImage({
                 </div>
               </div>
               <Image
-                src={resolveImageUrl(effectiveUrl)}
+                src={getCanonicalImageUrl(effectiveUrl)}
                 alt="Question context"
                 width={800}
                 height={450}
@@ -105,7 +80,7 @@ export const QuestionImage = memo(function QuestionImage({
         >
           <div className="relative w-full overflow-hidden rounded-lg bg-white p-4">
             <Image
-              src={resolveImageUrl(effectiveUrl)}
+              src={getCanonicalImageUrl(effectiveUrl)}
               alt="Fullscreen context"
               width={1200}
               height={800}

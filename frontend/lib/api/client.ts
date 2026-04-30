@@ -1,7 +1,8 @@
 import { toast } from "@lib/toast";
 import { ENDPOINTS } from "./endpoints";
+import { apiLoadingState } from "./loading-state";
 
-const BASE_URL =
+export const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -150,79 +151,88 @@ export async function apiClient<T>(
     ...(nextOptions ? { next: nextOptions } : {}),
   };
 
-  const response = await fetch(url, fetchOptions);
-
-  // Handle empty responses (204 No Content)
-  if (response.status === 204) {
-    return undefined as T;
+  // Track start of request (Client-side only)
+  if (typeof window !== "undefined") {
+    apiLoadingState.startRequest();
   }
 
-  const result = await response.json().catch(() => ({}));
+  try {
+    const response = await fetch(url, fetchOptions);
 
-  if (!response.ok) {
-    const apiErr = new ApiError(response.status, result as ApiErrorResponse);
-    const isAuthRequest =
+    // Handle empty responses (204 No Content)
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const apiErr = new ApiError(response.status, result as ApiErrorResponse);
+      const isAuthRequest =
+        endpoint.startsWith(ENDPOINTS.AUTH.SIGN_IN) ||
+        endpoint.startsWith(ENDPOINTS.AUTH.SIGN_UP);
+
+      if (
+        response.status === 401 &&
+        typeof document !== "undefined" &&
+        !isAuthRequest
+      ) {
+        // Clear all auth cookies on 401 Unauthorized
+        document.cookie =
+          "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        document.cookie =
+          "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        document.cookie =
+          "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+
+        // Redirect to sign-in page with clear_auth parameter
+        window.location.href = "/sign-in?clear_auth=1";
+      } else if (!silentError && method !== "GET" && !isAuthRequest) {
+        // Auto error toast for all non-GET failures
+        toast.error(apiErr.message, { title: `Error ${response.status}` });
+      }
+
+      throw apiErr;
+    }
+
+    // ── Auto success toast for mutations ──────────────────────────────────────
+    const isAuthEndpoint =
       endpoint.startsWith(ENDPOINTS.AUTH.SIGN_IN) ||
       endpoint.startsWith(ENDPOINTS.AUTH.SIGN_UP);
-
     if (
-      response.status === 401 &&
-      typeof document !== "undefined" &&
-      !isAuthRequest
+      !silentSuccess &&
+      method !== "GET" &&
+      !isAuthEndpoint &&
+      typeof window !== "undefined" &&
+      result &&
+      typeof result === "object" &&
+      "message" in result &&
+      typeof result.message === "string"
     ) {
-      // Clear all auth cookies on 401 Unauthorized
-      document.cookie =
-        "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-      document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-      document.cookie =
-        "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-
-      // Redirect to sign-in page with clear_auth parameter
-      window.location.href = "/sign-in?clear_auth=1";
-    } else if (!silentError && method !== "GET" && !isAuthRequest) {
-      // Auto error toast for all non-GET failures (skip GET to avoid
-      // spamming toast on background data fetches)
-      toast.error(apiErr.message, { title: `Error ${response.status}` });
+      toast.success(result.message);
     }
 
-    throw apiErr;
-  }
-
-  // ── Auto success toast for mutations ──────────────────────────────────────
-  // Fire a success toast for all non-GET calls using the backend's message.
-  // Suppressed if silentSuccess is set (e.g. per-keystroke auto-saves).
-  // Auth endpoints (signin/signup) are handled by the form itself.
-  const isAuthEndpoint =
-    endpoint.startsWith(ENDPOINTS.AUTH.SIGN_IN) ||
-    endpoint.startsWith(ENDPOINTS.AUTH.SIGN_UP);
-  if (
-    !silentSuccess &&
-    method !== "GET" &&
-    !isAuthEndpoint &&
-    typeof window !== "undefined" &&
-    result &&
-    typeof result === "object" &&
-    "message" in result &&
-    typeof result.message === "string"
-  ) {
-    toast.success(result.message);
-  }
-
-  // Handle standard backend wrapper: { status, message, data, pagination? }
-  if (
-    result &&
-    typeof result === "object" &&
-    "data" in result &&
-    "status" in result
-  ) {
-    if ("pagination" in result && result.pagination) {
-      return {
-        data: result.data,
-        pagination: result.pagination,
-      } as T;
+    // Handle standard backend wrapper: { status, message, data, pagination? }
+    if (
+      result &&
+      typeof result === "object" &&
+      "data" in result &&
+      "status" in result
+    ) {
+      if ("pagination" in result && result.pagination) {
+        return {
+          data: result.data,
+          pagination: result.pagination,
+        } as T;
+      }
+      return result.data as T;
     }
-    return result.data as T;
-  }
 
-  return result as T;
+    return result as T;
+  } finally {
+    // Track end of request regardless of success or failure (Client-side only)
+    if (typeof window !== "undefined") {
+      apiLoadingState.stopRequest();
+    }
+  }
 }

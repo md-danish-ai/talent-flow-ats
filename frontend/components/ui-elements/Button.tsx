@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@lib/utils";
 import { useRipple, RippleContainer } from "./Ripple";
+import { Loader2 } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
@@ -20,6 +21,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   iconAnimation?: "none" | "rotate-90" | "rotate-180" | "rotate-360" | "spin";
   isActive?: boolean;
   fullWidth?: boolean;
+  isLoading?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
 }
@@ -36,10 +38,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       animate = "none",
       iconAnimation = "none",
       fullWidth = false,
+      isLoading = false,
       startIcon,
       endIcon,
       children,
       onClick,
+      disabled,
       ...props
     },
     ref,
@@ -47,6 +51,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const { ripples, createRipple, removeRipple } = useRipple();
 
     const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (isLoading || disabled) return;
       createRipple(event);
       if (onClick) onClick(event);
     };
@@ -140,6 +145,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         onClick={handleButtonClick}
+        disabled={disabled || isLoading}
         className={cn(
           "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50",
           variantStyles,
@@ -148,13 +154,20 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           animationClass,
           fullWidth && "w-full",
           iconAnimation !== "none" ? "group" : "",
+          isLoading && "cursor-wait opacity-70",
           className,
         )}
         {...props}
       >
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-inherit">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        )}
         <span
           className={cn(
             "relative z-10 flex items-center gap-2",
+            isLoading && "opacity-0",
             fullWidth ? "w-full" : "",
             className?.includes("justify-between")
               ? "justify-between"
@@ -172,7 +185,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               {startIcon}
             </span>
           )}
-          {children}
+          {size === "icon" || size === "icon-sm" || size === "rounded-icon" ? (
+            <span
+              className={cn(
+                "inline-flex items-center justify-center",
+                iconAnimationClasses,
+              )}
+            >
+              {children}
+            </span>
+          ) : (
+            children
+          )}
           {endIcon && (
             <span
               className={cn("inline-flex self-center", iconAnimationClasses)}

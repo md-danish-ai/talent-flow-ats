@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Button } from "@components/ui-elements/Button";
 import { Plus, FileText } from "lucide-react";
 import { toast } from "@lib/toast";
@@ -18,7 +19,10 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { cn } from "@lib/utils";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
 
 export function PaperSetupClient() {
   const router = useRouter();
@@ -116,23 +120,22 @@ export function PaperSetupClient() {
 
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <FileText size={20} className="text-brand-primary" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <FileText size={18} />
+            </div>
             Active Test Papers
           </div>
         }
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Papers"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
+
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
               columns={columns}
@@ -140,20 +143,31 @@ export function PaperSetupClient() {
               onToggle={handleToggleColumn}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              onClick={() => {
-                router.push("/admin/paper/setup/create");
-              }}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Create New Paper
-            </Button>
+
+            <div className="flex items-center gap-2">
+              <ListingIcons
+                isLoading={isLoading}
+                isBackgroundLoading={isBackgroundLoading}
+                onRefresh={refresh}
+                onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+                isFilterOpen={isFilterOpen}
+                activeFiltersCount={activeFiltersCount}
+              />
+              <Tooltip content="Create New Paper" side="top">
+                <Button
+                  variant="action"
+                  color="primary"
+                  size="rounded-icon"
+                  animate="scale"
+                  iconAnimation="rotate-90"
+                  onClick={() => {
+                    router.push("/admin/paper/setup/create");
+                  }}
+                >
+                  <Plus size={20} />
+                </Button>
+              </Tooltip>
+            </div>
           </div>
         }
         className="mt-6 flex flex-col"

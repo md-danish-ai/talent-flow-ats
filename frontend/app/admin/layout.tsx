@@ -2,6 +2,7 @@ import React from "react";
 import { Sidebar, SidebarProvider } from "@components/ui-layout/sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
 import { getCurrentUser } from "@lib/auth/get-current-user";
+import { GlobalProgressBar } from "@components/ui-elements/GlobalProgressBar";
 
 export default async function AdminLayout({
   children,
@@ -12,6 +13,7 @@ export default async function AdminLayout({
 
   return (
     <SidebarProvider>
+      <GlobalProgressBar />
       <div className="fixed inset-0 flex flex-col bg-background overflow-hidden transition-colors">
         <Navbar user={user} />
 

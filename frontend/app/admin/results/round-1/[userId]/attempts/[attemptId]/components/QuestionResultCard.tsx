@@ -9,7 +9,7 @@ import { Input } from "@components/ui-elements/Input";
 import { Button } from "@components/ui-elements/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { type AdminUserResultAnswer } from "@types";
-import { type ParsedOption } from "../utils";
+import { humanizeString, type ParsedOption } from "@lib/utils";
 
 interface QuestionResultCardProps {
   answer: AdminUserResultAnswer;
@@ -81,7 +81,7 @@ export const QuestionResultCard = ({
               color={statusConfig.badge as BadgeColor}
               className="px-4 py-1 font-black text-[9px] uppercase tracking-widest border-none bg-card/50 shadow-sm"
             >
-              {answer.status.replace("_", " ")}
+              {humanizeString(answer.status)}
             </Badge>
             {answer.question_type && (
               <Badge
@@ -89,7 +89,7 @@ export const QuestionResultCard = ({
                 color="default"
                 className="px-4 py-1 font-black text-[9px] uppercase tracking-widest opacity-60"
               >
-                {answer.question_type.replace("_", " ")}
+                {humanizeString(answer.question_type)}
               </Badge>
             )}
           </div>
@@ -323,10 +323,11 @@ export const QuestionResultCard = ({
                           return (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 not-italic">
                               {Object.entries(parsed).map(([key, value]) => {
-                                const label = key
-                                  .replace(/([A-Z])/g, " $1")
-                                  .replace(/^./, (str) => str.toUpperCase())
-                                  .replace(/_/g, " ");
+                                const label = humanizeString(
+                                  key
+                                    .replace(/([A-Z])/g, " $1")
+                                    .replace(/^./, (str) => str.toUpperCase()),
+                                );
                                 return (
                                   <div
                                     key={key}
@@ -410,10 +411,11 @@ export const QuestionResultCard = ({
                           return (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                               {Object.entries(parsed).map(([key, value]) => {
-                                const label = key
-                                  .replace(/([A-Z])/g, " $1")
-                                  .replace(/^./, (str) => str.toUpperCase())
-                                  .replace(/_/g, " ");
+                                const label = humanizeString(
+                                  key
+                                    .replace(/([A-Z])/g, " $1")
+                                    .replace(/^./, (str) => str.toUpperCase()),
+                                );
                                 return (
                                   <div
                                     key={key}

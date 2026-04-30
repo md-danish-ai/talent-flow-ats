@@ -99,6 +99,11 @@ filterRegistry.register("mcq-filters", [
 // 3. Reset Status Listing
 filterRegistry.register("reset-status-filters", [
   {
+    id: "date",
+    label: "Select Date Range",
+    type: "date-range",
+  },
+  {
     id: "search",
     label: "Search Candidates",
     type: "search",
@@ -180,6 +185,41 @@ filterRegistry.register("results-filters", [
       { id: "Poor", label: "Poor" },
     ],
   },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
+]);
+
+// 4.5. Face-to-Face Results
+filterRegistry.register("f2f-results-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "project_lead_id",
+    label: "Project Lead",
+    type: "select",
+    placeholder: "Filter by Lead",
+    options: [{ id: "all", label: "All Leads" }],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "completed", label: "Completed" },
+      { id: "pending", label: "Pending" },
+    ],
+  },
 ]);
 
 // 5. Admin Management
@@ -195,10 +235,29 @@ filterRegistry.register("admin-filters", [
 // 6. Management -> Users
 filterRegistry.register("management-user-filters", [
   {
+    id: "date",
+    label: "Select Date Range",
+    type: "date-range",
+  },
+  {
     id: "search",
     label: "Quick Search",
     type: "search",
     placeholder: "Name, Mobile or Email...",
+  },
+  {
+    id: "status",
+    label: "Attempt Status",
+    type: "select",
+    placeholder: "Select Status",
+    options: [
+      { id: "all", label: "All Status" },
+      { id: "pending", label: "Pending Assignment" },
+      { id: "ready", label: "Ready" },
+      { id: "inprogress", label: "In Progress" },
+      { id: "submitted", label: "Submitted" },
+      { id: "expired", label: "Expired" },
+    ],
   },
   {
     id: "department_id",
@@ -226,6 +285,27 @@ filterRegistry.register("project-lead-filters", [
   },
 ]);
 
+// 7.5 Project Lead -> Users
+filterRegistry.register("project-lead-users-filters", [
+  {
+    id: "search",
+    label: "Search Candidates",
+    type: "search",
+    placeholder: "Search by name, mobile...",
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Statuses" },
+      { id: "pending", label: "Pending" },
+      { id: "completed", label: "Completed" },
+    ],
+  },
+]);
+
 // 8. Management -> Departments
 filterRegistry.register("department-filters", [
   {
@@ -245,6 +325,7 @@ filterRegistry.register("type-management-filters", [
     options: [
       { id: "subjects", label: "Subjects" },
       { id: "levels", label: "Exam Levels" },
+      { id: "results", label: "Interview Results" },
     ],
     props: { variant: "pills", size: "sm" },
   },
@@ -340,6 +421,52 @@ filterRegistry.register("paper-setup-filters", [
     label: "Exam Level",
     type: "select",
     placeholder: "All Levels",
+  },
+]);
+
+// 12. Questions without Subject filter (Typing Test, Lead Gen, Contact Details)
+filterRegistry.register("no-subject-question-filters", [
+  {
+    id: "search",
+    label: "Search Questions",
+    type: "search",
+    placeholder: "Search by question content...",
+  },
+  {
+    id: "examLevel",
+    label: "Exam Level",
+    type: "select",
+    placeholder: "Filter by Level",
     options: [{ id: "all", label: "All Levels" }],
+  },
+  {
+    id: "marks",
+    label: "Marks",
+    type: "select",
+    placeholder: "Filter by Marks",
+    options: [
+      { id: "all", label: "All Marks" },
+      { id: "1", label: "1 Mark" },
+      { id: "2", label: "2 Marks" },
+      { id: "3", label: "3 Marks" },
+      { id: "4", label: "4 Marks" },
+      { id: "5", label: "5 Marks" },
+      { id: "6", label: "6 Marks" },
+      { id: "7", label: "7 Marks" },
+      { id: "8", label: "8 Marks" },
+      { id: "9", label: "9 Marks" },
+      { id: "10", label: "10 Marks" },
+    ],
+  },
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    placeholder: "Filter by Status",
+    options: [
+      { id: "all", label: "All Status" },
+      { id: "true", label: "Active" },
+      { id: "false", label: "Inactive" },
+    ],
   },
 ]);

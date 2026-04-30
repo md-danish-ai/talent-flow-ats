@@ -23,7 +23,8 @@ import { cn } from "@lib/utils";
 import { toast } from "@lib/toast";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { EditQuestionModal } from "./components/EditQuestionModal";
-import { AddQuestionModal } from "./components/AddQuestionModal";
+import { AddImageSubjectiveQuestionForm } from "@components/features/questions/AddImageSubjectiveQuestionForm";
+import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
 import ImageLightbox from "../image-mcq/components/ImageLightbox";
@@ -31,7 +32,11 @@ import { BulkUploadModal } from "@components/features/questions/BulkUploadModal"
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type ImageSubjectiveListingFilters = {
   search: string;
@@ -164,9 +169,9 @@ export function ImageSubjectiveClient() {
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <ListChecks size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <ListChecks size={18} />
             </div>
             Image Subjective Questions
           </div>
@@ -175,15 +180,11 @@ export function ImageSubjectiveClient() {
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Questions"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
@@ -193,29 +194,38 @@ export function ImageSubjectiveClient() {
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isBulkUploadOpen}
-              animate="scale"
-              onClick={() => setIsBulkUploadOpen(true)}
-              title="Bulk Upload"
-            >
-              <Upload size={18} />
-            </Button>
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Question
-            </Button>
+            <ListingIcons
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <Tooltip content="Bulk Upload" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isBulkUploadOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload size={18} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Add Question" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -229,8 +239,8 @@ export function ImageSubjectiveClient() {
             isLoading={isLoading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader className="bg-muted/30">
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
@@ -342,10 +352,15 @@ export function ImageSubjectiveClient() {
         />
       </MainCard>
 
-      <AddQuestionModal
+      <QuestionCreationModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
+        title="Image Subjective Management"
+        questionType={QUESTION_TYPES.IMAGE_SUBJECTIVE}
         onSuccess={() => void refresh()}
+        renderManualForm={(onSuccess) => (
+          <AddImageSubjectiveQuestionForm onSuccess={onSuccess} />
+        )}
       />
 
       {editingQuestion && (

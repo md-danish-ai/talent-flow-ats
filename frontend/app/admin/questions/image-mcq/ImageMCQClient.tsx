@@ -23,8 +23,9 @@ import { Question, Classification } from "@types";
 import { useRouter } from "next/navigation";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { toast } from "@lib/toast";
-import { AddImageQuestionModal } from "./components/AddImageQuestionModal";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
+import { AddImageQuestionForm } from "@features/questions/AddImageQuestionForm";
+import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import ImageLightbox from "./components/ImageLightbox";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
@@ -32,7 +33,11 @@ import { BulkUploadModal } from "@components/features/questions/BulkUploadModal"
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 interface ImageMCQClientProps {
   initialData?: Question[];
@@ -52,13 +57,13 @@ export function ImageMCQClient({
   totalItems: initialTotalItems = 0,
 }: ImageMCQClientProps) {
   const router = useRouter();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [editingQuestion, setEditingQuestion] = useState<null | Question>(null);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
@@ -197,9 +202,9 @@ export function ImageMCQClient({
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <ImageIcon size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <ImageIcon size={18} />
             </div>
             Image-Based MCQs
           </div>
@@ -208,15 +213,11 @@ export function ImageMCQClient({
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
           <div className="flex items-center gap-3">
-            <ListingHeaderActions
+            <ListingBadge
               isLoading={isLoading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel="Questions"
-              onRefresh={refresh}
-              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-              isFilterOpen={isFilterOpen}
-              activeFiltersCount={activeFiltersCount}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
             <TableColumnToggle
@@ -226,29 +227,38 @@ export function ImageMCQClient({
               onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="action"
-              size="rounded-icon"
-              isActive={isBulkUploadOpen}
-              animate="scale"
-              onClick={() => setIsBulkUploadOpen(true)}
-              title="Bulk Upload"
-            >
-              <Upload size={18} />
-            </Button>
-            <Button
-              variant="primary"
-              color="primary"
-              size="md"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => setIsAddModalOpen(true)}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-            >
-              Add Question
-            </Button>
+            <ListingIcons
+              isLoading={isLoading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
+            <Tooltip content="Bulk Upload" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isBulkUploadOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload size={18} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Add Question" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => setIsAddOpen(true)}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -262,8 +272,8 @@ export function ImageMCQClient({
             isLoading={isLoading}
             isBackgroundLoading={isBackgroundLoading}
           >
-            <div className="flex-1 overflow-x-auto w-full min-h-0">
-              <Table>
+            <div className="flex-1 overflow-x-auto w-full min-h-0 h-full flex flex-col">
+              <Table className="h-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
@@ -378,11 +388,6 @@ export function ImageMCQClient({
         />
       </MainCard>
 
-      <AddImageQuestionModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => void refresh()}
-      />
       {editingQuestion && (
         <EditImageQuestionModal
           isOpen={true}
@@ -404,6 +409,17 @@ export function ImageMCQClient({
         onClose={() => setIsBulkUploadOpen(false)}
         onSuccess={() => void refresh()}
         questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
+      />
+
+      <QuestionCreationModal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="Image MCQ Management"
+        questionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
+        onSuccess={() => void refresh()}
+        renderManualForm={(onSuccess) => (
+          <AddImageQuestionForm onSuccess={onSuccess} />
+        )}
       />
     </PageContainer>
   );

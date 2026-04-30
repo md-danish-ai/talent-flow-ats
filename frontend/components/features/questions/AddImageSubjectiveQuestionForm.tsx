@@ -7,6 +7,7 @@ import {
   type ImageSubjectiveFormValues,
 } from "@lib/validations/question";
 import { questionsApi } from "@lib/api/questions";
+import { getCanonicalImageUrl } from "@lib/utils/image";
 import { classificationsApi } from "@lib/api/classifications";
 import { type QuestionCreate, type Classification } from "@types";
 import { Button } from "@components/ui-elements/Button";
@@ -41,22 +42,6 @@ export const AddImageSubjectiveQuestionForm = ({
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const getCanonicalImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (
-      url.startsWith("http://") ||
-      url.startsWith("https://") ||
-      url.startsWith("data:") ||
-      url.startsWith("blob:")
-    ) {
-      return url;
-    }
-    const base = (
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
-    ).replace(/\/$/, "");
-    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
-  };
 
   React.useEffect(() => {
     const fetchClassifications = async () => {

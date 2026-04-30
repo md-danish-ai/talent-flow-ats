@@ -274,7 +274,7 @@ export const AttemptHistoryCard = ({
           </div>
         </div>
 
-        <Link href={`/admin/results/${userId}/attempts/${attemptId}`}>
+        <Link href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}>
           <Button
             size="sm"
             variant="primary"

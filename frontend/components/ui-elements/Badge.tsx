@@ -11,7 +11,8 @@ export type BadgeColor =
   | "error"
   | "warning"
   | "violet"
-  | "default";
+  | "default"
+  | "blue";
 
 export type BadgeAnimate = "pulse" | "none";
 
@@ -51,6 +52,10 @@ const colorStyles: Record<BadgeColor, { fill: string; outline: string }> = {
     fill: "bg-violet-500 text-white shadow-sm shadow-violet-500/10",
     outline:
       "border-violet-500/20 text-violet-600 bg-violet-500/10 shadow-sm shadow-violet-500/10",
+  },
+  blue: {
+    fill: "bg-blue-500 text-white",
+    outline: "border-blue-500/30 text-blue-600 bg-blue-500/5",
   },
   default: {
     fill: "bg-muted text-foreground",

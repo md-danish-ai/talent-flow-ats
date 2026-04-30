@@ -1,4 +1,4 @@
-import { api } from "./index";
+import { api } from "./base";
 import { ENDPOINTS } from "./endpoints";
 import type { ApiRequestOptions } from "./client";
 
@@ -119,14 +119,14 @@ export const paperAssignmentsApi = {
     ruleId: number,
     payload: Partial<AutoAssignmentRulePayload>,
   ) =>
-    api.patch<AutoAssignmentRuleResponse>(
-      ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULE_BY_ID(ruleId),
+    api.put<AutoAssignmentRuleResponse>(
+      ENDPOINTS.PAPER_ASSIGNMENTS.UPDATE_AUTO_RULE(ruleId),
       payload,
     ),
 
   deleteAutoRule: (ruleId: number) =>
     api.delete<{ message: string }>(
-      ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULE_BY_ID(ruleId),
+      ENDPOINTS.PAPER_ASSIGNMENTS.DELETE_AUTO_RULE(ruleId),
     ),
 };
 

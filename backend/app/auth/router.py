@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Query
-from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema
 from app.auth.service import (
     signup_user,
     signin_user,
@@ -9,8 +8,10 @@ from app.auth.service import (
     toggle_user_status,
     delete_user,
     get_user_by_id,
-    update_user_basic_info
+    update_user_basic_info,
+    change_password
 )
+from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema, ChangePasswordSchema
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
 
@@ -123,4 +124,15 @@ async def update_basic_info(user_id: int, data: SignUpSchema):
     We reuse SignUpSchema fields for this.
     """
     result = update_user_basic_info(user_id, data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+
+
+@router.put("/change-password", dependencies=[Depends(require_roles(["admin", "project_lead"]))])
+async def change_pwd(data: ChangePasswordSchema, user_id: int = Depends(authenticate_user)):
+    """
+    Allow Admin and Project Lead to change their own password.
+    """
+    result = change_password(user_id, data)
+    if "error" in result:
+        return api_response(StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"])
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)

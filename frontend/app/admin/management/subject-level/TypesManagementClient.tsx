@@ -5,7 +5,7 @@ import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, Plus } from "lucide-react";
+import { Layers, Gauge, Plus, ShieldCheck } from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 import { DeleteTypeModal } from "./components/DeleteTypeModal";
@@ -17,6 +17,7 @@ import { useListing } from "@hooks/useListing";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
@@ -62,7 +63,12 @@ export function TypesManagementClient({
     initialData: initialSubjectData?.data,
     initialTotalItems: initialSubjectData?.pagination?.total_records,
     filterMapping: (f) => ({
-      type: f.type === "subjects" ? "subject" : "exam_level",
+      type:
+        f.type === "subjects"
+          ? "subject"
+          : f.type === "levels"
+            ? "exam_level"
+            : "interview_result",
       search: f.search || undefined,
       is_active:
         f.status === "active"
@@ -102,13 +108,27 @@ export function TypesManagementClient({
   });
 
   const classificationType =
-    activeTab === "subjects" ? "subject" : "exam_level";
+    activeTab === "subjects"
+      ? "subject"
+      : activeTab === "levels"
+        ? "exam_level"
+        : "interview_result";
 
-  const currentEntityName = activeTab === "subjects" ? "Subject" : "Level";
+  const currentEntityName =
+    activeTab === "subjects"
+      ? "Subject"
+      : activeTab === "levels"
+        ? "Level"
+        : "Verdict";
 
   const tabs: TabItem[] = [
     { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
-    { label: "Levels", value: "levels", icon: <Gauge size={18} /> },
+    { label: "Exam Levels", value: "levels", icon: <Gauge size={18} /> },
+    {
+      label: "Interview Results",
+      value: "results",
+      icon: <ShieldCheck size={18} />,
+    },
   ];
 
   const handleTabChange = (newTab: string) => {
@@ -209,13 +229,20 @@ export function TypesManagementClient({
   return (
     <PageContainer animate>
       <PageHeader
-        title="Subject & Level Management"
-        description="Configure and manage subject categories and seniority levels in one place."
+        title="Master Data Management"
+        description="Configure and manage subjects, exam levels, and interview results in one place."
       />
 
       <MainCard
         title={
-          <div className="flex items-center">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+                <Layers size={18} />
+              </div>
+              Master Data Definitions
+            </div>
+            <div className="h-8 w-px bg-border/50" />
             <Tabs
               tabs={tabs}
               activeTab={activeTab}
@@ -233,28 +260,40 @@ export function TypesManagementClient({
               isLoading={isFetching}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
-              itemLabel={activeTab === "subjects" ? "Subjects" : "Levels"}
+              itemLabel={
+                activeTab === "subjects"
+                  ? "Subjects"
+                  : activeTab === "levels"
+                    ? "Levels"
+                    : "Interview Results"
+              }
               onRefresh={refresh}
               onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
-            <div className="h-6 w-px bg-border/50 mx-1" />
-            <Button
-              variant="primary"
-              size="md"
-              color="primary"
-              shadow
-              animate="scale"
-              iconAnimation="rotate-90"
-              onClick={() => handleOpenModal()}
-              disabled={isLoading || isFetching}
-              startIcon={<Plus size={18} />}
-              className="font-bold border-none"
-              aria-label={`Add new ${currentEntityName}`}
+            <Tooltip
+              content={`Add ${
+                activeTab === "subjects"
+                  ? "Subject"
+                  : activeTab === "levels"
+                    ? "Level"
+                    : "Verdict"
+              }`}
+              side="top"
             >
-              Add {activeTab === "subjects" ? "Subject" : "Level"}
-            </Button>
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => handleOpenModal()}
+                disabled={isLoading || isFetching}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
           </div>
         }
       >
@@ -307,7 +346,13 @@ export function TypesManagementClient({
       <ManageTypeModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        type={activeTab === "subjects" ? "subject" : "level"}
+        type={
+          activeTab === "subjects"
+            ? "subject"
+            : activeTab === "levels"
+              ? "exam_level"
+              : "interview_result"
+        }
         editingType={editingType}
         formData={formData}
         setFormData={setFormData}

@@ -28,8 +28,13 @@ export const NavItem: React.FC<NavItemProps> = ({
 }) => {
   const isItem = section.type === "item";
   const isSectionActive = isItem
-    ? pathname === section.href
-    : section.items.some((item) => pathname === item.href);
+    ? pathname === section.href ||
+      (section.href !== "/" && pathname.startsWith(section.href + "/"))
+    : section.items.some(
+        (item) =>
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(item.href + "/")),
+      );
   const isOpen = expandedSection === section.title;
 
   if (isItem) {

@@ -1,4 +1,4 @@
-import { api, type ApiRequestOptions } from "./index";
+import { api, type ApiRequestOptions } from "./base";
 import { ENDPOINTS } from "./endpoints";
 import {
   Department,

@@ -9,33 +9,43 @@ import {
   Phone,
   LayoutDashboard,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
-import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
-import { resultsApi } from "@lib/api/results";
+import { resultsApi, ApiError } from "@lib/api";
 import {
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
 } from "@types";
+import { formatDate } from "@lib/utils";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
+import { Tabs } from "@components/ui-elements/Tabs";
+import { Round2History } from "./Round2History";
+import { UserX, RefreshCcw } from "lucide-react";
 
 interface UserResultDetailClientProps {
   userId: number;
+  basePath?: string;
 }
 
 export function UserResultDetailClient({
   userId,
+  basePath = "/admin/results/round-1",
 }: UserResultDetailClientProps) {
   const [attemptData, setAttemptData] =
     useState<AdminUserAttemptsResponse | null>(null);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    status?: number;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState("round1");
 
   useEffect(() => {
     const fetchAttempts = async () => {
@@ -44,8 +54,12 @@ export function UserResultDetailClient({
         setError(null);
         const result = await resultsApi.getUserAttempts(userId);
         setAttemptData(result);
-      } catch {
-        setError("Failed to load user attempts.");
+      } catch (err: unknown) {
+        if (err instanceof ApiError) {
+          setError({ message: err.message, status: err.status });
+        } else {
+          setError({ message: "An unexpected error occurred." });
+        }
       } finally {
         setLoadingAttempts(false);
       }
@@ -84,26 +98,41 @@ export function UserResultDetailClient({
 
   if (error || !attemptData) {
     return (
-      <PageContainer className="py-8">
-        <Alert
-          variant="error"
-          title="Error Loading Data"
-          description={
-            <div className="flex flex-col gap-3">
-              <Typography variant="body5">
-                {error || "Something went wrong while fetching user attempts."}
-              </Typography>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-fit"
-                onClick={() => window.location.reload()}
-              >
-                Retry Loading
-              </Button>
-            </div>
+      <PageContainer className="py-20 max-w-4xl mx-auto">
+        <EmptyState
+          icon={UserX}
+          title={
+            error?.status === 404 ? "Candidate Not Found" : "Error Loading Data"
           }
-        />
+          description={
+            error?.message ||
+            "Something went wrong while fetching user attempts."
+          }
+          className="shadow-2xl border-rose-500/10"
+        >
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              color="primary"
+              onClick={() => window.location.reload()}
+              className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+              startIcon={<RefreshCcw size={18} />}
+              animate="scale"
+            >
+              Retry Loading
+            </Button>
+            <Link href={basePath}>
+              <Button
+                variant="outline"
+                color="primary"
+                className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+                animate="scale"
+              >
+                Go Back to Results
+              </Button>
+            </Link>
+          </div>
+        </EmptyState>
       </PageContainer>
     );
   }
@@ -113,7 +142,7 @@ export function UserResultDetailClient({
     (a) => a.status === "submitted" || a.status === "auto_submitted",
   ).length;
   const lastAttemptDate = attemptData.attempts[0]?.started_at
-    ? new Date(attemptData.attempts[0].started_at).toLocaleDateString()
+    ? formatDate(attemptData.attempts[0].started_at)
     : "N/A";
 
   const stats = [
@@ -129,7 +158,7 @@ export function UserResultDetailClient({
     {
       label: "Completed",
       value: submittedAttempts,
-      subValue: `${((submittedAttempts / totalAttempts) * 100).toFixed(0)}% completion rate`,
+      subValue: `${totalAttempts > 0 ? ((submittedAttempts / totalAttempts) * 100).toFixed(0) : 0}% completion rate`,
       icon: <CheckCircle2 size={20} />,
       color: "text-emerald-600",
       bg: "bg-emerald-500/10",
@@ -146,13 +175,26 @@ export function UserResultDetailClient({
     },
   ];
 
+  const TABS = [
+    {
+      value: "round1",
+      label: "Round 1 (Technical)",
+      icon: <History size={16} />,
+    },
+    {
+      value: "round2",
+      label: "Round 2 (F2F Interview)",
+      icon: <UserCheck size={16} />,
+    },
+  ];
+
   return (
     <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
       {/* Top Navigation & Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <Link
-            href="/admin/results"
+            href={basePath}
             className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-colors mb-2"
           >
             <div className="p-1 rounded-full bg-muted group-hover:bg-brand-primary/10 transition-colors">
@@ -167,15 +209,7 @@ export function UserResultDetailClient({
           </Typography>
         </div>
         <div className="flex items-center gap-3">
-          {/* <Button
-            variant="outline"
-            color="primary"
-            className="shadow-sm"
-            startIcon={<ExternalLink size={16} />}
-          >
-            Export Report
-          </Button> */}
-          <Link href="/admin/results">
+          <Link href={basePath}>
             <Button
               color="primary"
               className="shadow-lg shadow-brand-primary/20"
@@ -298,64 +332,78 @@ export function UserResultDetailClient({
         ))}
       </div>
 
-      {/* Attempt History List */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
-              <History size={20} />
-            </div>
-            <div>
-              <Typography variant="h4" className="font-bold leading-none">
-                Attempt History
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground mt-1"
-              >
-                Recent interview sessions and their scoring outcomes.
-              </Typography>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
-          >
-            {totalAttempts} Total
-          </Badge>
-        </div>
+      {/* Tabs for Round 1 and Round 2 */}
+      <Tabs
+        tabs={TABS}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        variant="pills"
+        className="w-full"
+      />
 
-        {attemptData.attempts.length === 0 ? (
-          <EmptyState
-            variant="database"
-            title="No attempts found"
-            description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {attemptData.attempts.map((attempt, index) => (
-              <AttemptHistoryCard
-                key={attempt.attempt_id}
-                attemptId={attempt.attempt_id}
-                paperId={attempt.paper_id}
-                paperName={attempt.paper_name}
-                userId={userId}
-                index={index}
-                totalAttempts={totalAttempts}
-                status={attempt.status}
-                statusBadge={renderAttemptStatusBadge(attempt)}
-                isAutoSubmitted={attempt.is_auto_submitted}
-                completionReason={attempt.completion_reason ?? undefined}
-                startedAt={attempt.started_at ?? ""}
-                submittedAt={attempt.submitted_at ?? undefined}
-                attemptedCount={attempt.attempted_count}
-                totalQuestions={attempt.total_questions}
-                unattemptedCount={attempt.unattempted_count}
-                typingStats={attempt.typing_stats}
+      <div className="mt-8">
+        {activeTab === "round1" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
+                  <History size={20} />
+                </div>
+                <div>
+                  <Typography variant="h4" className="font-bold leading-none">
+                    Attempt History
+                  </Typography>
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground mt-1"
+                  >
+                    Recent interview sessions and their scoring outcomes.
+                  </Typography>
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
+              >
+                {totalAttempts} Total
+              </Badge>
+            </div>
+
+            {attemptData.attempts.length === 0 ? (
+              <EmptyState
+                variant="database"
+                title="No attempts found"
+                description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
               />
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {attemptData.attempts.map((attempt, index) => (
+                  <AttemptHistoryCard
+                    key={attempt.attempt_id}
+                    attemptId={attempt.attempt_id}
+                    paperId={attempt.paper_id}
+                    paperName={attempt.paper_name}
+                    userId={userId}
+                    index={index}
+                    totalAttempts={totalAttempts}
+                    status={attempt.status}
+                    statusBadge={renderAttemptStatusBadge(attempt)}
+                    isAutoSubmitted={attempt.is_auto_submitted}
+                    completionReason={attempt.completion_reason ?? undefined}
+                    startedAt={attempt.started_at ?? ""}
+                    submittedAt={attempt.submitted_at ?? undefined}
+                    attemptedCount={attempt.attempted_count}
+                    totalQuestions={attempt.total_questions}
+                    unattemptedCount={attempt.unattempted_count}
+                    typingStats={attempt.typing_stats}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
+
+        {activeTab === "round2" && <Round2History userId={userId} />}
       </div>
     </PageContainer>
   );
