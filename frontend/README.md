@@ -1,104 +1,130 @@
-# TalentFlow ATS - Frontend Documentation
+# 🚀 TalentFlow ATS - Frontend
 
-Welcome to the frontend documentation for the **TalentFlow ATS** project. This project is built using modern web technologies and a scalable, feature-driven architecture to provide a premium and responsive recruitment experience.
-
-## 🚀 Tech Stack
-
-- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Utility**: [clsx](https://www.npmjs.com/package/clsx) & [tailwind-merge](https://www.npmjs.com/package/tailwind-merge)
-- **Data Fetching**: [TanStack Query v5](https://tanstack.com/query/latest)
-- **Form Management**: [TanStack Form](https://tanstack.com/form/latest)
-- **Validation**: [Zod](https://zod.dev/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
+Welcome to the frontend of **TalentFlow ATS**, a premium, high-performance Applicant Tracking System built for modern recruitment workflows. This project leverages **Next.js 15**, **Tailwind CSS v4**, and a **Feature-Driven Architecture** to deliver a seamless user and admin experience.
 
 ---
 
-## 📂 Project Structure (Feature-Driven Architecture)
+## 🎨 Premium Aesthetics & UX
 
-The project follows a scalable "Feature-Driven" structure, separating pure UI primitives from business logic and domain-specific features.
+TalentFlow ATS is designed with a focus on **Rich Aesthetics** and **Premium UI**:
+
+- **Modern Design System**: Custom-built UI primitives using Vanilla CSS and Tailwind v4.
+- **Dynamic Interaction**: Smooth micro-animations powered by Framer Motion.
+- **Glassmorphism**: Sophisticated backdrop blurs and refined gradients for a state-of-the-art feel.
+- **Brand Identity**: A custom-designed, solid "Caret A" logo reflecting the ArcInterview brand.
+
+---
+
+## 🚀 Technology Stack
+
+| Technology                  | Purpose                                                |
+| :-------------------------- | :----------------------------------------------------- |
+| **Next.js 15 (App Router)** | Framework for SSR, CSR, and optimized routing.         |
+| **TypeScript**              | Static typing for robust and maintainable code.        |
+| **Tailwind CSS v4**         | Next-generation styling with advanced utility support. |
+| **TanStack Query v5**       | Efficient server-state management and caching.         |
+| **TanStack Form**           | Type-safe form management with Zod validation.         |
+| **Framer Motion**           | Industry-leading animation library for fluid UI.       |
+| **Lucide React**            | Scalable, high-quality icon library.                   |
+
+---
+
+## 📂 Feature-Driven Architecture
+
+The project is organized into self-contained modules to ensure scalability and ease of maintenance.
 
 ```text
 frontend/
-├── app/                  # Next.js App Router (Routes & Layouts only)
-│   ├── admin/            # Admin-specific routes
-│   │   ├── dashboard/    # Admin Dashboard page
-│   │   └── layout.tsx    # Admin Layout (SSR)
-│   ├── sign-in/          # Login page
-│   ├── user/             # User-specific routes
-│   └── page.tsx          # Registration / Home page
+├── app/                  # Next.js App Router (Routes & Layouts)
+│   ├── admin/            # Admin Panel (Users, Papers, Results, Management)
+│   ├── project-lead/     # Project Lead Dashboard (Candidate Reviews, F2F Results)
+│   ├── user/             # Candidate assessment portal (Tests, Profiles)
+│   └── sign-in/          # Unified secure authentication portal
 ├── components/           # Component Library
-│   ├── ui-elements/      # Pure UI Primitives (Button, Input, Typography)
-│   ├── ui-cards/         # Card components (MainCard, StatCard, ActivityItem)
-│   ├── ui-layout/        # Layout components (Navbar, Sidebar, PageContainer)
-│   └── features/         # Domain-specific modules (authforms, questions, etc.)
-├── lib/                  # Core logic and configuration
-│   ├── api/              # Raw API calls and fetcher setup
-│   ├── auth/             # Authentication utilities and session management
-│   ├── config/           # Static configurations (e.g., adminRoutes, dashboard stats)
-│   ├── react-query/      # Centralized TanStack Query logic
-│   └── validations/      # Zod validation schemas
-├── public/               # Static assets
-├── utils/                # General utility functions
-└── middleware.ts         # Role-based protection middleware
+│   ├── ui-elements/      # Pure UI Primitives (Buttons, Inputs, Badges)
+│   ├── ui-cards/         # Reusable card structures (StatCards, ActivityCards)
+│   ├── ui-layout/        # Structural components (Navbar, Sidebar, Footer)
+│   └── features/         # Logic-heavy modules (Results, Questions, Lead Assignment, Auth)
+├── hooks/                # Custom React Hooks
+│   ├── useListing.ts     # Standardized data listing with silent refresh support
+│   └── api/              # Domain-specific TanStack Query hooks
+├── lib/                  # Core Utilities & Configurations
+│   ├── api/              # Axios/Fetch client with automatic toast handling
+│   ├── auth/             # Session and role-based access control
+│   └── utils.ts          # Shared helper functions
+└── public/               # Static assets (images, icons)
 ```
 
-### 🧩 `components/` Breakdown
+---
 
-- **`ui-elements/`**: Pure design system components. Buttons, Inputs, Typography, Toggle. No business logic.
-- **`ui-cards/`**: Reusable card structures like `MainCard` or `StatCard`.
-- **`ui-layout/`**: Higher-level layouts and reusable structural pieces like the global `Sidebar`, `Navbar`, and `PageContainer`.
-- **`features/`**: The "brains" of the application. Organized by domain (e.g., `authforms`, `questions`). Contains feature-specific components and forms.
+## 🔄 Core Concepts & Workflows
 
-### 📚 `lib/react-query/`
+### 🛡️ Smart Data Fetching (`useListing`)
 
-Centralized location for all data-fetching logic.
+We use a centralized `useListing` hook to handle all paginated lists. It features:
 
-- `query-client.ts`: Contains the `queryClientConfig` and SSR-friendly factory.
-- Hooks are grouped by domain (e.g., `user/use-auth.ts`) to keep the API layer clean.
+- **Forced Refresh**: Bypass cache to get the freshest data.
+- **Silent Refresh**: Update lists in the background after actions (like assigning a lead) without redundant success toasts.
+- **Toast Control**: Manual refresh buttons provide feedback, while programmatic updates remain silent for a cleaner UX.
+
+### 🔌 Intelligent API Client
+
+Our API client includes global interceptors that:
+
+- Automatically trigger success toasts for mutations.
+- Handle error messages from the backend dynamically.
+- Support `silentSuccess` and `silentError` flags for specific use cases.
 
 ---
 
-## 🔄 Rendering Strategy
+## 🛠️ Getting Started
 
-### 🖥️ Server-Side Rendering (SSR)
+### Prerequisites
 
-We default to Server Components for performance and SEO.
+- **Node.js**: 20.x or higher
+- **npm**: 10.x or higher
 
-- **Layouts**: Sidebars and headers are rendered on the server.
-- **Prefetching**: Initial data for dashboards is prefetched using `prefetchQuery` in `page.tsx`.
+### Installation
 
-### 🖱️ Client-Side Rendering (CSR)
+```bash
+# Clone the repository
+git clone https://github.com/md-danish-ai/talent-flow-ats.git
 
-Used only where interactivity is mandatory:
+# Navigate to the frontend directory
+cd talent-flow-ats/frontend
 
-- **Forms**: Everything using TanStack Form (Sign In, Registration).
-- **Interactions**: Toggling sidebars, dropdowns, and animations.
+# Install dependencies
+npm install
+```
+
+### Environment Setup
+
+Create a `.env` file in the root of the `frontend/` directory and add the following variable:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+```
+
+### Running Locally
+
+```bash
+# Start the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
-## 🎨 Design System
+## 📋 Best Practices
 
-- **Primary Color**: `#F96331` (Arcgate Orange)
-- **Backgrounds**: Deep slate and light stone for a professional feel.
-- **Glassmorphism**: Leverages `backdrop-blur` and semi-transparent borders.
+1. **Component Purity**: Keep `ui-elements` free of business logic. Use props for all customizations.
+2. **Path Aliases**: Always use `@` aliases (e.g., `@components/ui-elements/Button`) to keep imports clean.
+3. **Server Components**: Prefer Server Components for data fetching to reduce bundle size and improve performance.
+4. **Zod Validation**: Always define schemas in `lib/validations/` for type-safe form handling.
 
 ---
 
-## 🛠️ Development Workflow
+## 🛡️ License
 
-### Where to add new code?
-
-1. **New UI Primitive?** Add to `components/ui-elements/` (e.g., `Badge.tsx`).
-2. **New Global Layout Part?** Add to `components/ui-layout/` (e.g., `GlobalSearch.tsx`).
-3. **New Business Logic/Screen?** Create a folder in `components/features/[domain]/` and import it using the `@features/[domain]` alias.
-4. **New API Hook?** Add to `lib/react-query/[domain]/use-[feature].ts`.
-5. **New Static Data/Config?** Add to `lib/config/`.
-
-### Best Practices
-
-- **Prefer Server Components**: Only add `"use client"` at the leaf nodes or specifically for interactive containers.
-- **Path Aliases**: Always use defined aliases (e.g., `@components/ui-elements/Card`, `@lib/config/adminRoutes`).
-- **Domain Isolation**: Keep feature folders self-contained where possible.
+© 2026 Arcgate. All rights reserved. Proprietary software for TalentFlow ATS.
