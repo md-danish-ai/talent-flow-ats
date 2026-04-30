@@ -562,3 +562,34 @@ def update_user_basic_info(user_id: int, data):
         )
     finally:
         db_session.close()
+
+
+def change_password(user_id: int, data):
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=StatusCode.NOT_FOUND,
+                detail="User not found.",
+            )
+
+        if not verify_password(data.current_password, user.password):
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Incorrect current password.",
+            )
+
+        user.password = hash_password(data.new_password)
+        db_session.commit()
+        return {"message": "Password updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred: {str(e)}",
+        )
+    finally:
+        db_session.close()
