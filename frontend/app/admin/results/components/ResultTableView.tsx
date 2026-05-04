@@ -186,7 +186,7 @@ export function ResultTableView({
             )}
             {visibleColumns.includes("status") && (
               <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80 text-center">
-                Latest Status
+                Interview Progress
               </TableHead>
             )}
             {visibleColumns.includes("project_lead") && (
@@ -263,11 +263,28 @@ export function ResultTableView({
                   {visibleColumns.includes("candidate") && (
                     <TableCell className="align-middle py-3">
                       <div className="flex items-center gap-3">
-                        <Avatar
-                          name={item.username}
-                          variant="brand"
-                          size="sm"
-                        />
+                        <div className="relative shrink-0">
+                          <Avatar
+                            name={item.username}
+                            variant="brand"
+                            size="sm"
+                          />
+                          <span
+                            className={cn(
+                              "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
+                              latest?.status === "submitted" ||
+                                latest?.status === "completed"
+                                ? "bg-green-500"
+                                : latest?.status === "auto_submitted"
+                                  ? "bg-blue-500"
+                                  : latest?.status === "started"
+                                    ? "bg-violet-500"
+                                    : latest?.status === "expired"
+                                      ? "bg-red-500"
+                                      : "bg-slate-400",
+                            )}
+                          />
+                        </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
@@ -418,12 +435,15 @@ export function ResultTableView({
                           latest?.status === "submitted" ||
                           latest?.status === "completed"
                             ? "success"
-                            : latest?.status === "not_started"
-                              ? "default"
-                              : "warning"
+                            : latest?.status === "auto_submitted"
+                              ? "blue"
+                              : latest?.status === "started"
+                                ? "violet"
+                                : latest?.status === "expired"
+                                  ? "error"
+                                  : "default"
                         }
                         shape="square"
-                        // animate="pulse"
                         className="font-bold uppercase tracking-wider"
                       >
                         {latest?.status

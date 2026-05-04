@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
+import {
+  cn,
+  getTodayISODate,
+  getYesterdayISODate,
+  formatDate,
+} from "@lib/utils";
 import {
   Table,
   TableBody,
@@ -32,7 +37,7 @@ import {
   FileEdit,
   RotateCcw,
   BookOpenCheck,
-  Mail,
+  Calendar,
 } from "lucide-react";
 
 import { useListing } from "@hooks/useListing";
@@ -269,16 +274,25 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                     </Badge>
                                   )}
                                 </div>
-                                <CopyableText
-                                  value={row.email || "-"}
-                                  className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
-                                  title="Copy Email"
+                                <div
+                                  className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                                  title={
+                                    row.is_reinterview
+                                      ? "Re-interview Date"
+                                      : "Registration Date"
+                                  }
                                 >
-                                  <Mail size={11} />
+                                  <Calendar size={11} className="shrink-0" />
                                   <span className="text-[11px] truncate max-w-[150px]">
-                                    {row.email || "-"}
+                                    {row.is_reinterview
+                                      ? row.reinterview_date
+                                        ? formatDate(row.reinterview_date)
+                                        : "No Date"
+                                      : row.created_at
+                                        ? formatDate(row.created_at)
+                                        : "No Date"}
                                   </span>
-                                </CopyableText>
+                                </div>
                               </div>
                             </div>
                           </TableCell>
@@ -327,7 +341,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                               ) : row.process_status === "inprogress" ||
                                 row.assignment?.has_started ? (
                                 <Badge
-                                  color="violet"
+                                  color="primary"
                                   variant="outline"
                                   animate="pulse"
                                   shape="square"
@@ -337,7 +351,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                 </Badge>
                               ) : row.process_status === "ready" ? (
                                 <Badge
-                                  color="primary"
+                                  color="blue"
                                   variant="outline"
                                   shape="square"
                                   className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"

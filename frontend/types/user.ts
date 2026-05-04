@@ -11,6 +11,7 @@ export interface User {
   test_level_id?: number | null;
   test_level_name?: string | null;
   is_active: boolean;
+  created_at?: string | null;
 }
 
 export interface UserAssignment {

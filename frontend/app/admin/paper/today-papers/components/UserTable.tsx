@@ -14,9 +14,10 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { Badge } from "@components/ui-elements/Badge";
 import { CopyableText } from "@components/ui-elements/CopyableText";
-import { Mail, ClipboardCheck } from "lucide-react";
+import { Calendar, ClipboardCheck } from "lucide-react";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { UserListResponse } from "@types";
+import { formatDate } from "@lib/utils";
 
 interface UserTableProps {
   users: UserListResponse[];
@@ -134,16 +135,25 @@ export function UserTable({
                           </Badge>
                         )}
                       </div>
-                      <CopyableText
-                        value={row.email || "-"}
-                        className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
-                        title="Copy Email"
+                      <div
+                        className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                        title={
+                          row.is_reinterview
+                            ? "Re-interview Date"
+                            : "Registration Date"
+                        }
                       >
-                        <Mail size={11} />
+                        <Calendar size={11} className="shrink-0" />
                         <span className="text-[11px] truncate max-w-[150px]">
-                          {row.email || "-"}
+                          {row.is_reinterview
+                            ? row.reinterview_date
+                              ? formatDate(row.reinterview_date)
+                              : "No Date"
+                            : row.created_at
+                              ? formatDate(row.created_at)
+                              : "No Date"}
                         </span>
-                      </CopyableText>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
@@ -203,7 +213,7 @@ export function UserTable({
                     row.assignment?.has_started ? (
                     <Badge
                       variant="outline"
-                      color="violet"
+                      color="primary"
                       animate="pulse"
                       shape="square"
                       className="font-bold text-[10px]"
@@ -213,7 +223,7 @@ export function UserTable({
                   ) : row.process_status === "ready" ? (
                     <Badge
                       variant="outline"
-                      color="primary"
+                      color="blue"
                       animate="pulse"
                       shape="square"
                       className="font-bold text-[10px]"
