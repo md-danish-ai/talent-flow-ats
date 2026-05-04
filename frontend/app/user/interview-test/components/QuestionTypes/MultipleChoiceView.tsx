@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ZoomIn } from "lucide-react";
 import { Radio } from "@components/ui-elements/Radio";
 import { Typography } from "@components/ui-elements/Typography";
-import { Modal } from "@components/ui-elements/Modal";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { getCanonicalImageUrl } from "@lib/utils/image";
 import { cn } from "@lib/utils";
 
@@ -158,26 +158,12 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
         })}
       </div>
 
-      <Modal
+      <ImageLightbox
         isOpen={!!previewImage}
         onClose={() => setPreviewImage(null)}
-        title={previewImage?.title || "Option Image"}
-        className="max-w-4xl"
-        closeOnOutsideClick
-      >
-        {previewImage && (
-          <div className="relative w-full overflow-hidden rounded-lg bg-white p-2">
-            <Image
-              src={getCanonicalImageUrl(previewImage.url)}
-              alt="Option preview"
-              width={1200}
-              height={800}
-              unoptimized
-              className="w-full h-auto max-h-[70vh] object-contain"
-            />
-          </div>
-        )}
-      </Modal>
+        src={previewImage?.url || ""}
+        title={previewImage?.title}
+      />
     </div>
   );
 });

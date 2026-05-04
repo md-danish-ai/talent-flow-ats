@@ -26,6 +26,9 @@ import Image from "next/image";
 import { cn } from "@lib/utils";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
+import { getCanonicalImageUrl } from "@lib/utils/image";
+
 /**
  * Clean Border Animation Component
  */
@@ -68,6 +71,8 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   subtitle,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+
   const typeCode =
     typeof question.question_type === "string"
       ? question.question_type
@@ -78,17 +83,6 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
     typeCode === QUESTION_TYPES.SUBJECTIVE ||
     typeCode === QUESTION_TYPES.IMAGE_SUBJECTIVE ||
     isPassage;
-
-  const getCanonicalImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    const base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(
-      /\/$/,
-      "",
-    );
-    if (!base) return url;
-    return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
-  };
 
   return (
     <div
@@ -229,7 +223,15 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </div>
           {question.image_url && (
             <div className="mb-5 relative z-10">
-              <div className="relative w-full h-[280px] border border-border/40 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-inner">
+              <div 
+                className="relative w-full h-[280px] border border-border/40 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-inner group/img cursor-zoom-in"
+                onClick={() => setPreviewImage({ url: question.image_url!, title: "Question Image" })}
+              >
+                <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover/img:opacity-100 z-10">
+                  <div className="bg-white p-2 rounded-full shadow-lg">
+                    <FileImage className="text-brand-primary" />
+                  </div>
+                </div>
                 <Image
                   src={getCanonicalImageUrl(question.image_url) as string}
                   alt="Question material"
@@ -244,7 +246,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                   variant="body5"
                   className="text-muted-foreground/60 font-mono text-[9px]"
                 >
-                  Attachment Preview
+                  Attachment Preview (Click to Enlarge)
                 </Typography>
               </div>
             </div>
@@ -360,7 +362,11 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                         {hasMedia && (
                           <TableCell className="py-2.5">
                             {opt.image_url && (
-                              <div className="relative w-20 h-12 rounded-lg border border-border overflow-hidden bg-white">
+                              <div 
+                                className="relative w-20 h-12 rounded-lg border border-border overflow-hidden bg-white cursor-zoom-in group/opt-img"
+                                onClick={() => setPreviewImage({ url: opt.image_url!, title: `Option ${opt.option_label || String.fromCharCode(65 + index)}` })}
+                              >
+                                <div className="absolute inset-0 bg-black/0 group-hover/opt-img:bg-black/5 transition-colors" />
                                 <Image
                                   src={getCanonicalImageUrl(opt.image_url) as string}
                                   alt={`Option ${opt.option_label}`}
@@ -441,6 +447,13 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </Typography>
         </div>
       </div>
+
+      <ImageLightbox
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage?.url || ""}
+        title={previewImage?.title}
+      />
     </div>
   );
 };

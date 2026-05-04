@@ -29,6 +29,8 @@ import Image from "next/image";
 import { toast } from "@lib/toast";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
+import { ZoomIn } from "lucide-react";
 
 export const AddImageQuestionForm = ({
   questionId,
@@ -43,6 +45,7 @@ export const AddImageQuestionForm = ({
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = React.useState<{ url: string; title: string } | null>(null);
 
   React.useEffect(() => {
     const fetchClassifications = async () => {
@@ -246,38 +249,49 @@ export const AddImageQuestionForm = ({
                   />
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (
-                      <div className="flex flex-col gap-2">
-                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30">
-                          <Image
-                            src={
-                              getCanonicalImageUrl(field.state.value) as string
-                            }
-                            alt="Preview"
-                            fill
-                            className="object-contain"
-                            unoptimized
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                              type="button"
-                              onClick={() => field.handleChange("")}
-                              className="p-2.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all scale-90 group-hover:scale-100 shadow-xl"
-                              title="Remove Image"
-                            >
-                              <X size={18} />
-                            </button>
+                        <div className="flex flex-col gap-2">
+                          <div 
+                            className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30 cursor-zoom-in"
+                            onClick={() => setPreviewImage({ url: (field.state.value as string) || "", title: "Question Image Preview" })}
+                          >
+                            <Image
+                              src={
+                                getCanonicalImageUrl(field.state.value as string) as string
+                              }
+                              alt="Preview"
+                              fill
+                              className="object-contain"
+                              unoptimized
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                              <div className="bg-white/90 p-1.5 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-all">
+                                <ZoomIn className="w-4 h-4 text-brand-primary" />
+                              </div>
+                            </div>
+                            <div className="absolute top-2 right-2 z-20">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  field.handleChange("");
+                                }}
+                                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
+                                title="Remove Image"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
+                            <FileImage size={14} />
+                            <span className="truncate flex-1">
+                              {(field.state.value as string || "")
+                                .split("/")
+                                .pop()
+                                ?.replace(/^[0-9a-f]{32}_/, "")}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
-                          <FileImage size={14} />
-                          <span className="truncate flex-1">
-                            {field.state.value
-                              .split("/")
-                              .pop()
-                              ?.replace(/^[0-9a-f]{32}_/, "")}
-                          </span>
-                        </div>
-                      </div>
                     ) : (
                       <button
                         type="button"
@@ -569,25 +583,34 @@ export const AddImageQuestionForm = ({
 
                         {/* Option Image Preview */}
                         {opt.imageUrl && (
-                          <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border mt-1 group/img">
+                          <div 
+                            className="relative w-full aspect-video rounded-lg overflow-hidden border border-border mt-1 group/img cursor-zoom-in"
+                            onClick={() => setPreviewImage({ url: opt.imageUrl! as string, title: `Option ${opt.label} Preview` })}
+                          >
                             <Image
-                              src={getCanonicalImageUrl(opt.imageUrl) as string}
+                              src={getCanonicalImageUrl(opt.imageUrl as string) as string}
                               alt={`Option ${opt.label} Preview`}
                               fill
                               className="object-contain bg-muted/20"
                               unoptimized
                             />
+                            <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover/img:opacity-100 z-10">
+                              <div className="bg-white/90 p-1 rounded-full shadow-lg transform scale-90 group-hover/img:scale-100 transition-all">
+                                <ZoomIn className="w-3.5 h-3.5 text-brand-primary" />
+                              </div>
+                            </div>
                             <button
                               type="button"
-                              onClick={() => {
-                                const newOptions = [...field.state.value];
-                                newOptions[index] = {
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentOptions = [...field.state.value];
+                                currentOptions[index] = {
                                   ...opt,
                                   imageUrl: "",
                                 };
-                                field.handleChange(newOptions);
+                                field.handleChange(currentOptions);
                               }}
-                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity z-20"
                             >
                               <X size={14} />
                             </button>
@@ -679,6 +702,12 @@ export const AddImageQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
+      <ImageLightbox
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage?.url || ""}
+        title={previewImage?.title}
+      />
     </form>
   );
 };
