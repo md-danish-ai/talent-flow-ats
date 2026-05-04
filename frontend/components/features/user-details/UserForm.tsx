@@ -221,11 +221,14 @@ export function UserForm({
         ) {
           axiosError.response.data.errors.forEach((err) => {
             const path = err.loc[err.loc.length - 1] as string;
-            form.setFieldMeta(path as keyof PersonalDetailsFormValues, (meta) => ({
-              ...meta,
-              errors: [err.msg],
-              isTouched: true,
-            }));
+            form.setFieldMeta(
+              path as keyof PersonalDetailsFormValues,
+              (meta) => ({
+                ...meta,
+                errors: [err.msg],
+                isTouched: true,
+              }),
+            );
           });
         }
       }

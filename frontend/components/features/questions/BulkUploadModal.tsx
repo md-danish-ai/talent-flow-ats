@@ -127,7 +127,7 @@ export function BulkUploadModal({
     id: l.name,
     label: l.name,
   }));
-  const marksOptions = [1, 2, 3, 4, 5, 10, 20].map((m) => ({
+  const marksOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((m) => ({
     id: m.toString(),
     label: `${m} Marks`,
   }));

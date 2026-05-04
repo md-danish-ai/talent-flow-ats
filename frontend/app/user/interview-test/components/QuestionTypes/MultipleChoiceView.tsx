@@ -67,7 +67,6 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
           // Normalize option content with support for both snake_case and camelCase
           const isObject = typeof option === "object" && option !== null;
 
-
           const optObj = isObject ? (option as OptionObject) : null;
           const optionText = optObj
             ? optObj.option_text || optObj.optionText || ""
@@ -84,15 +83,20 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
               key={`${questionId}-${optionKey}`}
               className={cn(
                 "group relative border transition-all cursor-pointer flex",
-                hasImage 
-                  ? "flex-col gap-3 rounded-2xl p-4 items-center text-center" 
+                hasImage
+                  ? "flex-col gap-3 rounded-2xl p-4 items-center text-center"
                   : "flex-row items-center gap-4 rounded-xl p-3 min-h-[52px]",
                 isChecked
                   ? "border-brand-primary bg-brand-primary/5 shadow-[0_8px_20px_rgba(249,99,49,0.08)]"
-                  : "border-border bg-card hover:border-brand-primary/30 hover:bg-brand-primary/[0.02]"
+                  : "border-border bg-card hover:border-brand-primary/30 hover:bg-brand-primary/[0.02]",
               )}
             >
-              <div className={cn("flex items-center gap-3", hasImage ? "w-full justify-start" : "shrink-0")}>
+              <div
+                className={cn(
+                  "flex items-center gap-3",
+                  hasImage ? "w-full justify-start" : "shrink-0",
+                )}
+              >
                 <Radio
                   checked={isChecked}
                   onChange={() => onChangeAnswer(savedValue)}
@@ -104,7 +108,7 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
                     variant="body2"
                     className={cn(
                       "transition-colors font-bold",
-                      isChecked ? "text-brand-primary" : "text-foreground/70"
+                      isChecked ? "text-brand-primary" : "text-foreground/70",
                     )}
                   >
                     Option {optionKey}
@@ -113,14 +117,14 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
               </div>
 
               {optionImageUrl && (
-                <div 
+                <div
                   className="relative w-full max-w-[240px] aspect-video rounded-xl overflow-hidden border border-border bg-muted/20 group/opt-img cursor-zoom-in"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setPreviewImage({
                       url: optionImageUrl,
-                      title: `Option ${optionKey}`
+                      title: `Option ${optionKey}`,
                     });
                   }}
                 >
@@ -147,7 +151,7 @@ export const MultipleChoiceView = memo(function MultipleChoiceView({
                     hasImage ? "w-full" : "flex-1",
                     isChecked
                       ? "text-brand-primary font-medium"
-                      : "text-foreground group-hover:text-brand-primary/80"
+                      : "text-foreground group-hover:text-brand-primary/80",
                   )}
                 >
                   {optionText}

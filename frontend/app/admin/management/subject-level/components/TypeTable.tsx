@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,11 +8,12 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Copy, Check } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { EmptyState } from "@components/ui-elements/EmptyState";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 export interface BaseType {
   id: number;
@@ -37,6 +36,47 @@ interface TypeTableProps {
   onToggleStatus: (item: BaseType) => void;
 }
 
+function CopyCodeBadge({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 group/copy">
+      <Badge
+        variant="outline"
+        shape="square"
+        color="primary"
+        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest shrink-0"
+      >
+        {code}
+      </Badge>
+      <Tooltip content={copied ? "Copied!" : "Copy Code"} side="top">
+        <button
+          onClick={handleCopy}
+          className="p-1 rounded-md hover:bg-brand-primary/10 text-muted-foreground hover:text-brand-primary transition-colors"
+          type="button"
+        >
+          {copied ? (
+            <Check size={12} className="text-success" />
+          ) : (
+            <Copy size={12} />
+          )}
+        </button>
+      </Tooltip>
+    </div>
+  );
+}
+
 export function TypeTable({
   activeTab,
   currentData,
@@ -50,14 +90,12 @@ export function TypeTable({
 }: TypeTableProps) {
   const isSubject = activeTab === "subjects";
   const isLevel = activeTab === "levels";
-  const colSpan = isSubject ? 7 : isLevel ? 5 : 5;
+  // Updated colSpan: 1 (Sr No) + 1 (Name) + 1 (Code) + 1 (Description) + (1 if isSubject for Exclusive) + 1 (Status) + 1 (Action)
+  const colSpan = isSubject ? 7 : 6;
 
   return (
     <div className="overflow-x-auto w-full h-full flex flex-col">
-      <Table
-        aria-label={`${isSubject ? "Subjects" : "Levels"} table`}
-        className="h-full"
-      >
+      <Table aria-label={`${activeTab} table`} className="h-full">
         <TableHeader className="bg-muted/30">
           <TableRow>
             <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
@@ -66,11 +104,9 @@ export function TypeTable({
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               {isSubject ? "Subject Name" : isLevel ? "Level Name" : "Result"}
             </TableHead>
-            {isSubject && (
-              <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                Code
-              </TableHead>
-            )}
+            <TableHead className="font-bold text-slate-500 text-xs uppercase">
+              Code
+            </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               Description
             </TableHead>
@@ -104,24 +140,15 @@ export function TypeTable({
                   {(currentPage - 1) * pageSize + idx + 1}
                 </TableCell>
                 <TableCell className="font-semibold">{item.name}</TableCell>
-                {isSubject && (
-                  <TableCell>
-                    {item.code ? (
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color="primary"
-                        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest"
-                      >
-                        {item.code}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs italic">
-                        —
-                      </span>
-                    )}
-                  </TableCell>
-                )}
+                <TableCell>
+                  {item.code ? (
+                    <CopyCodeBadge code={item.code} />
+                  ) : (
+                    <span className="text-muted-foreground text-xs italic">
+                      —
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {item.description || "-"}
                 </TableCell>

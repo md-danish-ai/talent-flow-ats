@@ -44,7 +44,10 @@ export const AddImageSubjectiveQuestionForm = ({
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [previewImage, setPreviewImage] = React.useState<{ url: string; title: string } | null>(null);
+  const [previewImage, setPreviewImage] = React.useState<{
+    url: string;
+    title: string;
+  } | null>(null);
 
   React.useEffect(() => {
     const fetchClassifications = async () => {
@@ -182,13 +185,20 @@ export const AddImageSubjectiveQuestionForm = ({
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (
                       <div className="flex flex-col gap-2">
-                        <div 
+                        <div
                           className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30 cursor-zoom-in"
-                          onClick={() => setPreviewImage({ url: (field.state.value as string) || "", title: "Question Image Preview" })}
+                          onClick={() =>
+                            setPreviewImage({
+                              url: (field.state.value as string) || "",
+                              title: "Question Image Preview",
+                            })
+                          }
                         >
                           <Image
                             src={
-                              getCanonicalImageUrl(field.state.value as string) as string
+                              getCanonicalImageUrl(
+                                field.state.value as string,
+                              ) as string
                             }
                             alt="Preview"
                             fill
@@ -217,7 +227,7 @@ export const AddImageSubjectiveQuestionForm = ({
                         <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
                           <FileImage size={14} />
                           <span className="truncate flex-1">
-                            {(field.state.value as string || "")
+                            {((field.state.value as string) || "")
                               .split("/")
                               .pop()
                               ?.replace(/^[0-9a-f]{32}_/, "")}

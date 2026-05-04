@@ -71,7 +71,10 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   subtitle,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+  const [previewImage, setPreviewImage] = useState<{
+    url: string;
+    title: string;
+  } | null>(null);
 
   const typeCode =
     typeof question.question_type === "string"
@@ -223,9 +226,14 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </div>
           {question.image_url && (
             <div className="mb-5 relative z-10">
-              <div 
+              <div
                 className="relative w-full h-[280px] border border-border/40 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-inner group/img cursor-zoom-in"
-                onClick={() => setPreviewImage({ url: question.image_url!, title: "Question Image" })}
+                onClick={() =>
+                  setPreviewImage({
+                    url: question.image_url!,
+                    title: "Question Image",
+                  })
+                }
               >
                 <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover/img:opacity-100 z-10">
                   <div className="bg-white p-2 rounded-full shadow-lg">
@@ -265,8 +273,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           <div className="rounded-xl border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm relative z-10">
             {(() => {
               const options = (question.options as QuestionOption[]) || [];
-              const hasText = options.some((o) => o.option_text && o.option_text.trim() !== "");
-              const hasMedia = options.some((o) => o.image_url && o.image_url.trim() !== "");
+              const hasText = options.some(
+                (o) => o.option_text && o.option_text.trim() !== "",
+              );
+              const hasMedia = options.some(
+                (o) => o.image_url && o.image_url.trim() !== "",
+              );
 
               return (
                 <Table>
@@ -362,13 +374,22 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                         {hasMedia && (
                           <TableCell className="py-2.5">
                             {opt.image_url && (
-                              <div 
+                              <div
                                 className="relative w-20 h-12 rounded-lg border border-border overflow-hidden bg-white cursor-zoom-in group/opt-img"
-                                onClick={() => setPreviewImage({ url: opt.image_url!, title: `Option ${opt.option_label || String.fromCharCode(65 + index)}` })}
+                                onClick={() =>
+                                  setPreviewImage({
+                                    url: opt.image_url!,
+                                    title: `Option ${opt.option_label || String.fromCharCode(65 + index)}`,
+                                  })
+                                }
                               >
                                 <div className="absolute inset-0 bg-black/0 group-hover/opt-img:bg-black/5 transition-colors" />
                                 <Image
-                                  src={getCanonicalImageUrl(opt.image_url) as string}
+                                  src={
+                                    getCanonicalImageUrl(
+                                      opt.image_url,
+                                    ) as string
+                                  }
                                   alt={`Option ${opt.option_label}`}
                                   fill
                                   className="object-contain"

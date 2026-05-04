@@ -87,7 +87,10 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
               <div className="w-10 h-10 rounded-full border border-dashed border-border/60 flex items-center justify-center bg-muted/5">
                 <ImageIcon size={14} className="text-muted-foreground/20" />
               </div>
-              <Typography variant="body5" className="text-muted-foreground/30 mt-1 uppercase tracking-tighter text-[8px] font-bold">
+              <Typography
+                variant="body5"
+                className="text-muted-foreground/30 mt-1 uppercase tracking-tighter text-[8px] font-bold"
+              >
                 No Preview
               </Typography>
             </div>

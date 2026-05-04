@@ -103,6 +103,7 @@ export function TypesManagementClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    code: "",
     description: "",
     is_exclusive: false,
   });
@@ -140,12 +141,13 @@ export function TypesManagementClient({
       setEditingType(item);
       setFormData({
         name: item.name,
+        code: item.code,
         description: item.description,
         is_exclusive: item.metadata?.is_exclusive === true,
       });
     } else {
       setEditingType(null);
-      setFormData({ name: "", description: "", is_exclusive: false });
+      setFormData({ name: "", code: "", description: "", is_exclusive: false });
     }
     setIsModalOpen(true);
   };
@@ -153,7 +155,7 @@ export function TypesManagementClient({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingType(null);
-    setFormData({ name: "", description: "", is_exclusive: false });
+    setFormData({ name: "", code: "", description: "", is_exclusive: false });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,12 +175,14 @@ export function TypesManagementClient({
       if (editingType) {
         await classificationsApi.updateClassification(editingType.id, {
           name: formData.name,
+          code: formData.code,
           metadata: metadataToSubmit,
         });
       } else {
         await classificationsApi.createClassification({
           type: classificationType,
           name: formData.name,
+          code: formData.code,
           metadata: metadataToSubmit,
         });
       }
