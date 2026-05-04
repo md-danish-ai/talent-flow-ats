@@ -15,7 +15,7 @@ export interface InterviewQuestion {
   subjectName?: string;
   typeName?: string;
   description?: string;
-  options?: string[];
+  options?: (string | { option_text: string; image_url?: string })[];
   passage?: string;
   imageUrl?: string;
   image_url?: string;

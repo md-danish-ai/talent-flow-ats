@@ -74,9 +74,9 @@ export default function AutoAssignmentDashboard() {
               variant="outline"
               color="secondary"
               onClick={fetchRules}
-              className="px-3"
+              className="px-3 group"
             >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw className="h-4 w-4 transition-transform duration-500 group-hover:rotate-180" />
             </Button>
             <Button
               variant="outline"
@@ -85,9 +85,9 @@ export default function AutoAssignmentDashboard() {
                 setEditingRule(null);
                 setIsModalOpen(true);
               }}
-              className="gap-2"
+              className="gap-2 group"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 transition-transform duration-500 group-hover:rotate-90" />
               Configure New Rule
             </Button>
           </div>

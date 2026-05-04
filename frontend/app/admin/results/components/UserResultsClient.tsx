@@ -10,6 +10,7 @@ import {
   Trophy,
   BadgeCheck,
   Target,
+  HelpCircle,
 } from "lucide-react";
 import {
   cn,
@@ -80,6 +81,8 @@ type ResultsFilters = {
   overallGrade: string;
   project_lead_id: string;
 };
+
+import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
 
 export function UserResultsClient() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
@@ -317,7 +320,17 @@ export function UserResultsClient() {
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
-            Candidates Results
+            <span>Candidates Results</span>
+            <Tooltip
+              content={<ResultStatusLegend compact />}
+              side="right"
+              className="p-0 border-0 bg-transparent shadow-none"
+            >
+              <HelpCircle
+                size={14}
+                className="text-slate-400 hover:text-brand-primary transition-colors cursor-help"
+              />
+            </Tooltip>
           </div>
         }
         className="mb-6 flex flex-col"

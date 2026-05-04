@@ -428,6 +428,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 "mobile": row.User.mobile,
                 "email": row.User.email,
                 "role": row.User.role,
+                "created_at": row.User.created_at.isoformat() if row.User.created_at else None,
                 "process_status": row.User.process_status,
                 "test_level_id": row.User.test_level_id,
                 "test_level_name": row.User.test_level.name if row.User.test_level else None,

@@ -3,7 +3,7 @@ import { memo, useState } from "react";
 import { Globe, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
-import { Modal } from "@components/ui-elements/Modal";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 
 import { getCanonicalImageUrl } from "@lib/utils/image";
 
@@ -71,24 +71,12 @@ export const QuestionImage = memo(function QuestionImage({
           )}
         </div>
 
-        <Modal
+        <ImageLightbox
           isOpen={isPreviewOpen}
           onClose={() => setIsPreviewOpen(false)}
+          src={effectiveUrl}
           title="Question Reference Image"
-          className="max-w-6xl"
-          closeOnOutsideClick
-        >
-          <div className="relative w-full overflow-hidden rounded-lg bg-white p-4">
-            <Image
-              src={getCanonicalImageUrl(effectiveUrl)}
-              alt="Fullscreen context"
-              width={1200}
-              height={800}
-              unoptimized
-              className="w-full h-auto max-h-[75vh] object-contain"
-            />
-          </div>
-        </Modal>
+        />
       </div>
     </div>
   );

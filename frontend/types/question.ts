@@ -4,6 +4,7 @@ export interface QuestionOption {
   option_label: string;
   option_text: string;
   is_correct: boolean;
+  image_url?: string | null;
 }
 
 export interface QuestionAnswer {

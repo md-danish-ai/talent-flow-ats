@@ -8,12 +8,14 @@ class OptionCreate(BaseModel):
     option_label: str
     option_text: str
     is_correct: bool
+    image_url: Optional[str] = None
 
 
 class OptionUpdate(BaseModel):
     option_label: str
     option_text: str
     is_correct: bool
+    image_url: Optional[str] = None
 
 
 class AnswerCreate(BaseModel):

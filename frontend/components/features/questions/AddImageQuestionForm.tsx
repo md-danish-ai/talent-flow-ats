@@ -29,6 +29,8 @@ import Image from "next/image";
 import { toast } from "@lib/toast";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
+import { ZoomIn } from "lucide-react";
 
 export const AddImageQuestionForm = ({
   questionId,
@@ -43,6 +45,10 @@ export const AddImageQuestionForm = ({
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = React.useState<{
+    url: string;
+    title: string;
+  } | null>(null);
 
   React.useEffect(() => {
     const fetchClassifications = async () => {
@@ -83,10 +89,10 @@ export const AddImageQuestionForm = ({
         questionText: "",
         explanation: "",
         options: [
-          { id: "A", label: "A", content: "", isCorrect: false },
-          { id: "B", label: "B", content: "", isCorrect: false },
-          { id: "C", label: "C", content: "", isCorrect: false },
-          { id: "D", label: "D", content: "", isCorrect: false },
+          { id: "A", label: "A", content: "", imageUrl: "", isCorrect: false },
+          { id: "B", label: "B", content: "", imageUrl: "", isCorrect: false },
+          { id: "C", label: "C", content: "", imageUrl: "", isCorrect: false },
+          { id: "D", label: "D", content: "", imageUrl: "", isCorrect: false },
         ],
       } as ImageMCQFormValues),
     validators: {
@@ -104,7 +110,8 @@ export const AddImageQuestionForm = ({
           is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
           options: value.options.map((o) => ({
             option_label: o.label,
-            option_text: o.content,
+            option_text: o.content || "",
+            image_url: o.imageUrl || null,
             is_correct: o.isCorrect,
           })),
           answer: {
@@ -155,8 +162,38 @@ export const AddImageQuestionForm = ({
       const nextLabel = String.fromCharCode(65 + currentOptions.length);
       form.setFieldValue("options", [
         ...currentOptions,
-        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
+        {
+          id: nextLabel,
+          label: nextLabel,
+          content: "",
+          imageUrl: "",
+          isCorrect: false,
+        },
       ]);
+    }
+  };
+
+  const handleOptionImageUpload = async (
+    index: number,
+    file: File | undefined,
+  ) => {
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const result = await questionsApi.uploadImage(file);
+      const currentOptions = [...form.getFieldValue("options")];
+      currentOptions[index] = {
+        ...currentOptions[index],
+        imageUrl: result.image_url,
+      };
+      form.setFieldValue("options", currentOptions);
+      toast.success(`Image for Option ${currentOptions[index].label} uploaded`);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Option image upload failed");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -216,31 +253,49 @@ export const AddImageQuestionForm = ({
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (
                       <div className="flex flex-col gap-2">
-                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30">
+                        <div
+                          className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30 cursor-zoom-in"
+                          onClick={() =>
+                            setPreviewImage({
+                              url: (field.state.value as string) || "",
+                              title: "Question Image Preview",
+                            })
+                          }
+                        >
                           <Image
                             src={
-                              getCanonicalImageUrl(field.state.value) as string
+                              getCanonicalImageUrl(
+                                field.state.value as string,
+                              ) as string
                             }
                             alt="Preview"
                             fill
                             className="object-contain"
                             unoptimized
                           />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                            <div className="bg-white/90 p-1.5 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-all">
+                              <ZoomIn className="w-4 h-4 text-brand-primary" />
+                            </div>
+                          </div>
+                          <div className="absolute top-2 right-2 z-20">
                             <button
                               type="button"
-                              onClick={() => field.handleChange("")}
-                              className="p-2.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all scale-90 group-hover:scale-100 shadow-xl"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                field.handleChange("");
+                              }}
+                              className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
                               title="Remove Image"
                             >
-                              <X size={18} />
+                              <X size={16} />
                             </button>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
                           <FileImage size={14} />
                           <span className="truncate flex-1">
-                            {field.state.value
+                            {((field.state.value as string) || "")
                               .split("/")
                               .pop()
                               ?.replace(/^[0-9a-f]{32}_/, "")}
@@ -468,37 +523,119 @@ export const AddImageQuestionForm = ({
                 {field.state.value.map((opt, index) => (
                   <form.Field key={opt.id} name={`options[${index}].content`}>
                     {(subField) => (
-                      <div className="relative group flex flex-col gap-1">
-                        <OptionInput
-                          prefixLabel={opt.label}
-                          isCorrect={opt.isCorrect}
-                          placeholder={`Type option ${opt.label} content...`}
-                          value={opt.content}
-                          onChange={(e) => {
-                            const newOptions = [...field.state.value];
-                            newOptions[index] = {
-                              ...opt,
-                              content: e.target.value,
-                            };
-                            field.handleChange(newOptions);
-                          }}
-                          onBlur={subField.handleBlur}
-                          error={
-                            subField.state.meta.errors.length > 0 ||
-                            field.state.meta.errors.length > 0
-                          }
-                          onMarkCorrect={() => {
-                            const newOptions = field.state.value.map(
-                              (o, i) => ({
-                                ...o,
-                                isCorrect: i === index ? !o.isCorrect : false,
-                              }),
-                            );
-                            field.handleChange(newOptions);
-                          }}
-                          onRemove={() => removeOption(index)}
-                          showRemove={field.state.value.length > 2}
-                        />
+                      <div className="relative group flex flex-col gap-2 p-3 rounded-xl border border-border/50 bg-muted/5 hover:bg-muted/10 transition-all">
+                        <div className="flex items-center gap-3">
+                          <OptionInput
+                            prefixLabel={opt.label}
+                            isCorrect={opt.isCorrect}
+                            placeholder={`Type option ${opt.label} text...`}
+                            value={opt.content}
+                            onChange={(e) => {
+                              const newOptions = [...field.state.value];
+                              newOptions[index] = {
+                                ...opt,
+                                content: e.target.value,
+                              };
+                              field.handleChange(newOptions);
+                            }}
+                            onBlur={subField.handleBlur}
+                            error={
+                              subField.state.meta.errors.length > 0 ||
+                              field.state.meta.errors.length > 0
+                            }
+                            onMarkCorrect={() => {
+                              const newOptions = field.state.value.map(
+                                (o, i) => ({
+                                  ...o,
+                                  isCorrect: i === index ? !o.isCorrect : false,
+                                }),
+                              );
+                              field.handleChange(newOptions);
+                            }}
+                            onRemove={() => removeOption(index)}
+                            showRemove={field.state.value.length > 2}
+                            className="flex-1"
+                          />
+
+                          {/* Option Image Upload Toggle */}
+                          <div className="flex flex-col gap-1">
+                            <input
+                              type="file"
+                              id={`option-image-${index}`}
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleOptionImageUpload(
+                                  index,
+                                  e.target.files?.[0],
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                document
+                                  .getElementById(`option-image-${index}`)
+                                  ?.click()
+                              }
+                              className={cn(
+                                "p-2 rounded-lg border transition-all",
+                                opt.imageUrl
+                                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
+                                  : "border-border bg-background text-muted-foreground hover:border-brand-primary hover:text-brand-primary",
+                              )}
+                              title="Upload Option Image"
+                            >
+                              <FileImage size={20} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Option Image Preview */}
+                        {opt.imageUrl && (
+                          <div
+                            className="relative w-full aspect-video rounded-lg overflow-hidden border border-border mt-1 group/img cursor-zoom-in"
+                            onClick={() =>
+                              setPreviewImage({
+                                url: opt.imageUrl! as string,
+                                title: `Option ${opt.label} Preview`,
+                              })
+                            }
+                          >
+                            <Image
+                              src={
+                                getCanonicalImageUrl(
+                                  opt.imageUrl as string,
+                                ) as string
+                              }
+                              alt={`Option ${opt.label} Preview`}
+                              fill
+                              className="object-contain bg-muted/20"
+                              unoptimized
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover/img:opacity-100 z-10">
+                              <div className="bg-white/90 p-1 rounded-full shadow-lg transform scale-90 group-hover/img:scale-100 transition-all">
+                                <ZoomIn className="w-3.5 h-3.5 text-brand-primary" />
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentOptions = [...field.state.value];
+                                currentOptions[index] = {
+                                  ...opt,
+                                  imageUrl: "",
+                                };
+                                field.handleChange(currentOptions);
+                              }}
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity z-20"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
+
                         {subField.state.meta.errors.length > 0 && (
                           <Typography
                             variant="body5"
@@ -584,6 +721,12 @@ export const AddImageQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
+      <ImageLightbox
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage?.url || ""}
+        title={previewImage?.title}
+      />
     </form>
   );
 };

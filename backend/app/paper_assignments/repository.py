@@ -507,19 +507,16 @@ def _resolve_question_type(question: dict) -> str:
     return "SUBJECTIVE"
 
 
-def _sanitize_options(raw_options: Any) -> list[str]:
+def _sanitize_options(raw_options: Any) -> list[Any]:
     if not isinstance(raw_options, list):
         return []
 
-    options: list[str] = []
+    options: list[Any] = []
     for option in raw_options:
         if isinstance(option, dict):
-            option_text = option.get("option_text")
-            option_label = option.get("option_label")
-            if isinstance(option_text, str) and option_text.strip():
-                options.append(option_text)
-            elif isinstance(option_label, str) and option_label.strip():
-                options.append(option_label)
+            # If it's a dict, we want to keep it as a dict but ensure it has required fields
+            # and potentially map internal fields if needed
+            options.append(option)
         elif isinstance(option, str) and option.strip():
             options.append(option)
 

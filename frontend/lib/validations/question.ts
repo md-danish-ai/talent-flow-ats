@@ -7,6 +7,14 @@ export const mcqOptionSchema = z.object({
   isCorrect: z.boolean(),
 });
 
+export const imageMCQOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  content: z.string().optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
+  isCorrect: z.boolean(),
+});
+
 export const mcqSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
@@ -27,10 +35,10 @@ export const imageMCQSchema = z.object({
   examLevel: z.string().min(1, "Exam Level is required"),
   marks: z.coerce.number().min(1).max(50),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
-  questionImageUrl: z.string().min(1, "Question image is required"),
+  questionImageUrl: z.string().optional().or(z.literal("")),
   // Note: Add image fields here later if required (e.g., questionImage: z.any())
   options: z
-    .array(mcqOptionSchema)
+    .array(imageMCQOptionSchema)
     .min(2, "At least two options are required")
     .refine((options) => options.some((opt) => opt.isCorrect), {
       message: "One option must be marked as correct",

@@ -250,11 +250,7 @@ const baseSchema = z.object({
   dob: z.string().min(1, "Date of birth is required"),
   primaryMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
   alternateMobile: z.string().default(""),
-  email: z
-    .string()
-    .email("Invalid email address")
-    .or(z.literal(""))
-    .default(""),
+  email: z.string().email("Valid email address is required"),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
   presentState: z.string().min(1, "State is required"),
