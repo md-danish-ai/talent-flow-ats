@@ -42,6 +42,7 @@ export const EditImageQuestionModal: React.FC<EditImageQuestionModalProps> = ({
         id: opt.option_label || String.fromCharCode(65 + index),
         label: opt.option_label || String.fromCharCode(65 + index),
         content: opt.option_text || "",
+        imageUrl: opt.image_url || "",
         isCorrect: !!opt.is_correct,
       }),
     ),

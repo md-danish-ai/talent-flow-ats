@@ -197,8 +197,37 @@ export function UserForm({
           router.refresh();
           router.push(isAdmin ? "/admin/management/users" : "/user/dashboard");
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Submission error:", error);
+        // Define interface for backend validation errors to avoid 'any' lint errors
+        interface BackendValidationError {
+          loc: (string | number)[];
+          msg: string;
+          type: string;
+        }
+
+        const axiosError = error as {
+          response?: {
+            status: number;
+            data?: {
+              errors?: BackendValidationError[];
+            };
+          };
+        };
+
+        if (
+          axiosError?.response?.status === 422 &&
+          axiosError?.response?.data?.errors
+        ) {
+          axiosError.response.data.errors.forEach((err) => {
+            const path = err.loc[err.loc.length - 1] as string;
+            form.setFieldMeta(path as keyof PersonalDetailsFormValues, (meta) => ({
+              ...meta,
+              errors: [err.msg],
+              isTouched: true,
+            }));
+          });
+        }
       }
     },
   });
@@ -320,6 +349,11 @@ export function UserForm({
     setTouchedSteps((prev) => [...new Set([...prev, currentStep])]);
     touchStepFields(currentStep);
     await form.validateAllFields("change");
+
+    if (!isStepValid(currentStep)) {
+      setIncompleteSteps([currentStep]);
+      return;
+    }
 
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);

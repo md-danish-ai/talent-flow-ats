@@ -83,10 +83,10 @@ export const AddImageQuestionForm = ({
         questionText: "",
         explanation: "",
         options: [
-          { id: "A", label: "A", content: "", isCorrect: false },
-          { id: "B", label: "B", content: "", isCorrect: false },
-          { id: "C", label: "C", content: "", isCorrect: false },
-          { id: "D", label: "D", content: "", isCorrect: false },
+          { id: "A", label: "A", content: "", imageUrl: "", isCorrect: false },
+          { id: "B", label: "B", content: "", imageUrl: "", isCorrect: false },
+          { id: "C", label: "C", content: "", imageUrl: "", isCorrect: false },
+          { id: "D", label: "D", content: "", imageUrl: "", isCorrect: false },
         ],
       } as ImageMCQFormValues),
     validators: {
@@ -104,7 +104,8 @@ export const AddImageQuestionForm = ({
           is_active: true, // It's only for create here, so keep it or let backend default. I'll keep it for create.
           options: value.options.map((o) => ({
             option_label: o.label,
-            option_text: o.content,
+            option_text: o.content || "",
+            image_url: o.imageUrl || null,
             is_correct: o.isCorrect,
           })),
           answer: {
@@ -155,8 +156,38 @@ export const AddImageQuestionForm = ({
       const nextLabel = String.fromCharCode(65 + currentOptions.length);
       form.setFieldValue("options", [
         ...currentOptions,
-        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
+        {
+          id: nextLabel,
+          label: nextLabel,
+          content: "",
+          imageUrl: "",
+          isCorrect: false,
+        },
       ]);
+    }
+  };
+
+  const handleOptionImageUpload = async (
+    index: number,
+    file: File | undefined,
+  ) => {
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const result = await questionsApi.uploadImage(file);
+      const currentOptions = [...form.getFieldValue("options")];
+      currentOptions[index] = {
+        ...currentOptions[index],
+        imageUrl: result.image_url,
+      };
+      form.setFieldValue("options", currentOptions);
+      toast.success(`Image for Option ${currentOptions[index].label} uploaded`);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Option image upload failed");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -468,37 +499,101 @@ export const AddImageQuestionForm = ({
                 {field.state.value.map((opt, index) => (
                   <form.Field key={opt.id} name={`options[${index}].content`}>
                     {(subField) => (
-                      <div className="relative group flex flex-col gap-1">
-                        <OptionInput
-                          prefixLabel={opt.label}
-                          isCorrect={opt.isCorrect}
-                          placeholder={`Type option ${opt.label} content...`}
-                          value={opt.content}
-                          onChange={(e) => {
-                            const newOptions = [...field.state.value];
-                            newOptions[index] = {
-                              ...opt,
-                              content: e.target.value,
-                            };
-                            field.handleChange(newOptions);
-                          }}
-                          onBlur={subField.handleBlur}
-                          error={
-                            subField.state.meta.errors.length > 0 ||
-                            field.state.meta.errors.length > 0
-                          }
-                          onMarkCorrect={() => {
-                            const newOptions = field.state.value.map(
-                              (o, i) => ({
-                                ...o,
-                                isCorrect: i === index ? !o.isCorrect : false,
-                              }),
-                            );
-                            field.handleChange(newOptions);
-                          }}
-                          onRemove={() => removeOption(index)}
-                          showRemove={field.state.value.length > 2}
-                        />
+                      <div className="relative group flex flex-col gap-2 p-3 rounded-xl border border-border/50 bg-muted/5 hover:bg-muted/10 transition-all">
+                        <div className="flex items-center gap-3">
+                          <OptionInput
+                            prefixLabel={opt.label}
+                            isCorrect={opt.isCorrect}
+                            placeholder={`Type option ${opt.label} text...`}
+                            value={opt.content}
+                            onChange={(e) => {
+                              const newOptions = [...field.state.value];
+                              newOptions[index] = {
+                                ...opt,
+                                content: e.target.value,
+                              };
+                              field.handleChange(newOptions);
+                            }}
+                            onBlur={subField.handleBlur}
+                            error={
+                              subField.state.meta.errors.length > 0 ||
+                              field.state.meta.errors.length > 0
+                            }
+                            onMarkCorrect={() => {
+                              const newOptions = field.state.value.map(
+                                (o, i) => ({
+                                  ...o,
+                                  isCorrect: i === index ? !o.isCorrect : false,
+                                }),
+                              );
+                              field.handleChange(newOptions);
+                            }}
+                            onRemove={() => removeOption(index)}
+                            showRemove={field.state.value.length > 2}
+                            className="flex-1"
+                          />
+
+                          {/* Option Image Upload Toggle */}
+                          <div className="flex flex-col gap-1">
+                            <input
+                              type="file"
+                              id={`option-image-${index}`}
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleOptionImageUpload(
+                                  index,
+                                  e.target.files?.[0],
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                document
+                                  .getElementById(`option-image-${index}`)
+                                  ?.click()
+                              }
+                              className={cn(
+                                "p-2 rounded-lg border transition-all",
+                                opt.imageUrl
+                                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
+                                  : "border-border bg-background text-muted-foreground hover:border-brand-primary hover:text-brand-primary",
+                              )}
+                              title="Upload Option Image"
+                            >
+                              <FileImage size={20} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Option Image Preview */}
+                        {opt.imageUrl && (
+                          <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border mt-1 group/img">
+                            <Image
+                              src={getCanonicalImageUrl(opt.imageUrl) as string}
+                              alt={`Option ${opt.label} Preview`}
+                              fill
+                              className="object-contain bg-muted/20"
+                              unoptimized
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newOptions = [...field.state.value];
+                                newOptions[index] = {
+                                  ...opt,
+                                  imageUrl: "",
+                                };
+                                field.handleChange(newOptions);
+                              }}
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
+
                         {subField.state.meta.errors.length > 0 && (
                           <Typography
                             variant="body5"

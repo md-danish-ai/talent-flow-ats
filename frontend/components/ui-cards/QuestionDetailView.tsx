@@ -258,98 +258,136 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </Typography>
         </div>
 
-        {/* Options Table for MCQs - UNTOUCHED as requested */}
+        {/* Options Table for MCQs */}
         {!isSubjective && (
           <div className="rounded-xl border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm relative z-10">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-border/40 hover:bg-transparent shadow-none">
-                  <TableHead className="w-[80px] h-10">
-                    <Typography
-                      variant="body5"
-                      weight="bold"
-                      className="uppercase tracking-widest text-muted-foreground/60 text-center w-full block"
-                    >
-                      Label
-                    </Typography>
-                  </TableHead>
-                  <TableHead className="h-10">
-                    <Typography
-                      variant="body5"
-                      weight="bold"
-                      className="uppercase tracking-widest text-muted-foreground/60"
-                    >
-                      Option Content
-                    </Typography>
-                  </TableHead>
-                  <TableHead className="w-[130px] text-right h-10 pr-5">
-                    <Typography
-                      variant="body5"
-                      weight="bold"
-                      className="uppercase tracking-widest text-muted-foreground/60 text-right w-full block"
-                    >
-                      Status
-                    </Typography>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {((question.options as QuestionOption[]) || []).map(
-                  (opt: QuestionOption, index: number) => (
-                    <TableRow
-                      key={opt.option_label ?? index}
-                      className={cn(
-                        "border-b border-border/30 last:border-0 transition-colors shadow-none",
-                        opt.is_correct
-                          ? "bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04]"
-                          : "bg-red-500/[0.01] hover:bg-red-500/[0.03]",
-                      )}
-                    >
-                      <TableCell className="py-2.5 font-bold text-center">
-                        <div
-                          className={cn(
-                            "flex items-center justify-center w-7 h-7 rounded-lg mx-auto border",
-                            opt.is_correct
-                              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-                              : "bg-red-500/10 border-red-500/20 text-red-600",
-                          )}
+            {(() => {
+              const options = (question.options as QuestionOption[]) || [];
+              const hasText = options.some((o) => o.option_text && o.option_text.trim() !== "");
+              const hasMedia = options.some((o) => o.image_url && o.image_url.trim() !== "");
+
+              return (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-border/40 hover:bg-transparent shadow-none">
+                      <TableHead className="w-[80px] h-10">
+                        <Typography
+                          variant="body5"
+                          weight="bold"
+                          className="uppercase tracking-widest text-muted-foreground/60 text-center w-full block"
                         >
-                          <Typography variant="body4" weight="bold">
-                            {opt.option_label ||
-                              String.fromCharCode(65 + index)}
+                          Label
+                        </Typography>
+                      </TableHead>
+                      {hasText && (
+                        <TableHead className="h-10">
+                          <Typography
+                            variant="body5"
+                            weight="bold"
+                            className="uppercase tracking-widest text-muted-foreground/60"
+                          >
+                            Option Content
                           </Typography>
-                        </div>
-                      </TableCell>
-                      <TableCell
+                        </TableHead>
+                      )}
+                      {hasMedia && (
+                        <TableHead className="w-[120px] h-10">
+                          <Typography
+                            variant="body5"
+                            weight="bold"
+                            className="uppercase tracking-widest text-muted-foreground/60"
+                          >
+                            Media
+                          </Typography>
+                        </TableHead>
+                      )}
+                      <TableHead className="w-[130px] text-right h-10 pr-5">
+                        <Typography
+                          variant="body5"
+                          weight="bold"
+                          className="uppercase tracking-widest text-muted-foreground/60 text-right w-full block"
+                        >
+                          Status
+                        </Typography>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {options.map((opt: QuestionOption, index: number) => (
+                      <TableRow
+                        key={opt.option_label ?? index}
                         className={cn(
-                          "py-2.5",
+                          "border-b border-border/30 last:border-0 transition-colors shadow-none",
                           opt.is_correct
-                            ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                            : "text-red-600/80 dark:text-red-400 font-medium",
+                            ? "bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04]"
+                            : "bg-red-500/[0.01] hover:bg-red-500/[0.03]",
                         )}
                       >
-                        <Typography
-                          variant="body4"
-                          weight={opt.is_correct ? "bold" : "medium"}
-                        >
-                          {opt.option_text}
-                        </Typography>
-                      </TableCell>
-                      <TableCell className="py-2.5 text-right pr-5">
-                        <Badge
-                          variant="outline"
-                          color={opt.is_correct ? "success" : "error"}
-                          shape="curve"
-                          className="px-2.5 py-0 font-black text-[10px]"
-                        >
-                          {opt.is_correct ? "CORRECT" : "INCORRECT"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ),
-                )}
-              </TableBody>
-            </Table>
+                        <TableCell className="py-2.5 font-bold text-center">
+                          <div
+                            className={cn(
+                              "flex items-center justify-center w-7 h-7 rounded-lg mx-auto border",
+                              opt.is_correct
+                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                                : "bg-red-500/10 border-red-500/20 text-red-600",
+                            )}
+                          >
+                            <Typography variant="body4" weight="bold">
+                              {opt.option_label ||
+                                String.fromCharCode(65 + index)}
+                            </Typography>
+                          </div>
+                        </TableCell>
+                        {hasText && (
+                          <TableCell
+                            className={cn(
+                              "py-2.5",
+                              opt.is_correct
+                                ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                                : "text-red-600/80 dark:text-red-400 font-medium",
+                            )}
+                          >
+                            {opt.option_text && (
+                              <Typography
+                                variant="body4"
+                                weight={opt.is_correct ? "bold" : "medium"}
+                              >
+                                {opt.option_text}
+                              </Typography>
+                            )}
+                          </TableCell>
+                        )}
+                        {hasMedia && (
+                          <TableCell className="py-2.5">
+                            {opt.image_url && (
+                              <div className="relative w-20 h-12 rounded-lg border border-border overflow-hidden bg-white">
+                                <Image
+                                  src={getCanonicalImageUrl(opt.image_url) as string}
+                                  alt={`Option ${opt.option_label}`}
+                                  fill
+                                  className="object-contain"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                          </TableCell>
+                        )}
+                        <TableCell className="py-2.5 text-right pr-5">
+                          <Badge
+                            variant="outline"
+                            color={opt.is_correct ? "success" : "error"}
+                            shape="curve"
+                            className="px-2.5 py-0 font-black text-[10px]"
+                          >
+                            {opt.is_correct ? "CORRECT" : "INCORRECT"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              );
+            })()}
           </div>
         )}
 
