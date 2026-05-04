@@ -27,3 +27,5 @@ pytest
 requests
 huggingface_hub
 Pillow
+pandas
+openpyxl

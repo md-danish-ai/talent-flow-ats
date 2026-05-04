@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from typing import Optional
 from . import schemas
 from app.questions.service import QuestionService
+from app.questions.bulk_upload_service import BulkUploadService
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import authenticate_user
 from app.utils.pagination import (
@@ -128,4 +129,36 @@ async def upload_image(
     image_url = await question_service.save_image(image)
     return api_response(
         StatusCode.OK, "Image uploaded successfully", data={"image_url": image_url}
+    )
+
+
+@router.post("/bulk-upload")
+async def bulk_upload_questions(
+    file: UploadFile = File(...),
+    zip_file: Optional[UploadFile] = File(None),
+    subject: str = None,
+    exam_level: str = None,
+    marks: int = 0,
+    question_type: str = "mcq",
+    current_user: int = Depends(authenticate_user),
+):
+    bulk_service = BulkUploadService()
+    result = await bulk_service.process_bulk_upload(
+        file=file,
+        zip_file=zip_file,
+        default_subject=subject,
+        default_level=exam_level,
+        default_marks=marks,
+        question_type=question_type,
+        user_id=current_user,
+    )
+    if not result["success"]:
+        return api_response(
+            StatusCode.BAD_REQUEST, "Bulk upload failed validation", data=result
+        )
+
+    return api_response(
+        StatusCode.OK,
+        f"Successfully uploaded {result['count']} questions",
+        data=result,
     )

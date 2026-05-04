@@ -44,6 +44,8 @@ type SubjectiveListingFilters = {
   status: string;
 };
 
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+
 export function SubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -360,6 +362,13 @@ export function SubjectiveClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.SUBJECTIVE}
+      />
     </PageContainer>
   );
 }
