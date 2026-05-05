@@ -105,6 +105,9 @@ export const leadGenerationSchema = z.object({
   name: z.string().min(1, "Name is required"),
   title: z.string().min(1, "Title is required"),
   email: z.string().email("Invalid email").min(1, "Email is required"),
+  linkedinUrl: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
 });
 
 // Company Contact Details Validations

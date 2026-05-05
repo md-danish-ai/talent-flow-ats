@@ -95,6 +95,8 @@ export function LeadGenerationClient() {
     { id: "name", label: "Name" },
     { id: "title", label: "Title" },
     { id: "linkedInUrl", label: "LinkedIn URL" },
+    { id: "phone", label: "Phone" },
+    { id: "address", label: "Address/Location" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -252,6 +254,12 @@ export function LeadGenerationClient() {
                     )}
                     {visibleColumns.includes("linkedInUrl") && (
                       <TableHead>LinkedIn URL</TableHead>
+                    )}
+                    {visibleColumns.includes("phone") && (
+                      <TableHead>Phone</TableHead>
+                    )}
+                    {visibleColumns.includes("address") && (
+                      <TableHead>Address/Location</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>

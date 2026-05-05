@@ -25,14 +25,23 @@ export default function EditLeadGenerationModal({
     marks: question.marks,
     questionText: question.question_text,
     companyName: String(
-      (question.options as Record<string, unknown>)?.companyName || "",
+      (question.options as Record<string, unknown>)?.company_name || "",
     ),
     website: String(
       (question.options as Record<string, unknown>)?.website || "",
     ),
-    name: String((question.options as Record<string, unknown>)?.name || ""),
-    title: String((question.options as Record<string, unknown>)?.title || ""),
+    name: String(
+      (question.options as Record<string, unknown>)?.contact_name || "",
+    ),
+    title: String(
+      (question.options as Record<string, unknown>)?.designation || "",
+    ),
     email: String((question.options as Record<string, unknown>)?.email || ""),
+    linkedinUrl: String(
+      (question.options as Record<string, unknown>)?.linkedin_url || "",
+    ),
+    phone: String((question.options as Record<string, unknown>)?.phone || ""),
+    address: String((question.options as Record<string, unknown>)?.address || ""),
   };
 
   return (
