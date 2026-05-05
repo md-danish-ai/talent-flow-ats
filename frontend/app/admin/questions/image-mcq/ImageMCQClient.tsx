@@ -26,7 +26,7 @@ import { toast } from "@lib/toast";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
 import { AddImageQuestionForm } from "@features/questions/AddImageQuestionForm";
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
-import ImageLightbox from "./components/ImageLightbox";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
@@ -400,9 +400,12 @@ export function ImageMCQClient({
         />
       )}
 
-      {lightboxUrl && (
-        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
-      )}
+      <ImageLightbox
+        isOpen={!!lightboxUrl}
+        src={lightboxUrl || ""}
+        onClose={() => setLightboxUrl(null)}
+        title="Question Image Preview"
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
