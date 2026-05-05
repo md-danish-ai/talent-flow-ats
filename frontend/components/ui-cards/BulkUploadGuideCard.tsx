@@ -174,6 +174,42 @@ export function BulkUploadGuideCard({
                   Image Subjective Template
                 </a>
               )}
+              {questionType === QUESTION_TYPES.TYPING_TEST && (
+                <a
+                  href="/templates/sample_typing_test_upload.xlsx"
+                  download
+                  className="flex items-center gap-2 text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors shadow-sm"
+                >
+                  <div className="w-5 h-5 rounded-md bg-amber-600 text-white flex items-center justify-center font-black text-[10px]">
+                    X
+                  </div>
+                  Typing Test Template
+                </a>
+              )}
+              {questionType === QUESTION_TYPES.LEAD_GENERATION && (
+                <a
+                  href="/templates/sample_lead_generation_upload.xlsx"
+                  download
+                  className="flex items-center gap-2 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-3 py-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors shadow-sm"
+                >
+                  <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center font-black text-[10px]">
+                    X
+                  </div>
+                  Lead Generation Template
+                </a>
+              )}
+              {questionType === QUESTION_TYPES.CONTACT_DETAILS && (
+                <a
+                  href="/templates/sample_contact_details_upload.xlsx"
+                  download
+                  className="flex items-center gap-2 text-[10px] font-bold bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/20 px-3 py-2 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors shadow-sm"
+                >
+                  <div className="w-5 h-5 rounded-md bg-sky-600 text-white flex items-center justify-center font-black text-[10px]">
+                    X
+                  </div>
+                  Contact Details Template
+                </a>
+              )}
             </div>
           </div>
         </div>

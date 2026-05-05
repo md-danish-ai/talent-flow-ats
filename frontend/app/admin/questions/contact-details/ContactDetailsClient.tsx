@@ -27,6 +27,7 @@ import { QuestionCreationModal } from "@components/features/questions/QuestionCr
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ContactDetailsRow } from "./components/ContactDetailsRow";
 import EditContactDetailsModal from "./components/EditContactDetailsModal";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -386,6 +387,13 @@ export function ContactDetailsClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.CONTACT_DETAILS}
+      />
     </PageContainer>
   );
 }

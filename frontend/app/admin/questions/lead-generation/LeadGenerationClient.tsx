@@ -26,6 +26,7 @@ import { QuestionCreationModal } from "@components/features/questions/QuestionCr
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
 import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -369,6 +370,13 @@ export function LeadGenerationClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.LEAD_GENERATION}
+      />
     </PageContainer>
   );
 }

@@ -26,6 +26,7 @@ import { QuestionCreationModal } from "@components/features/questions/QuestionCr
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { TypingTestRow } from "./components/TypingTestRow";
 import EditTypingTestModal from "./components/EditTypingTestModal";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -341,6 +342,13 @@ export function TypingTestClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.TYPING_TEST}
+      />
     </PageContainer>
   );
 }
