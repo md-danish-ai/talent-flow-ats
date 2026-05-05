@@ -1,6 +1,6 @@
 # app/questions/router.py
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from typing import Optional
 from . import schemas
 from app.questions.service import QuestionService
@@ -136,10 +136,10 @@ async def upload_image(
 async def bulk_upload_questions(
     file: UploadFile = File(...),
     zip_file: Optional[UploadFile] = File(None),
-    subject: str = None,
-    exam_level: str = None,
-    marks: int = 0,
-    question_type: str = "mcq",
+    subject: Optional[str] = Form(None),
+    exam_level: Optional[str] = Form(None),
+    marks: int = Form(0),
+    question_type: str = Form("mcq"),
     current_user: int = Depends(authenticate_user),
 ):
     bulk_service = BulkUploadService()

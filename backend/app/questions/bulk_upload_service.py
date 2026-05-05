@@ -49,10 +49,30 @@ class BulkUploadService:
             levels_map = {c['code'].upper(): c for c in all_classifications_data if c['type'] == 'exam_level' and c['is_active']}
             qtypes_map = {c['code'].upper(): c for c in all_classifications_data if c['type'] == 'question_type' and c['is_active']}
             
-            # Map common internal names to official codes if needed
-            internal_mapping = {'mcq': 'MULTIPLE_CHOICE', 'subjective': 'SUBJECTIVE'}
-            q_type_key = internal_mapping.get(question_type.lower(), question_type).upper()
-            official_question_type = q_type_key if q_type_key in qtypes_map else 'MULTIPLE_CHOICE'
+            # Internal mapping from common frontend names to official codes
+            TYPE_MAPPING = {
+                'mcq': 'MULTIPLE_CHOICE',
+                'image_mcq': 'IMAGE_MULTIPLE_CHOICE',
+                'subjective': 'SUBJECTIVE',
+                'image_subjective': 'IMAGE_SUBJECTIVE',
+                'passage': 'PASSAGE_CONTENT',
+                'typing': 'TYPING_TEST',
+                'lead_generation': 'LEAD_GENERATION',
+                'contact_details': 'CONTACT_DETAILS'
+            }
+            
+            # Determine official question type code
+            q_type_lower = question_type.lower() if question_type else 'mcq'
+            q_type_key = TYPE_MAPPING.get(q_type_lower, q_type_lower).upper()
+            
+            # If the code is not recognized in our map, try to see if it's already an official code
+            if q_type_key in qtypes_map:
+                official_question_type = q_type_key
+            else:
+                raise HTTPException(
+                    status_code=StatusCode.BAD_REQUEST, 
+                    detail=f"Invalid or unsupported question type: '{question_type}'"
+                )
 
         except Exception as e:
             raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=f"Failed to fetch classifications: {str(e)}")
@@ -102,17 +122,6 @@ class BulkUploadService:
 
         questions_to_create = []
         
-        # Map internal frontend types to official classification codes
-        TYPE_MAPPING = {
-            'mcq': 'MULTIPLE_CHOICE',
-            'image_mcq': 'IMAGE_MULTIPLE_CHOICE',
-            'subjective': 'SUBJECTIVE',
-            'image_subjective': 'IMAGE_SUBJECTIVE'
-        }
-        
-        # Normalize question_type (already handled above but ensuring logic consistency)
-        # official_question_type is defined at the start now
-
         # 3. Validation Loop
         for index, row in df.iterrows():
             row_num = index + 2  # Excel row number
