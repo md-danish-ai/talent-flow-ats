@@ -8,11 +8,12 @@ import {
   Database,
   Award,
   Target,
-  Download,
 } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { BulkUploadGuideCard } from "@components/ui-cards/BulkUploadGuideCard";
+import { BulkUploadErrorCard } from "@components/ui-cards/BulkUploadErrorCard";
 import { classificationsApi } from "@lib/api/classifications";
 import { questionsApi } from "@lib/api/questions";
 import { type Classification } from "@types";
@@ -304,66 +305,11 @@ export function BulkUploadModal({
           </div>
         </div>
 
-        {/* Template Downloads */}
-        <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-xl p-4">
-          <h4 className="text-sm font-bold text-brand-primary flex items-center gap-2 mb-3">
-            <Download size={16} />
-            Download Sample Template
-          </h4>
-          <div className="flex flex-wrap gap-3">
-            {questionType === QUESTION_TYPES.MULTIPLE_CHOICE && (
-              <a
-                href="/templates/sample_mcq_upload.xlsx"
-                download
-                className="flex items-center gap-2 text-xs font-bold bg-white border-2 border-green-500/20 p-2.5 rounded-lg hover:border-green-500/50 hover:shadow-md transition-all text-slate-800"
-              >
-                <div className="w-6 h-6 rounded bg-green-500 text-white flex items-center justify-center font-black">
-                  X
-                </div>
-                Normal MCQ Template
-              </a>
-            )}
-
-            {questionType === QUESTION_TYPES.SUBJECTIVE && (
-              <a
-                href="/templates/sample_subjective_upload.xlsx"
-                download
-                className="flex items-center gap-2 text-xs font-bold bg-white border-2 border-blue-500/20 p-2.5 rounded-lg hover:border-blue-500/50 hover:shadow-md transition-all text-slate-800"
-              >
-                <div className="w-6 h-6 rounded bg-blue-500 text-white flex items-center justify-center font-black">
-                  X
-                </div>
-                Subjective Template
-              </a>
-            )}
-
-            {questionType === QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE && (
-              <a
-                href="/templates/sample_image_mcq_upload.xlsx"
-                download
-                className="flex items-center gap-2 text-xs font-bold bg-white border-2 border-purple-500/20 p-2.5 rounded-lg hover:border-purple-500/50 hover:shadow-md transition-all text-slate-800"
-              >
-                <div className="w-6 h-6 rounded bg-purple-500 text-white flex items-center justify-center font-black">
-                  X
-                </div>
-                Image MCQ Template
-              </a>
-            )}
-
-            {questionType === QUESTION_TYPES.IMAGE_SUBJECTIVE && (
-              <a
-                href="/templates/sample_image_subjective_upload.xlsx"
-                download
-                className="flex items-center gap-2 text-xs font-bold bg-white border-2 border-orange-500/20 p-2.5 rounded-lg hover:border-orange-500/50 hover:shadow-md transition-all text-slate-800"
-              >
-                <div className="w-6 h-6 rounded bg-orange-500 text-white flex items-center justify-center font-black">
-                  X
-                </div>
-                Image Subjective Template
-              </a>
-            )}
-          </div>
-        </div>
+        {/* Preparation Section: Instructions + Templates */}
+        <BulkUploadGuideCard 
+          questionType={questionType}
+          isImageBased={isImageBased}
+        />
 
         {/* File Upload Section */}
         <div
@@ -482,36 +428,7 @@ export function BulkUploadModal({
         </div>
 
         {/* Error Display Section */}
-        {uploadErrors.length > 0 && (
-          <div className="p-5 rounded-2xl bg-error/5 border border-error/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h4 className="text-sm font-bold text-error flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse" />
-              Found {uploadErrors.length} validation errors:
-            </h4>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {uploadErrors.map((err, idx) => (
-                <div
-                  key={idx}
-                  className="text-xs space-y-1.5 bg-white/[0.03] border-l-2 border-error/40 p-3 rounded-r-xl transition-all hover:bg-white/[0.05]"
-                >
-                  <p className="font-bold text-error/90 flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.5 rounded bg-error/10 text-[10px]">
-                      ROW {err.row}
-                    </span>
-                  </p>
-                  <ul className="space-y-1 pl-1 text-muted-foreground/80">
-                    {err.errors.map((msg, mIdx) => (
-                      <li key={mIdx} className="flex items-start gap-2">
-                        <span className="mt-1 w-1 h-1 rounded-full bg-error/30 shrink-0" />
-                        {msg}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <BulkUploadErrorCard errors={uploadErrors} />
       </div>
     </Modal>
   );
