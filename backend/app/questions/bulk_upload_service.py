@@ -5,8 +5,7 @@ import io
 import pandas as pd
 import asyncio
 import zipfile
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
+from typing import List, Dict, Optional, Tuple
 from uuid import uuid4
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
@@ -44,7 +43,7 @@ class BaseRowSchema(BaseModel):
             if v is None or pd.isna(v):
                 return 5
             return int(float(v))
-        except:
+        except Exception:
             return 5
 
 class MCQRowSchema(BaseRowSchema):
@@ -157,7 +156,8 @@ class BulkUploadService:
 
         except Exception as e:
             db.rollback()
-            if isinstance(e, HTTPException): raise e
+            if isinstance(e, HTTPException):
+                raise e
             raise HTTPException(status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(e))
         finally:
             db.close()
@@ -190,8 +190,10 @@ class BulkUploadService:
         sub = subjects_map.get(sub_code)
         lvl = levels_map.get(lvl_code)
         
-        if not sub: raise ValueError(f"Invalid Subject Code: {sub_code}")
-        if not lvl: raise ValueError(f"Invalid Level Code: {lvl_code}")
+        if not sub:
+            raise ValueError(f"Invalid Subject Code: {sub_code}")
+        if not lvl:
+            raise ValueError(f"Invalid Level Code: {lvl_code}")
 
         # 3. Image URL mapping
         q_image_url = None
@@ -225,7 +227,8 @@ class BulkUploadService:
                     if is_correct:
                         ans_text = chr(64 + len(options))
             
-            if not options: raise ValueError("At least one option is required")
+            if not options:
+                raise ValueError("At least one option is required")
             if correct_idx and correct_idx > len(options):
                 raise ValueError(f"Correct Option {correct_idx} is out of range")
 
@@ -342,6 +345,6 @@ class BulkUploadService:
         levels = db.query(Classification.code, Classification.name).filter(Classification.type == 'exam_level').all()
         
         sub_map = {s.code.upper(): {"code": s.code} for s in subjects}
-        lvl_map = {l.code.upper(): {"code": l.code} for l in levels}
+        lvl_map = {lvl.code.upper(): {"code": lvl.code} for lvl in levels}
         
         return sub_map, lvl_map
