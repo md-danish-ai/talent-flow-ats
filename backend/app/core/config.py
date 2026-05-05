@@ -17,7 +17,8 @@ class Settings:
     AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", 4000))
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    UPLOAD_DIR = os.path.join(BASE_DIR, "images")
+    MEDIA_ROOT = os.path.join(BASE_DIR, "images")
+    UPLOAD_DIR = MEDIA_ROOT
 
 
 settings = Settings()

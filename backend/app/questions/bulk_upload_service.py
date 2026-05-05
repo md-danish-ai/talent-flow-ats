@@ -13,11 +13,11 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator, ValidationError, ConfigDict
 
 from app.core.config import settings
-from app.core.status_code import StatusCode
+from app.utils.status_codes import StatusCode
 from app.questions.models import Question
 from app.answer.models import QuestionAnswer
 from app.classifications.models import Classification
-from app.database import SessionLocal
+from app.database.db import SessionLocal
 
 # --- Pydantic Models for Strict Validation ---
 
@@ -71,7 +71,16 @@ class BulkUploadService:
         self.upload_dir = os.path.join(settings.MEDIA_ROOT, "questions")
         os.makedirs(self.upload_dir, exist_ok=True)
 
-    async def process_bulk_upload(self, file: UploadFile, question_type: str, user_id: int, image_zip: Optional[UploadFile] = None):
+    async def process_bulk_upload(
+        self,
+        file: UploadFile,
+        question_type: str,
+        user_id: int,
+        zip_file: Optional[UploadFile] = None,
+        default_subject: Optional[str] = None,
+        default_level: Optional[str] = None,
+        default_marks: Optional[int] = None
+    ):
         # 1. Load Data with Pandas
         try:
             contents = await file.read()
@@ -84,17 +93,28 @@ class BulkUploadService:
 
         # 2. Parallel Image Processing if ZIP provided
         images_map = {}
-        if image_zip:
-            images_map = await self._process_zip_images(image_zip)
+        if zip_file:
+            images_map = await self._process_zip_images(zip_file)
 
         # 3. Setup Metadata for Validation
         db = SessionLocal()
         try:
             subjects_map, levels_map = self._get_metadata_cache(db)
             
+            # 3. Resolve Official Question Type
             official_type = self.TYPE_MAPPING.get(question_type.lower())
+            
+            # If not an alias, check if it's already an official code
             if not official_type:
-                raise HTTPException(status_code=StatusCode.BAD_REQUEST, detail=f"Invalid question type: {question_type}")
+                upper_type = question_type.upper()
+                if upper_type in self.TYPE_MAPPING.values():
+                    official_type = upper_type
+            
+            if not official_type:
+                raise HTTPException(
+                    status_code=StatusCode.BAD_REQUEST, 
+                    detail=f"Invalid question type: {question_type}. Available: {list(self.TYPE_MAPPING.keys())}"
+                )
 
             prepared_data = []
             errors = []
@@ -102,6 +122,15 @@ class BulkUploadService:
             # 4. Modular Parsing & Validation
             for idx, row in enumerate(rows):
                 row_num = idx + 2
+                
+                # Apply defaults if missing in row
+                if not row.get("Subject Code") and default_subject:
+                    row["Subject Code"] = default_subject
+                if not row.get("Exam Level Code") and default_level:
+                    row["Exam Level Code"] = default_level
+                if (not row.get("Marks") or pd.isna(row.get("Marks"))) and default_marks is not None:
+                    row["Marks"] = default_marks
+
                 try:
                     parsed_item = self._parse_and_validate(row, official_type, subjects_map, levels_map, images_map)
                     prepared_data.append(parsed_item)
@@ -298,7 +327,7 @@ class BulkUploadService:
         file_path = os.path.join(self.upload_dir, filename)
         with open(file_path, "wb") as f:
             f.write(data)
-        return original_name, f"/images/{filename}"
+        return original_name, f"/images/questions/{filename}"
 
     def _get_metadata_cache(self, db: Session) -> Tuple[Dict, Dict]:
         """Optimized metadata fetching"""
