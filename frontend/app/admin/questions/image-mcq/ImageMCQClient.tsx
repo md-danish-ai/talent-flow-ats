@@ -66,6 +66,7 @@ export function ImageMCQClient({
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -346,6 +347,10 @@ export function ImageMCQClient({
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
                         onImageClick={setLightboxUrl}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}

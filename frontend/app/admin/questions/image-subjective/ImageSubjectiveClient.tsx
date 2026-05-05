@@ -53,6 +53,7 @@ export function ImageSubjectiveClient() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
@@ -310,6 +311,10 @@ export function ImageSubjectiveClient() {
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
                         onImageClick={setLightboxUrl}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}

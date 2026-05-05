@@ -65,6 +65,8 @@ export function ResultTableView({
     { user_id: number; attempt_id: number; name: string }[]
   >([]);
 
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
+
   // Only submitted results can be assigned a lead
   const selectableItems = useMemo(() => {
     return items.filter(
@@ -230,6 +232,12 @@ export function ResultTableView({
               return (
                 <TableCollapsibleRow
                   key={latest?.attempt_id ?? item.user_id}
+                  isOpen={expandedRowId === (latest?.attempt_id ?? item.user_id)}
+                  onOpenChange={(expanded) =>
+                    setExpandedRowId(
+                      expanded ? (latest?.attempt_id ?? item.user_id) : null,
+                    )
+                  }
                   colSpan={visibleColumns.length + 1}
                   expandedContent={
                     <CollapsibleResultDetail

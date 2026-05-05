@@ -52,6 +52,7 @@ export function ContactDetailsClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
@@ -330,6 +331,10 @@ export function ContactDetailsClient() {
                         togglingId={togglingId}
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
