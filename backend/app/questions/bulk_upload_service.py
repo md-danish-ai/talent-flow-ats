@@ -30,6 +30,13 @@ class BaseRowSchema(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
+    @field_validator('question_text', 'question_image', mode='before')
+    @classmethod
+    def coerce_to_str_or_none(cls, v):
+        if pd.isna(v) or v == "" or v is None:
+            return None
+        return str(v)
+
     @field_validator('marks', mode='before')
     @classmethod
     def parse_marks(cls, v):
