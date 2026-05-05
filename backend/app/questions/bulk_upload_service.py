@@ -17,6 +17,7 @@ from app.questions.models import Question
 from app.answer.models import QuestionAnswer
 from app.classifications.models import Classification
 from app.database.db import SessionLocal
+from .constants import QuestionType
 
 # --- Pydantic Models for Strict Validation ---
 
@@ -62,15 +63,41 @@ class ContactRowSchema(BaseRowSchema):
 # --- Optimized Service ---
 
 class BulkUploadService:
-    TYPE_MAPPING = {
-        'mcq': 'MULTIPLE_CHOICE',
-        'image_mcq': 'IMAGE_MULTIPLE_CHOICE',
-        'subjective': 'SUBJECTIVE',
-        'image_subjective': 'IMAGE_SUBJECTIVE',
-        'passage': 'PASSAGE_CONTENT',
-        'typing': 'TYPING_TEST',
-        'lead_generation': 'LEAD_GENERATION',
-        'contact_details': 'CONTACT_DETAILS'
+    # --- Unified Configuration Registry ---
+    # Maps official QuestionType to its Pydantic Schema and common aliases
+    QUESTION_CONFIG = {
+        QuestionType.MULTIPLE_CHOICE: {
+            "schema": MCQRowSchema,
+            "aliases": ["mcq", "multiple choice"]
+        },
+        QuestionType.IMAGE_MULTIPLE_CHOICE: {
+            "schema": MCQRowSchema,
+            "aliases": ["image_mcq", "image mcq"]
+        },
+        QuestionType.SUBJECTIVE: {
+            "schema": BaseRowSchema,
+            "aliases": ["subjective"]
+        },
+        QuestionType.IMAGE_SUBJECTIVE: {
+            "schema": BaseRowSchema,
+            "aliases": ["image_subjective", "image subjective"]
+        },
+        QuestionType.PASSAGE_CONTENT: {
+            "schema": BaseRowSchema,
+            "aliases": ["passage"]
+        },
+        QuestionType.TYPING_TEST: {
+            "schema": TypingRowSchema,
+            "aliases": ["typing", "typing test"]
+        },
+        QuestionType.LEAD_GENERATION: {
+            "schema": LeadGenRowSchema,
+            "aliases": ["lead_generation", "lead generation"]
+        },
+        QuestionType.CONTACT_DETAILS: {
+            "schema": ContactRowSchema,
+            "aliases": ["contact_details", "contact details"]
+        }
     }
 
     def __init__(self):
@@ -108,18 +135,13 @@ class BulkUploadService:
             subjects_map, levels_map = self._get_metadata_cache(db)
             
             # 3. Resolve Official Question Type
-            official_type = self.TYPE_MAPPING.get(question_type.lower())
-            
-            # If not an alias, check if it's already an official code
-            if not official_type:
-                upper_type = question_type.upper()
-                if upper_type in self.TYPE_MAPPING.values():
-                    official_type = upper_type
+            official_type = self._resolve_type(question_type)
             
             if not official_type:
+                available = [q.value for q in self.QUESTION_CONFIG.keys()]
                 raise HTTPException(
                     status_code=StatusCode.BAD_REQUEST, 
-                    detail=f"Invalid question type: {question_type}. Available: {list(self.TYPE_MAPPING.keys())}"
+                    detail=f"Invalid question type: {question_type}. Available official types: {available}"
                 )
 
             prepared_data = []
@@ -162,20 +184,32 @@ class BulkUploadService:
         finally:
             db.close()
 
-    def _parse_and_validate(self, row: Dict, q_type: str, subjects_map: Dict, levels_map: Dict, images_map: Dict) -> Dict:
+    def _resolve_type(self, q_type_str: str) -> Optional[QuestionType]:
+        """Resolves an incoming string (alias or official code) to a QuestionType Enum"""
+        if not q_type_str:
+            return None
+            
+        clean_type = q_type_str.strip().lower()
+        
+        for q_type, config in self.QUESTION_CONFIG.items():
+            # Check official value (e.g., "MULTIPLE_CHOICE")
+            if clean_type == q_type.value.lower():
+                return q_type
+            # Check aliases (e.g., "mcq")
+            if clean_type in config.get("aliases", []):
+                return q_type
+        
+        return None
+
+    def _parse_and_validate(self, row: Dict, q_type: QuestionType, subjects_map: Dict, levels_map: Dict, images_map: Dict) -> Dict:
         """Modular parser using Pydantic for validation and business logic for mapping"""
         
-        # Determine Schema
-        schema_map = {
-            'MULTIPLE_CHOICE': MCQRowSchema,
-            'IMAGE_MULTIPLE_CHOICE': MCQRowSchema,
-            'SUBJECTIVE': BaseRowSchema,
-            'IMAGE_SUBJECTIVE': BaseRowSchema,
-            'TYPING_TEST': TypingRowSchema,
-            'LEAD_GENERATION': LeadGenRowSchema,
-            'CONTACT_DETAILS': ContactRowSchema
-        }
-        Schema = schema_map.get(q_type, BaseRowSchema)
+        # Determine Schema from Registry
+        config = self.QUESTION_CONFIG.get(q_type)
+        if not config:
+            raise ValueError(f"No configuration found for question type: {q_type}")
+            
+        Schema = config.get("schema", BaseRowSchema)
         
         # 1. Pydantic Basic Validation
         try:
@@ -208,7 +242,7 @@ class BulkUploadService:
         ans_explanation = row.get('Answer Explanation', row.get('Model Answer', row.get('Explanation', "")))
         passage = None
 
-        if q_type in ['MULTIPLE_CHOICE', 'IMAGE_MULTIPLE_CHOICE']:
+        if q_type in [QuestionType.MULTIPLE_CHOICE, QuestionType.IMAGE_MULTIPLE_CHOICE]:
             correct_idx = getattr(validated_row, 'correct_option', None)
             
             # Extract options dynamically (up to 10)
@@ -232,23 +266,23 @@ class BulkUploadService:
             if correct_idx and correct_idx > len(options):
                 raise ValueError(f"Correct Option {correct_idx} is out of range")
 
-        elif q_type in ['SUBJECTIVE', 'IMAGE_SUBJECTIVE']:
+        elif q_type in [QuestionType.SUBJECTIVE, QuestionType.IMAGE_SUBJECTIVE, QuestionType.PASSAGE_CONTENT]:
             # Subjective questions use 'Model Answer' or 'Answer' column
             ans_text = row.get('Model Answer', row.get('Answer', ""))
             options = []
 
-        elif q_type == 'TYPING_TEST':
+        elif q_type == QuestionType.TYPING_TEST:
             passage = getattr(validated_row, 'paragraph', None)
             options = []
 
-        elif q_type == 'LEAD_GENERATION':
+        elif q_type == QuestionType.LEAD_GENERATION:
             options = {k: row.get(v) for k, v in {
                 "company_name": "Company Name", "website": "Website", "contact_name": "Contact Person",
                 "designation": "Designation", "email": "Email", "linkedin_url": "LinkedIn URL",
                 "phone": "Phone", "address": "Location"
             }.items()}
 
-        elif q_type == 'CONTACT_DETAILS':
+        elif q_type == QuestionType.CONTACT_DETAILS:
             options = {k: row.get(v) for k, v in {
                 "websiteUrl": "Website URL", "companyName": "Organization", "streetAddress": "Street Address",
                 "city": "City", "state": "State", "zipCode": "Zip Code",
@@ -263,7 +297,7 @@ class BulkUploadService:
 
         return {
             "question": {
-                "question_type": q_type,
+                "question_type": q_type.value,
                 "subject_type": sub['code'],
                 "exam_level": lvl['code'],
                 "question_text": str(q_text),
