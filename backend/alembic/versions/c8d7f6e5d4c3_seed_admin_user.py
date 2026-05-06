@@ -6,13 +6,14 @@ Create Date: 2026-04-17 19:05:00.000000
 Created By: md-danish-ai
 
 """
+
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers
-revision: str = 'c8d7f6e5d4c3'
-down_revision: Union[str, Sequence[str], None] = 'b7c3d2e1f9a0'
+revision: str = "c8d7f6e5d4c3"
+down_revision: Union[str, Sequence[str], None] = "b7c3d2e1f9a0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -25,7 +26,8 @@ def upgrade() -> None:
 
     # Check if admin already exists
     res = conn.execute(
-        sa.text("SELECT id FROM users WHERE mobile = '8829059600'")).fetchone()
+        sa.text("SELECT id FROM users WHERE mobile = '8829059600'")
+    ).fetchone()
 
     if not res:
         # We'll use a plain text password or a hardcoded hash that the app expects.
@@ -43,8 +45,8 @@ def upgrade() -> None:
                 "mobile": "8829059600",
                 "email": "admin@arcgate.com",
                 "pass": admin_pass,
-                "role": "admin"
-            }
+                "role": "admin",
+            },
         )
 
 

@@ -9,9 +9,14 @@ from app.auth.service import (
     delete_user,
     get_user_by_id,
     update_user_basic_info,
-    change_password
+    change_password,
 )
-from app.auth.schemas import SignUpSchema, SignInSchema, CreateAdminSchema, ChangePasswordSchema
+from app.auth.schemas import (
+    SignUpSchema,
+    SignInSchema,
+    CreateAdminSchema,
+    ChangePasswordSchema,
+)
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
 
@@ -24,8 +29,12 @@ async def get_users(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1),
     search: str = Query(None),
-    date_from: str = Query(None, description="Range start date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"),
-    date_to: str = Query(None, description="Range end date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"),
+    date_from: str = Query(
+        None, description="Range start date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"
+    ),
+    date_to: str = Query(
+        None, description="Range end date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)"
+    ),
     department_id: int = Query(None),
     test_level_id: int = Query(None),
     status: str = Query(None, description="Filter by status (active, inactive)"),
@@ -39,10 +48,14 @@ async def get_users(
         date_to=date_to,
         department_id=department_id,
         test_level_id=test_level_id,
-        status=status
+        status=status,
     )
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data["data"], pagination=data.get("pagination"))
-
+    return api_response(
+        StatusCode.OK,
+        ResponseMessage.FETCHED,
+        data=data["data"],
+        pagination=data.get("pagination"),
+    )
 
 
 @router.get("/me")
@@ -91,7 +104,9 @@ async def create_admin_user(data: CreateAdminSchema):
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
-@router.post("/create-project-lead-account", dependencies=[Depends(require_roles(["admin"]))])
+@router.post(
+    "/create-project-lead-account", dependencies=[Depends(require_roles(["admin"]))]
+)
 async def create_project_lead_user(data: CreateAdminSchema):
     result = create_project_lead(data)
 
@@ -104,20 +119,25 @@ async def create_project_lead_user(data: CreateAdminSchema):
 
 
 @router.put(
-    "/toggle-user-active-status/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
+    "/toggle-user-active-status/{user_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
 )
 async def toggle_status(user_id: int):
     data = toggle_user_status(user_id)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/remove-user-account/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.delete(
+    "/remove-user-account/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
+)
 async def delete_user_route(user_id: int):
     data = delete_user(user_id)
     return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
 
 
-@router.put("/update-user-profile/{user_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.put(
+    "/update-user-profile/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
+)
 async def update_basic_info(user_id: int, data: SignUpSchema):
     """
     Update basic user info (username, mobile, email, testlevel, department_id).
@@ -127,12 +147,18 @@ async def update_basic_info(user_id: int, data: SignUpSchema):
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
 
 
-@router.put("/change-password", dependencies=[Depends(require_roles(["admin", "project_lead"]))])
-async def change_pwd(data: ChangePasswordSchema, user_id: int = Depends(authenticate_user)):
+@router.put(
+    "/change-password", dependencies=[Depends(require_roles(["admin", "project_lead"]))]
+)
+async def change_pwd(
+    data: ChangePasswordSchema, user_id: int = Depends(authenticate_user)
+):
     """
     Allow Admin and Project Lead to change their own password.
     """
     result = change_password(user_id, data)
     if "error" in result:
-        return api_response(StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"])
+        return api_response(
+            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+        )
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)

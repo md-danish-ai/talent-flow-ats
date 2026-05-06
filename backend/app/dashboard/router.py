@@ -13,18 +13,16 @@ router = APIRouter(
 
 service = DashboardService()
 
+
 @router.get("/overview", response_model=None)
 async def get_dashboard_overview(
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None
+    start_date: Optional[date] = None, end_date: Optional[date] = None
 ):
     """
-    Get consolidated dashboard metrics for the admin overview, 
+    Get consolidated dashboard metrics for the admin overview,
     optionally filtered by a date range.
     """
     data = await service.get_overview(start_date=start_date, end_date=end_date)
     return api_response(
-        status_code=StatusCode.OK,
-        message=ResponseMessage.FETCHED,
-        data=data
+        status_code=StatusCode.OK, message=ResponseMessage.FETCHED, data=data
     )

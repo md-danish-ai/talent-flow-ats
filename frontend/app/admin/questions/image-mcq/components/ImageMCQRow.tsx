@@ -20,6 +20,8 @@ interface ImageMCQRowProps {
   onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
   onImageClick: (url: string) => void;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
@@ -32,10 +34,14 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
   onToggleStatus,
   onEdit,
   onImageClick,
+  isExpanded,
+  onExpandChange,
 }) => {
   return (
     <TableCollapsibleRow
       key={row.id}
+      isOpen={isExpanded}
+      onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={

@@ -9,7 +9,7 @@ import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
 import Image from "next/image";
 
-import { getCanonicalImageUrl } from "@lib/utils/image";
+import { getCanonicalImageUrl, formatDate } from "@lib/utils";
 
 interface ImageSubjectiveRowProps {
   row: Question;
@@ -21,6 +21,8 @@ interface ImageSubjectiveRowProps {
   onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
   onImageClick: (url: string) => void;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
@@ -33,10 +35,14 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
   onToggleStatus,
   onEdit,
   onImageClick,
+  isExpanded,
+  onExpandChange,
 }) => {
   return (
     <TableCollapsibleRow
       key={row.id}
+      isOpen={isExpanded}
+      onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={
@@ -84,7 +90,17 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
               </div>
             </button>
           ) : (
-            <span className="text-muted-foreground/30">-</span>
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-10 h-10 rounded-full border border-dashed border-border/60 flex items-center justify-center bg-muted/5">
+                <ImageIcon size={14} className="text-muted-foreground/20" />
+              </div>
+              <Typography
+                variant="body5"
+                className="text-muted-foreground/30 mt-1 uppercase tracking-tighter text-[8px] font-bold"
+              >
+                No Preview
+              </Typography>
+            </div>
           )}
         </TableCell>
       )}
@@ -139,13 +155,7 @@ export const ImageSubjectiveRow: React.FC<ImageSubjectiveRowProps> = ({
       )}
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+          {row.created_at ? formatDate(row.created_at) : "N/A"}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (

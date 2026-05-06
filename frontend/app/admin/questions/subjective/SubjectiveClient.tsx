@@ -44,12 +44,15 @@ type SubjectiveListingFilters = {
   status: string;
 };
 
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+
 export function SubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
@@ -298,6 +301,10 @@ export function SubjectiveClient() {
                         togglingId={togglingId}
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -360,6 +367,13 @@ export function SubjectiveClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.SUBJECTIVE}
+      />
     </PageContainer>
   );
 }

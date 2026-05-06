@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class GradeLabel(str, Enum):
     EXCELLENT = "Excellent"
     GOOD = "Good"

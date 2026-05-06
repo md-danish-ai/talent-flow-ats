@@ -124,7 +124,7 @@ export function PaperSetupClient() {
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <FileText size={18} />
             </div>
-            Active Test Papers
+            Paper Setup
           </div>
         }
         action={

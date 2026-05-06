@@ -27,7 +27,7 @@ import { AddImageSubjectiveQuestionForm } from "@components/features/questions/A
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
-import ImageLightbox from "../image-mcq/components/ImageLightbox";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
@@ -53,6 +53,7 @@ export function ImageSubjectiveClient() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
@@ -310,6 +311,10 @@ export function ImageSubjectiveClient() {
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
                         onImageClick={setLightboxUrl}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -372,9 +377,12 @@ export function ImageSubjectiveClient() {
         />
       )}
 
-      {lightboxUrl && (
-        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
-      )}
+      <ImageLightbox
+        isOpen={!!lightboxUrl}
+        src={lightboxUrl || ""}
+        onClose={() => setLightboxUrl(null)}
+        title="Question Image Preview"
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}

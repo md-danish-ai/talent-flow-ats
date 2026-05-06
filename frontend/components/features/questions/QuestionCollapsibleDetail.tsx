@@ -185,7 +185,7 @@ export const QuestionCollapsibleDetail: React.FC<
                 Company Name
               </Typography>
               <Typography variant="body4" weight="semibold">
-                {String(options.companyName || "N/A")}
+                {String(options.company_name || "N/A")}
               </Typography>
             </div>
             <div>
@@ -201,6 +201,21 @@ export const QuestionCollapsibleDetail: React.FC<
                 className="text-brand-primary break-all"
               >
                 {String(options.website || "N/A")}
+              </Typography>
+            </div>
+            <div>
+              <Typography
+                variant="body5"
+                className="text-muted-foreground uppercase text-[10px]"
+              >
+                LinkedIn URL
+              </Typography>
+              <Typography
+                variant="body4"
+                weight="semibold"
+                className="text-brand-primary break-all"
+              >
+                {String(options.linkedin_url || "N/A")}
               </Typography>
             </div>
           </div>
@@ -221,8 +236,8 @@ export const QuestionCollapsibleDetail: React.FC<
                 Contact Person
               </Typography>
               <Typography variant="body4" weight="semibold">
-                {String(options.name || "N/A")} (
-                {String(options.title || "N/A")})
+                {String(options.contact_name || "N/A")} (
+                {String(options.designation || "N/A")})
               </Typography>
             </div>
             <div>
@@ -235,6 +250,30 @@ export const QuestionCollapsibleDetail: React.FC<
               <Typography variant="body4" weight="semibold">
                 {String(options.email || "N/A")}
               </Typography>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground uppercase text-[10px]"
+                >
+                  Phone
+                </Typography>
+                <Typography variant="body4" weight="semibold">
+                  {String(options.phone || "N/A")}
+                </Typography>
+              </div>
+              <div>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground uppercase text-[10px]"
+                >
+                  Location
+                </Typography>
+                <Typography variant="body4" weight="semibold">
+                  {String(options.address || "N/A")}
+                </Typography>
+              </div>
             </div>
           </div>
         </div>

@@ -34,7 +34,7 @@ def get_papers(
         query = query.filter(Paper.paper_name.ilike(f"%{search}%"))
 
     total_records = query.count()
-    results = query.offset(skip).limit(limit).all()
+    results = query.order_by(Paper.id.desc()).offset(skip).limit(limit).all()
 
     papers = []
     for paper, dept_name, level_name, level_code in results:

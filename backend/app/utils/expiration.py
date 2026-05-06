@@ -2,6 +2,7 @@ from datetime import date
 from app.users.models import User
 from app.paper_assignments.models import PaperAssignment
 
+
 def run_auto_expiration(db_session):
     """
     Identifies users who were assigned a paper in the past but never finished it,
@@ -9,7 +10,7 @@ def run_auto_expiration(db_session):
     Runs a bulk update for all eligible users.
     """
     today = date.today()
-    
+
     # Subquery: Users who have an assignment for TODAY (don't expire them yet)
     has_today_assignment = db_session.query(PaperAssignment.user_id).filter(
         PaperAssignment.assigned_date == today
@@ -26,14 +27,14 @@ def run_auto_expiration(db_session):
             User.process_status.in_(["pending", "ready", "inprogress"]),
             PaperAssignment.assigned_date < today,
             PaperAssignment.is_attempted.is_(False),
-            ~User.id.in_(has_today_assignment)
+            ~User.id.in_(has_today_assignment),
         )
     )
 
     expired_count = 0
     # Use .all() to fetch all matching users first to avoid cursor issues during iteration
     users_to_expire = to_expire_query.all()
-    
+
     for user in users_to_expire:
         user.process_status = "expired"
         user.is_active = False
@@ -46,5 +47,5 @@ def run_auto_expiration(db_session):
         except Exception as e:
             db_session.rollback()
             print(f"Error during auto-expiration: {str(e)}")
-    
+
     return expired_count

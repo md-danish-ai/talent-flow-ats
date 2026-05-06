@@ -18,6 +18,8 @@ interface MCQRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onEdit: (question: Question) => void;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const MCQRow: React.FC<MCQRowProps> = ({
@@ -29,10 +31,14 @@ export const MCQRow: React.FC<MCQRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
+  isExpanded,
+  onExpandChange,
 }) => {
   return (
     <TableCollapsibleRow
       key={row.id}
+      isOpen={isExpanded}
+      onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={

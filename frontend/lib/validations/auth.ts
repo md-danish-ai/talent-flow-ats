@@ -8,7 +8,15 @@ export const signUpSchema = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be under 100 characters"),
+    .max(100, "Name must be under 100 characters")
+    .refine(
+      (val) => val.trim().split(/\s+/).length >= 2,
+      "Please provide your full name (first and last name).",
+    )
+    .refine(
+      (val) => /^[A-Za-z\s]+$/.test(val),
+      "Full name must only contain alphabetic characters.",
+    ),
   mobile: z
     .string()
     .length(10, "The mobile number must be exactly 10 digits.")
@@ -32,8 +40,8 @@ export const signInSchema = z.object({
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(128, "Password is too long"),
+    .length(10, "Password must be exactly 10 digits.")
+    .regex(/^\d+$/, "Password must contain only digits."),
 });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;
@@ -43,7 +51,15 @@ export const createAdminSchema = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be under 100 characters"),
+    .max(100, "Name must be under 100 characters")
+    .refine(
+      (val) => val.trim().split(/\s+/).length >= 2,
+      "Please provide your full name (first and last name).",
+    )
+    .refine(
+      (val) => /^[A-Za-z\s]+$/.test(val),
+      "Full name must only contain alphabetic characters.",
+    ),
   mobile: z
     .string()
     .length(10, "The mobile number must be exactly 10 digits.")
@@ -59,8 +75,8 @@ export const changePasswordSchema = z
     current_password: z.string().min(1, "Current password is required"),
     new_password: z
       .string()
-      .min(6, "New password must be at least 6 characters")
-      .max(128, "Password is too long"),
+      .length(10, "New password must be exactly 10 digits.")
+      .regex(/^\d+$/, "New password must contain only digits."),
     confirm_password: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.new_password === data.confirm_password, {

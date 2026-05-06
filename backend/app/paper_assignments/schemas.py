@@ -79,6 +79,7 @@ class AssignedInterviewPaperResponse(BaseModel):
 
 # Auto Assignment Rule Schemas
 
+
 class AutoAssignmentRuleBase(BaseModel):
     department_id: int
     test_level_id: int

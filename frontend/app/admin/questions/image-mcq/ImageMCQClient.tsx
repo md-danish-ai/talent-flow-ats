@@ -26,7 +26,7 @@ import { toast } from "@lib/toast";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
 import { AddImageQuestionForm } from "@features/questions/AddImageQuestionForm";
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
-import ImageLightbox from "./components/ImageLightbox";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
@@ -66,6 +66,7 @@ export function ImageMCQClient({
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -346,6 +347,10 @@ export function ImageMCQClient({
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
                         onImageClick={setLightboxUrl}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -400,9 +405,12 @@ export function ImageMCQClient({
         />
       )}
 
-      {lightboxUrl && (
-        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
-      )}
+      <ImageLightbox
+        isOpen={!!lightboxUrl}
+        src={lightboxUrl || ""}
+        onClose={() => setLightboxUrl(null)}
+        title="Question Image Preview"
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}

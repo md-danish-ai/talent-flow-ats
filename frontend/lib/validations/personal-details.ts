@@ -248,8 +248,16 @@ const baseSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
   dob: z.string().min(1, "Date of birth is required"),
-  primaryMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
-  alternateMobile: z.string().default(""),
+  primaryMobile: z
+    .string()
+    .length(10, "Mobile number must be exactly 10 digits.")
+    .regex(/^\d+$/, "Mobile number must contain only digits."),
+  alternateMobile: z
+    .string()
+    .length(10, "Alternate mobile must be exactly 10 digits.")
+    .regex(/^\d+$/, "Alternate mobile must contain only digits.")
+    .optional()
+    .or(z.literal("")),
   email: z.string().email("Valid email address is required"),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),

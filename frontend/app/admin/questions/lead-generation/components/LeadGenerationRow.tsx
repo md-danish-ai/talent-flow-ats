@@ -18,6 +18,8 @@ interface LeadGenerationRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
@@ -29,10 +31,14 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
+  isExpanded,
+  onExpandChange,
 }) => {
   return (
     <TableCollapsibleRow
       key={row.id}
+      isOpen={isExpanded}
+      onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={<QuestionCollapsibleDetail question={row} />}
@@ -52,7 +58,7 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
             className="truncate group-hover/row:text-brand-primary transition-colors"
           >
             {((row.options as Record<string, unknown>)
-              ?.companyName as React.ReactNode) || "N/A"}
+              ?.company_name as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
@@ -68,7 +74,7 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
             {((row.options as Record<string, unknown>)
-              ?.name as React.ReactNode) || "N/A"}
+              ?.contact_name as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
@@ -76,7 +82,15 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
             {((row.options as Record<string, unknown>)
-              ?.title as React.ReactNode) || "N/A"}
+              ?.designation as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("linkedInUrl") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.linkedin_url as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
@@ -85,6 +99,22 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
           <Typography variant="body4" className="text-muted-foreground">
             {((row.options as Record<string, unknown>)
               ?.email as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("phone") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.phone as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+      {visibleColumns.includes("address") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {((row.options as Record<string, unknown>)
+              ?.address as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}

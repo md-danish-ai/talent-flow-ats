@@ -7,6 +7,7 @@ import { questionsApi } from "@lib/api/questions";
 import { type PassageFormValues } from "@lib/validations/question";
 import { Typography } from "@components/ui-elements/Typography";
 import { Loader2 } from "lucide-react";
+import { QuestionOption } from "@types";
 
 interface EditQuestionModalProps {
   isOpen: boolean;
@@ -38,8 +39,15 @@ export const EditQuestionModal = ({
             marks: q.marks,
             passage: q.passage || "",
             questionText: q.question_text,
-            answerText: q.answer?.answer_text || "",
             explanation: q.answer?.explanation || "",
+            options: ((q.options as QuestionOption[]) || []).map(
+              (opt: QuestionOption, index: number) => ({
+                id: opt.option_label || String.fromCharCode(65 + index),
+                label: opt.option_label || String.fromCharCode(65 + index),
+                content: opt.option_text || "",
+                isCorrect: !!opt.is_correct,
+              }),
+            ),
           });
         } catch (error) {
           console.error("Failed to fetch question for edit:", error);

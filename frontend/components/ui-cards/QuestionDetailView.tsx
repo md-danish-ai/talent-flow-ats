@@ -84,8 +84,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   const isPassage = typeCode === QUESTION_TYPES.PASSAGE_CONTENT;
   const isSubjective =
     typeCode === QUESTION_TYPES.SUBJECTIVE ||
-    typeCode === QUESTION_TYPES.IMAGE_SUBJECTIVE ||
-    isPassage;
+    typeCode === QUESTION_TYPES.IMAGE_SUBJECTIVE;
 
   return (
     <div
@@ -126,7 +125,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
         </div>
       </div>
 
-      <div className="p-6 space-y-10">
+      <div className="p-6 space-y-6">
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3 bg-emerald-50/30 dark:bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10 shadow-sm">
@@ -221,7 +220,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               weight="black"
               className="text-muted-foreground uppercase tracking-widest text-[10px]"
             >
-              {isPassage ? "Question Text" : "Primary Question"}
+              Question Text
             </Typography>
           </div>
           {question.image_url && (
@@ -279,6 +278,24 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               const hasMedia = options.some(
                 (o) => o.image_url && o.image_url.trim() !== "",
               );
+
+              if (options.length === 0) {
+                return (
+                  <div className="p-6 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-800/30">
+                    <ListChecks
+                      size={24}
+                      className="text-muted-foreground/30 mb-2"
+                    />
+                    <Typography
+                      variant="body4"
+                      weight="medium"
+                      className="text-muted-foreground/70"
+                    >
+                      No options configured for this question.
+                    </Typography>
+                  </div>
+                );
+              }
 
               return (
                 <Table>

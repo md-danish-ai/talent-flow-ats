@@ -17,14 +17,18 @@ class AIQuestionService:
         self.db = db
         self.ai_client = AIClient()
 
-    async def generate_questions(self, request: AIQuestionRequest, user_id: int) -> List[Question]:
+    async def generate_questions(
+        self, request: AIQuestionRequest, user_id: int
+    ) -> List[Question]:
         # 1. Fetch Classifications
         q_type = self.db.get(Classification, int(request.question_type.get("id")))
         s_type = self.db.get(Classification, int(request.subject_type.get("id")))
         e_level = self.db.get(Classification, int(request.exam_level.get("id")))
 
         if not q_type or not s_type or not e_level:
-            error_msg = "Missing classification metadata. Ensure the database is seeded."
+            error_msg = (
+                "Missing classification metadata. Ensure the database is seeded."
+            )
             raise HTTPException(status_code=400, detail=error_msg)
 
         # 2. Build Combined Instructions from 'description' metadata
@@ -34,11 +38,11 @@ class AIQuestionService:
             desc = meta.get("description")
             if desc:
                 instructions.append(f"- {obj.name}: {desc}")
-        
+
         # Include User's Additional Context
         if request.additional_context:
             instructions.append(f"- User Requirement: {request.additional_context}")
-        
+
         combined_instructions = "\n".join(instructions)
 
         # 3. Build Prompt using Names (Labels) and merged instructions
@@ -54,45 +58,52 @@ class AIQuestionService:
         # 4. Call AI once for all questions
         parsed_questions = self.ai_client.generate(prompt)
         if not parsed_questions or not isinstance(parsed_questions, list):
-            print(f"ERROR: AI Client returned empty or invalid response: {parsed_questions}")
+            print(
+                f"ERROR: AI Client returned empty or invalid response: {parsed_questions}"
+            )
             return []
 
         print(f"DEBUG: AI generated {len(parsed_questions)} questions.")
 
         generated_questions = []
-        seen_in_batch = set() # Track duplicates within the current AI response
+        seen_in_batch = set()  # Track duplicates within the current AI response
 
         # 5. Process each generated question
         for parsed_data in parsed_questions:
             # 6. Duplicate Detection (DB + Current Batch)
             text_to_check = parsed_data.get("question_text", "")
             passage_to_check = parsed_data.get("passage", "")
-            
+
             # Check against what we just saw in this batch
             batch_key = self._normalize_text(text_to_check + (passage_to_check or ""))
             if batch_key in seen_in_batch:
                 print("Skipping: Duplicate found within current AI response batch.")
                 continue
-                
+
             if self._is_duplicate(text_to_check, passage_to_check):
-                print(f"Skipping: Duplicate question detected in DB: {text_to_check[:100]}...")
+                print(
+                    f"Skipping: Duplicate question detected in DB: {text_to_check[:100]}..."
+                )
                 continue
-            
+
             seen_in_batch.add(batch_key)
 
             # 7. Transform Options to Manual List Format
             # Manual repository format: [{"option_label": "A", "option_text": "...", "is_correct": bool}, ...]
             raw_options = parsed_data.get("options", {})
-            correct_ans_key = parsed_data.get("correct_answer") # e.g., "A"
-            
+            correct_ans_key = parsed_data.get("correct_answer")  # e.g., "A"
+
             formatted_options = []
             if isinstance(raw_options, dict):
                 for label, text in raw_options.items():
-                    formatted_options.append({
-                        "option_label": label,
-                        "option_text": text,
-                        "is_correct": str(label).strip().upper() == str(correct_ans_key).strip().upper()
-                    })
+                    formatted_options.append(
+                        {
+                            "option_label": label,
+                            "option_text": text,
+                            "is_correct": str(label).strip().upper()
+                            == str(correct_ans_key).strip().upper(),
+                        }
+                    )
             elif isinstance(raw_options, list):
                 # Fallback if AI returns a list
                 formatted_options = raw_options
@@ -116,7 +127,7 @@ class AIQuestionService:
                 created_by=user_id,
             )
             self.db.add(new_question)
-            self.db.flush() # Ensure we have an ID for the answer table
+            self.db.flush()  # Ensure we have an ID for the answer table
 
             # 9. Save Answer to 'question_answers' table
             answer_text = ""
@@ -140,21 +151,26 @@ class AIQuestionService:
 
         return generated_questions
 
-
-    def _is_duplicate(self, text: str, passage: Optional[str] = None, threshold: float = 0.85) -> bool:
+    def _is_duplicate(
+        self, text: str, passage: Optional[str] = None, threshold: float = 0.85
+    ) -> bool:
         if not text and not passage:
             return False
-            
+
         normalized_new = self._normalize_text(text)
         normalized_passage = self._normalize_text(passage) if passage else ""
 
         # 1. Exact match check for question text
-        stmt = select(Question).where(func.lower(Question.question_text) == normalized_new.lower())
+        stmt = select(Question).where(
+            func.lower(Question.question_text) == normalized_new.lower()
+        )
         if passage:
             # If there's a passage, it must also match for it to be a true duplicate
             # (Allows same instruction for different paragraphs in Typing Tests)
-            stmt = stmt.where(func.lower(Question.passage) == normalized_passage.lower())
-        
+            stmt = stmt.where(
+                func.lower(Question.passage) == normalized_passage.lower()
+            )
+
         if self.db.execute(stmt).first():
             return True
 
@@ -166,12 +182,16 @@ class AIQuestionService:
             # If we have a passage, check passage similarity with a stricter threshold (0.95)
             # because paragraphs are long and can have similar vocabulary without being duplicates.
             if passage and q.passage:
-                sim = SequenceMatcher(None, normalized_passage, self._normalize_text(q.passage)).ratio()
-                if sim > 0.95: # Stricter for passages
+                sim = SequenceMatcher(
+                    None, normalized_passage, self._normalize_text(q.passage)
+                ).ratio()
+                if sim > 0.95:  # Stricter for passages
                     return True
             else:
                 # Standard question text similarity
-                sim = SequenceMatcher(None, normalized_new, self._normalize_text(q.question_text)).ratio()
+                sim = SequenceMatcher(
+                    None, normalized_new, self._normalize_text(q.question_text)
+                ).ratio()
                 if sim > threshold:
                     return True
 
