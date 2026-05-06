@@ -103,7 +103,6 @@ export function PaperSetupClient() {
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
       void refresh();
-      toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
       // Error is handled by API client
     } finally {

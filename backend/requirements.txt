@@ -29,3 +29,4 @@ huggingface_hub
 Pillow
 pandas
 openpyxl
+xhtml2pdf

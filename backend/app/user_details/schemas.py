@@ -49,6 +49,7 @@ class EducationDetailSchema(BaseModel):
     division: str
     percentage: str
     medium: str
+    details: Optional[str] = ""
 
 
 class WorkExperienceDetailSchema(BaseModel):
