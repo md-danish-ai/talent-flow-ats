@@ -18,7 +18,12 @@ export function BulkUploadGuideCard({
   className,
 }: BulkUploadGuideCardProps) {
   return (
-    <div className={cn("bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm", className)}>
+    <div
+      className={cn(
+        "bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm",
+        className,
+      )}
+    >
       <div className="p-5 border-b border-slate-200/60 dark:border-white/5 bg-white/50 dark:bg-white/[0.02]">
         <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-brand-primary">
@@ -32,7 +37,7 @@ export function BulkUploadGuideCard({
         <div
           className={cn(
             "grid gap-6",
-            isImageBased ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+            isImageBased ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1",
           )}
         >
           {/* Excel Instructions */}
@@ -46,14 +51,19 @@ export function BulkUploadGuideCard({
                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0 shadow-[0_0_5px_rgba(var(--brand-primary-rgb),0.4)]" />
                 <span className="leading-relaxed">
                   Dropdown selections (Subject, Level, Marks) above will act as{" "}
-                  <b className="text-slate-900 dark:text-white">Default Values</b> if not specified in Excel.
+                  <b className="text-slate-900 dark:text-white">
+                    Default Values
+                  </b>{" "}
+                  if not specified in Excel.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0 shadow-[0_0_5px_rgba(var(--brand-primary-rgb),0.4)]" />
                 <div className="space-y-1.5">
                   <p className="leading-relaxed">
-                    Use official <b className="text-slate-900 dark:text-white">Codes</b> for these Excel columns:
+                    Use official{" "}
+                    <b className="text-slate-900 dark:text-white">Codes</b> for
+                    these Excel columns:
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="px-2 py-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-[9px] font-black text-slate-700 dark:text-slate-300 shadow-sm">
@@ -75,8 +85,11 @@ export function BulkUploadGuideCard({
               <li className="flex items-start gap-2.5">
                 <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0 shadow-[0_0_5px_rgba(var(--brand-primary-rgb),0.4)]" />
                 <span className="leading-relaxed">
-                  Maintain the exact <b className="text-slate-900 dark:text-white">column structure</b> provided in the
-                  sample template.
+                  Maintain the exact{" "}
+                  <b className="text-slate-900 dark:text-white">
+                    column structure
+                  </b>{" "}
+                  provided in the sample template.
                 </span>
               </li>
             </ul>
@@ -90,14 +103,16 @@ export function BulkUploadGuideCard({
                 Images ZIP Requirements
               </p>
               <ul className="text-xs space-y-2.5 text-slate-600 dark:text-slate-400">
-                  <li className="flex items-start gap-2.5">
-                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0 shadow-[0_0_5px_rgba(168,85,247,0.4)]" />
-                    <span className="leading-relaxed">
-                      Filenames in Excel (e.g. <i>image1.png</i>) must{" "}
-                      <b className="text-slate-900 dark:text-white uppercase">exactly match</b>{" "}
-                      files inside the ZIP.
-                    </span>
-                  </li>
+                <li className="flex items-start gap-2.5">
+                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0 shadow-[0_0_5px_rgba(168,85,247,0.4)]" />
+                  <span className="leading-relaxed">
+                    Filenames in Excel (e.g. <i>image1.png</i>) must{" "}
+                    <b className="text-slate-900 dark:text-white uppercase">
+                      exactly match
+                    </b>{" "}
+                    files inside the ZIP.
+                  </span>
+                </li>
                 <li className="flex items-start gap-2.5">
                   <div className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0 shadow-[0_0_5px_rgba(168,85,247,0.4)]" />
                   <span className="leading-relaxed">

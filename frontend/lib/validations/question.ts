@@ -74,7 +74,12 @@ export const passageSchema = z.object({
   marks: z.coerce.number().min(1).max(50),
   passage: z.string().min(20, "Passage must be at least 20 characters"),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
-  answerText: z.string().min(1, "Answer is required"),
+  options: z
+    .array(mcqOptionSchema)
+    .min(2, "At least two options are required")
+    .refine((options) => options.some((opt) => opt.isCorrect), {
+      message: "One option must be marked as correct",
+    }),
   explanation: z.string().optional(),
 });
 

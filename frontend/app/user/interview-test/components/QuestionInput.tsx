@@ -28,8 +28,10 @@ function QuestionInputComponent({
     return (
       <PassageContentView
         key={question.id}
+        questionId={question.id}
         passage={question.passage || ""}
         questionText={question.questionText}
+        options={question.options || []}
         currentAnswer={currentAnswer}
         onChangeAnswer={onChangeAnswer}
       />

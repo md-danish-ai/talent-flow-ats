@@ -23,7 +23,7 @@ export function BulkUploadErrorCard({
     <div
       className={cn(
         "p-5 rounded-2xl bg-error/5 border border-error/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500",
-        className
+        className,
       )}
     >
       <h4 className="text-sm font-bold text-error flex items-center gap-2 mb-4">

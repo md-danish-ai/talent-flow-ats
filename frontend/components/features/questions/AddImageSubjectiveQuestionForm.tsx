@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "@lib/toast";
 import Image from "next/image";
-import { QUESTION_TYPES } from "@lib/constants/questions";
+import { QUESTION_TYPES, MARKS_OPTIONS } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { ZoomIn } from "lucide-react";
@@ -372,10 +372,7 @@ export const AddImageSubjectiveQuestionForm = ({
                         placeholder="Select Marks"
                         value={String(field.state.value)}
                         onChange={(val) => field.handleChange(Number(val))}
-                        options={Array.from({ length: 50 }, (_, i) => ({
-                          id: String(i + 1),
-                          label: String(i + 1),
-                        }))}
+                        options={MARKS_OPTIONS}
                         className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                         error={field.state.meta.errors.length > 0}
                       />

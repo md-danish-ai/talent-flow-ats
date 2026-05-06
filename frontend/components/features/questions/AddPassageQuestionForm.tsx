@@ -10,18 +10,20 @@ import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
 import { Textarea } from "@components/ui-elements/Textarea";
+import { Input } from "@components/ui-elements/Input";
+import { OptionInput } from "@components/ui-elements/OptionInput";
 import { getErrorMessage } from "@lib/utils";
 import {
   MessageSquareText,
   HelpCircle,
   Loader2,
-  BookOpen,
   FileText,
+  Plus,
 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { type Classification, type QuestionCreate } from "@types";
-import { QUESTION_TYPES } from "@lib/constants/questions";
+import { QUESTION_TYPES, MARKS_OPTIONS } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const AddPassageQuestionForm = ({
@@ -74,8 +76,13 @@ export const AddPassageQuestionForm = ({
         marks: 1,
         passage: "",
         questionText: "",
-        answerText: "",
         explanation: "",
+        options: [
+          { id: "A", label: "A", content: "", isCorrect: false },
+          { id: "B", label: "B", content: "", isCorrect: false },
+          { id: "C", label: "C", content: "", isCorrect: false },
+          { id: "D", label: "D", content: "", isCorrect: false },
+        ],
       } as PassageFormValues),
     validators: {
       onChange: passageSchema,
@@ -90,9 +97,12 @@ export const AddPassageQuestionForm = ({
           question_text: value.questionText,
           marks: value.marks,
           is_active: true,
-          options: [],
+          options: value.options.map((opt) => ({
+            option_label: opt.label,
+            option_text: opt.content,
+            is_correct: opt.isCorrect,
+          })),
           answer: {
-            answer_text: value.answerText,
             explanation: value.explanation,
           },
         };
@@ -110,6 +120,30 @@ export const AddPassageQuestionForm = ({
       }
     },
   });
+
+  const addOption = () => {
+    const currentOptions = form.getFieldValue("options");
+    if (currentOptions.length < 6) {
+      const nextLabel = String.fromCharCode(65 + currentOptions.length);
+      form.setFieldValue("options", [
+        ...currentOptions,
+        { id: nextLabel, label: nextLabel, content: "", isCorrect: false },
+      ]);
+    }
+  };
+
+  const removeOption = (index: number) => {
+    const currentOptions = form.getFieldValue("options");
+    if (currentOptions.length > 2) {
+      const filtered = currentOptions.filter((_, i) => i !== index);
+      const remapped = filtered.map((opt, i) => ({
+        ...opt,
+        id: String.fromCharCode(65 + i),
+        label: String.fromCharCode(65 + i),
+      }));
+      form.setFieldValue("options", remapped);
+    }
+  };
 
   return (
     <form
@@ -214,10 +248,7 @@ export const AddPassageQuestionForm = ({
                     placeholder="Select Marks"
                     value={String(field.state.value)}
                     onChange={(val) => field.handleChange(Number(val))}
-                    options={Array.from({ length: 50 }, (_, i) => ({
-                      id: String(i + 1),
-                      label: String(i + 1),
-                    }))}
+                    options={MARKS_OPTIONS}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -236,146 +267,195 @@ export const AddPassageQuestionForm = ({
         </div>
       </div>
 
-      {/* Passage & Question Text Section in a Single Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Passage Paragraph Column */}
-        <div className="space-y-4">
-          <form.Field name="passage">
-            {(field) => (
-              <>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-                    <FileText size={18} />
-                  </div>
-                  <Typography variant="body3" weight="bold">
-                    Passage Paragraph
-                  </Typography>
+      {/* Passage Section - Full Width */}
+      <div className="space-y-4">
+        <form.Field name="passage">
+          {(field) => (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+                  <FileText size={18} />
                 </div>
-                <Textarea
-                  placeholder="Paste or write the passage content here..."
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20 min-h-[150px]"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="text-red-500 font-medium ml-1 mt-1"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </>
-            )}
-          </form.Field>
-        </div>
-
-        {/* Question Text Column */}
-        <div className="space-y-4">
-          <form.Field name="questionText">
-            {(field) => (
-              <>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-                    <HelpCircle size={18} />
-                  </div>
-                  <Typography variant="body3" weight="bold">
-                    Question Text
-                  </Typography>
-                </div>
-                <Textarea
-                  placeholder="Enter the main question related to the passage..."
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20 min-h-[150px]"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="text-red-500 mt-1 ml-1 font-medium"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </>
-            )}
-          </form.Field>
-        </div>
+                <Typography variant="body3" weight="bold">
+                  Passage Paragraph
+                </Typography>
+              </div>
+              <Textarea
+                placeholder="Paste or write the passage content here..."
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors.length > 0}
+                className="bg-muted/20 min-h-[150px]"
+              />
+              {field.state.meta.errors.length > 0 && (
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
+                  {getErrorMessage(field.state.meta.errors[0])}
+                </Typography>
+              )}
+            </>
+          )}
+        </form.Field>
       </div>
 
-      {/* Answer & Explanation Section in a Single Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Answer Section */}
-        <div className="space-y-4">
-          <form.Field name="answerText">
-            {(field) => (
-              <>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
-                    <BookOpen size={18} />
-                  </div>
-                  <Typography variant="body3" weight="bold">
-                    Correct Answer
-                  </Typography>
+      {/* Question Text Section - Full Width */}
+      <div className="space-y-4">
+        <form.Field name="questionText">
+          {(field) => (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+                  <HelpCircle size={18} />
                 </div>
-                <Textarea
-                  placeholder="Write the expected correct answer..."
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20 min-h-[150px]"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="text-red-500 font-medium ml-1 mt-1"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </>
-            )}
-          </form.Field>
+                <Typography variant="body3" weight="bold">
+                  Question Text
+                </Typography>
+              </div>
+              <Input
+                placeholder="Enter the main question related to the passage..."
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors.length > 0}
+                className="bg-muted/20 h-12"
+              />
+              {field.state.meta.errors.length > 0 && (
+                <Typography
+                  variant="body5"
+                  className="text-red-500 mt-1 ml-1 font-medium"
+                >
+                  {getErrorMessage(field.state.meta.errors[0])}
+                </Typography>
+              )}
+            </>
+          )}
+        </form.Field>
+      </div>
+
+      {/* ── Answer Options ── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+              <Plus size={18} />
+            </div>
+            <Typography variant="body3" weight="bold">
+              Answer Options
+            </Typography>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            color="primary"
+            size="sm"
+            animate="scale"
+            iconAnimation="rotate-90"
+            startIcon={<Plus size={18} />}
+            onClick={addOption}
+          >
+            Add Option
+          </Button>
         </div>
 
-        {/* Explanation Section */}
-        <div className="space-y-4">
-          <form.Field name="explanation">
-            {(field) => (
-              <>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-                    <MessageSquareText size={18} />
-                  </div>
-                  <Typography variant="body3" weight="bold">
-                    Answer Explanation
-                  </Typography>
+        <form.Field name="options">
+          {(field) => (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                {field.state.value.map((opt, index) => (
+                  <form.Field key={opt.id} name={`options[${index}].content`}>
+                    {(subField) => (
+                      <div className="relative group flex flex-col gap-1">
+                        <OptionInput
+                          prefixLabel={opt.label}
+                          isCorrect={opt.isCorrect}
+                          placeholder={`Type option ${opt.label} content...`}
+                          value={opt.content}
+                          onChange={(e) => {
+                            const newOptions = [...field.state.value];
+                            newOptions[index] = {
+                              ...opt,
+                              content: e.target.value,
+                            };
+                            field.handleChange(newOptions);
+                          }}
+                          onBlur={subField.handleBlur}
+                          error={
+                            subField.state.meta.errors.length > 0 ||
+                            field.state.meta.errors.length > 0
+                          }
+                          onMarkCorrect={() => {
+                            const newOptions = field.state.value.map(
+                              (o, i) => ({
+                                ...o,
+                                isCorrect: i === index ? !o.isCorrect : false,
+                              }),
+                            );
+                            field.handleChange(newOptions);
+                          }}
+                          onRemove={() => removeOption(index)}
+                          showRemove={field.state.value.length > 2}
+                        />
+                        {subField.state.meta.errors.length > 0 && (
+                          <Typography
+                            variant="body5"
+                            className="text-red-500 font-medium ml-1"
+                          >
+                            {getErrorMessage(subField.state.meta.errors[0])}
+                          </Typography>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+                ))}
+              </div>
+              {field.state.meta.errors.length > 0 && (
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
+                  {getErrorMessage(field.state.meta.errors[0])}
+                </Typography>
+              )}
+            </div>
+          )}
+        </form.Field>
+      </div>
+
+      {/* ── Answer Explanation ── */}
+      <div className="space-y-4">
+        <form.Field name="explanation">
+          {(field) => (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+                  <MessageSquareText size={18} />
                 </div>
-                <Textarea
-                  placeholder="Explain the logic or reasoning behind the correct answer..."
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20 min-h-[150px]"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <Typography
-                    variant="body5"
-                    className="text-red-500 font-medium ml-1 mt-1"
-                  >
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-              </>
-            )}
-          </form.Field>
-        </div>
+                <Typography variant="body3" weight="bold">
+                  Answer Explanation
+                </Typography>
+              </div>
+              <Textarea
+                placeholder="Explain the logic or reasoning behind the correct answer..."
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors.length > 0}
+                className="bg-muted/20 min-h-[80px]"
+              />
+              {field.state.meta.errors.length > 0 && (
+                <Typography
+                  variant="body5"
+                  className="text-red-500 font-medium ml-1 mt-1"
+                >
+                  {getErrorMessage(field.state.meta.errors[0])}
+                </Typography>
+              )}
+            </>
+          )}
+        </form.Field>
       </div>
 
       {/* Submit Button */}

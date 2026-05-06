@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Upload,
-  Loader2,
-  FileUp,
-  Database,
-  Award,
-  Target,
-} from "lucide-react";
+import { Upload, Loader2, FileUp, Database, Award, Target } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -306,7 +299,7 @@ export function BulkUploadModal({
         </div>
 
         {/* Preparation Section: Instructions + Templates */}
-        <BulkUploadGuideCard 
+        <BulkUploadGuideCard
           questionType={questionType}
           isImageBased={isImageBased}
         />

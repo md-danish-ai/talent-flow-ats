@@ -41,7 +41,9 @@ export default function EditLeadGenerationModal({
       (question.options as Record<string, unknown>)?.linkedin_url || "",
     ),
     phone: String((question.options as Record<string, unknown>)?.phone || ""),
-    address: String((question.options as Record<string, unknown>)?.address || ""),
+    address: String(
+      (question.options as Record<string, unknown>)?.address || "",
+    ),
   };
 
   return (

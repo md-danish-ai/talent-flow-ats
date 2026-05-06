@@ -232,7 +232,9 @@ export function ResultTableView({
               return (
                 <TableCollapsibleRow
                   key={latest?.attempt_id ?? item.user_id}
-                  isOpen={expandedRowId === (latest?.attempt_id ?? item.user_id)}
+                  isOpen={
+                    expandedRowId === (latest?.attempt_id ?? item.user_id)
+                  }
                   onOpenChange={(expanded) =>
                     setExpandedRowId(
                       expanded ? (latest?.attempt_id ?? item.user_id) : null,

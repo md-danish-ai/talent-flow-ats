@@ -25,9 +25,14 @@ export const QuestionCreationModal: React.FC<QuestionCreationModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("manual");
 
+  const isAIGeneratorEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR === "true";
+
   const tabs = [
     { label: "Manual Add", value: "manual", icon: <Plus size={16} /> },
-    { label: "AI Generator", value: "ai", icon: <Sparkles size={16} /> },
+    ...(isAIGeneratorEnabled
+      ? [{ label: "AI Generator", value: "ai", icon: <Sparkles size={16} /> }]
+      : []),
   ];
 
   const handleSuccess = () => {
@@ -43,18 +48,20 @@ export const QuestionCreationModal: React.FC<QuestionCreationModalProps> = ({
       className="max-w-5xl"
     >
       <div className="space-y-6">
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <Tabs
-              tabs={tabs}
-              activeTab={activeTab}
-              onChange={setActiveTab}
-              variant="pills"
-              size="md"
-              fullWidth
-            />
+        {isAIGeneratorEnabled && (
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <Tabs
+                tabs={tabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                variant="pills"
+                size="md"
+                fullWidth
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="min-h-[400px]">
           {activeTab === "manual" ? (

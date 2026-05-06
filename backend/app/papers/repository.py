@@ -34,13 +34,14 @@ def get_papers(
         query = query.filter(Paper.paper_name.ilike(f"%{search}%"))
 
     total_records = query.count()
-    results = query.offset(skip).limit(limit).all()
+    results = query.order_by(Paper.id.desc()).offset(skip).limit(limit).all()
 
     papers = []
     for paper, dept_name, level_name, level_code in results:
         paper.department_name = dept_name
         paper.test_level_name = level_name
-        paper.test_level_id = level_code if level_code else str(paper.test_level_id)
+        paper.test_level_id = level_code if level_code else str(
+            paper.test_level_id)
         papers.append(paper)
 
     return papers, total_records
@@ -66,7 +67,8 @@ def get_paper(db: Session, paper_id: int) -> Optional[Paper]:
     paper, dept_name, level_name, level_code = result
     paper.department_name = dept_name
     paper.test_level_name = level_name
-    paper.test_level_id = level_code if level_code else str(paper.test_level_id)
+    paper.test_level_id = level_code if level_code else str(
+        paper.test_level_id)
     return paper
 
 
@@ -76,11 +78,13 @@ def create_paper(db: Session, paper: PaperCreate, user_id: int) -> Paper:
 
     # Resolve test_level_id (code) to actual ID
     test_level = (
-        db.query(Classification).filter(Classification.code == test_level_code).first()
+        db.query(Classification).filter(
+            Classification.code == test_level_code).first()
     )
     test_level_id = test_level.id if test_level else None
 
-    db_paper = Paper(**paper_data, test_level_id=test_level_id, created_by=user_id)
+    db_paper = Paper(**paper_data, test_level_id=test_level_id,
+                     created_by=user_id)
     db.add(db_paper)
     db.commit()
     db.refresh(db_paper)

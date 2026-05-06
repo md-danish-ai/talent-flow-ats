@@ -1,19 +1,27 @@
 "use client";
 import { memo } from "react";
 import { FileText } from "lucide-react";
-import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 
+import { MultipleChoiceView } from "./MultipleChoiceView";
+
 interface PassageContentViewProps {
+  questionId: number;
   passage: string;
   questionText: string;
+  options: (
+    | string
+    | { option_text: string; image_url?: string; imageUrl?: string }
+  )[];
   currentAnswer: string;
   onChangeAnswer: (value: string) => void;
 }
 
 export const PassageContentView = memo(function PassageContentView({
+  questionId,
   passage,
   questionText,
+  options,
   currentAnswer,
   onChangeAnswer,
 }: PassageContentViewProps) {
@@ -70,33 +78,13 @@ export const PassageContentView = memo(function PassageContentView({
           </div>
         </div>
 
-        {/* Answer Area */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-2">
-              <Typography
-                variant="body4"
-                className="font-bold text-brand-primary uppercase tracking-widest text-[11px]"
-              >
-                Your Analytical Response
-              </Typography>
-              <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
-            </div>
-            <div className="flex items-center gap-3">
-              <Typography
-                variant="body5"
-                className="font-mono text-[11px] opacity-60 italic"
-              >
-                Write a detailed response based on the passage context above
-              </Typography>
-            </div>
-          </div>
-          <Textarea
-            rows={8}
-            placeholder="Focus and start typing your analysis here..."
-            value={currentAnswer}
-            onChange={(event) => onChangeAnswer(event.target.value)}
-            className="rounded-2xl font-mono text-lg leading-relaxed bg-muted/5 border-2 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10 transition-all p-6 shadow-inner"
+        {/* Options Area */}
+        <div className="pt-2">
+          <MultipleChoiceView
+            questionId={questionId}
+            options={options}
+            currentAnswer={currentAnswer}
+            onChangeAnswer={onChangeAnswer}
           />
         </div>
       </div>

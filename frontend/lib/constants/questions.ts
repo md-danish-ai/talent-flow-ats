@@ -46,3 +46,9 @@ export const SUBJECTS = {
 } as const;
 
 export type Subject = (typeof SUBJECTS)[keyof typeof SUBJECTS];
+
+// ─── Shared Options ────────────────────────────────────────────────────────
+export const MARKS_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
+  id: String(i + 1),
+  label: String(i + 1) + " Marks",
+}));
