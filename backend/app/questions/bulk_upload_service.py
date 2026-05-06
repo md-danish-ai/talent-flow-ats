@@ -50,6 +50,9 @@ class BaseRowSchema(BaseModel):
 class MCQRowSchema(BaseRowSchema):
     correct_option: int = Field(alias="Correct Option")
 
+class PassageMCQRowSchema(MCQRowSchema):
+    passage: str = Field(alias="Passage Paragraph")
+
 class TypingRowSchema(BaseRowSchema):
     title: str = Field(alias="Title")
     paragraph: str = Field(alias="Paragraph")
@@ -83,7 +86,7 @@ class BulkUploadService:
             "aliases": ["image_subjective", "image subjective"]
         },
         QuestionType.PASSAGE_CONTENT: {
-            "schema": BaseRowSchema,
+            "schema": PassageMCQRowSchema,
             "aliases": ["passage"]
         },
         QuestionType.TYPING_TEST: {
@@ -242,8 +245,12 @@ class BulkUploadService:
         ans_explanation = row.get('Answer Explanation', row.get('Model Answer', row.get('Explanation', "")))
         passage = None
 
-        if q_type in [QuestionType.MULTIPLE_CHOICE, QuestionType.IMAGE_MULTIPLE_CHOICE]:
+        if q_type in [QuestionType.MULTIPLE_CHOICE, QuestionType.IMAGE_MULTIPLE_CHOICE, QuestionType.PASSAGE_CONTENT]:
             correct_idx = getattr(validated_row, 'correct_option', None)
+            
+            # Extract passage if applicable
+            if q_type == QuestionType.PASSAGE_CONTENT:
+                passage = getattr(validated_row, 'passage', None)
             
             # Extract options dynamically (up to 10)
             for i in range(1, 11):
@@ -266,7 +273,7 @@ class BulkUploadService:
             if correct_idx and correct_idx > len(options):
                 raise ValueError(f"Correct Option {correct_idx} is out of range")
 
-        elif q_type in [QuestionType.SUBJECTIVE, QuestionType.IMAGE_SUBJECTIVE, QuestionType.PASSAGE_CONTENT]:
+        elif q_type in [QuestionType.SUBJECTIVE, QuestionType.IMAGE_SUBJECTIVE]:
             # Subjective questions use 'Model Answer' or 'Answer' column
             ans_text = row.get('Model Answer', row.get('Answer', ""))
             options = []

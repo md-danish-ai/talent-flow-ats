@@ -225,6 +225,18 @@ export function BulkUploadGuideCard({
                   Contact Details Template
                 </a>
               )}
+              {questionType === QUESTION_TYPES.PASSAGE_CONTENT && (
+                <a
+                  href="/templates/sample_passage_upload.xlsx"
+                  download
+                  className="flex items-center gap-2 text-[10px] font-bold bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20 px-3 py-2 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-500/20 transition-colors shadow-sm"
+                >
+                  <div className="w-5 h-5 rounded-md bg-teal-600 text-white flex items-center justify-center font-black text-[10px]">
+                    X
+                  </div>
+                  Passage MCQ Template
+                </a>
+              )}
             </div>
           </div>
         </div>
