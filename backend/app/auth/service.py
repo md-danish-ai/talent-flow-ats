@@ -55,9 +55,9 @@ def signup_user(data):
                 user_id=new_user.id,
                 department_id=new_user.department_id,
                 test_level_id=new_user.test_level_id,
-                assigned_date=dt_date.today()
+                assigned_date=dt_date.today(),
             )
-            new_user.process_status = 'ready'
+            new_user.process_status = "ready"
             db_session.commit()
         except Exception as e:
             # Log error but don't fail signup.
@@ -90,16 +90,14 @@ def signin_user(data):
         user = None
         # 1. Primary Lookups
         if data.mobile:
-            user = db_session.query(User).filter(
-                User.mobile == data.mobile).first()
+            user = db_session.query(User).filter(User.mobile == data.mobile).first()
             if not user:
                 raise HTTPException(
                     status_code=StatusCode.UNAUTHORIZED,
                     detail="The mobile number provided is not registered.",
                 )
         elif data.email:
-            user = db_session.query(User).filter(
-                User.email == data.email).first()
+            user = db_session.query(User).filter(User.email == data.email).first()
             if not user:
                 raise HTTPException(
                     status_code=StatusCode.UNAUTHORIZED,
@@ -142,16 +140,21 @@ def signin_user(data):
                     user_id=user.id,
                     department_id=user.department_id,
                     test_level_id=user.test_level_id,
-                    assigned_date=dt_date.today()
+                    assigned_date=dt_date.today(),
                 )
-                user.process_status = 'ready'
+                user.process_status = "ready"
                 db_session.commit()
             except Exception as e:
                 print(
-                    f"Auto-assignment during login failed for user {user.id}: {str(e)}")
+                    f"Auto-assignment during login failed for user {user.id}: {str(e)}"
+                )
 
-        user_data = {"id": user.id, "username": user.username,
-                     "role": user.role, "department_id": user.department_id}
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "department_id": user.department_id,
+        }
         token = generate_jwt(user_data)
         return {
             "access_token": token,
@@ -231,14 +234,17 @@ def get_user_by_id(user_id):
             "email": user_obj.email,
             "role": user_obj.role,
             "test_level_id": user_obj.test_level_id,
-            "test_level_name": user_obj.test_level.name if user_obj.test_level else None,
+            "test_level_name": user_obj.test_level.name
+            if user_obj.test_level
+            else None,
             "department_id": user_obj.department_id,
-            "department_name": user_obj.department.name if user_obj.department else None,
+            "department_name": user_obj.department.name
+            if user_obj.department
+            else None,
             "created_at": user_obj.created_at,
         }
 
         if user["role"] == "user":
-
             details = (
                 db_session.query(UserDetail)
                 .filter(UserDetail.user_id == user_id)
@@ -269,9 +275,20 @@ def get_user_by_id(user_id):
         db_session.close()
 
 
-def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = None, date_from: str = None, date_to: str = None, department_id: int = None, test_level_id: int = None, status: str = None):
+def get_users_by_role(
+    role: str,
+    page: int = 1,
+    limit: int = 10,
+    search: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    department_id: int = None,
+    test_level_id: int = None,
+    status: str = None,
+):
     db_session = SessionLocal()
     try:
+
         def safe_parse_date(value: str):
             """Parse a date string safely, returning None for invalid/partial dates."""
             if not value or not isinstance(value, str):
@@ -300,41 +317,35 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         UserDept = aliased(Department)
 
         # Latest assignment per user via row_number()
-        assignment_subq = (
-            db_session.query(
-                PaperAssignment.user_id,
-                PaperAssignment.paper_id,
-                PaperAssignment.department_id,
-                PaperAssignment.test_level_id,
-                PaperAssignment.is_attempted,
-                PaperAssignment.assigned_date,
-                func.row_number()
-                .over(
-                    partition_by=PaperAssignment.user_id,
-                    order_by=PaperAssignment.id.desc(),
-                )
-                .label("rn"),
+        assignment_subq = db_session.query(
+            PaperAssignment.user_id,
+            PaperAssignment.paper_id,
+            PaperAssignment.department_id,
+            PaperAssignment.test_level_id,
+            PaperAssignment.is_attempted,
+            PaperAssignment.assigned_date,
+            func.row_number()
+            .over(
+                partition_by=PaperAssignment.user_id,
+                order_by=PaperAssignment.id.desc(),
             )
-            .subquery()
-        )
+            .label("rn"),
+        ).subquery()
 
         # Latest attempt per user via row_number()
-        attempt_subq = (
-            db_session.query(
-                InterviewRecord.user_id,
-                InterviewRecord.id,
-                InterviewRecord.status,
-                InterviewRecord.started_at,
-                InterviewRecord.submitted_at,
-                func.row_number()
-                .over(
-                    partition_by=InterviewRecord.user_id,
-                    order_by=InterviewRecord.id.desc(),
-                )
-                .label("rn"),
+        attempt_subq = db_session.query(
+            InterviewRecord.user_id,
+            InterviewRecord.id,
+            InterviewRecord.status,
+            InterviewRecord.started_at,
+            InterviewRecord.submitted_at,
+            func.row_number()
+            .over(
+                partition_by=InterviewRecord.user_id,
+                order_by=InterviewRecord.id.desc(),
             )
-            .subquery()
-        )
+            .label("rn"),
+        ).subquery()
 
         results_query = (
             db_session.query(
@@ -359,8 +370,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             )
             .outerjoin(
                 assignment_subq,
-                (User.id == assignment_subq.c.user_id) & (
-                    assignment_subq.c.rn == 1),
+                (User.id == assignment_subq.c.user_id) & (assignment_subq.c.rn == 1),
             )
             .outerjoin(Paper, assignment_subq.c.paper_id == Paper.id)
             .outerjoin(Department, assignment_subq.c.department_id == Department.id)
@@ -368,8 +378,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
             .outerjoin(Cls, assignment_subq.c.test_level_id == Cls.id)
             .outerjoin(
                 attempt_subq,
-                (User.id == attempt_subq.c.user_id) & (
-                    attempt_subq.c.rn == 1),
+                (User.id == attempt_subq.c.user_id) & (attempt_subq.c.rn == 1),
             )
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
@@ -378,32 +387,38 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         # Apply Filters
         if department_id:
             results_query = results_query.filter(
-                or_(User.department_id == department_id,
-                    assignment_subq.c.department_id == department_id)
+                or_(
+                    User.department_id == department_id,
+                    assignment_subq.c.department_id == department_id,
+                )
             )
         if test_level_id:
             results_query = results_query.filter(
-                assignment_subq.c.test_level_id == test_level_id)
+                assignment_subq.c.test_level_id == test_level_id
+            )
         if search:
             pattern = f"%{search}%"
             results_query = results_query.filter(
-                or_(User.username.ilike(pattern), User.email.ilike(
-                    pattern), User.mobile.ilike(pattern))
+                or_(
+                    User.username.ilike(pattern),
+                    User.email.ilike(pattern),
+                    User.mobile.ilike(pattern),
+                )
             )
 
         # 3. DATE FILTERS (Strictly New Registrations or Re-interviews)
         if range_from:
             start_date_obj = range_from
             end_date_obj = range_to if range_to else range_from
-            
+
             # For TIMESTAMP (created_at) - explicitly cover the full day
             start_ts = datetime.combine(start_date_obj, time.min)
             end_ts = datetime.combine(end_date_obj, time.max)
-            
+
             results_query = results_query.filter(
                 or_(
                     User.created_at.between(start_ts, end_ts),
-                    UserDetail.reinterview_date.between(start_date_obj, end_date_obj)
+                    UserDetail.reinterview_date.between(start_date_obj, end_date_obj),
                 )
             )
 
@@ -411,15 +426,20 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         if status and status != "all":
             if status == "pending":
                 results_query = results_query.filter(
-                    or_(User.process_status == "pending",
-                        assignment_subq.c.rn.is_(None))
+                    or_(
+                        User.process_status == "pending", assignment_subq.c.rn.is_(None)
+                    )
                 )
             else:
                 results_query = results_query.filter(User.process_status == status)
 
         total_records = results_query.count()
-        results = results_query.order_by(User.id.desc()).offset(
-            (page - 1) * limit).limit(limit).all()
+        results = (
+            results_query.order_by(User.id.desc())
+            .offset((page - 1) * limit)
+            .limit(limit)
+            .all()
+        )
 
         data = [
             {
@@ -428,18 +448,37 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                 "mobile": row.User.mobile,
                 "email": row.User.email,
                 "role": row.User.role,
-                "created_at": row.User.created_at.isoformat() if row.User.created_at else None,
+                "created_at": row.User.created_at.isoformat()
+                if row.User.created_at
+                else None,
                 "process_status": row.User.process_status,
                 "test_level_id": row.User.test_level_id,
-                "test_level_name": row.User.test_level.name if row.User.test_level else None,
+                "test_level_name": row.User.test_level.name
+                if row.User.test_level
+                else None,
                 "department_id": row.User.department_id,
                 "department_name": row.user_dept_name,
                 "is_active": row.User.is_active,
-                "is_details_submitted": row.is_submitted if row.is_submitted is not None else False,
-                "is_interview_submitted": row.is_interview_submitted if row.is_interview_submitted is not None else False,
-                "is_reinterview": row.is_reinterview if row.is_reinterview is not None else False,
-                "reinterview_date": row.reinterview_date.isoformat() if row.reinterview_date else None,
-                "user_type": "returning" if (row.is_reinterview and row.reinterview_date and range_from and row.reinterview_date == range_from) else "new",
+                "is_details_submitted": row.is_submitted
+                if row.is_submitted is not None
+                else False,
+                "is_interview_submitted": row.is_interview_submitted
+                if row.is_interview_submitted is not None
+                else False,
+                "is_reinterview": row.is_reinterview
+                if row.is_reinterview is not None
+                else False,
+                "reinterview_date": row.reinterview_date.isoformat()
+                if row.reinterview_date
+                else None,
+                "user_type": "returning"
+                if (
+                    row.is_reinterview
+                    and row.reinterview_date
+                    and range_from
+                    and row.reinterview_date == range_from
+                )
+                else "new",
                 "assignment": {
                     "is_assigned": row.asgn_paper_id is not None,
                     "paper_id": row.asgn_paper_id,
@@ -448,10 +487,16 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
                     "department_name": row.asgn_dept_name,
                     "test_level_id": row.asgn_level_id,
                     "test_level_name": row.level_name,
-                    "assigned_date": row.asgn_date.isoformat() if row.asgn_date else None,
-                    "is_attempted": bool(row.asgn_is_attempted) or row.attempt_status in ["submitted", "auto_submitted"],
-                    "has_started": row.attempt_id is not None and row.attempt_status == "started"
-                } if row.asgn_paper_id else None
+                    "assigned_date": row.asgn_date.isoformat()
+                    if row.asgn_date
+                    else None,
+                    "is_attempted": bool(row.asgn_is_attempted)
+                    or row.attempt_status in ["submitted", "auto_submitted"],
+                    "has_started": row.attempt_id is not None
+                    and row.attempt_status == "started",
+                }
+                if row.asgn_paper_id
+                else None,
             }
             for row in results
         ]
@@ -459,7 +504,7 @@ def get_users_by_role(role: str, page: int = 1, limit: int = 10, search: str = N
         return create_paginated_response(
             data=data,
             total_records=total_records,
-            params=PaginationParams(page=page, limit=limit)
+            params=PaginationParams(page=page, limit=limit),
         )
 
     except Exception as e:
@@ -535,8 +580,9 @@ def update_user_basic_info(user_id: int, data):
         if data.mobile is not None:
             # Check for conflict if mobile is changing
             if data.mobile != user.mobile:
-                conflicting_user = db_session.query(User).filter(
-                    User.mobile == data.mobile).first()
+                conflicting_user = (
+                    db_session.query(User).filter(User.mobile == data.mobile).first()
+                )
                 if conflicting_user:
                     raise HTTPException(
                         status_code=StatusCode.CONFLICT,

@@ -49,10 +49,10 @@ def create_auto_assignment_rule(
 
     db.commit()
     db.refresh(existing)
-    
+
     # Backfill for existing users if rule is created for Today
     backfill_assignments_for_rule(db, existing)
-    
+
     return get_auto_assignment_rule(db, existing.id)
 
 
@@ -75,29 +75,31 @@ def get_auto_assignment_rule(db: Session, rule_id: int) -> AutoAssignmentRule | 
     rule, dept_name, level_name = result
     rule.department_name = dept_name
     rule.test_level_name = level_name
-    
+
     # Fetch paper names
     if rule.paper_ids:
         papers = db.query(Paper.paper_name).filter(Paper.id.in_(rule.paper_ids)).all()
         rule.paper_names = [p.paper_name for p in papers]
     else:
         rule.paper_names = []
-        
+
     return rule
 
 
 def get_auto_assignment_rules(
-    db: Session, 
+    db: Session,
     assigned_date: date | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> list[AutoAssignmentRule]:
-    query = db.query(
-        AutoAssignmentRule,
-        Department.name.label("department_name"),
-        Classification.name.label("test_level_name"),
-    ).join(Department, AutoAssignmentRule.department_id == Department.id).join(
-        Classification, AutoAssignmentRule.test_level_id == Classification.id
+    query = (
+        db.query(
+            AutoAssignmentRule,
+            Department.name.label("department_name"),
+            Classification.name.label("test_level_name"),
+        )
+        .join(Department, AutoAssignmentRule.department_id == Department.id)
+        .join(Classification, AutoAssignmentRule.test_level_id == Classification.id)
     )
 
     if assigned_date:
@@ -114,17 +116,23 @@ def get_auto_assignment_rules(
     for rule, _, _ in results:
         if rule.paper_ids:
             all_paper_ids.extend(rule.paper_ids)
-    
+
     paper_map = {}
     if all_paper_ids:
-        papers = db.query(Paper.id, Paper.paper_name).filter(Paper.id.in_(list(set(all_paper_ids)))).all()
+        papers = (
+            db.query(Paper.id, Paper.paper_name)
+            .filter(Paper.id.in_(list(set(all_paper_ids))))
+            .all()
+        )
         paper_map = {p.id: p.paper_name for p in papers}
 
     final_rules = []
     for rule, dept_name, level_name in results:
         rule.department_name = dept_name
         rule.test_level_name = level_name
-        rule.paper_names = [paper_map.get(p_id, f"#{p_id}") for p_id in (rule.paper_ids or [])]
+        rule.paper_names = [
+            paper_map.get(p_id, f"#{p_id}") for p_id in (rule.paper_ids or [])
+        ]
         final_rules.append(rule)
 
     return final_rules
@@ -133,9 +141,7 @@ def get_auto_assignment_rules(
 def update_auto_assignment_rule(
     db: Session, rule_id: int, payload: AutoAssignmentRuleUpdate
 ) -> AutoAssignmentRule:
-    rule = (
-        db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
-    )
+    rule = db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
     if not rule:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
@@ -146,17 +152,15 @@ def update_auto_assignment_rule(
 
     db.commit()
     db.refresh(rule)
-    
+
     # Backfill for existing users if rule is updated
     backfill_assignments_for_rule(db, rule)
-    
+
     return get_auto_assignment_rule(db, rule.id)
 
 
 def delete_auto_assignment_rule(db: Session, rule_id: int) -> dict:
-    rule = (
-        db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
-    )
+    rule = db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
     if not rule:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
@@ -192,8 +196,8 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
             User.is_active.is_(True),
             or_(
                 func.date(User.created_at) == rule.assigned_date,
-                UserDetail.reinterview_date == rule.assigned_date
-            )
+                UserDetail.reinterview_date == rule.assigned_date,
+            ),
         )
         .all()
     )
@@ -224,7 +228,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         PaperAssignment.user_id.in_(assignable_user_ids),
         PaperAssignment.assigned_date == rule.assigned_date,
         PaperAssignment.is_attempted.is_(False),
-        PaperAssignment.assignment_source == "AUTO"
+        PaperAssignment.assignment_source == "AUTO",
     ).delete(synchronize_session=False)
 
     # CRITICAL: Flush deletions so the next count query doesn't include them
@@ -240,8 +244,10 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         .all()
     )
     remaining_user_ids = {a.user_id for a in remaining_assignments}
-    
-    pending_user_ids = [uid for uid in assignable_user_ids if uid not in remaining_user_ids]
+
+    pending_user_ids = [
+        uid for uid in assignable_user_ids if uid not in remaining_user_ids
+    ]
 
     if not pending_user_ids:
         return
@@ -249,18 +255,24 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     # 4. Bulk Distribution Logic
     raw_paper_ids = rule.paper_ids if isinstance(rule.paper_ids, list) else []
     if not raw_paper_ids:
-        db.commit() # Commit deletions if any
+        db.commit()  # Commit deletions if any
         return
 
     # Filter only ACTIVE papers while PRESERVING rule order and ensuring INT type
-    active_ids_query = db.query(Paper.id).filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True)).all()
+    active_ids_query = (
+        db.query(Paper.id)
+        .filter(Paper.id.in_(raw_paper_ids), Paper.is_active.is_(True))
+        .all()
+    )
     active_paper_ids = {p.id for p in active_ids_query}
-    
+
     # Ensure all IDs are treated as integers for robust matching
     paper_ids = [int(pid) for pid in raw_paper_ids if int(pid) in active_paper_ids]
-    
+
     if not paper_ids:
-        print(f"WARNING: No active papers found for Auto-Rule {rule.id}. Deletions committed.")
+        print(
+            f"WARNING: No active papers found for Auto-Rule {rule.id}. Deletions committed."
+        )
         db.commit()
         return
 
@@ -278,7 +290,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     for i, uid in enumerate(pending_user_ids):
         # Strict Round-robin based on rule sequence
         best_paper_id = paper_ids[i % len(paper_ids)]
-        
+
         assignment = PaperAssignment(
             user_id=uid,
             paper_id=best_paper_id,
@@ -297,7 +309,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         db.query(User).filter(User.id.in_(pending_user_ids)).update(
             {User.process_status: "ready"}, synchronize_session=False
         )
-    
+
     db.commit()
 
 
@@ -331,12 +343,12 @@ def assign_best_paper(
             User.id == user_id,
             or_(
                 func.date(User.created_at) == assigned_date,
-                UserDetail.reinterview_date == assigned_date
-            )
+                UserDetail.reinterview_date == assigned_date,
+            ),
         )
         .first()
     )
-    
+
     if not user_match:
         return None
 
@@ -353,7 +365,7 @@ def assign_best_paper(
         .all()
     )
     paper_ids = [p.id for p in active_papers]
-    
+
     if not paper_ids:
         return None
 
@@ -410,12 +422,12 @@ def assign_best_paper(
     )
 
     db.add(assignment)
-    
+
     # Update user status to ready
     user = db.query(User).filter(User.id == user_id).first()
     if user:
         user.process_status = "ready"
-        
+
     db.commit()
     db.refresh(assignment)
 
@@ -581,18 +593,17 @@ def assign_paper_to_user(
         assigned_by=assigned_by,
     )
     db.add(assignment)
-    
+
     # Update user status to ready
     user = db.query(User).filter(User.id == payload.user_id).first()
     if user:
         user.process_status = "ready"
-        
+
     db.commit()
     db.refresh(assignment)
     return get_assignment_by_user_and_date(
         db, user_id=payload.user_id, assigned_date=payload.assigned_date
     )
-
 
 
 def get_assignment_by_user_and_date(
@@ -640,7 +651,8 @@ def get_my_interview_paper(
     ordered_questions = [
         question_by_id[question_id]
         for question_id in question_ids
-        if question_id in question_by_id and question_by_id[question_id].get("is_active")
+        if question_id in question_by_id
+        and question_by_id[question_id].get("is_active")
     ]
 
     subject_config = (
@@ -662,9 +674,7 @@ def get_my_interview_paper(
         if isinstance(item.get("subject_id"), int)
     ]
     subject_rows = (
-        db.query(Classification)
-        .filter(Classification.id.in_(subject_ids))
-        .all()
+        db.query(Classification).filter(Classification.id.in_(subject_ids)).all()
         if subject_ids
         else []
     )
@@ -714,8 +724,12 @@ def get_my_interview_paper(
                 "id": question["id"],
                 "type": _resolve_question_type(question),
                 "question_text": question["question_text"],
-                "subject_name": question.get("subject", {}).get("name") if question.get("subject") else None,
-                "type_name": question.get("question_type", {}).get("name") if question.get("question_type") else None,
+                "subject_name": question.get("subject", {}).get("name")
+                if question.get("subject")
+                else None,
+                "type_name": question.get("question_type", {}).get("name")
+                if question.get("question_type")
+                else None,
                 "image_url": question.get("image_url"),
                 "passage": question.get("passage"),
                 "marks": question.get("marks"),

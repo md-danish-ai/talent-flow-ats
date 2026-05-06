@@ -43,7 +43,10 @@ def create(payload: ClassificationCreate):
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update-classification/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.put(
+    "/update-classification/{classification_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
 def update(
     classification_id: int,
     payload: ClassificationUpdate,
@@ -52,7 +55,10 @@ def update(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/remove-classification/{classification_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.delete(
+    "/remove-classification/{classification_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
 def delete(
     classification_id: int,
 ):

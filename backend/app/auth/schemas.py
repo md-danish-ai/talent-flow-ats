@@ -7,7 +7,6 @@ import re
 # ─── Shared Enums (single source of truth for both backend & frontend) ────
 
 
-
 class RoleEnum(str, Enum):
     user = "user"
     admin = "admin"

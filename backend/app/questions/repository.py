@@ -478,18 +478,18 @@ def get_available_question_counts(subject_code: str, exam_level: str):
             db_session.query(
                 Question.question_type,
                 Question.marks,
-                sql_func.count(Question.id).label("count")
+                sql_func.count(Question.id).label("count"),
             )
             .filter(
                 Question.subject_type == subject_code,
                 Question.exam_level == exam_level,
-                Question.is_active.is_(True)
+                Question.is_active.is_(True),
             )
             .group_by(Question.question_type, Question.marks)
             .all()
         )
         return [
-            {"type_code": r.question_type, "marks": r.marks, "count": r.count} 
+            {"type_code": r.question_type, "marks": r.marks, "count": r.count}
             for r in rows
         ]
     finally:

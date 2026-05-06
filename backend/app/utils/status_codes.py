@@ -91,7 +91,7 @@ def serialize(data: Any) -> Any:
         data = data.dict()
     elif hasattr(data, "model_dump"):
         data = data.model_dump()
-        
+
     return json.loads(json.dumps(data, cls=CustomJSONEncoder))
 
 

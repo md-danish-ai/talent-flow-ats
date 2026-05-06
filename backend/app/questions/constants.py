@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class QuestionType(str, Enum):
     MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
     IMAGE_MULTIPLE_CHOICE = "IMAGE_MULTIPLE_CHOICE"

@@ -36,11 +36,15 @@ def assign_paper(
     assignment = repository.assign_paper_to_user(
         db=db, payload=payload, assigned_by=current_user
     )
-    
+
     # Check if this was an update or creation by comparing timestamps
     is_update = assignment.created_at != assignment.updated_at
-    message = "Paper assignment updated successfully" if is_update else "Paper set assigned successfully"
-    
+    message = (
+        "Paper assignment updated successfully"
+        if is_update
+        else "Paper set assigned successfully"
+    )
+
     return api_response(
         StatusCode.CREATED,
         message,
@@ -73,6 +77,7 @@ def get_my_interview_paper(
 
 # --- AUTO ASSIGNMENT RULES ---
 
+
 @router.post(
     "/get-auto-rules",
     dependencies=[Depends(require_roles(["admin"]))],
@@ -103,10 +108,7 @@ def list_auto_rules(
     db: Session = Depends(get_db),
 ):
     rules = repository.get_auto_assignment_rules(
-        db=db, 
-        assigned_date=assigned_date,
-        date_from=date_from,
-        date_to=date_to
+        db=db, assigned_date=assigned_date, date_from=date_from, date_to=date_to
     )
     return api_response(
         StatusCode.OK,

@@ -33,12 +33,12 @@ def read_papers(
 ):
     offset = (pagination.page - 1) * pagination.limit
     papers, total_records = repository.get_papers(
-        db, 
-        skip=offset, 
+        db,
+        skip=offset,
         limit=pagination.limit,
         department_id=department_id,
         test_level_id=test_level_id,
-        search=pagination.search
+        search=pagination.search,
     )
 
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization
