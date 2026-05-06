@@ -28,7 +28,7 @@ const LegendItem = ({
     className={cn(
       "flex flex-col transition-all",
       compact
-        ? "gap-1 p-2 border-b border-white/10 last:border-0"
+        ? "gap-1 p-2 border-b border-slate-100 dark:border-white/10 last:border-0"
         : "gap-2 p-3 rounded-xl",
     )}
   >
@@ -132,7 +132,7 @@ export function ResultStatusLegend({
 
   if (compact) {
     return (
-      <div className="flex flex-col w-[280px] p-2 bg-slate-900/95 rounded-xl shadow-2xl border border-white/10">
+      <div className="flex flex-col w-[280px] p-2 bg-white dark:bg-slate-900/95 rounded-xl shadow-2xl border border-slate-200 dark:border-white/10">
         {statuses.map((status) => (
           <LegendItem key={status.label} {...status} compact={true} />
         ))}
