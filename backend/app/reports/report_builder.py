@@ -250,18 +250,47 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
 
         # ── Subject+IT skills combined list ──────────────────────────────
         sr_map = {sr["section_name"]: sr for sr in subject_results}
-        subject_items = [
-            {
-                "name": subj.name,
-                "value": sr_map[subj.name]["grade"] if subj.name in sr_map else "-",
-            }
-            for subj in all_subjects
-        ]
+        
+        subject_items = []
+        for subj in all_subjects:
+            name = subj.name
+            value = "-"
+            if name in sr_map:
+                res = sr_map[name]
+                if name.lower() in ["lead generation", "company contact details"]:
+                    tot = int(res.get("total_marks", 0))
+                    obt = res.get("obtained_marks", 0)
+                    obt_str = str(int(obt)) if obt == int(obt) else f"{obt:.2f}"
+                    name = f"{name} (Out of {tot})"
+                    value = obt_str
+                else:
+                    value = res.get("grade") or "-"
+            subject_items.append({"name": name, "value": value})
+
+        # Calculate Internet Test Marks (sum of Lead Generation and Company Contact Details)
+        lead_total = 0
+        lead_obt = 0
+        company_total = 0
+        company_obt = 0
+        for s_name, res in sr_map.items():
+            if s_name.lower() == "lead generation":
+                lead_total = res.get("total_marks", 0)
+                lead_obt = res.get("obtained_marks", 0)
+            elif s_name.lower() == "company contact details":
+                company_total = res.get("total_marks", 0)
+                company_obt = res.get("obtained_marks", 0)
+
+        internet_total = int(lead_total + company_total) if (lead_total + company_total) > 0 else 100
+        if (lead_total + company_total) > 0:
+            internet_obt_str = str(int(internet_obt)) if internet_obt == int(internet_obt) else f"{internet_obt:.2f}"
+        else:
+            internet_obt_str = "-"
+
         it_items = [
             {"name": "Typing Speed (Words/Minute)", "value": wpm},
             {"name": "Typing Accuracy (%)", "value": accuracy},
             {"name": "Total Typing Errors", "value": errors},
-            {"name": "Typing Time Taken", "value": time_taken},
+            {"name": f"Internet Test Marks (Out of {internet_total})", "value": internet_obt_str},
         ]
         left_col, right_col = _distribute_columns(subject_items + it_items)
 

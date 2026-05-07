@@ -141,26 +141,26 @@ def build_report_html(data: dict) -> str:
   }}
   body {{
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 7.5pt;
-    line-height: 1.1;
+    font-size: 7.7pt;
+    line-height: 1.11;
     color: #000;
   }}
   table {{
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 3pt;
-    font-size: 7.5pt;
+    margin-bottom: 3.5pt;
+    font-size: 7.7pt;
   }}
   td, th {{
     border: 1px solid #000;
-    padding: 1.5px 2.4px;
+    padding: 1.6px 2.6px;
     vertical-align: middle;
     line-height: 1.08;
   }}
   .section-title {{
-    font-size: 7.6pt;
+    font-size: 7.8pt;
     font-weight: bold;
-    margin: 4pt 0 1.8pt 0;
+    margin: 4.5pt 0 1.8pt 0;
   }}
   .bold {{ font-weight: bold; }}
 </style>
