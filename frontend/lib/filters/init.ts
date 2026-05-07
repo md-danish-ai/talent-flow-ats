@@ -1,3 +1,5 @@
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+
 import { filterRegistry } from "./registry";
 
 /**
@@ -157,7 +159,6 @@ filterRegistry.register("results-filters", [
     label: "Attempt Status",
     type: "select",
     options: [
-      { id: "all", label: "All Statuses" },
       { id: "started", label: "Started" },
       { id: "submitted", label: "Submitted (Manual)" },
       { id: "auto_submitted", label: "Auto Submitted" },
@@ -168,7 +169,6 @@ filterRegistry.register("results-filters", [
     label: "Completion Reason",
     type: "select",
     options: [
-      { id: "all", label: "All Reasons" },
       { id: "manual", label: "Manual" },
       { id: "time_over", label: "Time Over" },
     ],
@@ -177,13 +177,7 @@ filterRegistry.register("results-filters", [
     id: "overallGrade",
     label: "Overall Grade",
     type: "select",
-    options: [
-      { id: "all", label: "All Grades" },
-      { id: "Excellent", label: "Excellent" },
-      { id: "Good", label: "Good" },
-      { id: "Average", label: "Average" },
-      { id: "Poor", label: "Poor" },
-    ],
+    options: [...GRADE_OPTIONS],
   },
   {
     id: "project_lead_id",

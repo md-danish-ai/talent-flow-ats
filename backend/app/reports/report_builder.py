@@ -250,7 +250,7 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
 
         # ── Subject+IT skills combined list ──────────────────────────────
         sr_map = {sr["section_name"]: sr for sr in subject_results}
-        
+
         subject_items = []
         for subj in all_subjects:
             name = subj.name
@@ -280,9 +280,15 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
                 company_total = res.get("total_marks", 0)
                 company_obt = res.get("obtained_marks", 0)
 
-        internet_total = int(lead_total + company_total) if (lead_total + company_total) > 0 else 100
+        internet_total = (
+            int(lead_total + company_total) if (lead_total + company_total) > 0 else 100
+        )
         if (lead_total + company_total) > 0:
-            internet_obt_str = str(int(internet_obt)) if internet_obt == int(internet_obt) else f"{internet_obt:.2f}"
+            internet_obt_str = (
+                str(int(internet_obt))
+                if internet_obt == int(internet_obt)
+                else f"{internet_obt:.2f}"
+            )
         else:
             internet_obt_str = "-"
 
@@ -290,7 +296,10 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
             {"name": "Typing Speed (Words/Minute)", "value": wpm},
             {"name": "Typing Accuracy (%)", "value": accuracy},
             {"name": "Total Typing Errors", "value": errors},
-            {"name": f"Internet Test Marks (Out of {internet_total})", "value": internet_obt_str},
+            {
+                "name": f"Internet Test Marks (Out of {internet_total})",
+                "value": internet_obt_str,
+            },
         ]
         left_col, right_col = _distribute_columns(subject_items + it_items)
 
@@ -310,10 +319,14 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
         completed_evals = [ev for ev in evaluations if ev.get("status") == "completed"]
         first_eval = None
         if completed_evals:
-            completed_evals_sorted = sorted(completed_evals, key=lambda x: x.get("created_at") or datetime.min)
+            completed_evals_sorted = sorted(
+                completed_evals, key=lambda x: x.get("created_at") or datetime.min
+            )
             first_eval = completed_evals_sorted[0]
         elif evaluations:
-            evaluations_sorted = sorted(evaluations, key=lambda x: x.get("created_at") or datetime.min)
+            evaluations_sorted = sorted(
+                evaluations, key=lambda x: x.get("created_at") or datetime.min
+            )
             first_eval = evaluations_sorted[0]
 
         first_eval_formatted = None
@@ -324,7 +337,7 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
                 created_at_str = created_at_dt.strftime("%d/%m/%Y")
             elif created_at_dt:
                 created_at_str = str(created_at_dt)
-                
+
             first_eval_formatted = {
                 "id": first_eval.get("id"),
                 "status": first_eval.get("status"),

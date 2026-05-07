@@ -913,7 +913,13 @@ def get_admin_user_results(
             ),
             "excellent": sum(s[2] for s in stats_data if s[1] == GradeLabel.EXCELLENT),
             "good": sum(s[2] for s in stats_data if s[1] == GradeLabel.GOOD),
+            "above_average": sum(
+                s[2] for s in stats_data if s[1] == GradeLabel.ABOVE_AVERAGE
+            ),
             "average": sum(s[2] for s in stats_data if s[1] == GradeLabel.AVERAGE),
+            "below_average": sum(
+                s[2] for s in stats_data if s[1] == GradeLabel.BELOW_AVERAGE
+            ),
             "poor": sum(s[2] for s in stats_data if s[1] == GradeLabel.POOR),
         }
 

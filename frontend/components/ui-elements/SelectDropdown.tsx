@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check, Loader2 } from "lucide-react";
+import { ChevronDown, Check, Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -25,6 +25,7 @@ export interface SelectDropdownProps {
   disabled?: boolean;
   isLoading?: boolean;
   emptyMessage?: string;
+  isClearable?: boolean;
 }
 
 export function SelectDropdown({
@@ -39,6 +40,7 @@ export function SelectDropdown({
   disabled = false,
   isLoading = false,
   emptyMessage = "No options available",
+  isClearable = true,
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -237,12 +239,33 @@ export function SelectDropdown({
           >
             {selectedOption ? selectedOption.label : placeholder}
           </Typography>
-          <ChevronDown
-            className={cn(
-              "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
-              isOpen && "rotate-180 text-brand-primary",
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {isClearable && selectedOption && !disabled && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                    onChange("");
+                  }
+                }}
+                className="p-1 rounded-full hover:bg-muted dark:hover:bg-white/10 text-muted-foreground/60 hover:text-foreground transition-colors z-10 cursor-pointer"
+              >
+                <X size={14} />
+              </span>
             )}
-          />
+            <ChevronDown
+              className={cn(
+                "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
+                isOpen && "rotate-180 text-brand-primary",
+              )}
+            />
+          </div>
         </div>
       </Button>
 

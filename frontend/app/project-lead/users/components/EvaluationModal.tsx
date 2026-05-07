@@ -33,7 +33,9 @@ export const EvaluationModal = React.memo(
   }: EvaluationModalProps) => {
     const [r1Data, setR1Data] = useState<AdminUserResultDetail | null>(null);
     const [results, setResults] = useState<Classification[]>([]);
-    const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null);
+    const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(
+      null,
+    );
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 

@@ -106,7 +106,7 @@ def _evaluation_rows_html(eval_data: dict) -> str:
     ]
     left = metrics[:3]
     right = metrics[3:]
-    
+
     rows_html = ""
     for l_met, r_met in zip(left, right):
         l_val = eval_data.get(l_met, "")

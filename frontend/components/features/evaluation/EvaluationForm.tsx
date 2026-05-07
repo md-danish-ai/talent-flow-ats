@@ -15,6 +15,8 @@ import {
 import { getErrorMessage } from "@lib/utils";
 import { Classification } from "@types";
 
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+
 interface EvaluationFormProps {
   initialValues: EvaluationFormValues;
   results: Classification[];
@@ -33,13 +35,6 @@ const METRICS = [
   "Cultural Fit",
   "Learning Ability",
 ] as const;
-
-const RATINGS = [
-  { id: "Excellent", label: "Excellent" },
-  { id: "Good", label: "Good" },
-  { id: "Average", label: "Average" },
-  { id: "Poor", label: "Poor" },
-];
 
 export function EvaluationForm({
   initialValues,
@@ -83,7 +78,7 @@ export function EvaluationForm({
                   {metric}
                 </Typography>
                 <SelectDropdown
-                  options={RATINGS}
+                  options={GRADE_OPTIONS}
                   placeholder={`Rate ${metric}`}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(val as string)}
@@ -119,7 +114,7 @@ export function EvaluationForm({
                 Overall Grade
               </Typography>
               <SelectDropdown
-                options={RATINGS}
+                options={GRADE_OPTIONS}
                 placeholder="Select Grade"
                 value={field.state.value}
                 onChange={(val) => field.handleChange(val as string)}
@@ -222,7 +217,10 @@ export function EvaluationForm({
             </Typography>
           </div>
           {lockReason && (
-            <Typography variant="body5" className="text-emerald-600/70 text-[11px] font-medium md:ml-auto">
+            <Typography
+              variant="body5"
+              className="text-emerald-600/70 text-[11px] font-medium md:ml-auto"
+            >
               ({lockReason})
             </Typography>
           )}
