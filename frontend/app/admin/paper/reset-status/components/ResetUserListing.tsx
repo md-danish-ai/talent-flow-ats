@@ -184,7 +184,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                         Contact Info
                       </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                        Target Profile
+                        Department / Exam Level
                       </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
                         Attempt Status

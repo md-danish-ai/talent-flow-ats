@@ -1,24 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Users,
-  LayoutGrid,
-  List,
-  UserCheck,
-  UserX,
-  Trophy,
-  BadgeCheck,
-  Target,
-  HelpCircle,
-} from "lucide-react";
-import {
-  cn,
-  getGradeConfig,
-  getTodayISODate,
-  getYesterdayISODate,
-} from "@lib/utils";
-import { motion } from "framer-motion";
+import { Users, HelpCircle, LayoutGrid, List } from "lucide-react";
+import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Button } from "@components/ui-elements/Button";
@@ -27,8 +11,6 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { StatCard } from "@components/ui-cards/StatCard";
-import { InsightCard } from "@components/ui-cards/InsightCard";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import {
@@ -49,30 +31,6 @@ import { ResultCardView } from "./ResultCardView";
 import { ResultTableView } from "./ResultTableView";
 import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-} as const;
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0, scale: 0.95 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 12,
-    },
-  },
-} as const;
-
 type ResultsFilters = {
   search: string;
   date: { range?: { from?: string; to?: string }; label?: string } | null;
@@ -87,8 +45,6 @@ import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
 export function UserResultsClient() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [summaryStatsData, setSummaryStatsData] =
-    useState<PaginatedUserResults["summary_stats"]>(undefined);
 
   // Column Visibility
   const availableColumns = useMemo(
@@ -143,7 +99,6 @@ export function UserResultsClient() {
     pageSize,
     filters,
     activeFiltersCount,
-    handleFilterChange,
     handleSingleFilterChange,
     handlePageChange,
     handlePageSizeChange,
@@ -186,9 +141,6 @@ export function UserResultsClient() {
             f.project_lead_id !== "all" ? f.project_lead_id : undefined,
         };
       },
-      onSuccess: (res) => {
-        if (res.summary_stats) setSummaryStatsData(res.summary_stats);
-      },
       toastMessage: "Results refreshed successfully.",
     },
   );
@@ -197,71 +149,6 @@ export function UserResultsClient() {
     setVisibleColumns((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
     );
-  };
-
-  const summaryStats = useMemo(
-    () => [
-      {
-        id: "total",
-        label: "Total Candidates",
-        value: summaryStatsData?.total || 0,
-        icon: <Users />,
-        color: "text-white",
-        bg: "bg-brand-primary",
-        filter: { type: "reset", value: "all" },
-      },
-      {
-        id: "active",
-        label: "Active Attempts",
-        value: summaryStatsData?.active || 0,
-        icon: <UserCheck size={20} />,
-        color: "text-emerald-500",
-        bg: "bg-emerald-500/10",
-        filter: { type: "status", value: "started" },
-      },
-      {
-        id: "completed",
-        label: "Completed Results",
-        value: summaryStatsData?.completed || 0,
-        icon: <BadgeCheck size={20} />,
-        color: "text-amber-500",
-        bg: "bg-amber-500/10",
-        filter: { type: "status", value: "submitted" },
-      },
-    ],
-    [summaryStatsData],
-  );
-
-  const gradeStats = useMemo(() => {
-    const grades: Array<{ id: string; label: string; icon: React.ReactNode }> =
-      [
-        { id: "excellent", label: "Excellent", icon: <Trophy /> },
-        { id: "good", label: "Good", icon: <BadgeCheck /> },
-        { id: "average", label: "Average", icon: <Target /> },
-        { id: "poor", label: "Poor", icon: <UserX /> },
-      ];
-
-    return grades.map((g) => {
-      const config = getGradeConfig(g.label);
-      return {
-        ...g,
-        value: summaryStatsData?.[g.id as keyof typeof summaryStatsData] || 0,
-        color: config.color,
-        bg: config.bg,
-        border: config.border,
-      };
-    });
-  }, [summaryStatsData]);
-
-  const handleStatClick = (filterObj: { type: string; value: string }) => {
-    if (filterObj.type === "reset") {
-      resetFilters();
-    } else if (filterObj.type === "status") {
-      handleFilterChange({ status: filterObj.value, overallGrade: "all" });
-    } else if (filterObj.type === "grade") {
-      handleFilterChange({ overallGrade: filterObj.value, status: "all" });
-    }
-    setIsFilterOpen(false);
   };
 
   return (

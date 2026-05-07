@@ -209,7 +209,7 @@ export function UserListing({ initialData }: UserListingProps) {
                       Mobile
                     </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                      Target Profile
+                      Department / Exam Level
                     </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
                       Attempt Status
@@ -368,7 +368,7 @@ export function UserListing({ initialData }: UserListingProps) {
                             row.assignment?.has_started ? (
                             <Badge
                               variant="outline"
-                              color="violet"
+                              color="primary"
                               animate="pulse"
                               shape="square"
                             >
@@ -377,7 +377,7 @@ export function UserListing({ initialData }: UserListingProps) {
                           ) : row.process_status === "ready" ? (
                             <Badge
                               variant="outline"
-                              color="primary"
+                              color="blue"
                               animate="pulse"
                               shape="square"
                             >

@@ -9,7 +9,6 @@ import {
   TableRow,
   TableCell,
 } from "@components/ui-elements/Table";
-import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { Button } from "@components/ui-elements/Button";
