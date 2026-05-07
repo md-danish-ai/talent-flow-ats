@@ -112,7 +112,6 @@ export function ResetSubjectsModal({
       onClose();
     } catch (error: unknown) {
       console.error("Failed to reset subjects:", error);
-      toast.error("An error occurred while resetting subjects.");
     } finally {
       setResetting(false);
     }

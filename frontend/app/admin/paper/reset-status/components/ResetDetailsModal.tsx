@@ -35,7 +35,6 @@ export function ResetDetailsModal({
       onClose();
     } catch (error) {
       console.error("Reset failed:", error);
-      toast.error("Failed to reset application details.");
     } finally {
       setLoading(false);
     }
