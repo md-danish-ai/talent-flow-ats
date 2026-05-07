@@ -271,19 +271,19 @@ def build_report_html(data: dict) -> str:
   <tbody>
     <tr>
       <td class="bold" style="width:25%">Selected</td>
-      <td style="width:25%; font-weight:bold;">{_esc(data.get("is_selected", ""))}</td>
+      <td style="width:25%; font-weight:bold;"></td>
       <td class="bold" style="width:25%">Selection Status</td>
-      <td style="width:25%; font-weight:bold;">{_esc(data.get("selection_status", ""))}</td>
+      <td style="width:25%; font-weight:bold;"></td>
     </tr>
     <tr>
       <td class="bold" style="width:25%">Joining Date</td>
-      <td style="width:25%; font-weight:bold;">{_esc(data.get("joining", ""))}</td>
+      <td style="width:25%; font-weight:bold;"></td>
       <td class="bold" style="width:25%">Project Assigned</td>
       <td style="width:25%;"></td>
     </tr>
     <tr>
       <td class="bold" style="width:25%">Salary Offered</td>
-      <td style="width:25%; font-weight:bold;">{_esc(data.get("salary", ""))}</td>
+      <td style="width:25%; font-weight:bold;"></td>
       <td class="bold" style="width:25%">Candidates Signature<br/>(Agreed &amp; Accepted)</td>
       <td style="width:25%;"></td>
     </tr>
