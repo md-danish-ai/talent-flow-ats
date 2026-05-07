@@ -301,11 +301,7 @@ export function UserResultDetailClient({
                 <Typography variant="h3" className="font-bold">
                   {attemptData.user.username}
                 </Typography>
-                <Badge
-                  color="success"
-                  variant="fill"
-                  className="px-3 rounded-full text-[10px] uppercase tracking-widest font-black"
-                >
+                <Badge color="success" variant="fill">
                   Active Candidate
                 </Badge>
               </div>
@@ -418,12 +414,7 @@ export function UserResultDetailClient({
                   </Typography>
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
-              >
-                {totalAttempts} Total
-              </Badge>
+              <Badge variant="outline">{totalAttempts} Total</Badge>
             </div>
 
             {attemptData.attempts.length === 0 ? (

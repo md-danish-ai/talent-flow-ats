@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { Button } from "@components/ui-elements/Button";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Plus, RefreshCcw } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { RuleTable } from "./components/RuleTable";
 import { RuleModal } from "./components/RuleModal";
-import { StatsCards } from "./components/StatsCards";
 import {
   paperAssignmentsApi,
   AutoAssignmentRuleResponse,
 } from "@lib/api/paper-assignments";
 import { toast } from "@lib/toast";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
+import { Pagination } from "@components/ui-elements/Pagination";
 
 export default function AutoAssignmentDashboard() {
   const [rules, setRules] = useState<AutoAssignmentRuleResponse[]>([]);
@@ -24,7 +24,12 @@ export default function AutoAssignmentDashboard() {
   const [dateFilter, setDateFilter] = useState<{
     range?: { from?: string; to?: string };
     label?: string;
-  }>({ label: "Today" });
+  }>({ label: "All Time" });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const fetchRules = React.useCallback(async () => {
     setIsLoading(true);
@@ -33,7 +38,7 @@ export default function AutoAssignmentDashboard() {
       const dateTo = dateFilter.range?.to;
       const assignedDate =
         !dateFrom && !dateTo
-          ? dateFilter.label === "Today" || !dateFilter.label
+          ? dateFilter.label === "Today"
             ? new Date().toISOString().split("T")[0]
             : undefined
           : undefined;
@@ -42,14 +47,18 @@ export default function AutoAssignmentDashboard() {
         assigned_date: assignedDate,
         date_from: dateFrom,
         date_to: dateTo,
+        page: currentPage,
+        limit: pageSize,
       });
-      setRules(response);
+      setRules(response.data);
+      setTotalItems(response.pagination.total_records);
+      setTotalPages(response.pagination.total_pages);
     } catch {
       toast.error("Failed to fetch rules");
     } finally {
       setIsLoading(false);
     }
-  }, [dateFilter]);
+  }, [dateFilter, currentPage, pageSize]);
 
   useEffect(() => {
     fetchRules();
@@ -60,74 +69,86 @@ export default function AutoAssignmentDashboard() {
     setIsModalOpen(true);
   };
 
-  const activeRulesCount = rules.filter((r) => r.is_active).length;
+  const handleDateFilterChange = (
+    range: { from: string; to: string } | null,
+    label: string,
+  ) => {
+    setCurrentPage(1);
+    setDateFilter({ range: range || undefined, label });
+  };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
-      <PageHeader
-        title="Auto-Assignment Dashboard"
-        description="Manage rules and paper pools for automatic sequential distribution."
-        className="mb-0"
-        action={
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              color="secondary"
-              onClick={fetchRules}
-              className="px-3 group"
-            >
-              <RefreshCcw className="h-4 w-4 transition-transform duration-500 group-hover:rotate-180" />
-            </Button>
-            <Button
-              variant="outline"
-              color="primary"
-              onClick={() => {
-                setEditingRule(null);
-                setIsModalOpen(true);
-              }}
-              className="gap-2 group"
-            >
-              <Plus className="h-4 w-4 transition-transform duration-500 group-hover:rotate-90" />
-              Configure New Rule
-            </Button>
-          </div>
-        }
-      />
-
-      <StatsCards
-        totalRules={rules.length}
-        activeRules={activeRulesCount}
-        assignmentsToday={0} // We can integrate a real count if API supports it later
-        isLoading={isLoading}
-      />
-
+    <>
       <MainCard
         title={
-          <div className="flex items-center gap-2">
-            <RefreshCcw className="h-5 w-5 text-brand-primary" />
-            Configured Rules
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <RefreshCcw size={18} />
+            </div>
+            Auto Assignment
           </div>
         }
         action={
-          <DateRangePicker
-            onRangeChange={(range, label) =>
-              setDateFilter({ range: range || undefined, label })
-            }
-            initialLabel={dateFilter.label || "Today"}
-            className="w-64 font-medium"
-          />
+          <div className="flex items-center gap-3">
+            <DateRangePicker
+              onRangeChange={handleDateFilterChange}
+              initialLabel={dateFilter.label || "All Time"}
+              className="w-64 font-medium"
+            />
+            <div className="h-6 w-px bg-border mx-1" />
+            <Tooltip content="Refresh Dashboard" side="top">
+              <Button
+                variant="action"
+                color="default"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-180"
+                onClick={fetchRules}
+              >
+                <RefreshCcw size={20} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Configure New Rule" side="top">
+              <Button
+                variant="action"
+                color="primary"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-90"
+                onClick={() => {
+                  setEditingRule(null);
+                  setIsModalOpen(true);
+                }}
+              >
+                <Plus size={20} />
+              </Button>
+            </Tooltip>
+          </div>
         }
-        bodyClassName="p-0"
+        bodyClassName="p-0 flex flex-col h-full"
         className="flex-1 overflow-hidden"
       >
-        <RuleTable
-          rules={rules}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onRefresh={fetchRules}
-        />
+        <div className="flex-1 overflow-auto">
+          <RuleTable
+            rules={rules}
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onRefresh={fetchRules}
+          />
+        </div>
+        {!isLoading && totalItems > 0 && (
+          <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30 shrink-0">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        )}
       </MainCard>
-
       <RuleModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -141,6 +162,6 @@ export default function AutoAssignmentDashboard() {
         }}
         editingRule={editingRule}
       />
-    </div>
+    </>
   );
 }

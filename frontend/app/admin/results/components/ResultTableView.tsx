@@ -384,7 +384,6 @@ export function ResultTableView({
                                 color="violet"
                                 animate="pulse"
                                 shape="square"
-                                className="text-[9px] font-bold"
                               >
                                 RE-ATTEMPT
                               </Badge>
@@ -394,7 +393,6 @@ export function ResultTableView({
                                 variant="outline"
                                 animate="pulse"
                                 shape="square"
-                                className="text-[9px] font-bold"
                               >
                                 NEW
                               </Badge>
@@ -431,7 +429,6 @@ export function ResultTableView({
                         variant="outline"
                         color={item.attempts_count > 1 ? "warning" : "default"}
                         shape="square"
-                        className="font-bold text-[11px] px-2.5 py-0.5 uppercase tracking-tight"
                       >
                         {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
                         {item.attempts_count > 1 ? "Attempts" : "Attempt"}
@@ -532,7 +529,6 @@ export function ResultTableView({
                                   : "default"
                         }
                         shape="square"
-                        className="font-bold uppercase tracking-wider"
                       >
                         {latest?.status
                           ? humanizeString(latest.status)
@@ -606,7 +602,6 @@ export function ResultTableView({
                                     variant="outline"
                                     color="default"
                                     shape="square"
-                                    className="text-[9px] font-extrabold px-1 py-0 h-4 min-w-[18px] flex items-center justify-center border-border/50 text-muted-foreground/70"
                                   >
                                     +{latest.interviewers.length - 1}
                                   </Badge>

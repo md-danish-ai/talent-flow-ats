@@ -92,7 +92,13 @@ export const paperAssignmentsApi = {
 
   // Auto Assignment Rules
   getAutoRules: (
-    params?: { assigned_date?: string; date_from?: string; date_to?: string },
+    params?: {
+      assigned_date?: string;
+      date_from?: string;
+      date_to?: string;
+      page?: number;
+      limit?: number;
+    },
     options?: Pick<ApiRequestOptions, "cookies">,
   ) => {
     const searchParams = new URLSearchParams();
@@ -100,13 +106,23 @@ export const paperAssignmentsApi = {
       searchParams.append("assigned_date", params.assigned_date);
     if (params?.date_from) searchParams.append("date_from", params.date_from);
     if (params?.date_to) searchParams.append("date_to", params.date_to);
+    if (params?.page) searchParams.append("page", String(params.page));
+    if (params?.limit) searchParams.append("limit", String(params.limit));
 
     const queryString = searchParams.toString();
     const url = queryString
       ? `${ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULES}?${queryString}`
       : ENDPOINTS.PAPER_ASSIGNMENTS.AUTO_RULES;
 
-    return api.get<AutoAssignmentRuleResponse[]>(url, options);
+    return api.get<{
+      data: AutoAssignmentRuleResponse[];
+      pagination: {
+        total_records: number;
+        total_pages: number;
+        current_page: number;
+        per_page: number;
+      };
+    }>(url, options);
   },
 
   createAutoRule: (payload: AutoAssignmentRulePayload) =>

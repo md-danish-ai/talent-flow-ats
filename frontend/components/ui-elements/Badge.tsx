@@ -75,9 +75,9 @@ export const Badge = ({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 transition-all duration-300",
+        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 transition-all duration-300",
         shape === "curve" ? "rounded-full" : "rounded-sm",
-        variant === "outline" ? "border" : "",
+        variant === "outline" ? "border border-2" : "",
         colorStyles[color][variant],
         animate === "pulse" && "animate-pulse",
         className,

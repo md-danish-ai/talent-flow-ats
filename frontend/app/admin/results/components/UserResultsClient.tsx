@@ -266,61 +266,13 @@ export function UserResultsClient() {
 
   return (
     <PageContainer className="space-y-8 max-w-7xl mx-auto">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      >
-        {summaryStats.map((stat) => (
-          <motion.div key={stat.id} variants={itemVariants}>
-            <StatCard
-              label={stat.label}
-              value={stat.value.toLocaleString()}
-              icon={stat.icon}
-              color={stat.color}
-              bgColor={stat.bg}
-              isLoading={loading}
-              onClick={() => handleStatClick(stat.filter)}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-      >
-        {gradeStats.map((stat) => {
-          const gradeValue = stat.label;
-          return (
-            <motion.div key={stat.id} variants={itemVariants}>
-              <InsightCard
-                label={stat.label}
-                value={stat.value}
-                icon={stat.icon}
-                color={stat.color}
-                bgColor={stat.bg}
-                borderColor={stat.border}
-                isLoading={loading}
-                onClick={() =>
-                  handleStatClick({ type: "grade", value: gradeValue })
-                }
-              />
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
       <MainCard
         title={
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
-            <span>Candidates Results</span>
+            <span>Round 1 Results</span>
             <Tooltip
               content={<ResultStatusLegend compact />}
               side="right"

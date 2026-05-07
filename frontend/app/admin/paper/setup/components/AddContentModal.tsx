@@ -427,12 +427,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell className="text-center w-[180px]">
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color="primary"
-                        className="font-black text-[9px] px-3 py-1 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
-                      >
+                      <Badge variant="outline" shape="square" color="primary">
                         {q.question_type?.name || "N/A"}
                       </Badge>
                     </TableCell>

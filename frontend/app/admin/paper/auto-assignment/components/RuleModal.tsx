@@ -227,6 +227,7 @@ export function RuleModal({
                   assigned_date: val,
                 }))
               }
+              disablePast
             />
           </div>
 

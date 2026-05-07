@@ -76,19 +76,11 @@ export const QuestionResultCard = ({
             <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-foreground/5 text-[11px] font-black text-foreground/70 border border-foreground/5">
               {index + 1}
             </span>
-            <Badge
-              variant="outline"
-              color={statusConfig.badge as BadgeColor}
-              className="px-4 py-1 font-black text-[9px] uppercase tracking-widest border-none bg-card/50 shadow-sm"
-            >
+            <Badge variant="outline" color={statusConfig.badge as BadgeColor}>
               {humanizeString(answer.status)}
             </Badge>
             {answer.question_type && (
-              <Badge
-                variant="outline"
-                color="default"
-                className="px-4 py-1 font-black text-[9px] uppercase tracking-widest opacity-60"
-              >
+              <Badge variant="outline" color="default">
                 {humanizeString(answer.question_type)}
               </Badge>
             )}

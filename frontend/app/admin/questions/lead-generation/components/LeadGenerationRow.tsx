@@ -146,12 +146,7 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
       )}
       {visibleColumns.includes("marks") && (
         <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
-          <Badge
-            color="primary"
-            variant="outline"
-            shape="square"
-            className="flex items-center justify-center w-8 h-8 mx-auto"
-          >
+          <Badge color="primary" variant="outline" shape="square">
             {row.marks || "0"}
           </Badge>
         </TableCell>

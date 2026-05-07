@@ -59,7 +59,6 @@ export function CollapsibleResultDetail({
                   variant="fill"
                   shape="square"
                   color={getGradeConfig(res.grade).badgeColor}
-                  className="text-[9px] px-1.5 py-0 h-5 shrink-0 font-bold tracking-wider"
                 >
                   {res.grade}
                 </Badge>

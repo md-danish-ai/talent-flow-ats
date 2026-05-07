@@ -129,7 +129,6 @@ export function Round2History({ userId }: Round2HistoryProps) {
                 variant="outline"
                 shape="square"
                 color={item.status === "completed" ? "success" : "warning"}
-                className="uppercase  text-[10px] font-black h-7 px-3"
               >
                 {item.status}
               </Badge>

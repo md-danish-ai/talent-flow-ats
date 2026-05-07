@@ -154,7 +154,7 @@ export function UserListing({ initialData }: UserListingProps) {
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
-            Candidate Management
+            Users
           </div>
         }
         action={
@@ -298,7 +298,6 @@ export function UserListing({ initialData }: UserListingProps) {
                                     color="violet"
                                     animate="pulse"
                                     shape="square"
-                                    className="text-[9px] font-bold"
                                   >
                                     RETURNING
                                   </Badge>
@@ -308,7 +307,6 @@ export function UserListing({ initialData }: UserListingProps) {
                                     color="success"
                                     animate="pulse"
                                     shape="square"
-                                    className="text-[9px] font-bold"
                                   >
                                     NEW
                                   </Badge>
@@ -347,7 +345,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               color="primary"
                               shape="square"
                               variant="outline"
-                              className="text-[9px] font-bold py-0 h-4 px-1"
                             >
                               {row.assignment?.test_level_name ||
                                 row.test_level_name ||
@@ -364,7 +361,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               color="success"
                               animate="pulse"
                               shape="square"
-                              className="font-bold text-[10px]"
                             >
                               SUBMITTED
                             </Badge>
@@ -375,7 +371,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               color="violet"
                               animate="pulse"
                               shape="square"
-                              className="font-bold text-[10px]"
                             >
                               IN PROGRESS
                             </Badge>
@@ -385,7 +380,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               color="primary"
                               animate="pulse"
                               shape="square"
-                              className="font-bold text-[10px]"
                             >
                               READY
                             </Badge>
@@ -394,7 +388,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               variant="outline"
                               color="error"
                               shape="square"
-                              className="font-bold text-[10px]"
                             >
                               EXPIRED
                             </Badge>
@@ -403,7 +396,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               variant="outline"
                               shape="square"
                               color="warning"
-                              className="font-bold text-[10px]"
                             >
                               PENDING
                             </Badge>
@@ -421,7 +413,6 @@ export function UserListing({ initialData }: UserListingProps) {
                               variant="outline"
                               shape="square"
                               color={row.is_active ? "success" : "error"}
-                              className="text-[9px] font-bold uppercase tracking-tighter"
                             >
                               {row.is_active ? "ACTIVE" : "DISABLED"}
                             </Badge>

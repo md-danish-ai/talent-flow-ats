@@ -25,6 +25,12 @@ from app.departments.models import Department
 def create_auto_assignment_rule(
     db: Session, payload: AutoAssignmentRuleCreate, created_by: int
 ) -> AutoAssignmentRule:
+    if payload.assigned_date < date.today():
+        raise HTTPException(
+            status_code=StatusCode.BAD_REQUEST,
+            detail="Cannot configure auto-assignment rules for past dates.",
+        )
+
     # Check for existing rule to prevent UniqueConstraint violation
     existing = (
         db.query(AutoAssignmentRule)
@@ -91,7 +97,9 @@ def get_auto_assignment_rules(
     assigned_date: date | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-) -> list[AutoAssignmentRule]:
+    limit: int | None = None,
+    offset: int | None = None,
+) -> tuple[list[AutoAssignmentRule], int]:
     query = (
         db.query(
             AutoAssignmentRule,
@@ -109,7 +117,27 @@ def get_auto_assignment_rules(
     if date_to:
         query = query.filter(AutoAssignmentRule.assigned_date <= date_to)
 
-    results = query.order_by(AutoAssignmentRule.id.desc()).all()
+    total_records = query.count()
+
+    query = query.order_by(AutoAssignmentRule.id.desc())
+
+    if offset is not None:
+        query = query.offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+
+    results = query.all()
+
+    # Auto-pause any rule that is in the past
+    today = date.today()
+    any_updated = False
+    for rule, _, _ in results:
+        if rule.assigned_date < today and rule.is_active:
+            rule.is_active = False
+            db.add(rule)
+            any_updated = True
+    if any_updated:
+        db.commit()
 
     # Pre-fetch all relevant paper names to avoid N+1 queries
     all_paper_ids = []
@@ -135,7 +163,7 @@ def get_auto_assignment_rules(
         ]
         final_rules.append(rule)
 
-    return final_rules
+    return final_rules, total_records
 
 
 def update_auto_assignment_rule(
@@ -145,6 +173,20 @@ def update_auto_assignment_rule(
     if not rule:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
+        )
+
+    # Prevent updating past rules
+    if rule.assigned_date < date.today():
+        raise HTTPException(
+            status_code=StatusCode.BAD_REQUEST,
+            detail="Cannot update auto-assignment rules that belong to a past date.",
+        )
+
+    # Prevent setting assigned_date to a past date
+    if payload.assigned_date and payload.assigned_date < date.today():
+        raise HTTPException(
+            status_code=StatusCode.BAD_REQUEST,
+            detail="Cannot set auto-assignment rule date to a past date.",
         )
 
     for key, value in payload.model_dump(exclude_unset=True).items():

@@ -122,7 +122,9 @@ export function SelectDropdown({
                 ? coords.top - 8
                 : coords.top + coords.height + 8,
             left: coords.left,
-            width: Math.max(coords.width, 280),
+            width: "max-content",
+            minWidth: coords.width,
+            maxWidth: 320,
             zIndex: 10000,
             transform: placement === "top" ? "translateY(-100%)" : "none",
           }}

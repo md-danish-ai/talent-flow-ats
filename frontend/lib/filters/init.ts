@@ -178,6 +178,7 @@ filterRegistry.register("results-filters", [
     label: "Overall Grade",
     type: "select",
     options: [...GRADE_OPTIONS],
+    props: { placement: "top" },
   },
   {
     id: "project_lead_id",
@@ -185,6 +186,7 @@ filterRegistry.register("results-filters", [
     type: "select",
     placeholder: "Filter by Lead",
     options: [{ id: "all", label: "All Leads" }],
+    props: { placement: "top" },
   },
 ]);
 
@@ -202,6 +204,7 @@ filterRegistry.register("f2f-results-filters", [
     type: "select",
     placeholder: "Filter by Lead",
     options: [{ id: "all", label: "All Leads" }],
+    props: { placement: "top" },
   },
   {
     id: "status",
@@ -266,6 +269,7 @@ filterRegistry.register("management-user-filters", [
     type: "select",
     placeholder: "All Levels",
     options: [{ id: "all", label: "All Levels" }],
+    props: { placement: "top" },
   },
 ]);
 
