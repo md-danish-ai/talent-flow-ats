@@ -84,13 +84,13 @@ def _combined_col_rows_html(left: list[dict], right: list[dict]) -> str:
     max_len = max(len(left), len(right))
     rows_html = ""
     for i in range(max_len):
-        l = left[i] if i < len(left) else {"name": "", "value": ""}
-        r = right[i] if i < len(right) else {"name": "", "value": ""}
+        left_val = left[i] if i < len(left) else {"name": "", "value": ""}
+        right_val = right[i] if i < len(right) else {"name": "", "value": ""}
         rows_html += f"""<tr>
-          <td style="font-weight:bold; width:30%;">{_esc(l["name"])}</td>
-          <td style="width:20%;">{_esc(l["value"])}</td>
-          <td style="font-weight:bold; width:35%;">{_esc(r["name"])}</td>
-          <td style="width:15%;">{_esc(r["value"])}</td>
+          <td style="font-weight:bold; width:30%;">{_esc(left_val["name"])}</td>
+          <td style="width:20%;">{_esc(left_val["value"])}</td>
+          <td style="font-weight:bold; width:35%;">{_esc(right_val["name"])}</td>
+          <td style="width:15%;">{_esc(right_val["value"])}</td>
         </tr>"""
     return rows_html
 

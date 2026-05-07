@@ -120,7 +120,7 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
         # 2. All active subjects in DB
         all_subjects = (
             db.query(Classification)
-            .filter(Classification.type == "subject", Classification.is_active == True)
+            .filter(Classification.type == "subject", Classification.is_active)
             .all()
         )
 
@@ -244,9 +244,6 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
         wpm = f"{typing_stats['wpm']:.2f}" if typing_stats else "0.00"
         accuracy = f"{typing_stats['accuracy']:.2f}%" if typing_stats else "0.00%"
         errors = str(typing_stats.get("errors", 0)) if typing_stats else "0"
-        time_taken = (
-            f"{typing_stats.get('time_taken', 0)} Sec" if typing_stats else "0 Sec"
-        )
 
         # ── Subject+IT skills combined list ──────────────────────────────
         sr_map = {sr["section_name"]: sr for sr in subject_results}
@@ -280,6 +277,7 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
                 company_total = res.get("total_marks", 0)
                 company_obt = res.get("obtained_marks", 0)
 
+        internet_obt = lead_obt + company_obt
         internet_total = (
             int(lead_total + company_total) if (lead_total + company_total) > 0 else 100
         )
