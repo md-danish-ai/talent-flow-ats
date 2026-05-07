@@ -184,7 +184,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                         Contact Info
                       </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                        Target Profile
+                        Department / Exam Level
                       </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
                         Attempt Status
@@ -258,7 +258,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                       color="violet"
                                       animate="pulse"
                                       shape="square"
-                                      className="text-[9px] font-bold uppercase tracking-tight"
                                     >
                                       RETURNING
                                     </Badge>
@@ -268,7 +267,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                       color="success"
                                       animate="pulse"
                                       shape="square"
-                                      className="text-[9px] font-bold uppercase tracking-tight"
                                     >
                                       NEW
                                     </Badge>
@@ -316,7 +314,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                 color="primary"
                                 shape="square"
                                 variant="outline"
-                                className="text-[9px] font-bold py-0 h-4 px-1"
                               >
                                 {row.assignment?.test_level_name ||
                                   row.test_level_name ||
@@ -334,7 +331,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   variant="outline"
                                   animate="pulse"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   SUBMITTED
                                 </Badge>
@@ -345,7 +341,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   variant="outline"
                                   animate="pulse"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   IN PROGRESS
                                 </Badge>
@@ -354,7 +349,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   color="blue"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   READY
                                 </Badge>
@@ -363,7 +357,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   color="error"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   EXPIRED
                                 </Badge>
@@ -372,7 +365,6 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   color="warning"
                                   variant="outline"
                                   shape="square"
-                                  className="text-[10px] px-3 font-bold uppercase tracking-wider h-5 flex items-center justify-center whitespace-nowrap"
                                 >
                                   PENDING
                                 </Badge>

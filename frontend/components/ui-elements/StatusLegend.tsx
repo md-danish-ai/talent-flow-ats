@@ -40,12 +40,7 @@ const LegendItem = ({
         <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none mb-1">
           {label}
         </span>
-        <Badge
-          variant="outline"
-          color={badgeColor}
-          shape="square"
-          className="text-[8px] h-4 px-1.5 font-black py-0 w-fit uppercase tracking-tighter"
-        >
+        <Badge variant="outline" color={badgeColor} shape="square">
           {label}
         </Badge>
       </div>

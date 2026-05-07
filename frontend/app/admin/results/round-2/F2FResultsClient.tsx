@@ -180,7 +180,6 @@ export default function F2FResultsClient() {
                                 ? "success"
                                 : "warning"
                             }
-                            className="uppercase tracking-widest text-[9px] font-black"
                           >
                             {item.status}
                           </Badge>
@@ -200,7 +199,6 @@ export default function F2FResultsClient() {
                                       ? "warning"
                                       : "error"
                               }
-                              className="font-bold uppercase"
                             >
                               {item.overall_grade}
                             </Badge>

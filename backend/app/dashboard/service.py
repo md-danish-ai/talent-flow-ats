@@ -10,6 +10,7 @@ from app.paper_assignments.models import PaperAssignment
 from app.user_details.models import UserDetail
 from .schemas import DashboardOverviewResponse, DashboardStats, TodayPulse, GradeCount
 from app.utils.expiration import run_auto_expiration
+from app.utils.grade_utils import GradeLabel
 
 
 class DashboardService:
@@ -105,14 +106,16 @@ class DashboardService:
             )
 
             grade_map = {
-                str(row[0]).capitalize(): row[1] for row in grade_query if row[0]
+                str(row[0]).lower().strip(): row[1] for row in grade_query if row[0]
             }
 
-            target_grades = ["Excellent", "Good", "Average", "Poor"]
+            target_grades = GradeLabel.all_grades()
             grade_list = []
             for label in target_grades:
                 grade_list.append(
-                    GradeCount(label=label, count=grade_map.get(label, 0))
+                    GradeCount(
+                        label=label.value, count=grade_map.get(label.lower().strip(), 0)
+                    )
                 )
 
             today_pulse = TodayPulse(

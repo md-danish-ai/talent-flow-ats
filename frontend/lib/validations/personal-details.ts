@@ -25,6 +25,7 @@ export interface Education {
   division: string;
   percentage: string;
   medium: string;
+  details: string;
 }
 
 export interface WorkExperience {
@@ -144,6 +145,7 @@ export const educationSchema = z
     division: z.string().default(""),
     percentage: z.string().default(""),
     medium: z.string().default(""),
+    details: z.string().default(""),
   })
   .superRefine((data, ctx) => {
     const isMandatory = data.type === "10th Std" || data.type === "12th Std";

@@ -13,6 +13,7 @@ from app.classifications.models import Classification
 from app.users.models import User
 from app.paper_assignments.models import PaperAssignment, AutoAssignmentRule
 from app.interview_attempts.models import InterviewRecord
+from app.utils.grade_utils import GradeLabel
 
 def seed_papers():
     db = SessionLocal()
@@ -110,10 +111,12 @@ def seed_papers():
                 created_by=admin_id,
                 grade="Percentage",
                 grade_settings=[
-                    {"min": 0.0, "max": 39.99, "grade_label": "Poor"},
-                    {"min": 40.0, "max": 59.99, "grade_label": "Average"},
-                    {"min": 60.0, "max": 79.99, "grade_label": "Good"},
-                    {"min": 80.0, "max": 100.0, "grade_label": "Excellent"}
+                    {"min": 0.0, "max": 34.99, "grade_label": GradeLabel.POOR.value},
+                    {"min": 35.0, "max": 49.99, "grade_label": GradeLabel.BELOW_AVERAGE.value},
+                    {"min": 50.0, "max": 64.99, "grade_label": GradeLabel.AVERAGE.value},
+                    {"min": 65.0, "max": 79.99, "grade_label": GradeLabel.ABOVE_AVERAGE.value},
+                    {"min": 80.0, "max": 89.99, "grade_label": GradeLabel.GOOD.value},
+                    {"min": 90.0, "max": 100.0, "grade_label": GradeLabel.EXCELLENT.value}
                 ]
             )
             db.add(new_paper)

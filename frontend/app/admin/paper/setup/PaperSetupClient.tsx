@@ -8,7 +8,6 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Button } from "@components/ui-elements/Button";
 import { Plus, FileText } from "lucide-react";
-import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
 import { papersApi } from "@lib/api/papers";
 import { PaperSetup } from "@types";
@@ -103,7 +102,6 @@ export function PaperSetupClient() {
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
       void refresh();
-      toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
       // Error is handled by API client
     } finally {

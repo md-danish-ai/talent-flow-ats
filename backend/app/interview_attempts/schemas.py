@@ -88,7 +88,9 @@ class SummaryStats(BaseModel):
     completed: int
     excellent: int
     good: int
+    above_average: int
     average: int
+    below_average: int
     poor: int
 
 

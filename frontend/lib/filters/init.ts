@@ -1,3 +1,5 @@
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+
 import { filterRegistry } from "./registry";
 
 /**
@@ -157,7 +159,6 @@ filterRegistry.register("results-filters", [
     label: "Attempt Status",
     type: "select",
     options: [
-      { id: "all", label: "All Statuses" },
       { id: "started", label: "Started" },
       { id: "submitted", label: "Submitted (Manual)" },
       { id: "auto_submitted", label: "Auto Submitted" },
@@ -168,7 +169,6 @@ filterRegistry.register("results-filters", [
     label: "Completion Reason",
     type: "select",
     options: [
-      { id: "all", label: "All Reasons" },
       { id: "manual", label: "Manual" },
       { id: "time_over", label: "Time Over" },
     ],
@@ -177,13 +177,8 @@ filterRegistry.register("results-filters", [
     id: "overallGrade",
     label: "Overall Grade",
     type: "select",
-    options: [
-      { id: "all", label: "All Grades" },
-      { id: "Excellent", label: "Excellent" },
-      { id: "Good", label: "Good" },
-      { id: "Average", label: "Average" },
-      { id: "Poor", label: "Poor" },
-    ],
+    options: [...GRADE_OPTIONS],
+    props: { placement: "top" },
   },
   {
     id: "project_lead_id",
@@ -191,6 +186,7 @@ filterRegistry.register("results-filters", [
     type: "select",
     placeholder: "Filter by Lead",
     options: [{ id: "all", label: "All Leads" }],
+    props: { placement: "top" },
   },
 ]);
 
@@ -208,6 +204,7 @@ filterRegistry.register("f2f-results-filters", [
     type: "select",
     placeholder: "Filter by Lead",
     options: [{ id: "all", label: "All Leads" }],
+    props: { placement: "top" },
   },
   {
     id: "status",
@@ -272,6 +269,7 @@ filterRegistry.register("management-user-filters", [
     type: "select",
     placeholder: "All Levels",
     options: [{ id: "all", label: "All Levels" }],
+    props: { placement: "top" },
   },
 ]);
 

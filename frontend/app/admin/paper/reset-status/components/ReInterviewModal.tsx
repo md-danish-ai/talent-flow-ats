@@ -27,7 +27,6 @@ export function ReInterviewModal({
     if (!user) return;
     try {
       setLoading(true);
-      setLoading(true);
       await resultsApi.enableReInterview(user.id);
       toast.success(
         `Re-interview enabled for ${user.username}. They will now appear in Today's Paper list.`,
@@ -36,7 +35,6 @@ export function ReInterviewModal({
       onClose();
     } catch (error) {
       console.error("Enable re-interview failed:", error);
-      toast.error("Failed to enable re-interview.");
     } finally {
       setLoading(false);
     }

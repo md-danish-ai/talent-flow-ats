@@ -32,25 +32,28 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
         <table className="w-full text-left border-collapse min-w-[1000px]">
           <thead>
             <tr className="bg-brand-primary text-white">
+              <th className="p-3 font-semibold text-sm w-[12%] border-r border-[#ffffff40]">
+                Education
+              </th>
               <th className="p-3 font-semibold text-sm w-[15%] border-r border-[#ffffff40]">
                 Education Details
               </th>
-              <th className="p-3 font-semibold text-sm w-[20%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[18%] border-r border-[#ffffff40]">
                 School/College
               </th>
-              <th className="p-3 font-semibold text-sm w-[20%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[18%] border-r border-[#ffffff40]">
                 Board/University
               </th>
-              <th className="p-3 font-semibold text-sm w-[10%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
                 Year of Passing
               </th>
-              <th className="p-3 font-semibold text-sm w-[10%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
                 Division
               </th>
-              <th className="p-3 font-semibold text-sm w-[10%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
                 %
               </th>
-              <th className="p-3 font-semibold text-sm w-[15%] text-center">
+              <th className="p-3 font-semibold text-sm w-[13%] text-center">
                 Medium
               </th>
             </tr>
@@ -71,6 +74,33 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           <span className="text-red-500 ml-1">*</span>
                         )}
                       </span>
+                    </td>
+                    <td className="p-2 border-r border-border">
+                      <form.Field name={`education[${index}].details`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className="h-10 border-transparent bg-transparent hover:border-border focus:bg-input"
+                              placeholder="e.g. Science, Arts, B.Tech..."
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
+                            />
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
+                          </div>
+                        )}
+                      </form.Field>
                     </td>
                     <td className="p-2 border-r border-border">
                       <form.Field name={`education[${index}].school`}>

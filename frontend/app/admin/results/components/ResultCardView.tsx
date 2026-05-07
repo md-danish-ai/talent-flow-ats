@@ -63,7 +63,6 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                   variant="fill"
                   color={item.attempts_count > 1 ? "warning" : "default"}
                   shape="square"
-                  className="font-bold text-[10px] px-2 py-0.5 mt-1"
                 >
                   {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
                   {item.attempts_count > 1 ? "Attempts" : "Attempt"}

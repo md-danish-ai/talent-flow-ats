@@ -289,11 +289,7 @@ export function AttemptDetailClient({
               <div className="absolute -bottom-2 left-0 w-24 h-1.5 bg-brand-primary rounded-full opacity-20" />
             </div>
             <div className="flex flex-col gap-1 sm:ml-4">
-              <Badge
-                color={statusColor}
-                variant="fill"
-                className="rounded-full px-5 py-1.5 font-black text-[10px] tracking-[0.2em] shadow-lg shadow-brand-primary/10"
-              >
+              <Badge color={statusColor} variant="fill">
                 {data.attempt.status.toUpperCase()}
               </Badge>
             </div>
@@ -405,12 +401,7 @@ export function AttemptDetailClient({
                 col: "warning" as const,
               },
             ].map((b) => (
-              <Badge
-                key={b.label}
-                color={b.col}
-                variant="outline"
-                className="px-4 py-1.5 font-black rounded-xl bg-background border-2 tracking-tight text-[11px]"
-              >
+              <Badge key={b.label} color={b.col} variant="outline">
                 {b.label.toUpperCase()}: {b.val}
               </Badge>
             ))}
@@ -444,10 +435,7 @@ export function AttemptDetailClient({
                         {subject.section_name}
                       </Typography>
                       <div className="flex items-center gap-3">
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] py-0 px-2 h-5 bg-background font-black tracking-widest border-border/50 rounded-lg"
-                        >
+                        <Badge variant="outline">
                           TOTAL: {subject.total_questions}
                         </Badge>
                       </div>

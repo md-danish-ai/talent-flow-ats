@@ -112,7 +112,6 @@ export function ResetSubjectsModal({
       onClose();
     } catch (error: unknown) {
       console.error("Failed to reset subjects:", error);
-      toast.error("An error occurred while resetting subjects.");
     } finally {
       setResetting(false);
     }
@@ -195,16 +194,11 @@ export function ResetSubjectsModal({
                       color="success"
                       variant="fill"
                       icon={<Lock size={12} />}
-                      className="font-black px-3 py-1 shadow-sm"
                     >
                       SUBMITTED (LOCKED)
                     </Badge>
                   ) : (
-                    <Badge
-                      color="warning"
-                      variant="fill"
-                      className="font-black px-3 py-1 shadow-sm"
-                    >
+                    <Badge color="warning" variant="fill">
                       IN PROGRESS (LIVE)
                     </Badge>
                   )}
@@ -291,25 +285,15 @@ export function ResetSubjectsModal({
                             variant="fill"
                             color="success"
                             icon={<Lock size={12} />}
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm"
                           >
                             LOCKED
                           </Badge>
                         ) : subject.attempted_count > 0 ? (
-                          <Badge
-                            variant="fill"
-                            color="warning"
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm"
-                          >
+                          <Badge variant="fill" color="warning">
                             IN PROGRESS
                           </Badge>
                         ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 border-slate-500/20"
-                          >
-                            READY
-                          </Badge>
+                          <Badge variant="outline">READY</Badge>
                         )}
                       </div>
                     </div>

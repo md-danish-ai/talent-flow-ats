@@ -20,9 +20,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev pkg-config python3-dev
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
       - name: Lint with ruff
@@ -60,20 +64,20 @@ jobs:
         run: |
           BASE_BRANCH="${{ github.base_ref }}"
           HEAD_BRANCH="${{ github.head_ref }}"
-          
+
           echo "PR Base: $BASE_BRANCH"
           echo "PR Head: $HEAD_BRANCH"
-          
+
           # Rule 1: Only 'develop' can target 'main'
           if [[ "$BASE_BRANCH" == "main" ]] && [[ "$HEAD_BRANCH" != "develop" ]]; then
             echo "Error: Only the 'develop' branch can target 'main'. PRs from '$HEAD_BRANCH' are not allowed."
             exit 1
           fi
-          
+
           # Rule 2: Feature/Fix branches must target 'develop'
           if [[ "$BASE_BRANCH" != "develop" ]] && [[ "$HEAD_BRANCH" =~ ^(feat/|feature/|fix/|hotfix/) ]]; then
             echo "Error: Pull requests from feature/fix branches must target the 'develop' branch, not '$BASE_BRANCH'."
             exit 1
           fi
-          
+
           echo "Branching constraints satisfied."

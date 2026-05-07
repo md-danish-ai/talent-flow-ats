@@ -12,6 +12,9 @@ import {
   UserCheck,
 } from "lucide-react";
 import Link from "next/link";
+import { Download, Loader2 } from "lucide-react";
+import { toast } from "@lib/toast";
+import { BASE_URL } from "@lib/api/client";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
@@ -46,6 +49,7 @@ export function UserResultDetailClient({
     status?: number;
   } | null>(null);
   const [activeTab, setActiveTab] = useState("round1");
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     const fetchAttempts = async () => {
@@ -209,6 +213,59 @@ export function UserResultDetailClient({
           </Typography>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            color="primary"
+            className="shadow-md shadow-brand-primary/10 bg-white"
+            startIcon={
+              downloadingPdf ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Download size={16} />
+              )
+            }
+            disabled={!attemptData?.attempts?.length || downloadingPdf}
+            onClick={async () => {
+              const latest = attemptData?.attempts?.[0];
+              if (!latest) return;
+              setDownloadingPdf(true);
+              try {
+                const authRow = document.cookie
+                  .split(";")
+                  .find((r) => r.trim().startsWith("auth_token="));
+                let token = authRow
+                  ? authRow.trim().substring("auth_token=".length)
+                  : "";
+                token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+                try {
+                  token = decodeURIComponent(token);
+                } catch {
+                  /* keep raw */
+                }
+
+                const res = await fetch(
+                  `${BASE_URL}/admin/results/report/${userId}/${latest.attempt_id}/pdf`,
+                  { headers: { Authorization: `Bearer ${token}` } },
+                );
+                if (!res.ok) throw new Error("PDF failed");
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `report_${attemptData?.user?.username?.replace(/\s+/g, "_")}_${latest.attempt_id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              } catch {
+                toast.error("Failed to download report. Please try again.");
+              } finally {
+                setDownloadingPdf(false);
+              }
+            }}
+          >
+            {downloadingPdf ? "Generating PDF..." : "Download Report Sheet"}
+          </Button>
           <Link href={basePath}>
             <Button
               color="primary"
@@ -244,11 +301,7 @@ export function UserResultDetailClient({
                 <Typography variant="h3" className="font-bold">
                   {attemptData.user.username}
                 </Typography>
-                <Badge
-                  color="success"
-                  variant="fill"
-                  className="px-3 rounded-full text-[10px] uppercase tracking-widest font-black"
-                >
+                <Badge color="success" variant="fill">
                   Active Candidate
                 </Badge>
               </div>
@@ -361,12 +414,7 @@ export function UserResultDetailClient({
                   </Typography>
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className="px-4 py-1.5 rounded-full bg-muted/20 font-bold"
-              >
-                {totalAttempts} Total
-              </Badge>
+              <Badge variant="outline">{totalAttempts} Total</Badge>
             </div>
 
             {attemptData.attempts.length === 0 ? (

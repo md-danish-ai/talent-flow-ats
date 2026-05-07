@@ -447,7 +447,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                         variant="outline"
                                         shape="square"
                                         color="primary"
-                                        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
                                       >
                                         {q.question_type?.name || "N/A"}
                                       </Badge>
@@ -506,7 +505,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             ? "success"
                             : "primary"
                         }
-                        className="font-black text-[10px] px-3 py-1 border-brand-primary/20"
                       >
                         {
                           assignedQuestions.filter(

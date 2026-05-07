@@ -49,7 +49,7 @@ export function UserTable({
               Contact Info
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-              Target Profile
+              Department / Exam Level
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               Assigned Paper
@@ -119,7 +119,6 @@ export function UserTable({
                             color="violet"
                             animate="pulse"
                             shape="square"
-                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             RETURNING
                           </Badge>
@@ -129,7 +128,6 @@ export function UserTable({
                             color="success"
                             animate="pulse"
                             shape="square"
-                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             NEW
                           </Badge>
@@ -177,7 +175,7 @@ export function UserTable({
                       color="primary"
                       shape="square"
                       variant="outline"
-                      className="text-[9px] font-bold py-0 h-4 px-1"
+                      //
                     >
                       {row.assignment?.test_level_name ||
                         row.test_level_name ||
@@ -205,7 +203,6 @@ export function UserTable({
                       color="success"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       SUBMITTED
                     </Badge>
@@ -216,7 +213,6 @@ export function UserTable({
                       color="primary"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       IN PROGRESS
                     </Badge>
@@ -226,26 +222,15 @@ export function UserTable({
                       color="blue"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       READY
                     </Badge>
                   ) : row.process_status === "expired" ? (
-                    <Badge
-                      variant="outline"
-                      color="error"
-                      shape="square"
-                      className="font-bold text-[10px]"
-                    >
+                    <Badge variant="outline" color="error" shape="square">
                       EXPIRED
                     </Badge>
                   ) : (
-                    <Badge
-                      variant="outline"
-                      shape="square"
-                      color="warning"
-                      className="font-bold text-[10px]"
-                    >
+                    <Badge variant="outline" shape="square" color="warning">
                       PENDING
                     </Badge>
                   )}

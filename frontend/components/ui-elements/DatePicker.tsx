@@ -34,6 +34,7 @@ interface DatePickerProps {
   placeholder?: string;
   label?: React.ReactNode;
   error?: boolean;
+  disablePast?: boolean;
 }
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
@@ -46,6 +47,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       placeholder = "Select Date",
       label,
       error,
+      disablePast = false,
     },
     ref,
   ) => {
@@ -165,18 +167,24 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
               const isCurrentMonth = getMonth(day) === getMonth(currentMonth);
               const isSelected = selectedDate && isSameDay(day, selectedDate);
               const isTodayDate = isToday(day);
+              const isPast = startOfDay(day) < startOfDay(new Date());
+              const isDisabled = !isCurrentMonth || (disablePast && isPast);
 
               return (
                 <button
                   key={i}
                   type="button"
-                  disabled={!isCurrentMonth}
+                  disabled={isDisabled}
                   onClick={() => handleDateClick(day)}
                   className={cn(
                     "h-9 text-[11px] font-medium flex items-center justify-center transition-all relative rounded-md",
                     !isCurrentMonth &&
                       "text-slate-200 dark:text-slate-700 cursor-default",
                     isCurrentMonth &&
+                      isDisabled &&
+                      "text-slate-300 dark:text-slate-700 cursor-not-allowed hover:bg-transparent opacity-40",
+                    isCurrentMonth &&
+                      !isDisabled &&
                       "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
                     isSelected &&
                       "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/20 scale-105 z-10 hover:bg-brand-primary hover:text-white",

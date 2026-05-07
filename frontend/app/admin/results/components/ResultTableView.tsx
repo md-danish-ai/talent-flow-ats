@@ -1,6 +1,9 @@
 "use client";
 
-import { Eye, Phone } from "lucide-react";
+import { Eye, Phone, Download, Loader2 } from "lucide-react";
+import { useState as useLocalState } from "react";
+import { toast } from "@lib/toast";
+import { BASE_URL } from "@lib/api/client";
 import Link from "next/link";
 import {
   cn,
@@ -28,6 +31,81 @@ import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 import { useState, useMemo } from "react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+
+// ---------------------------------------------------------------------------
+// PDF download helper (calls backend directly, no new tab)
+// ---------------------------------------------------------------------------
+async function downloadReportPdf(
+  userId: number,
+  attemptId: number,
+  username: string,
+): Promise<void> {
+  // Read auth_token from cookie (same logic as client.ts)
+  const authRow = document.cookie
+    .split(";")
+    .find((r) => r.trim().startsWith("auth_token="));
+  let token = authRow ? authRow.trim().substring("auth_token=".length) : "";
+  token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+  try {
+    token = decodeURIComponent(token);
+  } catch {
+    /* keep raw */
+  }
+
+  const res = await fetch(
+    `${BASE_URL}/admin/results/report/${userId}/${attemptId}/pdf`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) throw new Error("PDF generation failed");
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `report_${username.replace(/\s+/g, "_")}_${attemptId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+// Small stateful button that shows a spinner while downloading
+function DownloadButton({
+  userId,
+  attemptId,
+  username,
+}: {
+  userId: number;
+  attemptId: number;
+  username: string;
+}) {
+  const [loading, setLoading] = useLocalState(false);
+  return (
+    <TableIconButton
+      iconColor="brand"
+      animate="scale"
+      title="Download Report Sheet"
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (loading) return;
+        setLoading(true);
+        try {
+          await downloadReportPdf(userId, attemptId, username);
+        } catch {
+          toast.error("Failed to download report. Please try again.");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? (
+        <Loader2 size={16} className="animate-spin" />
+      ) : (
+        <Download size={16} />
+      )}
+    </TableIconButton>
+  );
+}
+
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { UserCheck, UserPlus } from "lucide-react";
 import { Button } from "@components/ui-elements/Button";
@@ -306,7 +384,6 @@ export function ResultTableView({
                                 color="violet"
                                 animate="pulse"
                                 shape="square"
-                                className="text-[9px] font-bold"
                               >
                                 RE-ATTEMPT
                               </Badge>
@@ -316,7 +393,6 @@ export function ResultTableView({
                                 variant="outline"
                                 animate="pulse"
                                 shape="square"
-                                className="text-[9px] font-bold"
                               >
                                 NEW
                               </Badge>
@@ -353,7 +429,6 @@ export function ResultTableView({
                         variant="outline"
                         color={item.attempts_count > 1 ? "warning" : "default"}
                         shape="square"
-                        className="font-bold text-[11px] px-2.5 py-0.5 uppercase tracking-tight"
                       >
                         {item.attempts_count > 0 ? item.attempts_count : 0}{" "}
                         {item.attempts_count > 1 ? "Attempts" : "Attempt"}
@@ -454,7 +529,6 @@ export function ResultTableView({
                                   : "default"
                         }
                         shape="square"
-                        className="font-bold uppercase tracking-wider"
                       >
                         {latest?.status
                           ? humanizeString(latest.status)
@@ -528,7 +602,6 @@ export function ResultTableView({
                                     variant="outline"
                                     color="default"
                                     shape="square"
-                                    className="text-[9px] font-extrabold px-1 py-0 h-4 min-w-[18px] flex items-center justify-center border-border/50 text-muted-foreground/70"
                                   >
                                     +{latest.interviewers.length - 1}
                                   </Badge>
@@ -582,6 +655,13 @@ export function ResultTableView({
                           >
                             <UserPlus size={16} />
                           </TableIconButton>
+                        )}
+                        {latest?.attempt_id && (
+                          <DownloadButton
+                            userId={item.user_id}
+                            attemptId={latest.attempt_id}
+                            username={item.username}
+                          />
                         )}
                         <Link href={detailHref}>
                           <TableIconButton

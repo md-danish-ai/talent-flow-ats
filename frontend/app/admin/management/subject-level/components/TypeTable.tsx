@@ -52,12 +52,7 @@ function CopyCodeBadge({ code }: { code: string }) {
 
   return (
     <div className="flex items-center gap-2 group/copy">
-      <Badge
-        variant="outline"
-        shape="square"
-        color="primary"
-        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest shrink-0"
-      >
+      <Badge variant="outline" shape="square" color="primary">
         {code}
       </Badge>
       <Tooltip content={copied ? "Copied!" : "Copy Code"} side="top">
@@ -155,21 +150,11 @@ export function TypeTable({
                 {isSubject && (
                   <TableCell className="text-center">
                     {item.metadata?.is_exclusive ? (
-                      <Badge
-                        variant="outline"
-                        color="success"
-                        shape="square"
-                        className="text-[9px]"
-                      >
+                      <Badge variant="outline" color="success" shape="square">
                         YES
                       </Badge>
                     ) : (
-                      <Badge
-                        variant="outline"
-                        color="error"
-                        shape="square"
-                        className="text-[9px]"
-                      >
+                      <Badge variant="outline" color="error" shape="square">
                         NO
                       </Badge>
                     )}
@@ -188,7 +173,6 @@ export function TypeTable({
                       variant="outline"
                       shape="square"
                       color={item.is_active ? "success" : "error"}
-                      className="text-[9px] font-bold"
                     >
                       {item.is_active ? "ACTIVE" : "INACTIVE"}
                     </Badge>

@@ -8,6 +8,11 @@ from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
 
 from . import repository, schemas
+from app.utils.pagination import (
+    PaginationParams,
+    get_pagination_params,
+    create_paginated_response,
+)
 
 router = APIRouter(
     prefix="/paper-assignments",
@@ -105,18 +110,28 @@ def list_auto_rules(
     assigned_date: date | None = Query(None),
     date_from: date | None = Query(None),
     date_to: date | None = Query(None),
+    pagination: PaginationParams = Depends(get_pagination_params),
     db: Session = Depends(get_db),
 ):
-    rules = repository.get_auto_assignment_rules(
-        db=db, assigned_date=assigned_date, date_from=date_from, date_to=date_to
+    offset = (pagination.page - 1) * pagination.limit
+    rules, total_records = repository.get_auto_assignment_rules(
+        db=db,
+        assigned_date=assigned_date,
+        date_from=date_from,
+        date_to=date_to,
+        limit=pagination.limit,
+        offset=offset,
+    )
+    serialized_rules = [
+        schemas.AutoAssignmentRuleResponse.model_validate(r).model_dump() for r in rules
+    ]
+    paginated_data = create_paginated_response(
+        serialized_rules, total_records, pagination
     )
     return api_response(
         StatusCode.OK,
         ResponseMessage.FETCHED,
-        data=[
-            schemas.AutoAssignmentRuleResponse.model_validate(r).model_dump()
-            for r in rules
-        ],
+        data=paginated_data,
     )
 
 

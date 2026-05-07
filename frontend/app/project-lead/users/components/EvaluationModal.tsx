@@ -6,7 +6,7 @@ import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
 import { resultsApi, evaluationsApi, classificationsApi } from "@lib/api";
 import { toast } from "@lib/toast";
-import { EvaluationForm } from "@components/features/EvaluationForm";
+import { EvaluationForm } from "@components/features/evaluation/EvaluationForm";
 import { EvaluationFormValues } from "@lib/validations/evaluation";
 
 import {
@@ -110,7 +110,23 @@ export const EvaluationModal = React.memo(
       fetchData();
     }, [isOpen, userId, evaluationId]);
 
-    const isCompleted = evaluation?.status === "completed";
+    const isCompleted = React.useMemo(() => {
+      if (!evaluation) return false;
+      if (evaluation.status !== "completed") return false;
+
+      // Check if assigned date (created_at) matches today's date
+      const assignedDate = new Date(evaluation.created_at);
+      const today = new Date();
+
+      const isSameDay =
+        assignedDate.getDate() === today.getDate() &&
+        assignedDate.getMonth() === today.getMonth() &&
+        assignedDate.getFullYear() === today.getFullYear();
+
+      // If assigned today, stays unlocked (isCompleted = false).
+      // If assigned in previous days, it locks (isCompleted = true).
+      return !isSameDay;
+    }, [evaluation]);
 
     const handleSubmit = useCallback(
       async (values: EvaluationFormValues) => {
@@ -172,6 +188,7 @@ export const EvaluationModal = React.memo(
             initialValues={initialValues}
             results={results}
             isCompleted={isCompleted}
+            lockReason="This evaluation was assigned on a previous day and has been submitted."
             submitting={submitting}
             onSubmit={handleSubmit}
             onCancel={onClose}

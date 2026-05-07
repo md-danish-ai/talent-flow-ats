@@ -125,8 +125,12 @@ def update_evaluation(
         return None
 
     db_obj.evaluation_data = obj_in.evaluation_data
-    db_obj.overall_grade = obj_in.overall_grade
-    db_obj.final_result_id = obj_in.final_result_id
+    db_obj.overall_grade = obj_in.overall_grade if obj_in.overall_grade else None
+    db_obj.final_result_id = (
+        obj_in.final_result_id
+        if obj_in.final_result_id and obj_in.final_result_id > 0
+        else None
+    )
     db_obj.comments = obj_in.comments
     db_obj.status = "completed"
 

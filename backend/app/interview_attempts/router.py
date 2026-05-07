@@ -1,7 +1,13 @@
+import io
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
+from app.database.db import get_db
+from app.reports.report_builder import build_report_data
+from app.reports.pdf_service import build_report_html, generate_report_pdf
 from .schemas import (
     SaveAttemptAnswerRequest,
     StartAttemptRequest,
@@ -228,3 +234,33 @@ async def get_active_status(
 ):
     data = await service.get_active_attempt_status(user_id=current_user)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+
+
+@router.get(
+    "/admin/results/report/{user_id}/{attempt_id}/pdf",
+    dependencies=[Depends(require_roles(["admin", "project_lead"]))],
+)
+async def download_report_pdf(
+    user_id: int,
+    attempt_id: int,
+    db: Session = Depends(get_db),
+):
+    """Generate and stream a PDF report sheet for a candidate's attempt."""
+    try:
+        data = build_report_data(user_id=user_id, attempt_id=attempt_id)
+        html = build_report_html(data)
+        pdf_bytes = generate_report_pdf(html)
+        filename = f"report_{data['username'].replace(' ', '_')}_{attempt_id}.pdf"
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    except Exception as exc:
+        from fastapi import HTTPException
+        from app.utils.status_codes import StatusCode
+
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=f"PDF generation failed: {str(exc)}",
+        )

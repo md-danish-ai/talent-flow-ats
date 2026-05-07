@@ -29,6 +29,7 @@ def read_papers(
     pagination: PaginationParams = Depends(get_pagination_params),
     department_id: Optional[int] = Query(None),
     test_level_id: Optional[int] = Query(None),
+    is_active: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
 ):
     offset = (pagination.page - 1) * pagination.limit
@@ -39,6 +40,7 @@ def read_papers(
         department_id=department_id,
         test_level_id=test_level_id,
         search=pagination.search,
+        is_active=is_active,
     )
 
     # Convert SQLAlchemy objects to Pydantic models and then to dicts for proper serialization

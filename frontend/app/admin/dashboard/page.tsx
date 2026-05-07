@@ -32,6 +32,7 @@ import { PulseCard } from "@components/ui-cards/PulseCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { Button } from "@components/ui-elements/Button";
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
 
 // Types for better safety
 interface DashboardNotification {
@@ -106,12 +107,7 @@ export default function DashboardPage() {
 
   const displayGrades = today_pulse?.grades?.length
     ? today_pulse.grades
-    : [
-        { label: "Excellent", count: 0 },
-        { label: "Good", count: 0 },
-        { label: "Average", count: 0 },
-        { label: "Poor", count: 0 },
-      ];
+    : GRADE_OPTIONS.map((r) => ({ label: r.label, count: 0 }));
 
   const statCards = [
     {
@@ -192,11 +188,23 @@ export default function DashboardPage() {
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
     },
+    "Above Average": {
+      icon: <BadgeCheck />,
+      color: "text-violet-500",
+      bgColor: "bg-violet-500/10",
+      borderColor: "border-violet-500/20",
+    },
     Average: {
       icon: <Target />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20",
+    },
+    "Below Average": {
+      icon: <Target />,
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/20",
     },
     Poor: {
       icon: <UserX />,
@@ -265,7 +273,7 @@ export default function DashboardPage() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {/* Pulse Section with internal skeletons */}
+          {/* Top-Left: Dashboard Pulse */}
           <div className="lg:col-span-2">
             <MainCard
               title={
@@ -281,12 +289,13 @@ export default function DashboardPage() {
                 </div>
               }
               className="h-full"
+              bodyClassName="p-4 pb-2"
             >
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-1"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 p-1"
               >
                 {pulseMetrics.map((metric) => (
                   <motion.div key={metric.label} variants={itemVariants}>
@@ -297,7 +306,7 @@ export default function DashboardPage() {
             </MainCard>
           </div>
 
-          {/* Activity Section */}
+          {/* Top-Right: Activity & Focus */}
           <div className="lg:col-span-1">
             <MainCard
               title={
@@ -315,7 +324,7 @@ export default function DashboardPage() {
               className="h-full"
               bodyClassName="p-1"
             >
-              <div className="flex flex-col flex-1 h-full">
+              <div className="flex flex-col flex-1 h-full min-h-[240px]">
                 <div className="flex-1 space-y-1">
                   {notificationsLoading ? (
                     <div className="p-4 space-y-4">
@@ -337,7 +346,7 @@ export default function DashboardPage() {
                       animate="visible"
                       className="space-y-1"
                     >
-                      {notifications.map((notif) => (
+                      {notifications.slice(0, 3).map((notif) => (
                         <motion.div key={notif.id} variants={itemVariants}>
                           <ActivityItem
                             icon={
@@ -384,7 +393,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Performance Insights with internal skeletons */}
+        {/* Bottom: Performance Insights */}
         <MainCard
           title={
             <div className="flex items-center gap-3">
@@ -398,12 +407,13 @@ export default function DashboardPage() {
               </Typography>
             </div>
           }
+          className="h-full"
         >
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-1"
           >
             {displayGrades.map((grade) => {
               const config = gradeConfigs[grade.label] || gradeConfigs.Average;
