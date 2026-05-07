@@ -95,6 +95,31 @@ def _combined_col_rows_html(left: list[dict], right: list[dict]) -> str:
     return rows_html
 
 
+def _evaluation_rows_html(eval_data: dict) -> str:
+    metrics = [
+        "Communication",
+        "Domain Knowledge",
+        "Critical Thinking",
+        "Professionalism",
+        "Cultural Fit",
+        "Learning Ability",
+    ]
+    left = metrics[:3]
+    right = metrics[3:]
+    
+    rows_html = ""
+    for l_met, r_met in zip(left, right):
+        l_val = eval_data.get(l_met, "")
+        r_val = eval_data.get(r_met, "")
+        rows_html += f"""<tr>
+          <td style="font-weight:bold; width:30%;">{_esc(l_met)}</td>
+          <td style="width:20%;">{_esc(l_val)}</td>
+          <td style="font-weight:bold; width:35%;">{_esc(r_met)}</td>
+          <td style="width:15%;">{_esc(r_val)}</td>
+        </tr>"""
+    return rows_html
+
+
 def build_report_html(data: dict) -> str:
     edu_rows = _edu_rows_html(data.get("education_rows", []))
     fam_rows = _family_rows_html(data.get("family_rows", []))
@@ -102,6 +127,8 @@ def build_report_html(data: dict) -> str:
     col_rows = _combined_col_rows_html(
         data.get("left_col", []), data.get("right_col", [])
     )
+    first_eval = data.get("first_evaluation") or {}
+    eval_metrics_rows = _evaluation_rows_html(first_eval.get("evaluation_data") or {})
 
     return f"""<!DOCTYPE html>
 <html>
@@ -110,30 +137,30 @@ def build_report_html(data: dict) -> str:
 <style>
   @page {{
     size: A4 portrait;
-    margin: 6mm 8mm;
+    margin: 5mm 7mm;
   }}
   body {{
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 7.8pt;
-    line-height: 1.12;
+    font-size: 7.5pt;
+    line-height: 1.1;
     color: #000;
   }}
   table {{
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 4pt;
-    font-size: 7.8pt;
+    margin-bottom: 3pt;
+    font-size: 7.5pt;
   }}
   td, th {{
     border: 1px solid #000;
-    padding: 1.8px 2.8px;
+    padding: 1.5px 2.4px;
     vertical-align: middle;
-    line-height: 1.1;
+    line-height: 1.08;
   }}
   .section-title {{
-    font-size: 7.8pt;
+    font-size: 7.6pt;
     font-weight: bold;
-    margin: 4.5pt 0 2pt 0;
+    margin: 4pt 0 1.8pt 0;
   }}
   .bold {{ font-weight: bold; }}
 </style>
@@ -238,15 +265,15 @@ def build_report_html(data: dict) -> str:
 </table>
 
 <!-- Q5–Q9 -->
-<p style="margin:1.8pt 0;" class="bold">5. Are you willing for 1 Year Service Commitment?
+<p style="margin:0.8pt 0;" class="bold">5. Are you willing for 1 Year Service Commitment?
   <span style="font-weight:normal;">&nbsp;{_esc(data.get("commitment")) or "Yes"}</span></p>
-<p style="margin:1.8pt 0;" class="bold">6. What is your preferred shift time for work at Arcgate?
+<p style="margin:0.8pt 0;" class="bold">6. What is your preferred shift time for work at Arcgate?
   <span style="font-weight:normal;">&nbsp;{_esc(data.get("shift_time")) or "Day"}</span></p>
-<p style="margin:1.8pt 0;" class="bold">7. Joining date if selected:
+<p style="margin:0.8pt 0;" class="bold">7. Joining date if selected:
   <span style="font-weight:normal;">&nbsp;{_esc(data.get("joining")) or "________________"}</span></p>
-<p style="margin:1.8pt 0;" class="bold">8. Salary Expected:
+<p style="margin:0.8pt 0;" class="bold">8. Salary Expected:
   <span style="font-weight:normal;">&nbsp;{_esc(data.get("salary")) or "________________"}</span></p>
-<p style="margin:1.8pt 0; margin-bottom:2.5pt;" class="bold">9. Do you agree for 1 month salary as security deposit?
+<p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Do you agree for 1 month salary as security deposit?
   <span style="font-weight:normal;">&nbsp;{_esc(data.get("deposit")) or "Yes"}</span></p>
 
 <!-- ROUND ONE OF SELECTION PROCESS -->
@@ -265,8 +292,48 @@ def build_report_html(data: dict) -> str:
   </tbody>
 </table>
 
+<!-- 11. ROUND TWO / INTERVIEW EVALUATION -->
+<p class="section-title">11. Round Two of Selection Process (Interview Evaluation)</p>
+<table style="border:none; border-collapse:collapse; margin-bottom:2pt; width: 100%;">
+  <tbody>
+    <tr>
+      <td style="border:none; width:50%; padding:1px 0;"><span class="bold">Project Lead / Evaluator:</span> {_esc(first_eval.get("lead_name", ""))}</td>
+      <td style="border:none; width:50%; padding:1px 0;"><span class="bold">Evaluation Date:</span> {_esc(first_eval.get("created_at", ""))}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table style="width: 100%; margin-top: 2pt;">
+  <thead>
+    <tr>
+      <th style="width:30%; text-align:left;">Metric Name</th>
+      <th style="width:20%; text-align:left;">Rating</th>
+      <th style="width:35%; text-align:left;">Metric Name</th>
+      <th style="width:15%; text-align:left;">Rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    {eval_metrics_rows}
+  </tbody>
+</table>
+
+<table style="width: 100%; margin-top: 2pt;">
+  <tbody>
+    <tr>
+      <td class="bold" style="width:25%">Overall Grade</td>
+      <td style="width:25%; font-weight:bold;">{_esc(first_eval.get("overall_grade", ""))}</td>
+      <td class="bold" style="width:25%">Final Result / Status</td>
+      <td style="width:25%; font-weight:bold;">{_esc(first_eval.get("result_name", ""))}</td>
+    </tr>
+    <tr>
+      <td class="bold" style="width:25%">Comments &amp; Feedback</td>
+      <td colspan="3" style="width:75%;">{_esc(first_eval.get("comments", ""))}</td>
+    </tr>
+  </tbody>
+</table>
+
 <!-- RESULT OF ROUND ONE -->
-<p class="section-title">11. Result of Round One Selection Process of Interview</p>
+<p class="section-title">12. Result of Round One Selection Process of Interview</p>
 <table style="width: 100%;">
   <tbody>
     <tr>

@@ -277,6 +277,36 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
             else ("No" if selection_status else "")
         )
 
+        # ── Find first submitted evaluation ───────────────────────────────
+        completed_evals = [ev for ev in evaluations if ev.get("status") == "completed"]
+        first_eval = None
+        if completed_evals:
+            completed_evals_sorted = sorted(completed_evals, key=lambda x: x.get("created_at") or datetime.min)
+            first_eval = completed_evals_sorted[0]
+        elif evaluations:
+            evaluations_sorted = sorted(evaluations, key=lambda x: x.get("created_at") or datetime.min)
+            first_eval = evaluations_sorted[0]
+
+        first_eval_formatted = None
+        if first_eval:
+            created_at_dt = first_eval.get("created_at")
+            created_at_str = ""
+            if isinstance(created_at_dt, datetime):
+                created_at_str = created_at_dt.strftime("%d/%m/%Y")
+            elif created_at_dt:
+                created_at_str = str(created_at_dt)
+                
+            first_eval_formatted = {
+                "id": first_eval.get("id"),
+                "status": first_eval.get("status"),
+                "overall_grade": first_eval.get("overall_grade") or "",
+                "evaluation_data": first_eval.get("evaluation_data") or {},
+                "comments": first_eval.get("comments") or "",
+                "lead_name": first_eval.get("lead_name") or "",
+                "result_name": first_eval.get("result_name") or "",
+                "created_at": created_at_str,
+            }
+
         today_str = datetime.now().strftime("%d/%m/%Y")
 
         return {
@@ -311,6 +341,7 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
             # Result section
             "is_selected": is_selected,
             "selection_status": selection_status,
+            "first_evaluation": first_eval_formatted,
         }
 
     finally:
