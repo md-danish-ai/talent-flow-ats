@@ -24,6 +24,7 @@ import { NotificationRow } from "./components/NotificationRow";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
+import { useMe } from "@hooks/api/user/use-me";
 import { cn } from "@lib/utils";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
@@ -32,6 +33,8 @@ type NotificationListingFilters = {
 };
 
 export function NotificationsClient() {
+  const { data: user } = useMe();
+  const isProjectLead = user?.role === "project_lead";
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [counts, setCounts] = useState({ read: 0, unread: 0, total: 0 });
@@ -97,6 +100,15 @@ export function NotificationsClient() {
       console.error(`Failed to mark as ${action}:`, error);
     }
   };
+
+  const handleMarkRead = useCallback(async (id: number) => {
+    try {
+      await markNotificationsRead([id]);
+      window.dispatchEvent(new CustomEvent("notificationsUpdated"));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  }, []);
 
   const toggleSelection = useCallback((id: number) => {
     setSelectedIds((prev) =>
@@ -205,23 +217,34 @@ export function NotificationsClient() {
                   <TableHead className="w-[80px] text-center">
                     Sr. No.
                   </TableHead>
-                  <TableHead>Alert Type</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>New User</TableHead>
-                  <TableHead>Matched User</TableHead>
+                  <TableHead>
+                    {isProjectLead ? "Notification Details" : "Alert Type"}
+                  </TableHead>
+                  {!isProjectLead && (
+                    <>
+                      <TableHead>Score</TableHead>
+                      <TableHead>New User</TableHead>
+                      <TableHead>Matched User</TableHead>
+                    </>
+                  )}
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
+                  {!isProjectLead && (
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
+                  <SimpleTableSkeleton
+                    columnCount={isProjectLead ? 5 : 9}
+                    rowCount={pageSize}
+                  />
                 ) : notifications.length === 0 ? (
                   <EmptyState
-                    colSpan={9}
+                    colSpan={isProjectLead ? 5 : 9}
                     title="All caught up!"
                     description="You have no new notifications right now."
                   />
@@ -235,6 +258,8 @@ export function NotificationsClient() {
                       isExpanded={!!expandedRows[notif.id]}
                       onSelect={toggleSelection}
                       onExpand={toggleRow}
+                      isProjectLead={isProjectLead}
+                      onMarkRead={handleMarkRead}
                     />
                   ))
                 )}

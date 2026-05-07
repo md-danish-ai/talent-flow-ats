@@ -34,13 +34,14 @@ import {
   useUpdateBasicInfo,
 } from "@hooks/api/user/use-auth";
 import { UserDetails } from "@types";
+import { UserDetailView } from "@features/user-details/UserDetailView";
 
 interface ProfileClientProps {
   user: CurrentUser | null;
   userDetails?: UserDetails | null;
 }
 
-export function ProfileClient({ user }: ProfileClientProps) {
+export function ProfileClient({ user, userDetails }: ProfileClientProps) {
   const [activeTab, setActiveTab] = useState("personal");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -103,7 +104,7 @@ export function ProfileClient({ user }: ProfileClientProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl pb-20 px-4 sm:px-6 lg:px-8">
+    <div className=" w-full max-w-none pb-20">
       {/* Header Profile Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -176,7 +177,7 @@ export function ProfileClient({ user }: ProfileClientProps) {
                     weight="black"
                     className="text-brand-primary uppercase tracking-widest text-[10px] opacity-80"
                   >
-                    Level: {user?.role?.replace("_", " ").toUpperCase()}
+                    Role: {user?.role?.replace("_", " ").toUpperCase()}
                   </Typography>
                 </div>
               </div>
@@ -186,298 +187,322 @@ export function ProfileClient({ user }: ProfileClientProps) {
       </motion.div>
 
       {/* Tabs Section */}
-      <div className="space-y-8">
-        <div className="flex justify-center md:justify-start">
-          <Tabs
-            tabs={[
-              {
-                label: "Personal Info",
-                value: "personal",
-                icon: <User size={16} />,
-              },
-              {
-                label: "Security",
-                value: "security",
-                icon: <Shield size={16} />,
-              },
-            ]}
-            activeTab={activeTab}
-            onChange={setActiveTab}
-            variant="pills"
-            size="lg"
-            className="bg-slate-100/50 dark:bg-slate-900/40 p-1.5 backdrop-blur-md border border-slate-200/50 dark:border-white/5"
-          />
-        </div>
+      {user?.role !== "user" ? (
+        <div className="space-y-8">
+          <div className="flex justify-center md:justify-start">
+            <Tabs
+              tabs={[
+                {
+                  label: "Personal Info",
+                  value: "personal",
+                  icon: <User size={16} />,
+                },
+                {
+                  label: "Security",
+                  value: "security",
+                  icon: <Shield size={16} />,
+                },
+              ]}
+              activeTab={activeTab}
+              onChange={setActiveTab}
+              variant="pills"
+              size="lg"
+              className="bg-slate-100/50 dark:bg-slate-900/40 p-1.5 backdrop-blur-md border border-slate-200/50 dark:border-white/5"
+            />
+          </div>
 
-        <AnimatePresence mode="wait">
-          {activeTab === "personal" ? (
-            <motion.div
-              key="personal"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="grid grid-cols-1 gap-8"
-            >
-              <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="space-y-1">
+          <AnimatePresence mode="wait">
+            {activeTab === "personal" ? (
+              <motion.div
+                key="personal"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="grid grid-cols-1 gap-8"
+              >
+                <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="space-y-1">
+                      <Typography
+                        variant="h4"
+                        weight="black"
+                        className="uppercase tracking-tight flex items-center gap-3"
+                      >
+                        <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+                          <User size={20} />
+                        </div>
+                        Personal Information
+                      </Typography>
+                      <Typography
+                        variant="body4"
+                        className="text-muted-foreground pl-13"
+                      >
+                        Manage your profile details and contact information
+                      </Typography>
+                    </div>
+                    {!isEditing ? (
+                      <Button
+                        variant="outline"
+                        color="primary"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                        className="rounded-xl px-4 py-2 font-bold h-10"
+                      >
+                        <Edit2 size={16} className="mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditing(false)}
+                          className="rounded-xl px-4 py-2 font-bold h-10"
+                        >
+                          <X size={16} className="mr-2" />
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="outline"
+                          color="primary"
+                          size="sm"
+                          onClick={handleProfileUpdate}
+                          // isLoading={isSaving}
+                          className="rounded-xl px-6 py-2 font-bold h-10"
+                        >
+                          <Save size={16} className="mr-2" />
+                          Save Changes
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                        Full Name
+                      </label>
+                      <Input
+                        placeholder="Your Full Name"
+                        value={formData.full_name}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            full_name: e.target.value,
+                          })
+                        }
+                        disabled={!isEditing}
+                        startIcon={<User size={18} />}
+                        className={cn(
+                          !isEditing &&
+                            "bg-muted/30 border-transparent cursor-not-allowed",
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                        Email Address
+                      </label>
+                      <Input
+                        placeholder="Your Email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        disabled={!isEditing}
+                        startIcon={<Mail size={18} />}
+                        className={cn(
+                          !isEditing &&
+                            "bg-muted/30 border-transparent cursor-not-allowed",
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                        Mobile Number
+                      </label>
+                      <Input
+                        placeholder="Your Mobile Number"
+                        value={formData.mobile}
+                        onChange={(e) =>
+                          setFormData({ ...formData, mobile: e.target.value })
+                        }
+                        disabled={!isEditing}
+                        startIcon={<Phone size={18} />}
+                        className={cn(
+                          !isEditing &&
+                            "bg-muted/30 border-transparent cursor-not-allowed",
+                        )}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="security"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="grid grid-cols-1 gap-8"
+              >
+                <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+                  <div className="space-y-1 mb-8">
                     <Typography
                       variant="h4"
                       weight="black"
                       className="uppercase tracking-tight flex items-center gap-3"
                     >
                       <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                        <User size={20} />
+                        <Lock size={20} />
                       </div>
-                      Personal Information
+                      Security Settings
                     </Typography>
                     <Typography
                       variant="body4"
                       className="text-muted-foreground pl-13"
                     >
-                      Manage your profile details and contact information
+                      Keep your account secure by updating your password
+                      regularly
                     </Typography>
                   </div>
-                  {!isEditing ? (
-                    <Button
-                      variant="outline"
-                      color="primary"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                      className="rounded-xl px-4 py-2 font-bold h-10"
-                    >
-                      <Edit2 size={16} className="mr-2" />
-                      Edit Profile
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsEditing(false)}
-                        className="rounded-xl px-4 py-2 font-bold h-10"
-                      >
-                        <X size={16} className="mr-2" />
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="outline"
-                        color="primary"
-                        size="sm"
-                        onClick={handleProfileUpdate}
-                        // isLoading={isSaving}
-                        className="rounded-xl px-6 py-2 font-bold h-10"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Save Changes
-                      </Button>
-                    </div>
-                  )}
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                      Full Name
-                    </label>
-                    <Input
-                      placeholder="Your Full Name"
-                      value={formData.full_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, full_name: e.target.value })
-                      }
-                      disabled={!isEditing}
-                      startIcon={<User size={18} />}
-                      className={cn(
-                        !isEditing &&
-                          "bg-muted/30 border-transparent cursor-not-allowed",
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                      Email Address
-                    </label>
-                    <Input
-                      placeholder="Your Email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      disabled={!isEditing}
-                      startIcon={<Mail size={18} />}
-                      className={cn(
-                        !isEditing &&
-                          "bg-muted/30 border-transparent cursor-not-allowed",
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                      Mobile Number
-                    </label>
-                    <Input
-                      placeholder="Your Mobile Number"
-                      value={formData.mobile}
-                      onChange={(e) =>
-                        setFormData({ ...formData, mobile: e.target.value })
-                      }
-                      disabled={!isEditing}
-                      startIcon={<Phone size={18} />}
-                      className={cn(
-                        !isEditing &&
-                          "bg-muted/30 border-transparent cursor-not-allowed",
-                      )}
-                    />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="security"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="grid grid-cols-1 gap-8"
-            >
-              <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-                <div className="space-y-1 mb-8">
-                  <Typography
-                    variant="h4"
-                    weight="black"
-                    className="uppercase tracking-tight flex items-center gap-3"
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      form.handleSubmit();
+                    }}
+                    className="max-w-2xl space-y-8"
                   >
-                    <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                      <Lock size={20} />
-                    </div>
-                    Security Settings
-                  </Typography>
-                  <Typography
-                    variant="body4"
-                    className="text-muted-foreground pl-13"
-                  >
-                    Keep your account secure by updating your password regularly
-                  </Typography>
-                </div>
+                    <div className="space-y-6">
+                      <form.Field name="current_password">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                              Current Password
+                            </label>
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              error={field.state.meta.errors.length > 0}
+                              startIcon={<KeyRound size={18} />}
+                            />
+                            {field.state.meta.errors.length > 0 && (
+                              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                                {field.state.meta.errors[0]?.message}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
 
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit();
-                  }}
-                  className="max-w-2xl space-y-8"
-                >
-                  <div className="space-y-6">
-                    <form.Field name="current_password">
-                      {(field) => (
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                            Current Password
-                          </label>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            onBlur={field.handleBlur}
-                            error={field.state.meta.errors.length > 0}
-                            startIcon={<KeyRound size={18} />}
-                          />
-                          {field.state.meta.errors.length > 0 && (
-                            <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                              {field.state.meta.errors[0]?.message}
-                            </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form.Field name="new_password">
+                          {(field) => (
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                                New Password
+                              </label>
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                onBlur={field.handleBlur}
+                                error={field.state.meta.errors.length > 0}
+                                startIcon={<Lock size={18} />}
+                              />
+                              {field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                                  {field.state.meta.errors[0]?.message}
+                                </p>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                    </form.Field>
+                        </form.Field>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <form.Field name="new_password">
-                        {(field) => (
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                              New Password
-                            </label>
-                            <Input
-                              type="password"
-                              placeholder="••••••••"
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              error={field.state.meta.errors.length > 0}
-                              startIcon={<Lock size={18} />}
-                            />
-                            {field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                                {field.state.meta.errors[0]?.message}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </form.Field>
-
-                      <form.Field name="confirm_password">
-                        {(field) => (
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
-                              Confirm New Password
-                            </label>
-                            <Input
-                              type="password"
-                              placeholder="••••••••"
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              error={field.state.meta.errors.length > 0}
-                              startIcon={<CheckCircle2 size={18} />}
-                            />
-                            {field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                                {field.state.meta.errors[0]?.message}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </form.Field>
+                        <form.Field name="confirm_password">
+                          {(field) => (
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                                Confirm New Password
+                              </label>
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                onBlur={field.handleBlur}
+                                error={field.state.meta.errors.length > 0}
+                                startIcon={<CheckCircle2 size={18} />}
+                              />
+                              {field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                                  {field.state.meta.errors[0]?.message}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </form.Field>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-end">
-                    <form.Subscribe
-                      selector={(state) => [
-                        state.canSubmit,
-                        state.isSubmitting,
-                      ]}
-                    >
-                      {([canSubmit, isSubmitting]) => (
-                        <Button
-                          type="submit"
-                          variant="outline"
-                          color="primary"
-                          disabled={!canSubmit}
-                          isLoading={
-                            isSubmitting || changePasswordMutation.isPending
-                          }
-                          className="rounded-xl px-10 py-4 font-black text-xs uppercase tracking-widest"
-                        >
-                          Update Password
-                        </Button>
-                      )}
-                    </form.Subscribe>
-                  </div>
-                </form>
-              </Card>
-            </motion.div>
+                    <div className="flex justify-end">
+                      <form.Subscribe
+                        selector={(state) => [
+                          state.canSubmit,
+                          state.isSubmitting,
+                        ]}
+                      >
+                        {([canSubmit, isSubmitting]) => (
+                          <Button
+                            type="submit"
+                            variant="outline"
+                            color="primary"
+                            disabled={!canSubmit}
+                            isLoading={
+                              isSubmitting || changePasswordMutation.isPending
+                            }
+                            className="rounded-xl px-10 py-4 font-black text-xs uppercase tracking-widest"
+                          >
+                            Update Password
+                          </Button>
+                        )}
+                      </form.Subscribe>
+                    </div>
+                  </form>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {!userDetails || !userDetails.personalDetails ? (
+            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-12 text-center border border-slate-200 dark:border-zinc-800">
+              <p className="text-muted-foreground italic text-lg">
+                You have not submitted your personal details yet.
+              </p>
+            </div>
+          ) : (
+            <UserDetailView
+              details={userDetails}
+              userId={user.id}
+              hideHeader={true}
+            />
           )}
-        </AnimatePresence>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

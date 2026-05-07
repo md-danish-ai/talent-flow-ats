@@ -272,12 +272,14 @@ class DuplicateService:
     def __init__(self, db: Session):
         self.db = db
 
-    async def get_notifications(self, pagination, is_read: Optional[bool] = None):
+    async def get_notifications(
+        self, pagination, is_read: Optional[bool] = None, user_id: Optional[int] = None
+    ):
         results, total_records = repository.get_notifications(
-            self.db, pagination, is_read
+            self.db, pagination, is_read, user_id
         )
 
-        unread_count, read_count = repository.get_counts(self.db)
+        unread_count, read_count = repository.get_counts(self.db, user_id)
 
         formatted_data = [
             {
@@ -302,8 +304,16 @@ class DuplicateService:
 
         return paginated_data
 
-    async def mark_read(self, notification_ids: list[int]):
-        return repository.update_notification_status(self.db, notification_ids, True)
+    async def mark_read(
+        self, notification_ids: list[int], user_id: Optional[int] = None
+    ):
+        return repository.update_notification_status(
+            self.db, notification_ids, True, user_id
+        )
 
-    async def mark_unread(self, notification_ids: list[int]):
-        return repository.update_notification_status(self.db, notification_ids, False)
+    async def mark_unread(
+        self, notification_ids: list[int], user_id: Optional[int] = None
+    ):
+        return repository.update_notification_status(
+            self.db, notification_ids, False, user_id
+        )
