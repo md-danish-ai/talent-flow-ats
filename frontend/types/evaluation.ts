@@ -43,8 +43,8 @@ export interface BulkAssignLeadPayload {
 }
 
 export interface SubmitEvaluationPayload {
-  evaluation_data: Record<string, string>;
-  overall_grade: string;
-  final_result_id: number;
+  evaluation_data: Record<string, string | undefined>;
+  overall_grade?: string;
+  final_result_id?: number;
   comments?: string;
 }

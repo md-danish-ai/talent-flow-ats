@@ -19,6 +19,7 @@ interface EvaluationFormProps {
   initialValues: EvaluationFormValues;
   results: Classification[];
   isCompleted: boolean;
+  lockReason?: string;
   submitting: boolean;
   onSubmit: (values: EvaluationFormValues) => void;
   onCancel: () => void;
@@ -44,6 +45,7 @@ export function EvaluationForm({
   initialValues,
   results,
   isCompleted,
+  lockReason,
   submitting,
   onSubmit,
   onCancel,
@@ -209,14 +211,21 @@ export function EvaluationForm({
       </form.Field>
 
       {isCompleted ? (
-        <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex items-center gap-3">
-          <CheckCircle className="text-emerald-500 shrink-0" size={20} />
-          <Typography
-            variant="body5"
-            className="font-bold text-emerald-600 uppercase"
-          >
-            Evaluation Submitted & Locked
-          </Typography>
+        <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle className="text-emerald-500 shrink-0" size={20} />
+            <Typography
+              variant="body5"
+              className="font-bold text-emerald-600 uppercase"
+            >
+              Evaluation Submitted & Locked
+            </Typography>
+          </div>
+          {lockReason && (
+            <Typography variant="body5" className="text-emerald-600/70 text-[11px] font-medium md:ml-auto">
+              ({lockReason})
+            </Typography>
+          )}
         </div>
       ) : (
         <div className="flex justify-end gap-3">

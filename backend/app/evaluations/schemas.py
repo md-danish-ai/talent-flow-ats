@@ -36,8 +36,8 @@ class BulkInterviewEvaluationCreate(BaseModel):
 
 class InterviewEvaluationUpdate(BaseModel):
     evaluation_data: Dict[str, str]
-    overall_grade: str
-    final_result_id: int
+    overall_grade: Optional[str] = None
+    final_result_id: Optional[int] = None
     comments: Optional[str] = None
     status: str = "completed"
 
