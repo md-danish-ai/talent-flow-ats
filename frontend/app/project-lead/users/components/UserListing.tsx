@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Calendar,
   Users,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { EmptyState } from "@components/ui-elements/EmptyState";
@@ -25,12 +27,14 @@ import {
 import { useListing } from "@hooks/useListing";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { EvaluationModal } from "./EvaluationModal";
 import { cn, getGradeConfig } from "@lib/utils";
 import { EvaluationTask } from "@types";
+
+import { SearchInput } from "@components/ui-elements/SearchInput";
+import { Tabs } from "@components/ui-elements/Tabs";
+import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 
 interface UserListingProps {
   leadId: number;
@@ -40,7 +44,6 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
   const router = useRouter();
   const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Optimized fetch function reference
   const fetchFn = useCallback(
@@ -81,28 +84,12 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
     void refresh();
   }, [refresh]);
 
-  const toggleFilter = useCallback(() => {
-    setIsFilterOpen((prev) => !prev);
-  }, []);
-
-  const closeFilter = useCallback(() => {
-    setIsFilterOpen(false);
-  }, []);
-
   const onFilterChange = useCallback(
     (key: string, val: unknown) => {
       handleFilterChange({ [key]: val });
     },
     [handleFilterChange],
   );
-
-  const onFilterReset = useCallback(() => {
-    handleFilterChange({ status: "all", search: "" });
-  }, [handleFilterChange]);
-
-  const activeFiltersCount = useMemo(() => {
-    return Object.values(filters).filter((val) => val && val !== "all").length;
-  }, [filters]);
 
   const dynamicOptions = useMemo(
     () => ({
@@ -119,35 +106,57 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
     <>
       <MainCard
         title={
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
                 <Users size={18} />
               </div>
-              Users
+              <span className="font-black text-foreground">Users</span>
             </div>
+
+            {/* Original Tabs Component for Status */}
+            <Tabs
+              tabs={dynamicOptions.status.map((opt) => {
+                let icon: React.ReactNode = null;
+                if (opt.id === "all") icon = <Users size={14} />;
+                if (opt.id === "pending") icon = <Clock size={14} />;
+                if (opt.id === "completed") icon = <CheckCircle2 size={14} />;
+                return {
+                  label: opt.label,
+                  value: opt.id,
+                  icon,
+                };
+              })}
+              activeTab={filters.status}
+              onChange={(val) => onFilterChange("status", val)}
+              size="sm"
+              variant="pills"
+            />
           </div>
         }
-        bodyClassName="p-0 flex flex-row items-stretch w-full"
+        bodyClassName="p-0 flex flex-col w-full"
         action={
-          <ListingHeaderActions
-            isLoading={loading}
-            isBackgroundLoading={isBackgroundLoading}
-            totalItems={totalItems}
-            itemLabel="Users"
-            onRefresh={refresh}
-            onToggleFilter={toggleFilter}
-            isFilterOpen={isFilterOpen}
-            activeFiltersCount={activeFiltersCount}
-          />
+          <div className="flex items-center gap-4">
+            {/* Original Listing Header Actions (Refresh & Count) */}
+            <ListingHeaderActions
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              totalItems={totalItems}
+              itemLabel="Users"
+              onRefresh={refresh}
+            />
+
+            {/* Original Search Input */}
+            <SearchInput
+              placeholder="Search candidates..."
+              value={filters.search || ""}
+              onSearch={(val) => onFilterChange("search", val)}
+              className="w-56 sm:w-64"
+            />
+          </div>
         }
       >
-        <div
-          className={cn(
-            "flex-1 flex flex-col min-w-0",
-            isFilterOpen && "border-r border-border/50",
-          )}
-        >
+        <div className="flex-1 flex flex-col min-w-0">
           <ListingTransition
             isLoading={loading}
             isBackgroundLoading={isBackgroundLoading}
@@ -293,16 +302,6 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
             )}
           </ListingTransition>
         </div>
-
-        <ListingFiltersDrawer
-          isOpen={isFilterOpen}
-          onClose={closeFilter}
-          registryKey="project-lead-users-filters"
-          filters={filters}
-          onFilterChange={onFilterChange}
-          onReset={onFilterReset}
-          dynamicOptions={dynamicOptions}
-        />
       </MainCard>
 
       <EvaluationModal

@@ -71,9 +71,9 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
 
       // Variant Backgrounds
       variant === "pills" &&
-        "bg-muted/40 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl border border-border/40 p-1.5 shadow-inner",
+        "bg-muted/40 dark:bg-slate-900/40 backdrop-blur-md rounded-xl border border-border/40 p-1 shadow-inner",
       variant === "glass" &&
-        "bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 shadow-xl p-1.5",
+        "bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-xl border border-white/20 dark:border-white/10 shadow-xl p-1",
       variant === "bordered" &&
         "bg-transparent border-2 border-border/40 rounded-xl p-1",
       variant === "underline" &&
@@ -103,7 +103,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
               key={tab.value}
               onClick={handleTabClick}
               className={cn(
-                "relative font-bold transition-all duration-500 rounded-xl outline-none group overflow-hidden whitespace-nowrap",
+                "relative font-bold transition-all duration-500 rounded-lg outline-none group overflow-hidden whitespace-nowrap",
                 sizeStyles[size],
                 fullWidth ? "flex-1" : "flex-none",
                 variant === "underline" && "rounded-none",
@@ -146,9 +146,9 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                   className={cn(
                     "absolute z-0",
                     variant === "pills" &&
-                      "inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-border/50",
+                      "inset-0 bg-white dark:bg-slate-800 rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-border/50",
                     variant === "glass" &&
-                      "inset-0 bg-white/40 dark:bg-white/10 rounded-xl shadow-lg border border-white/30",
+                      "inset-0 bg-white/40 dark:bg-white/10 rounded-lg shadow-lg border border-white/30",
                     variant === "bordered" &&
                       "inset-0 bg-brand-primary/5 border-2 border-brand-primary rounded-lg",
                     variant === "gradient" &&

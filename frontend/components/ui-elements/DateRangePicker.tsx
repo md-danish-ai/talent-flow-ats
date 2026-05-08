@@ -340,7 +340,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   )}
                 >
                   <span>{preset.label}</span>
-                  {selectedLabel === preset.label && <Check size={12} className="text-brand-primary" />}
+                  {selectedLabel === preset.label && (
+                    <Check size={12} className="text-brand-primary" />
+                  )}
                 </button>
               ))}
 
