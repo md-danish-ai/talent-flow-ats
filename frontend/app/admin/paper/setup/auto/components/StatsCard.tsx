@@ -1,6 +1,7 @@
 import React from "react";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 export const StatsCard = ({
   icon,
@@ -19,12 +20,18 @@ export const StatsCard = ({
 }) => (
   <div
     className={cn(
-      "flex items-center gap-4 p-4 rounded-2xl border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md",
+      "flex items-center gap-4 p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md",
+      STYLE_CONFIG.innerCardRadius,
       bgColor,
       borderColor,
     )}
   >
-    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm">
+    <div
+      className={cn(
+        "p-2.5 bg-white dark:bg-slate-900 shadow-sm",
+        STYLE_CONFIG.iconRadius,
+      )}
+    >
       {icon}
     </div>
     <div className="flex flex-col">

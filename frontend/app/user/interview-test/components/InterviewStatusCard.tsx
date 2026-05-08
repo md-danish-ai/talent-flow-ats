@@ -6,6 +6,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import type { InterviewSection, TimerZone } from "../types";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface InterviewStatusCardProps {
   sections: InterviewSection[];
@@ -165,15 +166,43 @@ export function InterviewStatusCard({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-border bg-muted/20 px-3 py-3">
-          <Typography variant="body5">Answered</Typography>
-          <Typography variant="h4" className="text-foreground mt-1">
+        <div
+          className={cn(
+            "border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.04] via-emerald-500/[0.01] to-transparent px-3.5 py-3 shadow-[0_4px_12px_rgba(16,185,129,0.03)]",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
+          <Typography
+            variant="body5"
+            className="text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider text-[10px]"
+          >
+            Answered
+          </Typography>
+          <Typography
+            variant="h3"
+            weight="black"
+            className="text-emerald-500 mt-1"
+          >
             {answeredCount}
           </Typography>
         </div>
-        <div className="rounded-lg border border-border bg-muted/20 px-3 py-3">
-          <Typography variant="body5">Not Attempted</Typography>
-          <Typography variant="h4" className="text-foreground mt-1">
+        <div
+          className={cn(
+            "border border-rose-500/20 bg-gradient-to-br from-rose-500/[0.04] via-rose-500/[0.01] to-transparent px-3.5 py-3 shadow-[0_4px_12px_rgba(244,63,94,0.03)]",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
+          <Typography
+            variant="body5"
+            className="text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider text-[10px]"
+          >
+            Not Attempted
+          </Typography>
+          <Typography
+            variant="h3"
+            weight="black"
+            className="text-rose-500 mt-1"
+          >
             {notAttemptedCount}
           </Typography>
         </div>

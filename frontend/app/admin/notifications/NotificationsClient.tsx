@@ -26,6 +26,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { useMe } from "@hooks/api/user/use-me";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type NotificationListingFilters = {
@@ -134,7 +135,12 @@ export function NotificationsClient() {
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+            <div
+              className={cn(
+                "w-8 h-8 bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0",
+                STYLE_CONFIG.iconRadius,
+              )}
+            >
               <Bell size={18} />
             </div>
             Recent Notifications
@@ -142,21 +148,6 @@ export function NotificationsClient() {
         }
         action={
           <div className="flex items-center gap-3">
-            <Tooltip content="Refresh Notifications" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                iconAnimation="rotate-180"
-                onClick={() => refresh()}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <div className="h-6 w-px bg-border/50 mx-1" />
             {selectedIds.length > 0 && (
               <div className="flex gap-2">
                 <Button
@@ -183,6 +174,21 @@ export function NotificationsClient() {
                 </Button>
               </div>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Notifications" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-180"
+                onClick={() => refresh()}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
           </div>
         }
         className="mb-6"

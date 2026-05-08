@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Typography } from "@components/ui-elements/Typography";

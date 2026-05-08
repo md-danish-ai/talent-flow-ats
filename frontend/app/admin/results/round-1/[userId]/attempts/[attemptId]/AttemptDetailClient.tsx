@@ -17,6 +17,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { GradeBadge } from "@components/ui-elements/GradeBadge";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { resultsApi } from "@lib/api/results";
 import { type AdminUserResultDetail } from "@types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -140,7 +141,7 @@ export function AttemptDetailClient({
 
   if (loading) {
     return (
-      <PageContainer className="py-8 max-w-7xl mx-auto">
+      <PageContainer className="py-8">
         <AttemptDetailSkeleton />
       </PageContainer>
     );
@@ -254,7 +255,7 @@ export function AttemptDetailClient({
   ];
 
   return (
-    <PageContainer className="py-8 space-y-10 max-w-7xl mx-auto">
+    <PageContainer className="py-8 space-y-6">
       {/* Dynamic Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -266,7 +267,9 @@ export function AttemptDetailClient({
             href={`/admin/results/round-1/${userId}`}
             className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all mb-4 w-fit"
           >
-            <div className="p-1.5 rounded-xl bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30">
+            <div
+              className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
+            >
               <ArrowLeft size={16} />
             </div>
             <Typography
@@ -316,7 +319,7 @@ export function AttemptDetailClient({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex flex-col lg:flex-row lg:items-center gap-4 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans"
+          className={`flex flex-col lg:flex-row lg:items-center gap-4 bg-card p-5 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans`}
         >
           <div className="flex items-center gap-3 shrink-0">
             <Star size={20} className="text-brand-primary" />
@@ -347,9 +350,13 @@ export function AttemptDetailClient({
         transition={{ delay: 0.2 }}
         className="space-y-6"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none">
+        <div
+          className={`flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none`}
+        >
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner">
+            <div
+              className={`p-3 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner`}
+            >
               <FileCheck2 size={20} />
             </div>
             <div>
@@ -385,21 +392,26 @@ export function AttemptDetailClient({
                 col: "warning" as const,
               },
             ].map((b) => (
-              <Badge key={b.label} color={b.col} variant="outline" shape="square">
+              <Badge
+                key={b.label}
+                color={b.col}
+                variant="outline"
+                shape="square"
+              >
                 {b.label.toUpperCase()}: {b.val}
               </Badge>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5">
+        <div className="grid grid-cols-1 gap-6">
           {data.subject_results.map((subject, idx) => (
             <motion.div
               key={subject.section_name}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.1 }}
-              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500 scroll-mt-24"
+              className={`bg-card border border-border/50 ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500 scroll-mt-24`}
               id={`section-card-${subject.section_name}`}
             >
               <button
@@ -408,7 +420,9 @@ export function AttemptDetailClient({
               >
                 <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-500 shadow-inner">
+                    <div
+                      className={`p-3 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-500 shadow-inner`}
+                    >
                       <BookOpen size={20} />
                     </div>
                     <div>
@@ -480,7 +494,9 @@ export function AttemptDetailClient({
                     className="min-w-[170px] group-hover:scale-105"
                   />
 
-                  <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
+                  <div
+                    className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
+                  >
                     <motion.div
                       animate={{
                         rotate:

@@ -10,6 +10,7 @@ import { Button } from "@components/ui-elements/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { type AdminUserResultAnswer } from "@types";
 import { humanizeString, type ParsedOption } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface QuestionResultCardProps {
   answer: AdminUserResultAnswer;
@@ -67,16 +68,22 @@ export const QuestionResultCard = ({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-[2rem] border transition-all shadow-2xl shadow-slate-300/30 dark:shadow-none hover:shadow-brand-primary/10 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
+      className={`group relative overflow-hidden ${STYLE_CONFIG.cardRadius} border transition-all shadow-2xl shadow-slate-300/30 dark:shadow-none hover:shadow-brand-primary/10 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
     >
       {/* Question Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-foreground/5 text-[11px] font-black text-foreground/70 border border-foreground/5">
+            <span
+              className={`flex h-7 w-7 items-center justify-center ${STYLE_CONFIG.badgeRadius} bg-foreground/5 text-[11px] font-black text-foreground/70 border border-foreground/5`}
+            >
               {index + 1}
             </span>
-            <Badge variant="outline" color={statusConfig.badge as BadgeColor} shape="square">
+            <Badge
+              variant="outline"
+              color={statusConfig.badge as BadgeColor}
+              shape="square"
+            >
               {humanizeString(answer.status)}
             </Badge>
             {answer.question_type && (
@@ -95,13 +102,15 @@ export const QuestionResultCard = ({
       </div>
 
       {answer.image_url && answer.question_type !== "IMAGE_MULTIPLE_CHOICE" && (
-        <div className="mb-8 w-fit mx-auto border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.01] transition-transform duration-500">
+        <div
+          className={`mb-8 w-fit mx-auto border border-border/50 bg-muted/20 p-2.5 ${STYLE_CONFIG.innerCardRadius} shadow-inner group-hover:scale-[1.01] transition-transform duration-500`}
+        >
           <Image
             src={getCanonicalImageUrl(answer.image_url) as string}
             alt="Question Content"
             width={800}
             height={400}
-            className="w-auto h-auto max-h-[300px] max-w-full rounded-[1rem] object-contain"
+            className={`w-auto h-auto max-h-[300px] max-w-full ${STYLE_CONFIG.innerCardRadius} object-contain`}
             unoptimized
           />
         </div>
@@ -111,13 +120,15 @@ export const QuestionResultCard = ({
         {answer.question_type === "IMAGE_MULTIPLE_CHOICE" &&
           answer.image_url && (
             <div className="lg:col-span-6 flex flex-col justify-center items-center lg:items-start">
-              <div className="w-fit border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.05] transition-transform duration-500">
+              <div
+                className={`w-fit border border-border/50 bg-muted/20 p-2.5 ${STYLE_CONFIG.innerCardRadius} shadow-inner group-hover:scale-[1.05] transition-transform duration-500`}
+              >
                 <Image
                   src={getCanonicalImageUrl(answer.image_url) as string}
                   alt="Question Content"
                   width={800}
                   height={600}
-                  className="w-auto h-auto max-h-[400px] max-w-full rounded-[1rem] object-contain"
+                  className={`w-auto h-auto max-h-[400px] max-w-full ${STYLE_CONFIG.innerCardRadius} object-contain`}
                   unoptimized
                 />
               </div>
@@ -185,11 +196,11 @@ export const QuestionResultCard = ({
                 return (
                   <div
                     key={opt.optionLabel}
-                    className={`group/opt relative rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] ${cardStyle}`}
+                    className={`group/opt relative ${STYLE_CONFIG.innerCardRadius} border p-4 transition-all duration-300 hover:scale-[1.02] ${cardStyle}`}
                   >
                     <div className="flex items-start gap-4">
                       <div
-                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[11px] font-black transition-colors ${labelStyle}`}
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center ${STYLE_CONFIG.iconRadius} border text-[11px] font-black transition-colors ${labelStyle}`}
                       >
                         {opt.optionLabel}
                       </div>
@@ -256,7 +267,7 @@ export const QuestionResultCard = ({
                   ].map((stat, i) => (
                     <div
                       key={i}
-                      className={`p-4 rounded-2xl border border-border/50 ${stat.bg} transition-all hover:scale-[1.05]`}
+                      className={`p-4 ${STYLE_CONFIG.innerCardRadius} border border-border/50 ${stat.bg} transition-all hover:scale-[1.05]`}
                     >
                       <Typography
                         variant="body5"
@@ -274,7 +285,9 @@ export const QuestionResultCard = ({
                   ))}
                 </div>
               )}
-              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div
+                className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500`}
+              >
                 <Typography
                   variant="body5"
                   className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
@@ -324,7 +337,7 @@ export const QuestionResultCard = ({
                                 return (
                                   <div
                                     key={key}
-                                    className="p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5"
+                                    className={`p-3 ${STYLE_CONFIG.innerCardRadius} bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5`}
                                   >
                                     <Typography
                                       variant="body5"
@@ -352,7 +365,9 @@ export const QuestionResultCard = ({
                   })()}
                 </Typography>
               </div>
-              <div className="rounded-2xl border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div
+                className={`${STYLE_CONFIG.innerCardRadius} border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700`}
+              >
                 <Typography
                   variant="body5"
                   className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
@@ -412,7 +427,7 @@ export const QuestionResultCard = ({
                                 return (
                                   <div
                                     key={key}
-                                    className="p-3 rounded-xl bg-white/40 border border-black/[0.03] shadow-sm"
+                                    className={`p-3 ${STYLE_CONFIG.innerCardRadius} bg-white/40 border border-black/[0.03] shadow-sm`}
                                   >
                                     <Typography
                                       variant="body5"
@@ -460,8 +475,12 @@ export const QuestionResultCard = ({
                 </Typography>
                 <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
               </div>
-              <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
-                <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
+              <div
+                className={`${STYLE_CONFIG.cardRadius} border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6`}
+              >
+                <div
+                  className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-foreground/5 space-y-2`}
+                >
                   <Typography
                     variant="body5"
                     className="font-black text-muted-foreground/60 uppercase tracking-widest"
@@ -517,11 +536,13 @@ export const QuestionResultCard = ({
                         onManualMarksChange(e.target.value.replace(/\D/g, ""))
                       }
                       placeholder={`Score (0-${answer.max_marks})`}
-                      className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white focus:text-black shadow-inner"
+                      className={`${STYLE_CONFIG.buttonRadius} border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white focus:text-black shadow-inner`}
                     />
                     <Button
-                      variant="outline"
-                      className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
+                      variant="primary"
+                      color="primary"
+                      animate="scale"
+                      className={`w-full h-12 transition-all duration-300 font-bold shadow-sm transition-all duration-300 font-black shadow-sm`}
                       onClick={onManualMarksApply}
                     >
                       Adjust Marks
@@ -533,7 +554,7 @@ export const QuestionResultCard = ({
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
+                          className={`flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 ${STYLE_CONFIG.badgeRadius} border border-emerald-500/20`}
                         >
                           <FileCheck2 size={12} />
                           MARKS APPLIED: {manualMarksValue}

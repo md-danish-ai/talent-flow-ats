@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
@@ -232,11 +231,6 @@ export function TypesManagementClient({
 
   return (
     <PageContainer animate>
-      <PageHeader
-        title="Master Data Management"
-        description="Configure and manage subjects, exam levels, and interview results in one place."
-      />
-
       <MainCard
         title={
           <div className="flex items-center gap-6">
@@ -244,7 +238,7 @@ export function TypesManagementClient({
               <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
                 <Layers size={18} />
               </div>
-              Master Data Definitions
+              Master Data Management
             </div>
             <div className="h-8 w-px bg-border/50" />
             <Tabs

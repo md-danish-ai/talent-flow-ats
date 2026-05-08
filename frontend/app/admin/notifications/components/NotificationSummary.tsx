@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Bell, Mail, MailOpen } from "lucide-react";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 
 interface NotificationSummaryProps {
@@ -23,13 +24,19 @@ export const NotificationSummary = React.memo<NotificationSummaryProps>(
           animate={{ opacity: 1, y: 0 }}
           onClick={() => onFilterChange("all")}
           className={cn(
-            "bg-background border-2 rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            "bg-background border-2 p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            STYLE_CONFIG.innerCardRadius,
             statusFilter === "all"
               ? "border-brand-primary shadow-md shadow-brand-primary/10"
               : "border-border/60 hover:border-brand-primary/50",
           )}
         >
-          <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+          <div
+            className={cn(
+              "w-10 h-10 bg-brand-primary/10 flex items-center justify-center text-brand-primary",
+              STYLE_CONFIG.iconRadius,
+            )}
+          >
             <Bell size={20} />
           </div>
           <div>
@@ -51,13 +58,19 @@ export const NotificationSummary = React.memo<NotificationSummaryProps>(
           transition={{ delay: 0.1 }}
           onClick={() => onFilterChange("unread")}
           className={cn(
-            "bg-background border-2 rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            "bg-background border-2 p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            STYLE_CONFIG.innerCardRadius,
             statusFilter === "unread"
               ? "border-brand-primary shadow-md shadow-brand-primary/10"
               : "border-border/60 hover:border-brand-primary/50",
           )}
         >
-          <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+          <div
+            className={cn(
+              "w-10 h-10 bg-brand-primary/10 flex items-center justify-center text-brand-primary",
+              STYLE_CONFIG.iconRadius,
+            )}
+          >
             <Mail size={20} />
           </div>
           <div>
@@ -83,13 +96,19 @@ export const NotificationSummary = React.memo<NotificationSummaryProps>(
           transition={{ delay: 0.2 }}
           onClick={() => onFilterChange("read")}
           className={cn(
-            "bg-background border-2 rounded-2xl p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            "bg-background border-2 p-4 flex items-center gap-4 transition-all hover:shadow-lg cursor-pointer",
+            STYLE_CONFIG.innerCardRadius,
             statusFilter === "read"
               ? "border-slate-500 shadow-md shadow-slate-500/10"
               : "border-border/60 hover:border-slate-500/50",
           )}
         >
-          <div className="w-10 h-10 rounded-xl bg-slate-500/10 flex items-center justify-center text-slate-500">
+          <div
+            className={cn(
+              "w-10 h-10 bg-slate-500/10 flex items-center justify-center text-slate-500",
+              STYLE_CONFIG.iconRadius,
+            )}
+          >
             <MailOpen size={20} />
           </div>
           <div>

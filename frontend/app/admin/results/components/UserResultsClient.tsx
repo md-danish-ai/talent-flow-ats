@@ -152,7 +152,7 @@ export function UserResultsClient() {
   };
 
   return (
-    <PageContainer className="space-y-8 max-w-7xl mx-auto">
+    <PageContainer className="space-y-8">
       <MainCard
         title={
           <div className="flex items-center gap-3">

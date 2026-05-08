@@ -108,11 +108,7 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
           </div>
         </div>
         {currentQuestion.subjectName && (
-          <Badge
-            variant="outline"
-            shape="square"
-            color="secondary"
-          >
+          <Badge variant="outline" shape="square" color="secondary">
             {currentQuestion.subjectName}
           </Badge>
         )}

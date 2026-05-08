@@ -8,7 +8,7 @@ export default async function ProjectLeadUsersPage() {
   const leadId = Number(user?.id || 0);
 
   return (
-    <PageContainer className="space-y-6 max-w-7xl mx-auto" animate>
+    <PageContainer className="space-y-6" animate>
       <div className="flex flex-col gap-1">
         <Typography variant="h2" className="font-black tracking-tight">
           Assigned Users

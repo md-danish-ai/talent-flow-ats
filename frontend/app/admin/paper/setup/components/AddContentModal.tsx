@@ -188,7 +188,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-6xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-border/50 rounded-md">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-7xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-border/50 rounded-md">
         {/* Header */}
         <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
           <div className="flex-1">

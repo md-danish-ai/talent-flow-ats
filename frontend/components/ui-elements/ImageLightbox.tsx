@@ -118,7 +118,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
             exit={{ opacity: 0, scale: 0.9, rotateX: -10 }}
             className="relative z-[10000] w-full h-full flex items-center justify-center p-4 sm:p-8 pointer-events-none"
           >
-            <div className="relative w-full h-full max-w-6xl max-h-[85vh] pointer-events-auto">
+            <div className="relative w-full h-full max-w-7xl max-h-[85vh] pointer-events-auto">
               <Image
                 src={getCanonicalImageUrl(src)}
                 alt={title || "Preview"}

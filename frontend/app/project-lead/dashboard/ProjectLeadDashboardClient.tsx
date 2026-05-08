@@ -40,7 +40,7 @@ export default function ProjectLeadDashboardClient({
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   return (
-    <PageContainer className="space-y-8 max-w-7xl mx-auto">
+    <PageContainer className="space-y-8">
       <div className="flex flex-col gap-2">
         <Typography variant="h2" className="font-black tracking-tight">
           Project Lead Dashboard
