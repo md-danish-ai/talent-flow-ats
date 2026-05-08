@@ -35,6 +35,7 @@ import {
   parseQuestionOptions,
 } from "@lib/utils";
 import { getCanonicalImageUrl } from "@lib/utils/image";
+import { getGradeCardStyles } from "@lib/utils/gradeUtils";
 import { Button } from "@components/ui-elements/Button";
 
 interface AttemptDetailClientProps {
@@ -405,163 +406,170 @@ export function AttemptDetailClient({
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {data.subject_results.map((subject, idx) => (
-            <motion.div
-              key={subject.section_name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + idx * 0.1 }}
-              className={`bg-card border border-border/50 ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500 scroll-mt-24`}
-              id={`section-card-${subject.section_name}`}
-            >
-              <button
-                onClick={() => toggleSection(subject.section_name)}
-                className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
+          {data.subject_results.map((subject, idx) => {
+            const styles = getGradeCardStyles(subject.grade);
+
+            return (
+              <motion.div
+                key={subject.section_name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + idx * 0.1 }}
+                className={`bg-card border ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-500 scroll-mt-24`}
+                id={`section-card-${subject.section_name}`}
               >
-                <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`p-3 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-500 shadow-inner`}
-                    >
-                      <BookOpen size={20} />
-                    </div>
-                    <div>
-                      <Typography
-                        variant="h4"
-                        className="font-black tracking-tight leading-none mb-1.5"
+                <button
+                  onClick={() => toggleSection(subject.section_name)}
+                  className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-1.5 h-6 rounded-full transition-all duration-500 ${styles.bar}`}
+                      />
+                      <div
+                        className={`p-3 ${STYLE_CONFIG.iconRadius} ${styles.icon} transition-colors duration-500 shadow-inner`}
                       >
-                        {subject.section_name}
-                      </Typography>
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" shape="square">
-                          TOTAL: {subject.total_questions}
-                        </Badge>
+                        <BookOpen size={20} />
+                      </div>
+                      <div>
+                        <Typography
+                          variant="h4"
+                          className="font-black tracking-tight leading-none mb-1.5"
+                        >
+                          {subject.section_name}
+                        </Typography>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" shape="square">
+                            TOTAL: {subject.total_questions}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-5">
-                  <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
-                    <div className="text-center group-hover:scale-110 transition-transform">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Correct
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-emerald-600 leading-none"
-                      >
-                        {subject.correct_count}
-                      </Typography>
+                  <div className="flex items-center gap-5">
+                    <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
+                      <div className="text-center group-hover:scale-110 transition-transform">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Correct
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-emerald-600 leading-none"
+                        >
+                          {subject.correct_count}
+                        </Typography>
+                      </div>
+                      <div className="text-center group-hover:scale-110 transition-transform delay-75">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Incorrect
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-rose-600 leading-none"
+                        >
+                          {subject.incorrect_count}
+                        </Typography>
+                      </div>
+                      <div className="text-center group-hover:scale-110 transition-transform delay-100">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Skipped
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-amber-600 leading-none"
+                        >
+                          {subject.unattempted_count}
+                        </Typography>
+                      </div>
                     </div>
-                    <div className="text-center group-hover:scale-110 transition-transform delay-75">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Incorrect
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-rose-600 leading-none"
-                      >
-                        {subject.incorrect_count}
-                      </Typography>
-                    </div>
-                    <div className="text-center group-hover:scale-110 transition-transform delay-100">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Skipped
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-amber-600 leading-none"
-                      >
-                        {subject.unattempted_count}
-                      </Typography>
-                    </div>
-                  </div>
 
-                  {/* Unified Performance & Grade Badge (Matrix Style) */}
-                  <GradeBadge
-                    gradeLabel={subject.grade}
-                    value={`${subject.percentage}%`}
-                    className="min-w-[170px] group-hover:scale-105"
-                  />
+                    {/* Unified Performance & Grade Badge (Matrix Style) */}
+                    <GradeBadge
+                      gradeLabel={subject.grade}
+                      value={`${subject.percentage}%`}
+                      className="min-w-[170px] group-hover:scale-105"
+                    />
 
-                  <div
-                    className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
-                  >
-                    <motion.div
-                      animate={{
-                        rotate:
-                          activeSection === subject.section_name ? 0 : 180,
-                      }}
-                      transition={{ duration: 0.4 }}
+                    <div
+                      className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
                     >
-                      <ChevronUp size={18} />
-                    </motion.div>
-                  </div>
-                </div>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {activeSection === subject.section_name && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
-                      {(answersBySubject[subject.section_name] || []).map(
-                        (item) => (
-                          <QuestionResultCard
-                            key={`${item.answer.question_id}-${item.index}`}
-                            answer={item.answer}
-                            index={item.index}
-                            manualMarksValue={
-                              manualMarks[
-                                `${item.answer.question_id}-${item.index}`
-                              ] ?? ""
-                            }
-                            isManualMarksApplied={
-                              manualMarksApplied[
-                                `${item.answer.question_id}-${item.index}`
-                              ] !== undefined
-                            }
-                            onManualMarksChange={(val) =>
-                              setManualMarks((p) => ({
-                                ...p,
-                                [`${item.answer.question_id}-${item.index}`]:
-                                  val,
-                              }))
-                            }
-                            onManualMarksApply={() =>
-                              handleManualMarksApply(
-                                item.answer.question_id,
-                                item.index,
-                              )
-                            }
-                            getCanonicalImageUrl={getCanonicalImageUrl}
-                            parseQuestionOptions={parseQuestionOptions}
-                            extractOptionKey={extractOptionKey}
-                            normalizeText={normalizeText}
-                          />
-                        ),
-                      )}
+                      <motion.div
+                        animate={{
+                          rotate:
+                            activeSection === subject.section_name ? 0 : 180,
+                        }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <ChevronUp size={18} />
+                      </motion.div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+                  </div>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {activeSection === subject.section_name && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
+                        {(answersBySubject[subject.section_name] || []).map(
+                          (item) => (
+                            <QuestionResultCard
+                              key={`${item.answer.question_id}-${item.index}`}
+                              answer={item.answer}
+                              index={item.index}
+                              manualMarksValue={
+                                manualMarks[
+                                  `${item.answer.question_id}-${item.index}`
+                                ] ?? ""
+                              }
+                              isManualMarksApplied={
+                                manualMarksApplied[
+                                  `${item.answer.question_id}-${item.index}`
+                                ] !== undefined
+                              }
+                              onManualMarksChange={(val) =>
+                                setManualMarks((p) => ({
+                                  ...p,
+                                  [`${item.answer.question_id}-${item.index}`]:
+                                    val,
+                                }))
+                              }
+                              onManualMarksApply={() =>
+                                handleManualMarksApply(
+                                  item.answer.question_id,
+                                  item.index,
+                                )
+                              }
+                              getCanonicalImageUrl={getCanonicalImageUrl}
+                              parseQuestionOptions={parseQuestionOptions}
+                              extractOptionKey={extractOptionKey}
+                              normalizeText={normalizeText}
+                            />
+                          ),
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </PageContainer>
