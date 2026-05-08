@@ -205,7 +205,6 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
             variant="outline"
             shape="square"
             color="secondary"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >
             Section {sectionIndex + 1}/{totalSections}
           </Badge>
@@ -213,7 +212,6 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
             variant="outline"
             shape="square"
             color="primary"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >
             {currentSection.title}
           </Badge>
@@ -221,7 +219,6 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
             variant="outline"
             shape="square"
             color="default"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
           >
             {progressPercent}% Complete
           </Badge>

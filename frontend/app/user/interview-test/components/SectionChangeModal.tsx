@@ -59,7 +59,6 @@ export function SectionChangeModal({
             color="primary"
             animate="scale"
             onClick={onClose}
-            className="w-full sm:w-auto border-foreground/10 hover:bg-foreground/5"
           >
             Review Section
           </Button>
@@ -68,7 +67,6 @@ export function SectionChangeModal({
             animate="scale"
             variant="primary"
             onClick={onConfirm}
-            className="w-full sm:w-auto"
           >
             Change Section
           </Button>

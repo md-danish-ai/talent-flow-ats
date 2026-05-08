@@ -112,7 +112,6 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
             variant="outline"
             shape="square"
             color="secondary"
-            className="px-3 py-1 text-xs font-bold uppercase tracking-wider"
           >
             {currentQuestion.subjectName}
           </Badge>

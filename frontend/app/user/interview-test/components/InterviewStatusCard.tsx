@@ -106,20 +106,18 @@ export function InterviewStatusCard({
                       shape="square"
                       color={isLocked ? "success" : "warning"}
                       icon={<Clock3 size={11} />}
-                      className={cn(
-                        "text-[10px] py-0.5 px-2 font-bold",
-                        !isCurrent && "opacity-70",
-                      )}
+                      className={cn(!isCurrent && "opacity-70")}
+                      animate={isLocked ? "none" : "pulse"}
                     >
                       {section.durationMinutes} Mins Allotted
                     </Badge>
 
                     {isCurrent && (
                       <Badge
-                        variant="fill"
+                        variant="outline"
                         shape="square"
                         color="violet"
-                        className="text-[10px] py-0.5 px-2 font-black shadow-sm"
+                        animate="pulse"
                       >
                         QUESTION {questionIndex + 1}/{section.questions.length}
                       </Badge>
@@ -130,9 +128,10 @@ export function InterviewStatusCard({
                 <div className="flex flex-col items-end gap-1.5">
                   {isCurrent && (
                     <Badge
+                      variant="outline"
                       color="primary"
                       shape="square"
-                      className="animate-pulse shadow-brand-200"
+                      animate="pulse"
                     >
                       ACTIVE
                     </Badge>
@@ -143,7 +142,7 @@ export function InterviewStatusCard({
                       shape="square"
                       color="success"
                       icon={<CheckCircle2 size={12} />}
-                      className="bg-emerald-50"
+                      animate="pulse"
                     >
                       LOCKED
                     </Badge>
@@ -154,7 +153,6 @@ export function InterviewStatusCard({
                       shape="square"
                       color="secondary"
                       icon={<Lock size={12} />}
-                      className="bg-background"
                     >
                       PENDING
                     </Badge>

@@ -124,7 +124,7 @@ export function InterviewOverview({
               Assessment Structure
             </Typography>
             <div className="h-[1px] flex-1 bg-border/40" />
-            <Badge variant="outline" className="bg-muted/30">
+            <Badge variant="outline">
               {sections.length} Sections
             </Badge>
           </div>

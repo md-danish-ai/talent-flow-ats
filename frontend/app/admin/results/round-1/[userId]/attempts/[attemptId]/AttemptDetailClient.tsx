@@ -16,6 +16,7 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
+import { GradeBadge } from "@components/ui-elements/GradeBadge";
 import { resultsApi } from "@lib/api/results";
 import { type AdminUserResultDetail } from "@types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -289,7 +290,7 @@ export function AttemptDetailClient({
               <div className="absolute -bottom-2 left-0 w-24 h-1.5 bg-brand-primary rounded-full opacity-20" />
             </div>
             <div className="flex flex-col gap-1 sm:ml-4">
-              <Badge color={statusColor} variant="fill">
+              <Badge color={statusColor} variant="fill" shape="square">
                 {data.attempt.status.toUpperCase()}
               </Badge>
             </div>
@@ -327,31 +328,14 @@ export function AttemptDetailClient({
             </Typography>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full">
-            {data.grade_settings.map((g, i) => {
-              const gradeCol =
-                g.grade_label.toLowerCase() === "excellent"
-                  ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
-                  : g.grade_label.toLowerCase() === "good"
-                    ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
-                    : g.grade_label.toLowerCase() === "average"
-                      ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
-                      : g.grade_label.toLowerCase() === "poor"
-                        ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
-                        : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
-              return (
-                <div
-                  key={i}
-                  className={`flex-1 min-w-max flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}
-                >
-                  <span className="font-black text-xs uppercase tracking-widest">
-                    {g.grade_label}
-                  </span>
-                  <span className="font-bold text-xs tracking-wide opacity-90 whitespace-nowrap">
-                    {g.min}% - {g.max}%
-                  </span>
-                </div>
-              );
-            })}
+            {data.grade_settings.map((g, i) => (
+              <GradeBadge
+                key={i}
+                gradeLabel={g.grade_label}
+                value={`${g.min}% - ${g.max}%`}
+                className="flex-1 min-w-max"
+              />
+            ))}
           </div>
         </motion.div>
       )}
@@ -401,7 +385,7 @@ export function AttemptDetailClient({
                 col: "warning" as const,
               },
             ].map((b) => (
-              <Badge key={b.label} color={b.col} variant="outline">
+              <Badge key={b.label} color={b.col} variant="outline" shape="square">
                 {b.label.toUpperCase()}: {b.val}
               </Badge>
             ))}
@@ -435,7 +419,7 @@ export function AttemptDetailClient({
                         {subject.section_name}
                       </Typography>
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline">
+                        <Badge variant="outline" shape="square">
                           TOTAL: {subject.total_questions}
                         </Badge>
                       </div>
@@ -490,33 +474,11 @@ export function AttemptDetailClient({
                   </div>
 
                   {/* Unified Performance & Grade Badge (Matrix Style) */}
-                  {(() => {
-                    const gradeLabel = subject.grade.toLowerCase();
-                    const style =
-                      gradeLabel === "excellent"
-                        ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
-                        : gradeLabel === "good"
-                          ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
-                          : gradeLabel === "average"
-                            ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
-                            : gradeLabel === "poor"
-                              ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
-                              : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
-
-                    return (
-                      <div
-                        className={`flex items-center justify-between px-5 py-2.5 rounded-xl border-2 ${style} shadow-sm min-w-[170px] transition-transform duration-300 group-hover:scale-105`}
-                      >
-                        <span className="font-black text-xs uppercase tracking-widest leading-none">
-                          {subject.grade}
-                        </span>
-                        <div className="w-1 h-3 rounded-full bg-current opacity-20 mx-3" />
-                        <span className="font-bold text-xs tracking-wide leading-none">
-                          {subject.percentage}%
-                        </span>
-                      </div>
-                    );
-                  })()}
+                  <GradeBadge
+                    gradeLabel={subject.grade}
+                    value={`${subject.percentage}%`}
+                    className="min-w-[170px] group-hover:scale-105"
+                  />
 
                   <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
                     <motion.div

@@ -76,11 +76,11 @@ export const QuestionResultCard = ({
             <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-foreground/5 text-[11px] font-black text-foreground/70 border border-foreground/5">
               {index + 1}
             </span>
-            <Badge variant="outline" color={statusConfig.badge as BadgeColor}>
+            <Badge variant="outline" color={statusConfig.badge as BadgeColor} shape="square">
               {humanizeString(answer.status)}
             </Badge>
             {answer.question_type && (
-              <Badge variant="outline" color="default">
+              <Badge variant="outline" color="default" shape="square">
                 {humanizeString(answer.question_type)}
               </Badge>
             )}
@@ -130,7 +130,8 @@ export const QuestionResultCard = ({
             answer.question_type === "IMAGE_MULTIPLE_CHOICE" && answer.image_url
               ? "lg:col-span-6 space-y-6"
               : answer.question_type === "MULTIPLE_CHOICE" ||
-                  answer.question_type === "IMAGE_MULTIPLE_CHOICE"
+                  answer.question_type === "IMAGE_MULTIPLE_CHOICE" ||
+                  answer.question_type === "PASSAGE_CONTENT"
                 ? "lg:col-span-12 space-y-6"
                 : "lg:col-span-8 space-y-6"
           }
@@ -202,17 +203,17 @@ export const QuestionResultCard = ({
                         <div className="mt-2.5 flex flex-wrap gap-2">
                           {isSelected && (
                             <div
-                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${isWrong ? "bg-rose-500/10 text-rose-600" : "bg-brand-primary/10 text-brand-primary"}`}
+                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[9px] font-black uppercase tracking-wider ${isWrong ? "bg-rose-500/10 text-rose-600" : "bg-brand-primary/10 text-brand-primary"}`}
                             >
                               <div
-                                className={`w-1 h-1 rounded-full ${isWrong ? "bg-rose-600" : "bg-brand-primary"}`}
+                                className={`w-1 h-1 rounded-sm ${isWrong ? "bg-rose-600" : "bg-brand-primary"}`}
                               />
                               Candidate Answer
                             </div>
                           )}
                           {isCorrect && (
-                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-wider">
-                              <div className="w-1 h-1 rounded-full bg-emerald-600" />
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-wider">
+                              <div className="w-1 h-1 rounded-sm bg-emerald-600" />
                               Correct Choice
                             </div>
                           )}
@@ -447,6 +448,7 @@ export const QuestionResultCard = ({
         {/* Evaluation Sidebar Part */}
         {answer.question_type !== "MULTIPLE_CHOICE" &&
           answer.question_type !== "IMAGE_MULTIPLE_CHOICE" &&
+          answer.question_type !== "PASSAGE_CONTENT" &&
           answer.is_attempted && (
             <div className="lg:col-span-4 space-y-6">
               <div className="flex items-center gap-3">

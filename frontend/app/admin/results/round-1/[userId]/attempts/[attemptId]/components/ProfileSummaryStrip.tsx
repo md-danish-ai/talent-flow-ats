@@ -77,7 +77,7 @@ export const ProfileSummaryStrip = ({
               Paper
             </Typography>
             <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-lg bg-brand-primary/10 border border-brand-primary/20">
+              <div className="p-1.5 px-3 rounded-full bg-brand-primary/10 border border-brand-primary/20">
                 <Typography
                   variant="body5"
                   className="font-black text-brand-primary text-[10px]"

@@ -27,7 +27,7 @@ export function SubmitModal({
             </div>
 
             <div className="text-center space-y-3 mb-8">
-              <Typography variant="h2" weight="bold" className="text-gray-900">
+              <Typography variant="h2" weight="bold" className="text-gray-900 dark:text-white">
                 Incomplete Details
               </Typography>
               <Typography
@@ -75,7 +75,7 @@ export function SubmitModal({
             </div>
 
             <div className="text-center space-y-3 mb-8">
-              <Typography variant="h2" weight="bold" className="text-gray-900">
+              <Typography variant="h2" weight="bold" className="text-gray-900 dark:text-white">
                 Confirm Submission
               </Typography>
               <Typography
