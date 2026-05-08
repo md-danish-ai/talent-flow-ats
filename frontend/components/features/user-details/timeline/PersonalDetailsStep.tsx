@@ -204,6 +204,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0
                   }
+                  disableFuture={true}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (

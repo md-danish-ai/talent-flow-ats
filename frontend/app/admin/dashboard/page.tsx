@@ -358,22 +358,36 @@ export default function DashboardPage() {
                         let colorClass = "text-slate-500";
                         let bgClass = "bg-slate-500/10 dark:bg-slate-500/20";
 
-                        if (t.includes("duplicate") || tp.includes("duplicate")) {
+                        if (
+                          t.includes("duplicate") ||
+                          tp.includes("duplicate")
+                        ) {
                           icon = <AlertTriangle size={18} />;
                           colorClass = "text-amber-500";
                           bgClass = "bg-amber-500/10 dark:bg-amber-500/20";
-                        } else if (t.includes("unassigned") || tp.includes("unassigned")) {
+                        } else if (
+                          t.includes("unassigned") ||
+                          tp.includes("unassigned")
+                        ) {
                           icon = <UserX size={18} />;
                           colorClass = "text-red-500";
                           bgClass = "bg-red-500/10 dark:bg-red-500/20";
-                        } else if (t.includes("submitted") || tp.includes("submitted")) {
+                        } else if (
+                          t.includes("submitted") ||
+                          tp.includes("submitted")
+                        ) {
                           icon = <FileCheck size={18} />;
                           colorClass = "text-emerald-500";
                           bgClass = "bg-emerald-500/10 dark:bg-emerald-500/20";
-                        } else if (t.includes("interview") || t.includes("assigned") || tp.includes("assigned")) {
+                        } else if (
+                          t.includes("interview") ||
+                          t.includes("assigned") ||
+                          tp.includes("assigned")
+                        ) {
                           icon = <UserCheck size={18} />;
                           colorClass = "text-brand-primary";
-                          bgClass = "bg-brand-primary/10 dark:bg-brand-primary/20";
+                          bgClass =
+                            "bg-brand-primary/10 dark:bg-brand-primary/20";
                         }
 
                         return (
@@ -382,7 +396,9 @@ export default function DashboardPage() {
                               icon={icon}
                               title={notif.title}
                               description={
-                                <NotificationFormatter message={notif.message} />
+                                <NotificationFormatter
+                                  message={notif.message}
+                                />
                               }
                               time={formatDistanceToNow(
                                 new Date(notif.created_at),
