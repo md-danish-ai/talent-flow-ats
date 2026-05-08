@@ -122,8 +122,81 @@ def seed_papers():
             db.add(new_paper)
             print(f"✅ Created {name}: {len(subject_config)} subjects | {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
 
+        # 7. Create 3 custom uniquely-named papers with exactly 2 questions of 5 marks per subject
+        custom_paper_names = [
+            "KPO Premier Comprehensive Paper X",
+            "KPO Elite Assessment Paper Y",
+            "KPO Ultimate Evaluation Paper Z"
+        ]
+
+        # Let's filter questions of exactly 5 marks grouped by subject
+        questions_by_subject_5m = {}
+        for q in all_questions:
+            if q.marks == 5:
+                if q.subject_type not in questions_by_subject_5m:
+                    questions_by_subject_5m[q.subject_type] = []
+                questions_by_subject_5m[q.subject_type].append(q)
+
+        available_subject_codes_5m = list(questions_by_subject_5m.keys())
+
+        for name in custom_paper_names:
+            selected_question_ids = []
+            subject_config = []
+
+            for i, sub_code in enumerate(available_subject_codes_5m):
+                q_list = questions_by_subject_5m[sub_code]
+                if len(q_list) < 2:
+                    picked = q_list
+                else:
+                    picked = random.sample(q_list, 2)
+
+                selected_question_ids.extend([q.id for q in picked])
+
+                # Get subject classification ID
+                sub_obj = db.query(Classification).filter(
+                    Classification.type == "subject",
+                    Classification.code == sub_code
+                ).first()
+
+                if sub_obj:
+                    subject_config.append({
+                        "subject_id": sub_obj.id,
+                        "is_selected": True,
+                        "question_count": len(picked),
+                        "total_marks": len(picked) * 5,
+                        "time_minutes": 10,
+                        "order": i + 1
+                    })
+
+            if not subject_config:
+                continue
+
+            custom_paper = Paper(
+                paper_name=name,
+                description=f"Premium unique paper featuring all available subjects under KPO. Includes {len(subject_config)} subjects with exactly 2 questions (5 marks each) per subject.",
+                department_id=kpo_dept.id,
+                test_level_id=fresher_level.id,
+                subject_ids_data=subject_config,
+                question_id=selected_question_ids,
+                total_time=str(len(subject_config) * 10),
+                total_marks=len(selected_question_ids) * 5,
+                is_active=True,
+                created_by=admin_id,
+                grade="Percentage",
+                grade_settings=[
+                    {"min": 0.0, "max": 34.99, "grade_label": GradeLabel.POOR.value},
+                    {"min": 35.0, "max": 49.99, "grade_label": GradeLabel.BELOW_AVERAGE.value},
+                    {"min": 50.0, "max": 64.99, "grade_label": GradeLabel.AVERAGE.value},
+                    {"min": 65.0, "max": 79.99, "grade_label": GradeLabel.ABOVE_AVERAGE.value},
+                    {"min": 80.0, "max": 89.99, "grade_label": GradeLabel.GOOD.value},
+                    {"min": 90.0, "max": 100.0, "grade_label": GradeLabel.EXCELLENT.value}
+                ]
+            )
+            db.add(custom_paper)
+            print(f"✅ Created {name}: {len(subject_config)} subjects | {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
+
         db.commit()
-        print("\n✨ Standardized Paper Seeding Complete!")
+        print("\n✨ Standardized & Custom Paper Seeding Complete!")
 
     except Exception as e:
         db.rollback()
