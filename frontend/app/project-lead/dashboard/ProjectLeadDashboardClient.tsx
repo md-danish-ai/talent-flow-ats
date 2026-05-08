@@ -8,12 +8,9 @@ import {
   Users,
   Clock,
   CheckCircle,
-  ArrowRight,
   Bell,
   Phone,
-  Calendar,
   X,
-  AlertCircle,
   AlertTriangle,
   UserX,
   FileCheck,
@@ -43,7 +40,8 @@ export default function ProjectLeadDashboardClient({
   const [loadingNotifications, setLoadingNotifications] = useState(true);
 
   const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
-  const [selectedNotification, setSelectedNotification] = useState<NotificationItem | null>(null);
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationItem | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -144,22 +142,32 @@ export default function ProjectLeadDashboardClient({
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary font-black text-sm border border-brand-primary/20">
-                      {task.candidate_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                      {task.candidate_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
                     </div>
                     <div>
-                      <Typography variant="body3" className="font-extrabold text-foreground">
+                      <Typography
+                        variant="body3"
+                        className="font-extrabold text-foreground"
+                      >
                         {task.candidate_name}
                       </Typography>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary px-1.5 py-0.5 bg-brand-primary/5 rounded border border-brand-primary/20">
                           {task.round_type}
                         </span>
-                        <span className={cn(
-                          "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
-                          task.status === "pending"
-                            ? "bg-amber-500/5 border-amber-500/20 text-amber-500"
-                            : "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
-                        )}>
+                        <span
+                          className={cn(
+                            "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                            task.status === "pending"
+                              ? "bg-amber-500/5 border-amber-500/20 text-amber-500"
+                              : "bg-emerald-500/5 border-emerald-500/20 text-emerald-500",
+                          )}
+                        >
                           {task.status}
                         </span>
                       </div>
@@ -206,10 +214,7 @@ export default function ProjectLeadDashboardClient({
                 let colorClass = "text-slate-500";
                 let bgClass = "bg-slate-500/10 dark:bg-slate-500/20";
 
-                if (
-                  t.includes("duplicate") ||
-                  tp.includes("duplicate")
-                ) {
+                if (t.includes("duplicate") || tp.includes("duplicate")) {
                   icon = <AlertTriangle size={18} />;
                   colorClass = "text-amber-500";
                   bgClass = "bg-amber-500/10 dark:bg-amber-500/20";
@@ -247,14 +252,11 @@ export default function ProjectLeadDashboardClient({
                       icon={icon}
                       title={notif.title}
                       description={
-                        <NotificationFormatter
-                          message={notif.message}
-                        />
+                        <NotificationFormatter message={notif.message} />
                       }
-                      time={formatDistanceToNow(
-                        new Date(notif.created_at),
-                        { addSuffix: true },
-                      )}
+                      time={formatDistanceToNow(new Date(notif.created_at), {
+                        addSuffix: true,
+                      })}
                       color={colorClass}
                       bgClassName={bgClass}
                       className="p-3.5 border border-border/30 rounded-xl bg-muted/10 dark:bg-slate-900/40 hover:bg-muted/20 dark:hover:bg-slate-900/60"
@@ -279,10 +281,16 @@ export default function ProjectLeadDashboardClient({
             >
               <div className="p-6 border-b border-border flex items-center justify-between bg-muted/20">
                 <div>
-                  <Typography variant="h4" className="font-extrabold text-foreground">
+                  <Typography
+                    variant="h4"
+                    className="font-extrabold text-foreground"
+                  >
                     {selectedTask.candidate_name}
                   </Typography>
-                  <Typography variant="body5" className="text-brand-primary font-bold uppercase tracking-wider mt-0.5">
+                  <Typography
+                    variant="body5"
+                    className="text-brand-primary font-bold uppercase tracking-wider mt-0.5"
+                  >
                     {selectedTask.round_type} Round
                   </Typography>
                 </div>
@@ -297,24 +305,35 @@ export default function ProjectLeadDashboardClient({
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/10 p-3 rounded-xl border border-border/30">
-                    <Typography variant="body5" className="text-muted-foreground mb-1">
+                    <Typography
+                      variant="body5"
+                      className="text-muted-foreground mb-1"
+                    >
                       Mobile Number
                     </Typography>
-                    <Typography variant="body4" className="font-semibold text-foreground flex items-center gap-1.5">
+                    <Typography
+                      variant="body4"
+                      className="font-semibold text-foreground flex items-center gap-1.5"
+                    >
                       <Phone size={14} className="text-brand-primary" />
                       {selectedTask.candidate_mobile}
                     </Typography>
                   </div>
                   <div className="bg-muted/10 p-3 rounded-xl border border-border/30">
-                    <Typography variant="body5" className="text-muted-foreground mb-1">
+                    <Typography
+                      variant="body5"
+                      className="text-muted-foreground mb-1"
+                    >
                       Status
                     </Typography>
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold",
-                      selectedTask.status === "pending"
-                        ? "bg-amber-500/15 text-amber-500"
-                        : "bg-emerald-500/15 text-emerald-500"
-                    )}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold",
+                        selectedTask.status === "pending"
+                          ? "bg-amber-500/15 text-amber-500"
+                          : "bg-emerald-500/15 text-emerald-500",
+                      )}
+                    >
                       <Clock size={12} />
                       {selectedTask.status}
                     </span>
@@ -322,25 +341,41 @@ export default function ProjectLeadDashboardClient({
                 </div>
 
                 <div className="bg-muted/10 p-4 rounded-xl border border-border/30">
-                  <Typography variant="body5" className="text-muted-foreground mb-1">
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground mb-1"
+                  >
                     Overall Grade
                   </Typography>
-                  <Typography variant="body4" className="font-semibold text-foreground">
+                  <Typography
+                    variant="body4"
+                    className="font-semibold text-foreground"
+                  >
                     {selectedTask.overall_grade || "Not evaluated yet"}
                   </Typography>
                 </div>
 
                 <div className="bg-muted/10 p-4 rounded-xl border border-border/30">
-                  <Typography variant="body5" className="text-muted-foreground mb-1">
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground mb-1"
+                  >
                     Lead Comments
                   </Typography>
-                  <Typography variant="body4" className="text-foreground italic">
-                    &ldquo;{selectedTask.comments || "No comments added yet."}&rdquo;
+                  <Typography
+                    variant="body4"
+                    className="text-foreground italic"
+                  >
+                    &ldquo;{selectedTask.comments || "No comments added yet."}
+                    &rdquo;
                   </Typography>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-                  <span>Assigned on {new Date(selectedTask.created_at).toLocaleDateString()}</span>
+                  <span>
+                    Assigned on{" "}
+                    {new Date(selectedTask.created_at).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
 
@@ -350,9 +385,7 @@ export default function ProjectLeadDashboardClient({
                 </Button>
                 {selectedTask.status === "pending" && (
                   <Link href="/project-lead/users">
-                    <Button color="primary">
-                      Start Evaluation
-                    </Button>
+                    <Button color="primary">Start Evaluation</Button>
                   </Link>
                 )}
               </div>
@@ -373,10 +406,16 @@ export default function ProjectLeadDashboardClient({
             >
               <div className="p-6 border-b border-border flex items-center justify-between bg-muted/20">
                 <div>
-                  <Typography variant="h4" className="font-extrabold text-foreground">
+                  <Typography
+                    variant="h4"
+                    className="font-extrabold text-foreground"
+                  >
                     {selectedNotification.title}
                   </Typography>
-                  <Typography variant="body5" className="text-brand-primary font-bold uppercase tracking-wider mt-0.5">
+                  <Typography
+                    variant="body5"
+                    className="text-brand-primary font-bold uppercase tracking-wider mt-0.5"
+                  >
                     {selectedNotification.type} Notification
                   </Typography>
                 </div>
@@ -390,27 +429,43 @@ export default function ProjectLeadDashboardClient({
 
               <div className="p-6 space-y-4">
                 <div className="bg-muted/10 p-4 rounded-xl border border-border/30">
-                  <Typography variant="body5" className="text-muted-foreground mb-1">
+                  <Typography
+                    variant="body5"
+                    className="text-muted-foreground mb-1"
+                  >
                     Notification Message
                   </Typography>
-                  <Typography variant="body4" className="text-foreground leading-relaxed">
+                  <Typography
+                    variant="body4"
+                    className="text-foreground leading-relaxed"
+                  >
                     {selectedNotification.message}
                   </Typography>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-                  <span>Received on {new Date(selectedNotification.created_at).toLocaleString()}</span>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px]",
-                    selectedNotification.is_read ? "bg-slate-200 dark:bg-slate-800 text-muted-foreground" : "bg-brand-primary/10 text-brand-primary"
-                  )}>
+                  <span>
+                    Received on{" "}
+                    {new Date(selectedNotification.created_at).toLocaleString()}
+                  </span>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px]",
+                      selectedNotification.is_read
+                        ? "bg-slate-200 dark:bg-slate-800 text-muted-foreground"
+                        : "bg-brand-primary/10 text-brand-primary",
+                    )}
+                  >
                     {selectedNotification.is_read ? "Read" : "Unread"}
                   </span>
                 </div>
               </div>
 
               <div className="p-4 bg-muted/20 border-t border-border flex justify-end">
-                <Button variant="ghost" onClick={() => setSelectedNotification(null)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedNotification(null)}
+                >
                   Close
                 </Button>
               </div>
