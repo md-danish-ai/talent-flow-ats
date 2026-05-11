@@ -30,19 +30,28 @@ export const signUpSchema = z.object({
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 // ─── Sign In Schema ─────────────────────────────────────────────────────
-export const signInSchema = z.object({
-  mobile: z
-    .string()
-    .length(10, "The mobile number must be exactly 10 digits.")
-    .regex(/^\d+$/, "The mobile number must contain only digits.")
-    .optional()
-    .or(z.literal("")),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  password: z
-    .string()
-    .length(10, "Password must be exactly 10 digits.")
-    .regex(/^\d+$/, "Password must contain only digits."),
-});
+export const signInSchema = z
+  .object({
+    mobile: z
+      .string()
+      .length(10, "The mobile number must be exactly 10 digits.")
+      .regex(/^\d+$/, "The mobile number must contain only digits.")
+      .optional()
+      .or(z.literal("")),
+    email: z
+      .string()
+      .email("Invalid email address")
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .length(10, "Password must be exactly 10 digits.")
+      .regex(/^\d+$/, "Password must contain only digits."),
+  })
+  .refine((data) => data.mobile || data.email, {
+    message: "Either Email Address or Mobile Number must be provided.",
+    path: ["email"],
+  });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;
 

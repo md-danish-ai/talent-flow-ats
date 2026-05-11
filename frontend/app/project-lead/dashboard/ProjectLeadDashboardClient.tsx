@@ -380,7 +380,11 @@ export default function ProjectLeadDashboardClient({
               </div>
 
               <div className="p-4 bg-muted/20 border-t border-border flex justify-end gap-2">
-                <Button variant="outline" color="primary" onClick={() => setSelectedTask(null)}>
+                <Button
+                  variant="outline"
+                  color="primary"
+                  onClick={() => setSelectedTask(null)}
+                >
                   Close
                 </Button>
                 {selectedTask.status === "pending" && (
