@@ -247,10 +247,16 @@ async def download_report_pdf(
 ):
     """Generate and stream a PDF report sheet for a candidate's attempt."""
     try:
+        from datetime import datetime
+
         data = build_report_data(user_id=user_id, attempt_id=attempt_id)
         html = build_report_html(data)
         pdf_bytes = generate_report_pdf(html)
-        filename = f"report_{data['username'].replace(' ', '_')}_{attempt_id}.pdf"
+
+        safe_name = data["username"].replace(" ", "_")
+        formatted_date = datetime.now().strftime("%d-%b-%Y")
+        filename = f"Report_{safe_name}_{formatted_date}.pdf"
+
         return StreamingResponse(
             io.BytesIO(pdf_bytes),
             media_type="application/pdf",

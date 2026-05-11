@@ -60,9 +60,17 @@ async function downloadReportPdf(
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
+  const formattedDate = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
+    .format(new Date())
+    .replace(/ /g, "-");
+
   const a = document.createElement("a");
   a.href = url;
-  a.download = `report_${username.replace(/\s+/g, "_")}_${attemptId}.pdf`;
+  a.download = `Report_${username.replace(/\s+/g, "_")}_${formattedDate}.pdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
