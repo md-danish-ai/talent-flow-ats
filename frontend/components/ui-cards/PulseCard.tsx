@@ -2,6 +2,7 @@ import React from "react";
 import { PulseCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface PulseCardProps {
   label: string;
@@ -27,13 +28,15 @@ export const PulseCard: React.FC<PulseCardProps> = ({
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-6 p-6 rounded-[24px] bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
+        "group relative flex items-center gap-6 p-6 bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
+        STYLE_CONFIG.cardRadius,
       )}
     >
       {/* Icon Box */}
       <div
         className={cn(
-          "w-16 h-16 rounded-[20px] shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 bg-background shrink-0",
+          "w-16 h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 bg-background shrink-0",
+          STYLE_CONFIG.iconRadius,
           bgColor,
         )}
       >

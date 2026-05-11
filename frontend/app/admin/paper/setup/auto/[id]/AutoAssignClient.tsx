@@ -40,7 +40,7 @@ export function AutoAssignClient({ id }: AutoAssignClientProps) {
 
   return (
     <PageContainer animate>
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
         {/* Top Header Card */}
         <PaperHeaderCard paper={paper} />
 

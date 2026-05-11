@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Badge, BadgeColor } from "@components/ui-elements/Badge";
 
 interface StatusLegendHeaderProps {
@@ -21,11 +22,21 @@ const LegendItem = ({
   dotColor: string;
   badgeColor: BadgeColor;
 }) => (
-  <div className="flex flex-col gap-2 p-3 rounded-xl transition-all">
+  <div
+    className={cn(
+      "flex flex-col gap-2 p-3 transition-all",
+      STYLE_CONFIG.innerCardRadius,
+    )}
+  >
     <div className="flex items-center gap-3">
       {/* Avatar Style matches the table's "brand" variant (usually squared/rounded-lg) */}
       <div className="relative shrink-0">
-        <div className="w-9 h-9 rounded-lg bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-[10px] font-bold text-brand-primary">
+        <div
+          className={cn(
+            "w-9 h-9 bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-[10px] font-bold text-brand-primary",
+            STYLE_CONFIG.iconRadius,
+          )}
+        >
           MD
         </div>
         <span
@@ -95,7 +106,12 @@ export function AttemptStatusLegend({
   ];
 
   return (
-    <div className="relative w-full mb-8 rounded-2xl overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all">
+    <div
+      className={cn(
+        "relative w-full mb-8 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
       <div className="relative p-6 md:p-8 flex flex-col gap-6">
         {/* Top Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

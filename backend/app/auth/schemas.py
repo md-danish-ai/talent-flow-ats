@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator, model_validator
 from typing import Optional
 from enum import Enum
 import re
@@ -72,6 +72,12 @@ class SignInSchema(BaseModel):
     mobile: Optional[str] = None
     email: Optional[EmailStr] = None
     password: str
+
+    @model_validator(mode="after")
+    def check_identifier_exists(self) -> "SignInSchema":
+        if not self.mobile and not self.email:
+            raise ValueError("Either Email Address or Mobile Number must be provided.")
+        return self
 
     @validator("mobile", "email", pre=True)
     def empty_to_none(cls, field_value):

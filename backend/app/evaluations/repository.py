@@ -17,6 +17,31 @@ def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
+
+    # Trigger evaluation_assigned notification
+    try:
+        from app.duplicates.models import AdminNotification
+
+        candidate = db.query(User).filter(User.id == obj_in.user_id).first()
+        candidate_name = (
+            candidate.username if candidate else f"Candidate #{obj_in.user_id}"
+        )
+
+        round_str = (
+            f"Round-2 ({obj_in.round_type})" if obj_in.round_type else "Round-2 (F2F)"
+        )
+        notification = AdminNotification(
+            type="evaluation_assigned",
+            user_id=obj_in.project_lead_id,
+            title=f"Interview: {candidate_name}",
+            message=f"You have been assigned to evaluate {candidate_name} for {round_str}.",
+            is_read=False,
+        )
+        db.add(notification)
+        db.commit()
+    except Exception as e:
+        print(f"Error triggering assignment notification: {e}")
+
     return db_obj
 
 
@@ -57,6 +82,31 @@ def bulk_create_evaluations(
         db.commit()
         for obj in new_objs:
             db.refresh(obj)
+
+        # Trigger evaluation_assigned notifications in bulk
+        try:
+            from app.duplicates.models import AdminNotification
+
+            for obj in new_objs:
+                candidate = db.query(User).filter(User.id == obj.user_id).first()
+                candidate_name = (
+                    candidate.username if candidate else f"Candidate #{obj.user_id}"
+                )
+
+                round_str = (
+                    f"Round-2 ({obj.round_type})" if obj.round_type else "Round-2 (F2F)"
+                )
+                notification = AdminNotification(
+                    type="evaluation_assigned",
+                    user_id=lead_id,
+                    title=f"Interview: {candidate_name}",
+                    message=f"You have been assigned to evaluate {candidate_name} for {round_str}.",
+                    is_read=False,
+                )
+                db.add(notification)
+            db.commit()
+        except Exception as e:
+            print(f"Error triggering bulk assignment notifications: {e}")
 
     return new_objs
 
@@ -136,12 +186,64 @@ def update_evaluation(
 
     db.commit()
     db.refresh(db_obj)
+
+    # Trigger evaluation_submitted notification for Admin (user_id = None)
+    try:
+        from app.duplicates.models import AdminNotification
+
+        lead = db.query(User).filter(User.id == db_obj.project_lead_id).first()
+        lead_name = lead.username if lead else f"Lead #{db_obj.project_lead_id}"
+
+        candidate = db.query(User).filter(User.id == db_obj.user_id).first()
+        candidate_name = (
+            candidate.username if candidate else f"Candidate #{db_obj.user_id}"
+        )
+
+        notification = AdminNotification(
+            type="evaluation_submitted",
+            user_id=None,
+            title="Evaluation Submitted",
+            message=f"Project Lead {lead_name} has submitted evaluation form for {candidate_name}.",
+            is_read=False,
+        )
+        db.add(notification)
+        db.commit()
+    except Exception as e:
+        print(f"Error triggering submission notification: {e}")
+
     return db_obj
 
 
 def delete_evaluation(db: Session, evaluation_id: int):
     db_obj = get_evaluation(db, evaluation_id)
     if db_obj:
+        # Trigger unassigned notification if evaluation is pending
+        if db_obj.status == "pending":
+            try:
+                from app.duplicates.models import AdminNotification
+
+                candidate = db.query(User).filter(User.id == db_obj.user_id).first()
+                candidate_name = (
+                    candidate.username if candidate else f"Candidate #{db_obj.user_id}"
+                )
+
+                round_str = (
+                    f"Round-2 ({db_obj.round_type})"
+                    if db_obj.round_type
+                    else "Round-2 (F2F)"
+                )
+                notification = AdminNotification(
+                    type="evaluation_unassigned",
+                    user_id=db_obj.project_lead_id,
+                    title=f"Unassigned: {candidate_name}",
+                    message=f"You have been unassigned from evaluating {candidate_name} for {round_str}.",
+                    is_read=False,
+                )
+                db.add(notification)
+                db.commit()
+            except Exception as e:
+                print(f"Error triggering unassignment notification: {e}")
+
         db.delete(db_obj)
         db.commit()
     return db_obj

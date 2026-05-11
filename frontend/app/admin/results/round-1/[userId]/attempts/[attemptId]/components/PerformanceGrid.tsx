@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Typography } from "@components/ui-elements/Typography";
+import { STYLE_CONFIG } from "@lib/config/style";
 import React from "react";
 
 interface PerformanceGridProps {
@@ -19,7 +20,7 @@ interface PerformanceGridProps {
 export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
   return (
     <div
-      className={`grid grid-cols-1 md:grid-cols-2 ${scoreStats.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-4`}
+      className={`grid grid-cols-1 md:grid-cols-2 ${scoreStats.length > 3 ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-6`}
     >
       {scoreStats.map((stat, idx) => (
         <motion.div
@@ -28,11 +29,11 @@ export const PerformanceGrid = ({ scoreStats }: PerformanceGridProps) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 * idx }}
           whileHover={{ y: -5 }}
-          className={`group relative overflow-hidden rounded-3xl border ${stat.border} bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none transition-all duration-500 hover:border-brand-primary/30`}
+          className={`group relative overflow-hidden ${STYLE_CONFIG.cardRadius} border ${stat.border} bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none transition-all duration-500 hover:border-brand-primary/30`}
         >
           <div className="relative z-10 flex flex-col gap-4">
             <div
-              className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 border ${stat.border} shadow-inner`}
+              className={`w-12 h-12 ${STYLE_CONFIG.iconRadius} ${stat.bg} ${stat.color} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 border ${stat.border} shadow-inner`}
             >
               {React.isValidElement(stat.icon)
                 ? React.cloneElement(

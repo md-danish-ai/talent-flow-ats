@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@lib/utils";
 import { Typography } from "@components/ui-elements/Typography";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { motion } from "framer-motion";
 
 interface MainCardProps {
@@ -36,7 +37,8 @@ export const MainCard: React.FC<MainCardProps> = ({
         damping: 15,
       }}
       className={cn(
-        "flex flex-col bg-card rounded-xl border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
+        "flex flex-col bg-card border border-border shadow-[0_2px_4px_rgba(0,0,0,0.02),0_1px_0_rgba(0,0,0,0.02)] transition-colors overflow-hidden",
+        STYLE_CONFIG.cardRadius,
         className,
       )}
     >
@@ -66,7 +68,7 @@ export const MainCard: React.FC<MainCardProps> = ({
 
       <div
         className={cn(
-          "flex-1 flex flex-col overflow-hidden rounded-b-xl",
+          "flex-1 flex flex-col overflow-hidden",
           bodyClassName,
           !bodyClassName.includes("p-") && "p-5",
         )}

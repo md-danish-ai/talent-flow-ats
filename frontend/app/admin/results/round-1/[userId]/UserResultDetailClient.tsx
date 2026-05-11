@@ -25,7 +25,8 @@ import {
   type AdminUserAttemptHistoryItem,
   type AdminUserAttemptsResponse,
 } from "@types";
-import { formatDate } from "@lib/utils";
+import { cn, formatDate } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
 import { Tabs } from "@components/ui-elements/Tabs";
@@ -75,6 +76,7 @@ export function UserResultDetailClient({
   const renderAttemptStatusBadge = (attempt: AdminUserAttemptHistoryItem) => (
     <Badge
       variant="outline"
+      shape="square"
       color={
         attempt.status === "started"
           ? "secondary"
@@ -94,7 +96,7 @@ export function UserResultDetailClient({
 
   if (loadingAttempts) {
     return (
-      <PageContainer className="py-6 max-w-7xl mx-auto">
+      <PageContainer className="py-6">
         <UserResultDetailSkeleton />
       </PageContainer>
     );
@@ -102,7 +104,7 @@ export function UserResultDetailClient({
 
   if (error || !attemptData) {
     return (
-      <PageContainer className="py-20 max-w-4xl mx-auto">
+      <PageContainer className="py-20">
         <EmptyState
           icon={UserX}
           title={
@@ -119,7 +121,7 @@ export function UserResultDetailClient({
               variant="outline"
               color="primary"
               onClick={() => window.location.reload()}
-              className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+              className={`px-8 py-6 ${STYLE_CONFIG.buttonRadius} shadow-xl shadow-brand-primary/20`}
               startIcon={<RefreshCcw size={18} />}
               animate="scale"
             >
@@ -129,7 +131,7 @@ export function UserResultDetailClient({
               <Button
                 variant="outline"
                 color="primary"
-                className="px-8 py-6 rounded-2xl shadow-xl shadow-brand-primary/20"
+                className={`px-8 py-6 ${STYLE_CONFIG.buttonRadius} shadow-xl shadow-brand-primary/20`}
                 animate="scale"
               >
                 Go Back to Results
@@ -193,7 +195,7 @@ export function UserResultDetailClient({
   ];
 
   return (
-    <PageContainer className="py-6 space-y-8 max-w-7xl mx-auto">
+    <PageContainer className="py-6 space-y-8">
       {/* Top Navigation & Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -250,9 +252,17 @@ export function UserResultDetailClient({
                 if (!res.ok) throw new Error("PDF failed");
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
+                const formattedDate = new Intl.DateTimeFormat("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+                  .format(new Date())
+                  .replace(/ /g, "-");
+
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `report_${attemptData?.user?.username?.replace(/\s+/g, "_")}_${latest.attempt_id}.pdf`;
+                a.download = `Report_${attemptData?.user?.username?.replace(/\s+/g, "_")}_${formattedDate}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -278,7 +288,12 @@ export function UserResultDetailClient({
       </div>
 
       {/* User Information Profile Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-brand-primary/5 p-6 md:p-8 shadow-sm">
+      <div
+        className={cn(
+          "relative overflow-hidden border border-border bg-gradient-to-br from-card via-card to-brand-primary/5 p-6 md:p-8 shadow-sm",
+          STYLE_CONFIG.cardRadius,
+        )}
+      >
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <User size={120} />
         </div>
@@ -301,7 +316,7 @@ export function UserResultDetailClient({
                 <Typography variant="h3" className="font-bold">
                   {attemptData.user.username}
                 </Typography>
-                <Badge color="success" variant="fill">
+                <Badge color="success" variant="fill" shape="square">
                   Active Candidate
                 </Badge>
               </div>
@@ -318,7 +333,12 @@ export function UserResultDetailClient({
             </div>
 
             <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-2">
-              <div className="px-4 py-2 rounded-2xl bg-muted/40 border border-border/50 backdrop-blur-sm">
+              <div
+                className={cn(
+                  "px-4 py-2 bg-muted/40 border border-border/50 backdrop-blur-sm",
+                  STYLE_CONFIG.innerCardRadius,
+                )}
+              >
                 <Typography
                   variant="body5"
                   className="text-muted-foreground font-medium mb-0.5"
@@ -329,7 +349,12 @@ export function UserResultDetailClient({
                   React Developer
                 </Typography>
               </div>
-              <div className="px-4 py-2 rounded-2xl bg-muted/40 border border-border/50 backdrop-blur-sm">
+              <div
+                className={cn(
+                  "px-4 py-2 bg-muted/40 border border-border/50 backdrop-blur-sm",
+                  STYLE_CONFIG.innerCardRadius,
+                )}
+              >
                 <Typography
                   variant="body5"
                   className="text-muted-foreground font-medium mb-0.5"
@@ -350,11 +375,17 @@ export function UserResultDetailClient({
         {stats.map((stat, idx) => (
           <div
             key={idx}
-            className={`group relative overflow-hidden rounded-2xl border ${stat.border} bg-card p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1`}
+            className={cn(
+              `group relative overflow-hidden border ${stat.border} bg-card p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1`,
+              STYLE_CONFIG.cardRadius,
+            )}
           >
             <div className="relative z-10 flex flex-col gap-4">
               <div
-                className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center transition-transform group-hover:scale-110`}
+                className={cn(
+                  `w-12 h-12 ${stat.bg} ${stat.color} flex items-center justify-center transition-transform group-hover:scale-110`,
+                  STYLE_CONFIG.iconRadius,
+                )}
               >
                 {stat.icon}
               </div>
@@ -399,7 +430,12 @@ export function UserResultDetailClient({
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
+                <div
+                  className={cn(
+                    "p-2.5 bg-brand-primary/10 text-brand-primary shadow-sm",
+                    STYLE_CONFIG.iconRadius,
+                  )}
+                >
                   <History size={20} />
                 </div>
                 <div>
@@ -414,7 +450,9 @@ export function UserResultDetailClient({
                   </Typography>
                 </div>
               </div>
-              <Badge variant="outline">{totalAttempts} Total</Badge>
+              <Badge variant="outline" shape="square">
+                {totalAttempts} Total
+              </Badge>
             </div>
 
             {attemptData.attempts.length === 0 ? (

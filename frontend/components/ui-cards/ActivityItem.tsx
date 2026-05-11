@@ -5,9 +5,10 @@ import { cn } from "@lib/utils";
 interface ActivityItemProps {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  description: React.ReactNode;
   time: string;
   color?: string;
+  bgClassName?: string;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({
   description,
   time,
   color = "text-brand-primary",
+  bgClassName,
   className,
 }) => {
   return (
@@ -28,7 +30,8 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({
     >
       <div
         className={cn(
-          "w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
+          "w-10 h-10 rounded-xl border border-border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-sm",
+          bgClassName || "bg-card",
           color,
         )}
       >

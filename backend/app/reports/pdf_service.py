@@ -7,6 +7,8 @@ so xhtml2pdf renders it cleanly.
 from __future__ import annotations
 
 import io
+import base64
+import os
 from typing import Any
 
 
@@ -121,6 +123,18 @@ def _evaluation_rows_html(eval_data: dict) -> str:
 
 
 def build_report_html(data: dict) -> str:
+    # Dynamically load the cropped logo
+    current_logo_base64 = ""
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(current_dir, "arcgate-orange.png")
+        if os.path.exists(logo_path):
+            with open(logo_path, "rb") as f:
+                encoded_str = base64.b64encode(f.read()).decode("utf-8")
+                current_logo_base64 = f"data:image/png;base64,{encoded_str}"
+    except Exception:
+        pass
+
     edu_rows = _edu_rows_html(data.get("education_rows", []))
     fam_rows = _family_rows_html(data.get("family_rows", []))
     work_rows = _work_rows_html(data.get("work_exp_rows", []))
@@ -128,7 +142,15 @@ def build_report_html(data: dict) -> str:
         data.get("left_col", []), data.get("right_col", [])
     )
     first_eval = data.get("first_evaluation") or {}
-    eval_metrics_rows = _evaluation_rows_html(first_eval.get("evaluation_data") or {})
+    eval_metrics_rows = _evaluation_rows_html(
+        first_eval.get("evaluation_data") or {})
+
+    logo_html = ""
+    if current_logo_base64:
+        # Set nice height for cropped logo
+        logo_html = f'<img src="{current_logo_base64}" style="height: 21px; width: auto; margin-bottom: 0.5px;" />'
+    else:
+        logo_html = '<span style="font-size:10pt; font-weight:900; letter-spacing:1px;">ARCGATE</span>'
 
     return f"""<!DOCTYPE html>
 <html>
@@ -137,7 +159,7 @@ def build_report_html(data: dict) -> str:
 <style>
   @page {{
     size: A4 portrait;
-    margin: 5mm 7mm;
+    margin: 8mm 16mm;
   }}
   body {{
     font-family: Arial, Helvetica, sans-serif;
@@ -168,12 +190,14 @@ def build_report_html(data: dict) -> str:
 <body>
 
 <!-- HEADER -->
-<table style="border:none; margin-bottom:2pt; width: 100%;">
+<table style="border:none; margin-bottom:3pt; width: 100%;">
   <tr>
-    <td style="border:none; font-size:12pt; font-weight:bold; width: 70%;">{_esc(data.get("username", ""))}</td>
-    <td style="border:none; text-align:right; width: 30%;">
-      <span style="font-size:10pt; font-weight:900; letter-spacing:1px;">ARCGATE</span><br/>
-      <span style="font-size:7.5pt; font-weight:bold;">Date: {_esc(data.get("today", ""))}</span>
+    <td style="border:none; font-size:12.5pt; font-weight:bold; width: 70%; vertical-align: bottom; padding-bottom: 2px;">{_esc(data.get("username", ""))}</td>
+    <td style="border:none; text-align:right; width: 30%; vertical-align: bottom;">
+      <div style="display: inline-block; text-align: right;">
+        {logo_html}<br/>
+        <span style="font-size:7.6pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {_esc(data.get("today", ""))}</span>
+      </div>
     </td>
   </tr>
 </table>

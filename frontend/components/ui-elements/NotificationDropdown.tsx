@@ -5,7 +5,10 @@ import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { Bell, UserCheck, UserX, FileCheck, AlertTriangle } from "lucide-react";
+import { NotificationFormatter } from "./NotificationFormatter";
 
+import { markNotificationsRead } from "@lib/api";
 import { type NotificationItem } from "@types";
 
 interface NotificationDropdownProps {
@@ -13,6 +16,7 @@ interface NotificationDropdownProps {
   onToggle: () => void;
   notifications: NotificationItem[];
   unreadCount: number;
+  role?: string;
 }
 
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
@@ -20,6 +24,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onToggle,
   notifications,
   unreadCount,
+  role,
 }) => {
   return (
     <div className="relative">
@@ -94,23 +99,131 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                       className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${
                         !notif.is_read ? "bg-brand-primary/5" : ""
                       }`}
-                      onClick={() => onToggle()} // We'll handle read later or just dismiss
+                      onClick={async () => {
+                        if (!notif.is_read) {
+                          try {
+                            await markNotificationsRead([notif.id]);
+                            window.dispatchEvent(
+                              new CustomEvent("notificationsUpdated"),
+                            );
+                          } catch (error) {
+                            console.error(
+                              "Failed to mark notification as read:",
+                              error,
+                            );
+                          }
+                        }
+                      }}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="mt-1">
-                          <span
-                            className={`block w-2.5 h-2.5 rounded-full ${!notif.is_read ? "bg-brand-primary" : "bg-muted"}`}
-                          />
+                        <div className="flex-shrink-0 mt-0.5">
+                          {(() => {
+                            const t = notif.title?.toLowerCase() || "";
+                            const tp = notif.type?.toLowerCase() || "";
+                            const isRead = notif.is_read;
+
+                            let icon = (
+                              <Bell size={14} className="text-slate-500" />
+                            );
+                            let bgClass =
+                              "bg-slate-100 dark:bg-slate-800 text-slate-500";
+                            let dotBgClass = "bg-slate-500";
+
+                            if (
+                              t.includes("duplicate") ||
+                              tp.includes("duplicate")
+                            ) {
+                              icon = (
+                                <AlertTriangle
+                                  size={14}
+                                  className="text-amber-500"
+                                />
+                              );
+                              bgClass = isRead
+                                ? "bg-amber-500/5 text-amber-500/60"
+                                : "bg-amber-500/10 dark:bg-amber-500/20";
+                              dotBgClass = "bg-amber-500";
+                            } else if (
+                              t.includes("unassigned") ||
+                              tp.includes("unassigned")
+                            ) {
+                              icon = (
+                                <UserX size={14} className="text-red-500" />
+                              );
+                              bgClass = isRead
+                                ? "bg-red-500/5 text-red-500/60"
+                                : "bg-red-500/10 dark:bg-red-500/20";
+                              dotBgClass = "bg-red-500";
+                            } else if (
+                              t.includes("submitted") ||
+                              tp.includes("submitted")
+                            ) {
+                              icon = (
+                                <FileCheck
+                                  size={14}
+                                  className="text-emerald-500"
+                                />
+                              );
+                              bgClass = isRead
+                                ? "bg-emerald-500/5 text-emerald-500/60"
+                                : "bg-emerald-500/10 dark:bg-emerald-500/20";
+                              dotBgClass = "bg-emerald-500";
+                            } else if (
+                              t.includes("interview") ||
+                              t.includes("assigned") ||
+                              tp.includes("assigned")
+                            ) {
+                              icon = (
+                                <UserCheck
+                                  size={14}
+                                  className="text-brand-primary"
+                                />
+                              );
+                              bgClass = isRead
+                                ? "bg-brand-primary/5 text-brand-primary/60"
+                                : "bg-brand-primary/10 dark:bg-brand-primary/20";
+                              dotBgClass = "bg-brand-primary";
+                            }
+
+                            return (
+                              <div
+                                className={`relative flex items-center justify-center w-8 h-8 rounded-full ${bgClass}`}
+                              >
+                                {icon}
+                                {!isRead && (
+                                  <span
+                                    className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${dotBgClass}`}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                         <div className="flex-1 space-y-1">
-                          <Typography variant="body4" weight="bold">
+                          <Typography
+                            variant="body4"
+                            weight="bold"
+                            className={
+                              notif.title?.toLowerCase().includes("duplicate")
+                                ? "text-amber-500 dark:text-amber-400"
+                                : notif.title
+                                      ?.toLowerCase()
+                                      .includes("evaluation")
+                                  ? "text-emerald-500 dark:text-emerald-400"
+                                  : notif.title
+                                        ?.toLowerCase()
+                                        .includes("unassigned")
+                                    ? "text-red-500 dark:text-red-400"
+                                    : ""
+                            }
+                          >
                             {notif.title}
                           </Typography>
                           <Typography
                             variant="body5"
                             className="text-muted-foreground line-clamp-2"
                           >
-                            {notif.message}
+                            <NotificationFormatter message={notif.message} />
                           </Typography>
                           <Typography
                             variant="body5"
@@ -158,7 +271,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
             {notifications.length > 0 && (
               <div className="p-3 border-t border-border bg-muted/30">
-                <Link href="/admin/notifications" passHref>
+                <Link
+                  href={
+                    role === "project_lead"
+                      ? "/project-lead/notifications"
+                      : "/admin/notifications"
+                  }
+                  passHref
+                >
                   <Button
                     variant="ghost"
                     color="primary"

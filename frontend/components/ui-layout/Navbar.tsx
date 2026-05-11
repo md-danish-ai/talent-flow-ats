@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
     };
 
     const fetchNotifications = async () => {
-      if (user?.role !== "admin") return;
+      if (user?.role !== "admin" && user?.role !== "project_lead") return;
       try {
         const res = await getAllNotifications({ limit: 5 });
         setNotifications(res.data);
@@ -113,17 +113,20 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <div ref={notificationsRef}>
-              <NotificationDropdown
-                isOpen={isNotificationsOpen}
-                onToggle={() => {
-                  setIsNotificationsOpen(!isNotificationsOpen);
-                  setIsProfileOpen(false);
-                }}
-                notifications={notifications}
-                unreadCount={unreadCount}
-              />
-            </div>
+            {(user?.role === "admin" || user?.role === "project_lead") && (
+              <div ref={notificationsRef}>
+                <NotificationDropdown
+                  isOpen={isNotificationsOpen}
+                  onToggle={() => {
+                    setIsNotificationsOpen(!isNotificationsOpen);
+                    setIsProfileOpen(false);
+                  }}
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                  role={user?.role}
+                />
+              </div>
+            )}
 
             <div ref={dropdownRef}>
               <ProfileDropdown

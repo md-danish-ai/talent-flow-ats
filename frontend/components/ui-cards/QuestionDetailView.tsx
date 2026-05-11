@@ -28,11 +28,34 @@ import { QUESTION_TYPES } from "@lib/constants/questions";
 
 import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { getCanonicalImageUrl } from "@lib/utils/image";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 /**
  * Clean Border Animation Component
  */
 function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
+  const getRadius = () => {
+    switch (STYLE_CONFIG.cardRadius) {
+      case "rounded-none":
+        return "0px";
+      case "rounded-sm":
+        return "4px";
+      case "rounded-md":
+        return "6px";
+      case "rounded-lg":
+        return "8px";
+      case "rounded-xl":
+        return "12px";
+      case "rounded-2xl":
+        return "16px";
+      case "rounded-3xl":
+        return "24px";
+      default:
+        return "16px";
+    }
+  };
+  const r = getRadius();
+
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible">
       <motion.rect
@@ -40,8 +63,8 @@ function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
         y="0"
         width="100%"
         height="100%"
-        rx="16px"
-        ry="16px"
+        rx={r}
+        ry={r}
         fill="none"
         stroke={color}
         strokeWidth="5"
@@ -89,7 +112,8 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+        "relative border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+        STYLE_CONFIG.cardRadius,
         isHovered && "scale-[1.01] border-brand-primary/30 shadow-2xl",
         className,
       )}
@@ -99,7 +123,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
       <AnimatedBorder color="var(--color-brand-primary)" active={isHovered} />
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-slate-50/50 dark:bg-slate-800/30">
         <div className="flex items-center gap-4">
-          <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
+          <div
+            className={cn(
+              "p-2.5 bg-brand-primary/10 text-brand-primary shadow-sm",
+              STYLE_CONFIG.iconRadius,
+            )}
+          >
             <ListChecks size={20} />
           </div>
           <div>
@@ -128,8 +157,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
       <div className="p-6 space-y-6">
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-3 bg-emerald-50/30 dark:bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10 shadow-sm">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div
+            className={`flex items-center gap-3 bg-emerald-50/30 dark:bg-emerald-500/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 shadow-sm`}
+          >
+            <div
+              className={`p-2 ${STYLE_CONFIG.iconRadius} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400`}
+            >
               <BookOpen size={14} />
             </div>
             <div className="flex flex-col">
@@ -147,8 +180,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               </Typography>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-amber-50/30 dark:bg-amber-500/5 p-3 rounded-xl border border-amber-500/10 shadow-sm">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div
+            className={`flex items-center gap-3 bg-amber-50/30 dark:bg-amber-500/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-amber-500/10 shadow-sm`}
+          >
+            <div
+              className={`p-2 ${STYLE_CONFIG.iconRadius} bg-amber-500/10 text-amber-600 dark:text-amber-400`}
+            >
               <Layers size={14} />
             </div>
             <div className="flex flex-col">
@@ -166,8 +203,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
               </Typography>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-brand-primary/5 p-3 rounded-xl border border-brand-primary/10 shadow-sm">
-            <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
+          <div
+            className={`flex items-center gap-3 bg-brand-primary/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-brand-primary/10 shadow-sm`}
+          >
+            <div
+              className={`p-2 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary`}
+            >
               <Trophy size={14} />
             </div>
             <div className="flex flex-col">
@@ -191,8 +232,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
 
         {/* Passage Content Section */}
         {isPassage && question.passage && (
-          <div className="p-5 pt-7 rounded-2xl bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/passage">
-            <div className="absolute -top-3.5 left-5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/passage:border-brand-primary/30 transition-colors z-20">
+          <div
+            className={`p-5 pt-7 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/passage`}
+          >
+            <div
+              className={`absolute -top-3.5 left-5 px-3 py-1.5 ${STYLE_CONFIG.badgeRadius} bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/passage:border-brand-primary/30 transition-colors z-20`}
+            >
               <FileText size={12} className="text-brand-primary" />
               <Typography
                 variant="body5"
@@ -212,8 +257,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
         )}
 
         {/* Question Header Section */}
-        <div className="p-5 pt-8 rounded-2xl bg-brand-primary/[0.02] border border-brand-primary/10 relative group/ques">
-          <div className="absolute -top-3.5 left-5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/ques:border-brand-primary/30 transition-colors z-20">
+        <div
+          className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.02] border border-brand-primary/10 relative group/ques`}
+        >
+          <div
+            className={`absolute -top-3.5 left-5 px-3 py-1.5 ${STYLE_CONFIG.badgeRadius} bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/ques:border-brand-primary/30 transition-colors z-20`}
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
             <Typography
               variant="body5"
@@ -226,7 +275,7 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           {question.image_url && (
             <div className="mb-5 relative z-10">
               <div
-                className="relative w-full h-[280px] border border-border/40 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-inner group/img cursor-zoom-in"
+                className={`relative w-full h-[280px] border border-border/40 ${STYLE_CONFIG.innerCardRadius} overflow-hidden bg-white dark:bg-slate-900 shadow-inner group/img cursor-zoom-in`}
                 onClick={() =>
                   setPreviewImage({
                     url: question.image_url!,
@@ -269,7 +318,9 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
 
         {/* Options Table for MCQs */}
         {!isSubjective && (
-          <div className="rounded-xl border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm relative z-10">
+          <div
+            className={`border border-border/40 overflow-hidden bg-white dark:bg-slate-900/50 shadow-sm relative z-10 ${STYLE_CONFIG.innerCardRadius}`}
+          >
             {(() => {
               const options = (question.options as QuestionOption[]) || [];
               const hasText = options.some(
@@ -357,7 +408,8 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                         <TableCell className="py-2.5 font-bold text-center">
                           <div
                             className={cn(
-                              "flex items-center justify-center w-7 h-7 rounded-lg mx-auto border",
+                              "flex items-center justify-center w-7 h-7 mx-auto border",
+                              STYLE_CONFIG.iconRadius,
                               opt.is_correct
                                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
                                 : "bg-red-500/10 border-red-500/20 text-red-600",
@@ -392,7 +444,10 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                           <TableCell className="py-2.5">
                             {opt.image_url && (
                               <div
-                                className="relative w-20 h-12 rounded-lg border border-border overflow-hidden bg-white cursor-zoom-in group/opt-img"
+                                className={cn(
+                                  "relative w-20 h-12 border border-border overflow-hidden bg-white cursor-zoom-in group/opt-img",
+                                  STYLE_CONFIG.innerCardRadius,
+                                )}
                                 onClick={() =>
                                   setPreviewImage({
                                     url: opt.image_url!,
@@ -420,8 +475,8 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
                           <Badge
                             variant="outline"
                             color={opt.is_correct ? "success" : "error"}
-                            shape="curve"
-                            className="px-2.5 py-0 font-black text-[10px]"
+                            shape="square"
+                            className="font-black"
                           >
                             {opt.is_correct ? "CORRECT" : "INCORRECT"}
                           </Badge>
@@ -437,8 +492,12 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
 
         {/* Model Answer for Subjective/Passage */}
         {isSubjective && (
-          <div className="p-5 pt-8 rounded-2xl bg-emerald-500/[0.02] border border-emerald-500/10 relative group/ans">
-            <div className="absolute -top-3.5 left-5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/ans:border-emerald-500/30 transition-colors z-20">
+          <div
+            className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-emerald-500/[0.02] border border-emerald-500/10 relative group/ans`}
+          >
+            <div
+              className={`absolute -top-3.5 left-5 px-3 py-1.5 ${STYLE_CONFIG.badgeRadius} bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/ans:border-emerald-500/30 transition-colors z-20`}
+            >
               <CheckCircle2 size={12} className="text-emerald-500" />
               <Typography
                 variant="body5"
@@ -457,15 +516,21 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
           </div>
         )}
 
-        <div className="p-5 pt-8 rounded-2xl bg-brand-primary/[0.02] dark:bg-brand-primary/5 border border-brand-primary/10 relative group/expl">
+        <div
+          className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.02] dark:bg-brand-primary/5 border border-brand-primary/10 relative group/expl`}
+        >
           {/* Decor Trophy Icon clipped by inner wrapper */}
-          <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+          <div
+            className={`absolute inset-0 ${STYLE_CONFIG.innerCardRadius} overflow-hidden pointer-events-none`}
+          >
             <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 opacity-[0.03] text-brand-primary group-hover/expl:scale-110 transition-transform duration-700">
               <Trophy size={100} />
             </div>
           </div>
 
-          <div className="absolute -top-3.5 left-5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/expl:border-brand-primary/30 transition-colors z-20">
+          <div
+            className={`absolute -top-3.5 left-5 px-3 py-1.5 ${STYLE_CONFIG.badgeRadius} bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm group-hover/expl:border-brand-primary/30 transition-colors z-20`}
+          >
             <MessageSquareText size={12} className="text-brand-primary" />
             <Typography
               variant="body5"

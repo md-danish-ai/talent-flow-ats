@@ -12,6 +12,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { STYLE_CONFIG } from "@lib/config/style";
+import { cn } from "@lib/utils";
 
 interface Metric {
   label: string;
@@ -58,56 +60,93 @@ export const ResultCard = ({
   actionLabel,
   actionIcon: ActionIcon,
 }: ResultCardProps) => {
-  // Map status to pillar colors
-  const getPillarColor = (s?: string) => {
+  // Map status to pillar and glowing gradient colors
+  const getPillarConfig = (s?: string) => {
     switch (s?.toLowerCase()) {
       case "submitted":
       case "auto_submitted":
-        return "bg-brand-success shadow-[0_0_10px_rgba(76,175,80,0.3)]";
+        return {
+          bar: "bg-gradient-to-b from-emerald-400 to-teal-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]",
+          glow: "from-emerald-500/10 to-teal-500/5",
+          ring: "ring-emerald-500/20 group-hover:ring-emerald-500/40",
+          text: "text-emerald-500",
+        };
       case "started":
-        return "bg-brand-secondary shadow-[0_0_10px_rgba(33,150,243,0.3)]";
+        return {
+          bar: "bg-gradient-to-b from-blue-400 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+          glow: "from-blue-500/10 to-indigo-500/5",
+          ring: "ring-blue-500/20 group-hover:ring-blue-500/40",
+          text: "text-blue-500",
+        };
       case "not_started":
-        return "bg-brand-warning shadow-[0_0_10px_rgba(255,152,0,0.3)]";
+        return {
+          bar: "bg-gradient-to-b from-amber-400 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]",
+          glow: "from-amber-500/10 to-orange-500/5",
+          ring: "ring-amber-500/20 group-hover:ring-amber-500/40",
+          text: "text-amber-500",
+        };
       case "expired":
       case "system_error":
-        return "bg-red-800 shadow-[0_0_10px_rgba(153,27,27,0.4)]";
+        return {
+          bar: "bg-gradient-to-b from-rose-500 to-red-600 shadow-[0_0_15px_rgba(239,68,68,0.5)]",
+          glow: "from-rose-500/10 to-red-600/5",
+          ring: "ring-rose-500/20 group-hover:ring-rose-500/40",
+          text: "text-rose-500",
+        };
       default:
-        return "bg-border";
+        return {
+          bar: "bg-slate-300 dark:bg-slate-700",
+          glow: "from-slate-500/5 to-slate-600/5",
+          ring: "ring-border",
+          text: "text-muted-foreground",
+        };
     }
   };
 
+  const config = getPillarConfig(status);
+
   return (
-    <div className="group relative flex flex-col gap-6 overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-2 hover:border-brand-primary/50 hover:shadow-2xl hover:shadow-brand-primary/10">
-      {/* Left Side Status Pillar */}
+    <div
+      className={cn(
+        "group relative flex flex-col gap-6 overflow-hidden border border-border bg-white/70 dark:bg-card/70 backdrop-blur-md p-6 md:p-8 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:border-brand-primary/30 hover:shadow-[0_20px_50px_rgba(249,99,49,0.08)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
+      {/* Left Side Dynamic Glowing Status Pillar */}
       <div
-        className={`absolute inset-y-0 left-0 w-1.5 transition-colors duration-300 ${getPillarColor(
-          status,
-        )}`}
+        className={`absolute inset-y-0 left-0 w-[5px] transition-all duration-500 rounded-r-full ${config.bar}`}
       />
 
       {/* Creative Background Glow */}
-      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-brand-primary/5 blur-3xl transition-all group-hover:bg-brand-primary/15" />
+      <div
+        className={`absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gradient-to-br ${config.glow} blur-3xl transition-all duration-700 group-hover:scale-125`}
+      />
 
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         {/* Creative Identity Section */}
         <div className="flex items-center gap-5">
-          <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary/20 via-brand-primary/10 to-transparent text-xl font-black text-brand-primary ring-2 ring-brand-primary/10 transition-all group-hover:ring-brand-primary/30 group-hover:rotate-12">
+          <div className="relative shrink-0">
+            <div
+              className={cn(
+                `flex h-16 w-16 items-center justify-center bg-gradient-to-br from-brand-primary/10 via-brand-primary/5 to-transparent text-xl font-black text-brand-primary ring-2 ${config.ring} transition-all duration-500 group-hover:scale-105 group-hover:rotate-6`,
+                STYLE_CONFIG.innerCardRadius,
+              )}
+            >
               {avatarContent}
             </div>
-            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-card text-brand-primary shadow-sm">
-              <IdentityIcon size={10} />
+            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-xl border border-border bg-white dark:bg-slate-900 text-brand-primary shadow-sm">
+              <IdentityIcon size={12} />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Typography
-              variant="h4"
-              className="text-foreground tracking-tight font-bold"
+              variant="h3"
+              className="text-foreground tracking-tight font-black sm:text-lg"
             >
               {title}
             </Typography>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-muted-foreground">
               {subtitle}
               {metadataBadges}
             </div>
@@ -115,7 +154,7 @@ export const ResultCard = ({
         </div>
 
         {/* Status Badge */}
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-start sm:items-end gap-1 shrink-0">
           {statusBadge ||
             (status && (
               <Badge
@@ -146,7 +185,7 @@ export const ResultCard = ({
                     <AlertCircle size={12} />
                   )
                 }
-                className="px-3 py-0.5 uppercase"
+                className="px-3.5 py-1 uppercase tracking-wider font-black text-[9px] rounded-lg shadow-sm"
               >
                 {status.replace("_", " ")}
               </Badge>
@@ -154,41 +193,41 @@ export const ResultCard = ({
         </div>
       </div>
 
-      {/* Center Section: Special Metadata Row (if any, e.g. Timestamps) */}
-      {/* (Can be expanded if needed, currently keeping it simple for the footer metrics) */}
-
       {/* Performance / Footer Section */}
-      <div className="flex flex-wrap items-center justify-between rounded-xl bg-muted/30 p-4 ring-1 ring-border/50 gap-4">
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          {metrics?.map((metric, idx) => (
-            <React.Fragment key={metric.label}>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                  {metric.label}
-                </span>
-                <div
-                  className={`flex items-center gap-1.5 font-bold ${
-                    metric.color || "text-foreground"
-                  }`}
-                >
-                  <metric.icon size={14} />
-                  <span>{metric.value}</span>
-                </div>
+      <div
+        className={cn(
+          "flex flex-col lg:flex-row lg:items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 p-5 border border-border/40 gap-6 mt-auto",
+          STYLE_CONFIG.innerCardRadius,
+        )}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full lg:w-auto">
+          {metrics?.map((metric) => (
+            <div
+              key={metric.label}
+              className="flex flex-col gap-1 pr-4 border-r-0 sm:border-r border-border/30 last:border-0"
+            >
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                {metric.label}
+              </span>
+              <div
+                className={`flex items-center gap-1.5 font-bold text-sm tracking-tight ${
+                  metric.color || "text-foreground"
+                }`}
+              >
+                <metric.icon size={14} className="opacity-80" />
+                <span className="truncate max-w-[150px]">{metric.value}</span>
               </div>
-              {idx < metrics.length - 1 && (
-                <div className="hidden sm:block h-8 w-px bg-border/60" />
-              )}
-            </React.Fragment>
+            </div>
           ))}
         </div>
 
-        <Link href={actionHref}>
+        <Link href={actionHref} className="shrink-0 w-full lg:w-auto">
           <Button
             size="sm"
             variant="primary"
             shadow
             animate="scale"
-            className="font-bold h-9 bg-brand-primary hover:bg-brand-primary/90"
+            className="font-black h-11 bg-brand-primary hover:bg-brand-primary/95 text-xs w-full lg:w-auto shadow-lg shadow-brand-primary/10"
             endIcon={<ActionIcon size={14} />}
           >
             {actionLabel}

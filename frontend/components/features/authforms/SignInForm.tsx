@@ -119,7 +119,7 @@ export function SignInForm() {
                 variant="h6"
                 className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
-                Email Address (Optional)
+                Email Address
               </Typography>
               <div className="relative">
                 <Input
@@ -144,6 +144,17 @@ export function SignInForm() {
             </div>
           )}
         </form.Field>
+
+        <div className="relative my-2 py-1">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:bg-card dark:text-slate-500">
+              Or
+            </span>
+          </div>
+        </div>
 
         <form.Field name="mobile">
           {(field) => (

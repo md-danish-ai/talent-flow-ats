@@ -2,6 +2,8 @@ import { memo } from "react";
 import { Clock3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@components/ui-elements/Badge";
+import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 import { MainCard } from "@components/ui-cards/MainCard";
 import type { InterviewSection, TimerZone } from "../types";
@@ -62,17 +64,27 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
         ? "text-yellow-500"
         : "text-emerald-500";
 
+  const shadowClass =
+    timerZone === "danger"
+      ? "shadow-[0_20px_50px_rgba(239,68,68,0.22)] hover:shadow-[0_20px_50px_rgba(239,68,68,0.35)]"
+      : timerZone === "warn"
+        ? "shadow-[0_20px_50px_rgba(245,158,11,0.22)] hover:shadow-[0_20px_50px_rgba(245,158,11,0.35)]"
+        : "shadow-[0_20px_50px_rgba(16,185,129,0.15)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.28)]";
+
   return (
     <MainCard title="Exam Progress" bodyClassName="space-y-6">
       {/* Optimized Prominent Timer Display */}
       <div
-        className={`relative overflow-hidden rounded-3xl border transition-all duration-700 p-5 sm:p-8 bg-background shadow-inner border-border/40 ${
+        className={cn(
+          "relative overflow-hidden border transition-all duration-700 p-5 sm:p-8 bg-background border-border/40",
+          STYLE_CONFIG.cardRadius,
+          shadowClass,
           timerZone === "danger"
             ? "ring-2 ring-red-500/20"
             : timerZone === "warn"
               ? "ring-2 ring-yellow-500/20"
-              : "ring-2 ring-emerald-500/10"
-        }`}
+              : "ring-2 ring-emerald-500/10",
+        )}
       >
         <div className="flex flex-col items-center justify-center space-y-4">
           <Typography
@@ -175,9 +187,11 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
               duration: timerZone === "danger" ? 0.5 : 1.2,
               repeat: Infinity,
             }}
-            className={`absolute inset-0 border-4 rounded-3xl pointer-events-none ${
-              timerZone === "danger" ? "border-red-500" : "border-yellow-500"
-            }`}
+            className={cn(
+              "absolute inset-0 border-4 pointer-events-none",
+              STYLE_CONFIG.cardRadius,
+              timerZone === "danger" ? "border-red-500" : "border-yellow-500",
+            )}
           />
         )}
 
@@ -201,28 +215,13 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
 
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            variant="outline"
-            shape="square"
-            color="secondary"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
-          >
+          <Badge variant="outline" shape="square" color="secondary">
             Section {sectionIndex + 1}/{totalSections}
           </Badge>
-          <Badge
-            variant="outline"
-            shape="square"
-            color="primary"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
-          >
+          <Badge variant="outline" shape="square" color="primary">
             {currentSection.title}
           </Badge>
-          <Badge
-            variant="outline"
-            shape="square"
-            color="default"
-            className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-tighter"
-          >
+          <Badge variant="outline" shape="square" color="default">
             {progressPercent}% Complete
           </Badge>
         </div>

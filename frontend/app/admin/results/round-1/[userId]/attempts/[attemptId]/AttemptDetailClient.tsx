@@ -16,6 +16,8 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
+import { GradeBadge } from "@components/ui-elements/GradeBadge";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { resultsApi } from "@lib/api/results";
 import { type AdminUserResultDetail } from "@types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +35,7 @@ import {
   parseQuestionOptions,
 } from "@lib/utils";
 import { getCanonicalImageUrl } from "@lib/utils/image";
+import { getGradeCardStyles } from "@lib/utils/gradeUtils";
 import { Button } from "@components/ui-elements/Button";
 
 interface AttemptDetailClientProps {
@@ -139,7 +142,7 @@ export function AttemptDetailClient({
 
   if (loading) {
     return (
-      <PageContainer className="py-8 max-w-7xl mx-auto">
+      <PageContainer className="py-8">
         <AttemptDetailSkeleton />
       </PageContainer>
     );
@@ -253,7 +256,7 @@ export function AttemptDetailClient({
   ];
 
   return (
-    <PageContainer className="py-8 space-y-10 max-w-7xl mx-auto">
+    <PageContainer className="py-8 space-y-6">
       {/* Dynamic Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -265,7 +268,9 @@ export function AttemptDetailClient({
             href={`/admin/results/round-1/${userId}`}
             className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all mb-4 w-fit"
           >
-            <div className="p-1.5 rounded-xl bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30">
+            <div
+              className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
+            >
               <ArrowLeft size={16} />
             </div>
             <Typography
@@ -289,7 +294,7 @@ export function AttemptDetailClient({
               <div className="absolute -bottom-2 left-0 w-24 h-1.5 bg-brand-primary rounded-full opacity-20" />
             </div>
             <div className="flex flex-col gap-1 sm:ml-4">
-              <Badge color={statusColor} variant="fill">
+              <Badge color={statusColor} variant="fill" shape="square">
                 {data.attempt.status.toUpperCase()}
               </Badge>
             </div>
@@ -315,7 +320,7 @@ export function AttemptDetailClient({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex flex-col lg:flex-row lg:items-center gap-4 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans"
+          className={`flex flex-col lg:flex-row lg:items-center gap-4 bg-card p-5 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans`}
         >
           <div className="flex items-center gap-3 shrink-0">
             <Star size={20} className="text-brand-primary" />
@@ -327,31 +332,14 @@ export function AttemptDetailClient({
             </Typography>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full">
-            {data.grade_settings.map((g, i) => {
-              const gradeCol =
-                g.grade_label.toLowerCase() === "excellent"
-                  ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
-                  : g.grade_label.toLowerCase() === "good"
-                    ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
-                    : g.grade_label.toLowerCase() === "average"
-                      ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
-                      : g.grade_label.toLowerCase() === "poor"
-                        ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
-                        : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
-              return (
-                <div
-                  key={i}
-                  className={`flex-1 min-w-max flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border-2 ${gradeCol} shadow-sm`}
-                >
-                  <span className="font-black text-xs uppercase tracking-widest">
-                    {g.grade_label}
-                  </span>
-                  <span className="font-bold text-xs tracking-wide opacity-90 whitespace-nowrap">
-                    {g.min}% - {g.max}%
-                  </span>
-                </div>
-              );
-            })}
+            {data.grade_settings.map((g, i) => (
+              <GradeBadge
+                key={i}
+                gradeLabel={g.grade_label}
+                value={`${g.min}% - ${g.max}%`}
+                className="flex-1 min-w-max"
+              />
+            ))}
           </div>
         </motion.div>
       )}
@@ -363,9 +351,13 @@ export function AttemptDetailClient({
         transition={{ delay: 0.2 }}
         className="space-y-6"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 rounded-3xl border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none">
+        <div
+          className={`flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none`}
+        >
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner">
+            <div
+              className={`p-3 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner`}
+            >
               <FileCheck2 size={20} />
             </div>
             <div>
@@ -401,189 +393,183 @@ export function AttemptDetailClient({
                 col: "warning" as const,
               },
             ].map((b) => (
-              <Badge key={b.label} color={b.col} variant="outline">
+              <Badge
+                key={b.label}
+                color={b.col}
+                variant="outline"
+                shape="square"
+              >
                 {b.label.toUpperCase()}: {b.val}
               </Badge>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5">
-          {data.subject_results.map((subject, idx) => (
-            <motion.div
-              key={subject.section_name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + idx * 0.1 }}
-              className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/30 dark:shadow-none hover:border-brand-primary/30 transition-all duration-500 scroll-mt-24"
-              id={`section-card-${subject.section_name}`}
-            >
-              <button
-                onClick={() => toggleSection(subject.section_name)}
-                className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
+        <div className="grid grid-cols-1 gap-6">
+          {data.subject_results.map((subject, idx) => {
+            const styles = getGradeCardStyles(subject.grade);
+
+            return (
+              <motion.div
+                key={subject.section_name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + idx * 0.1 }}
+                className={`bg-card border ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-500 scroll-mt-24`}
+                id={`section-card-${subject.section_name}`}
               >
-                <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors duration-500 shadow-inner">
-                      <BookOpen size={20} />
-                    </div>
-                    <div>
-                      <Typography
-                        variant="h4"
-                        className="font-black tracking-tight leading-none mb-1.5"
-                      >
-                        {subject.section_name}
-                      </Typography>
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline">
-                          TOTAL: {subject.total_questions}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-5">
-                  <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
-                    <div className="text-center group-hover:scale-110 transition-transform">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Correct
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-emerald-600 leading-none"
-                      >
-                        {subject.correct_count}
-                      </Typography>
-                    </div>
-                    <div className="text-center group-hover:scale-110 transition-transform delay-75">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Incorrect
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-rose-600 leading-none"
-                      >
-                        {subject.incorrect_count}
-                      </Typography>
-                    </div>
-                    <div className="text-center group-hover:scale-110 transition-transform delay-100">
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                      >
-                        Skipped
-                      </Typography>
-                      <Typography
-                        variant="h4"
-                        className="font-black text-amber-600 leading-none"
-                      >
-                        {subject.unattempted_count}
-                      </Typography>
-                    </div>
-                  </div>
-
-                  {/* Unified Performance & Grade Badge (Matrix Style) */}
-                  {(() => {
-                    const gradeLabel = subject.grade.toLowerCase();
-                    const style =
-                      gradeLabel === "excellent"
-                        ? "text-emerald-700 bg-emerald-500/10 border-emerald-500/30"
-                        : gradeLabel === "good"
-                          ? "text-brand-primary bg-brand-primary/10 border-brand-primary/30"
-                          : gradeLabel === "average"
-                            ? "text-amber-700 bg-amber-500/10 border-amber-500/30"
-                            : gradeLabel === "poor"
-                              ? "text-rose-700 bg-rose-500/10 border-rose-500/30"
-                              : "text-indigo-700 bg-indigo-500/10 border-indigo-500/30";
-
-                    return (
+                <button
+                  onClick={() => toggleSection(subject.section_name)}
+                  className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
+                    <div className="flex items-center gap-4">
                       <div
-                        className={`flex items-center justify-between px-5 py-2.5 rounded-xl border-2 ${style} shadow-sm min-w-[170px] transition-transform duration-300 group-hover:scale-105`}
+                        className={`w-1.5 h-6 rounded-full transition-all duration-500 ${styles.bar}`}
+                      />
+                      <div
+                        className={`p-3 ${STYLE_CONFIG.iconRadius} ${styles.icon} transition-colors duration-500 shadow-inner`}
                       >
-                        <span className="font-black text-xs uppercase tracking-widest leading-none">
-                          {subject.grade}
-                        </span>
-                        <div className="w-1 h-3 rounded-full bg-current opacity-20 mx-3" />
-                        <span className="font-bold text-xs tracking-wide leading-none">
-                          {subject.percentage}%
-                        </span>
+                        <BookOpen size={20} />
                       </div>
-                    );
-                  })()}
-
-                  <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10">
-                    <motion.div
-                      animate={{
-                        rotate:
-                          activeSection === subject.section_name ? 0 : 180,
-                      }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <ChevronUp size={18} />
-                    </motion.div>
-                  </div>
-                </div>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {activeSection === subject.section_name && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
-                      {(answersBySubject[subject.section_name] || []).map(
-                        (item) => (
-                          <QuestionResultCard
-                            key={`${item.answer.question_id}-${item.index}`}
-                            answer={item.answer}
-                            index={item.index}
-                            manualMarksValue={
-                              manualMarks[
-                                `${item.answer.question_id}-${item.index}`
-                              ] ?? ""
-                            }
-                            isManualMarksApplied={
-                              manualMarksApplied[
-                                `${item.answer.question_id}-${item.index}`
-                              ] !== undefined
-                            }
-                            onManualMarksChange={(val) =>
-                              setManualMarks((p) => ({
-                                ...p,
-                                [`${item.answer.question_id}-${item.index}`]:
-                                  val,
-                              }))
-                            }
-                            onManualMarksApply={() =>
-                              handleManualMarksApply(
-                                item.answer.question_id,
-                                item.index,
-                              )
-                            }
-                            getCanonicalImageUrl={getCanonicalImageUrl}
-                            parseQuestionOptions={parseQuestionOptions}
-                            extractOptionKey={extractOptionKey}
-                            normalizeText={normalizeText}
-                          />
-                        ),
-                      )}
+                      <div>
+                        <Typography
+                          variant="h4"
+                          className="font-black tracking-tight leading-none mb-1.5"
+                        >
+                          {subject.section_name}
+                        </Typography>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" shape="square">
+                            TOTAL: {subject.total_questions}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+                  </div>
+
+                  <div className="flex items-center gap-5">
+                    <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
+                      <div className="text-center group-hover:scale-110 transition-transform">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Correct
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-emerald-600 leading-none"
+                        >
+                          {subject.correct_count}
+                        </Typography>
+                      </div>
+                      <div className="text-center group-hover:scale-110 transition-transform delay-75">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Incorrect
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-rose-600 leading-none"
+                        >
+                          {subject.incorrect_count}
+                        </Typography>
+                      </div>
+                      <div className="text-center group-hover:scale-110 transition-transform delay-100">
+                        <Typography
+                          variant="body5"
+                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
+                        >
+                          Skipped
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          className="font-black text-amber-600 leading-none"
+                        >
+                          {subject.unattempted_count}
+                        </Typography>
+                      </div>
+                    </div>
+
+                    {/* Unified Performance & Grade Badge (Matrix Style) */}
+                    <GradeBadge
+                      gradeLabel={subject.grade}
+                      value={`${subject.percentage}%`}
+                      className="min-w-[170px] group-hover:scale-105"
+                    />
+
+                    <div
+                      className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
+                    >
+                      <motion.div
+                        animate={{
+                          rotate:
+                            activeSection === subject.section_name ? 0 : 180,
+                        }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <ChevronUp size={18} />
+                      </motion.div>
+                    </div>
+                  </div>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {activeSection === subject.section_name && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
+                        {(answersBySubject[subject.section_name] || []).map(
+                          (item) => (
+                            <QuestionResultCard
+                              key={`${item.answer.question_id}-${item.index}`}
+                              answer={item.answer}
+                              index={item.index}
+                              manualMarksValue={
+                                manualMarks[
+                                  `${item.answer.question_id}-${item.index}`
+                                ] ?? ""
+                              }
+                              isManualMarksApplied={
+                                manualMarksApplied[
+                                  `${item.answer.question_id}-${item.index}`
+                                ] !== undefined
+                              }
+                              onManualMarksChange={(val) =>
+                                setManualMarks((p) => ({
+                                  ...p,
+                                  [`${item.answer.question_id}-${item.index}`]:
+                                    val,
+                                }))
+                              }
+                              onManualMarksApply={() =>
+                                handleManualMarksApply(
+                                  item.answer.question_id,
+                                  item.index,
+                                )
+                              }
+                              getCanonicalImageUrl={getCanonicalImageUrl}
+                              parseQuestionOptions={parseQuestionOptions}
+                              extractOptionKey={extractOptionKey}
+                              normalizeText={normalizeText}
+                            />
+                          ),
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </PageContainer>

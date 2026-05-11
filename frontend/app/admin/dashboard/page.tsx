@@ -16,6 +16,9 @@ import {
   Target,
   UserX,
   ArrowRight,
+  AlertTriangle,
+  FileCheck,
+  UserCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
@@ -33,6 +36,7 @@ import { InsightCard } from "@components/ui-cards/InsightCard";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { Button } from "@components/ui-elements/Button";
 import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
 
 // Types for better safety
 interface DashboardNotification {
@@ -346,31 +350,67 @@ export default function DashboardPage() {
                       animate="visible"
                       className="space-y-1"
                     >
-                      {notifications.slice(0, 3).map((notif) => (
-                        <motion.div key={notif.id} variants={itemVariants}>
-                          <ActivityItem
-                            icon={
-                              notif.type === "duplicate_user" ? (
-                                <UserPlus size={18} />
-                              ) : (
-                                <FileText size={18} />
-                              )
-                            }
-                            title={notif.title}
-                            description={notif.message}
-                            time={formatDistanceToNow(
-                              new Date(notif.created_at),
-                              { addSuffix: true },
-                            )}
-                            color={
-                              notif.type === "duplicate_user"
-                                ? "text-rose-500"
-                                : "text-blue-500"
-                            }
-                            className="p-3"
-                          />
-                        </motion.div>
-                      ))}
+                      {notifications.slice(0, 3).map((notif) => {
+                        const t = notif.title?.toLowerCase() || "";
+                        const tp = notif.type?.toLowerCase() || "";
+
+                        let icon = <Bell size={18} />;
+                        let colorClass = "text-slate-500";
+                        let bgClass = "bg-slate-500/10 dark:bg-slate-500/20";
+
+                        if (
+                          t.includes("duplicate") ||
+                          tp.includes("duplicate")
+                        ) {
+                          icon = <AlertTriangle size={18} />;
+                          colorClass = "text-amber-500";
+                          bgClass = "bg-amber-500/10 dark:bg-amber-500/20";
+                        } else if (
+                          t.includes("unassigned") ||
+                          tp.includes("unassigned")
+                        ) {
+                          icon = <UserX size={18} />;
+                          colorClass = "text-red-500";
+                          bgClass = "bg-red-500/10 dark:bg-red-500/20";
+                        } else if (
+                          t.includes("submitted") ||
+                          tp.includes("submitted")
+                        ) {
+                          icon = <FileCheck size={18} />;
+                          colorClass = "text-emerald-500";
+                          bgClass = "bg-emerald-500/10 dark:bg-emerald-500/20";
+                        } else if (
+                          t.includes("interview") ||
+                          t.includes("assigned") ||
+                          tp.includes("assigned")
+                        ) {
+                          icon = <UserCheck size={18} />;
+                          colorClass = "text-brand-primary";
+                          bgClass =
+                            "bg-brand-primary/10 dark:bg-brand-primary/20";
+                        }
+
+                        return (
+                          <motion.div key={notif.id} variants={itemVariants}>
+                            <ActivityItem
+                              icon={icon}
+                              title={notif.title}
+                              description={
+                                <NotificationFormatter
+                                  message={notif.message}
+                                />
+                              }
+                              time={formatDistanceToNow(
+                                new Date(notif.created_at),
+                                { addSuffix: true },
+                              )}
+                              color={colorClass}
+                              bgClassName={bgClass}
+                              className="p-3"
+                            />
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </div>

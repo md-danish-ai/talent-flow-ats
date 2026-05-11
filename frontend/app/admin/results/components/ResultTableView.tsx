@@ -60,9 +60,17 @@ async function downloadReportPdf(
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
+  const formattedDate = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
+    .format(new Date())
+    .replace(/ /g, "-");
+
   const a = document.createElement("a");
   a.href = url;
-  a.download = `report_${username.replace(/\s+/g, "_")}_${attemptId}.pdf`;
+  a.download = `Report_${username.replace(/\s+/g, "_")}_${formattedDate}.pdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -110,6 +118,7 @@ import { Checkbox } from "@components/ui-elements/Checkbox";
 import { UserCheck, UserPlus } from "lucide-react";
 import { Button } from "@components/ui-elements/Button";
 import { AssignLeadModal } from "./AssignLeadModal";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -544,7 +553,7 @@ export function ResultTableView({
                           <Tooltip
                             content={
                               <div className="flex flex-col gap-2 p-1 min-w-[140px]">
-                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 border-b border-white/10 pb-1">
+                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1 border-b border-border dark:border-white/10 pb-1">
                                   Full Panel
                                 </div>
                                 {latest.interviewers.map((lead, idx) => (
@@ -560,14 +569,14 @@ export function ResultTableView({
                                       />
                                       <div
                                         className={cn(
-                                          "absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-slate-900",
+                                          "absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-white dark:border-slate-900",
                                           lead.status === "completed"
                                             ? "bg-emerald-500"
                                             : "bg-amber-500",
                                         )}
                                       />
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-200 uppercase tracking-tight">
+                                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
                                       {lead.name}
                                     </span>
                                   </div>
@@ -684,20 +693,28 @@ export function ResultTableView({
 
       {selectedItems.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-slate-900 dark:bg-slate-800 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-xl">
+          <div
+            className={cn(
+              "bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center gap-6 border border-border dark:border-white/10 backdrop-blur-xl",
+              STYLE_CONFIG.cardRadius,
+            )}
+          >
             <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 Bulk Actions
               </span>
-              <span className="text-sm font-bold">
+              <span className="text-sm font-black tracking-tight">
                 {selectedItems.length} Candidates Selected
               </span>
             </div>
-            <div className="h-8 w-px bg-white/10" />
+            <div className="h-8 w-px bg-border dark:bg-white/10" />
             <Button
               color="primary"
-              size="sm"
-              className="rounded-xl px-4 py-2 flex items-center gap-2"
+              size="md"
+              className={cn(
+                "px-4 py-2.5 flex items-center gap-2 font-black text-xs uppercase tracking-wider",
+              )}
+              animate="scale"
               onClick={() =>
                 setAssignModal({
                   isOpen: true,
@@ -708,15 +725,19 @@ export function ResultTableView({
                 })
               }
             >
-              <UserCheck size={16} />
+              <UserCheck size={14} />
               Assign Project Lead
             </Button>
-            <button
+            <Button
+              variant="outline"
+              color="error"
+              size="md"
               onClick={() => setSelectedItems([])}
-              className="text-xs font-bold text-slate-400 hover:text-white transition-colors"
+              className={cn("font-black text-xs uppercase tracking-wider")}
+              animate="scale"
             >
               Clear
-            </button>
+            </Button>
           </div>
         </div>
       )}

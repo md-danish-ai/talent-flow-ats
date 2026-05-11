@@ -2,6 +2,7 @@ import React from "react";
 import { InsightCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface InsightCardProps {
   label: string;
@@ -30,7 +31,8 @@ export const InsightCard: React.FC<InsightCardProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        "relative p-6 rounded-[24px] border border-border/80 transition-all duration-300 bg-card hover:border-brand-primary/30 group overflow-hidden flex items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]",
+        "relative p-6 border border-border/80 transition-all duration-300 bg-card hover:border-brand-primary/30 group overflow-hidden flex items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]",
+        STYLE_CONFIG.cardRadius,
         borderColor.replace("border-", "hover:border-"),
         onClick && "cursor-pointer",
       )}
@@ -38,7 +40,8 @@ export const InsightCard: React.FC<InsightCardProps> = ({
       {/* Icon Box */}
       <div
         className={cn(
-          "w-16 h-16 rounded-[20px] shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-muted/50 shrink-0",
+          "w-16 h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-muted/50 shrink-0",
+          STYLE_CONFIG.iconRadius,
           bgColor,
         )}
       >

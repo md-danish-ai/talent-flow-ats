@@ -87,6 +87,12 @@ def signup_user(data):
 def signin_user(data):
     db_session = SessionLocal()
     try:
+        if not data.mobile and not data.email:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Please provide either an email or a mobile number to sign in.",
+            )
+
         user = None
         # 1. Primary Lookups
         if data.mobile:
