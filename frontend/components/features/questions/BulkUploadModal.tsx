@@ -338,7 +338,7 @@ export function BulkUploadModal({
                     <FileUp size={32} />
                   </div>
                   <div>
-                    <p className="font-bold text-foreground truncate max-w-[180px]">
+                    <p className="font-bold text-foreground text-sm break-all px-2">
                       {formData.file.name}
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -392,7 +392,7 @@ export function BulkUploadModal({
                       <FileUp size={32} />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground truncate max-w-[180px]">
+                      <p className="font-bold text-foreground text-sm break-all px-2">
                         {formData.zipFile.name}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
