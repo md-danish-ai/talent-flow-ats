@@ -150,7 +150,7 @@ export const NotificationRow = React.memo<NotificationRowProps>(
         {!isProjectLead && (
           <TableCell className="text-center">
             <div className="flex justify-center items-center flex-wrap gap-2">
-              {notif.match_details && (
+              {notif.match_details ? (
                 <Button
                   variant="ghost"
                   color="default"
@@ -171,6 +171,13 @@ export const NotificationRow = React.memo<NotificationRowProps>(
                     }`}
                   />
                 </Button>
+              ) : (
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground font-medium whitespace-nowrap"
+                >
+                  No Action Needed
+                </Typography>
               )}
             </div>
           </TableCell>
