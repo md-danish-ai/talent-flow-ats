@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { NAV_ACTIVE, NAV_IDLE } from "./styles";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
+import { Typography } from "@components/ui-elements/Typography";
 
 interface NavSubItemProps {
   label: string;
@@ -43,7 +44,15 @@ export const NavSubItem: React.FC<NavSubItemProps> = ({
             : "bg-slate-300 dark:bg-slate-700 group-hover/item:bg-brand-primary"
         }`}
       />
-      <span className="relative z-10 truncate">{label}</span>
+      <Typography
+        variant="body4"
+        weight="semibold"
+        as="span"
+        color="inherit"
+        className="relative z-10 truncate tracking-wider"
+      >
+        {label}
+      </Typography>
 
       <RippleContainer
         ripples={ripples}
