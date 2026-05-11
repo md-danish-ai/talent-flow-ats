@@ -58,10 +58,10 @@ def seed_papers():
 
         # 6. 4 पेपर्स बनाना (Subjects Distribution)
         paper_data = [
-            {"name": "KPO Standard Paper A", "start": 0, "end": 4},
-            {"name": "KPO Standard Paper B", "start": 4, "end": 8},
-            {"name": "KPO Standard Paper C", "start": 8, "end": 12},
-            {"name": "KPO Standard Paper D", "start": 12, "end": 14},
+            {"name": "KPO Core Assessment - Set 1", "start": 0, "end": 4},
+            {"name": "KPO Core Assessment - Set 2", "start": 4, "end": 8},
+            {"name": "KPO Core Assessment - Set 3", "start": 8, "end": 12},
+            {"name": "KPO Core Assessment - Set 4", "start": 12, "end": 14},
         ]
         
         for config in paper_data:
@@ -124,9 +124,9 @@ def seed_papers():
 
         # 7. Create 3 custom uniquely-named papers with exactly 2 questions of 5 marks per subject
         custom_paper_names = [
-            "KPO Premier Comprehensive Paper X",
-            "KPO Elite Assessment Paper Y",
-            "KPO Ultimate Evaluation Paper Z"
+            "KPO Comprehensive Master Evaluation",
+            "KPO Elite Proficiency Benchmark",
+            "KPO Premium Capability Assessment"
         ]
 
         # Let's filter questions of exactly 5 marks grouped by subject
