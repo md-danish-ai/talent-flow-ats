@@ -130,7 +130,6 @@ export function MCQClient({
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
@@ -142,6 +141,7 @@ export function MCQClient({
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -292,13 +292,11 @@ export function MCQClient({
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableHead>Created By</TableHead>
-                    )}
+
                     {visibleColumns.includes("createdDate") && (
                       <TableHead>Created Date</TableHead>
                     )}

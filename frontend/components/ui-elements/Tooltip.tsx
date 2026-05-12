@@ -118,7 +118,7 @@ export function Tooltip({
                   ...sideOriginMap[side],
                 }}
                 className={cn(
-                  "min-w-[max-content] max-w-[400px] rounded-xl px-3 py-2 text-[10px] font-bold text-slate-800 dark:text-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-2xl border border-border dark:border-white/10 backdrop-blur-md bg-white/95 dark:bg-slate-900/90 pointer-events-none ring-1 ring-black/5 dark:ring-white/5 whitespace-normal",
+                  "min-w-[max-content] max-w-[250px] rounded-xl px-3 py-2 text-[10px] font-bold text-slate-800 dark:text-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-2xl border border-border dark:border-white/10 backdrop-blur-md bg-white/95 dark:bg-slate-900/90 pointer-events-none ring-1 ring-black/5 dark:ring-white/5 whitespace-normal",
                   className,
                 )}
               >

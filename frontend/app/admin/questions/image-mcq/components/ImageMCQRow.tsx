@@ -139,17 +139,13 @@ export const ImageMCQRow: React.FC<ImageMCQRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("marks") && (
-        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
+        <TableCell className="text-left font-bold text-slate-600 dark:text-slate-300">
           <Badge color="primary" variant="outline" shape="square">
             {row.marks || "0"}
           </Badge>
         </TableCell>
       )}
-      {visibleColumns.includes("createdBy") && (
-        <TableCell className="text-muted-foreground/70 font-medium italic text-[13px]">
-          {"System"}
-        </TableCell>
-      )}
+
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
           {row.created_at ? formatDate(row.created_at) : "N/A"}

@@ -59,7 +59,7 @@ export const SubjectiveRow: React.FC<SubjectiveRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[400px]">
+        <TableCell className="max-w-[250px]">
           <Typography
             variant="body4"
             weight="semibold"
@@ -96,7 +96,7 @@ export const SubjectiveRow: React.FC<SubjectiveRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("marks") && (
-        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
+        <TableCell className="text-left font-bold text-slate-600 dark:text-slate-300">
           <Badge color="primary" variant="outline" shape="square">
             {row.marks || "0"}
           </Badge>

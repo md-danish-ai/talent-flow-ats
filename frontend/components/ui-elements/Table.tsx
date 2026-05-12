@@ -2,11 +2,19 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Eye, LayoutGrid, RotateCcw, Check } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  LayoutGrid,
+  RotateCcw,
+  Check,
+  Pin,
+} from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Typography } from "./Typography";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 export const Table = React.forwardRef<
   HTMLTableElement,
@@ -136,7 +144,7 @@ export function TableColumnToggle({
       if (rect) {
         setPos({
           top: rect.bottom + window.scrollY + 12,
-          left: rect.right - 288, // w-72 is 288px
+          left: rect.right - 500, // Matching width of container 500px
         });
       }
     }
@@ -157,9 +165,9 @@ export function TableColumnToggle({
     <AnimatePresence>
       {isOpen && pos && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }}
-          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, scale: 0.98, filter: "blur(4px)" }}
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.98 }}
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
           style={{
             position: "absolute",
@@ -167,26 +175,32 @@ export function TableColumnToggle({
             left: pos.left,
             zIndex: 9999,
           }}
-          className="w-72 overflow-hidden rounded-[2rem] border border-white/20 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+          className={cn(
+            "w-[500px] border border-border/50 bg-card/95 backdrop-blur-xl p-4 shadow-2xl dark:shadow-slate-950/80",
+            STYLE_CONFIG.cardRadius,
+          )}
         >
-          <div className="flex items-center justify-between mb-3 px-3 py-2">
-            <Typography
-              variant="body5"
-              weight="black"
-              className="text-slate-400 uppercase tracking-[0.15em] text-[10px]"
-            >
-              Active Grid Layout
-            </Typography>
-            <button
+          <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex flex-col">
+              <Typography variant="body3" weight="bold">
+                Manage Grid Columns
+              </Typography>
+              <Typography variant="body5" className="text-muted-foreground">
+                Enable or disable visible metrics
+              </Typography>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleReset}
-              className="text-[10px] uppercase font-black text-brand-primary hover:opacity-70 transition-opacity flex items-center gap-1"
+              className="h-8 text-[11px] uppercase font-bold tracking-wider gap-1.5 rounded-xl"
             >
-              <RotateCcw size={10} />
-              Reset
-            </button>
+              <RotateCcw size={12} />
+              Default View
+            </Button>
           </div>
 
-          <div className="max-h-[350px] overflow-y-auto pr-1 space-y-1 custom-scrollbar">
+          <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
             {columns.map((col) => {
               const isActive = visibleColumns.includes(col.id);
               const isPinned = col.pinned;
@@ -196,78 +210,59 @@ export function TableColumnToggle({
                   disabled={isPinned}
                   onClick={() => !isPinned && onToggle(col.id)}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-300 group relative overflow-hidden",
-                    isActive
-                      ? "bg-gradient-to-r from-brand-primary/10 to-transparent text-foreground"
-                      : "text-muted-foreground/40 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 grayscale",
-                    isPinned && "opacity-60 cursor-not-allowed",
+                    "flex items-center gap-3 p-2.5 text-left transition-all duration-200 border group relative",
+                    STYLE_CONFIG.buttonRadius,
+                    isPinned
+                      ? "bg-slate-50/80 dark:bg-slate-800/30 border-slate-200/60 dark:border-slate-700/60 text-foreground cursor-default shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      : isActive
+                        ? "bg-brand-primary/[0.03] border-brand-primary/20 text-foreground shadow-sm"
+                        : "bg-muted/10 border-transparent text-muted-foreground/60 hover:bg-muted/30 hover:border-muted-foreground/10",
                   )}
                 >
-                  <div className="flex items-center gap-4 relative z-10">
-                    <div
-                      className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-lg transition-all duration-500 border-2",
-                        isActive
-                          ? "bg-brand-primary border-brand-primary shadow-[0_4px_12px_rgba(249,99,49,0.3)] scale-110"
-                          : "border-slate-200 dark:border-slate-800 group-hover:border-brand-primary/40 rotate-[-15deg]",
-                        isPinned &&
-                          "bg-slate-400 border-slate-400 shadow-none scale-100 rotate-0",
-                      )}
-                    >
-                      {isActive ? (
-                        <motion.div
-                          initial={{ scale: 0, rotate: -45 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: "spring", damping: 12 }}
-                        >
-                          <Check
-                            className="h-4 w-4 text-white"
-                            strokeWidth={4}
-                          />
-                        </motion.div>
-                      ) : (
-                        <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                      )}
-                    </div>
-
-                    <div className="flex flex-col">
-                      <Typography
-                        variant="body4"
-                        weight={isActive ? "bold" : "semibold"}
-                        className="leading-none mb-0.5"
-                      >
-                        {col.label}
-                        {isPinned && (
-                          <span className="ml-2 text-[8px] uppercase font-black text-slate-400">
-                            (Required)
-                          </span>
-                        )}
-                      </Typography>
-                      <span className="text-[9px] uppercase font-bold opacity-30 tracking-widest">
-                        Column ID: {col.id}
-                      </span>
-                    </div>
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border transition-all duration-300",
+                      isPinned
+                        ? "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-500 shadow-sm"
+                        : isActive
+                          ? "bg-brand-primary border-brand-primary text-white shadow-sm shadow-brand-primary/20"
+                          : "bg-background border-border text-muted-foreground/40 group-hover:border-brand-primary/40 group-hover:text-brand-primary/70",
+                    )}
+                  >
+                    {isPinned ? (
+                      <Pin size={12} className="rotate-45 fill-current" />
+                    ) : isActive ? (
+                      <Check size={14} strokeWidth={3} />
+                    ) : (
+                      <Eye
+                        size={12}
+                        className="transition-colors fill-current opacity-30 group-hover:opacity-100"
+                      />
+                    )}
                   </div>
 
-                  {!isActive && !isPinned && (
-                    <Eye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10 text-foreground" />
-                  )}
-
-                  {isActive && (
-                    <div
+                  <div className="min-w-0 flex-1 flex flex-col justify-center">
+                    <Typography
+                      variant="body5"
+                      weight={isActive || isPinned ? "bold" : "medium"}
                       className={cn(
-                        "absolute left-0 top-0 bottom-0 w-1 rounded-full my-3",
-                        isPinned ? "bg-slate-300" : "bg-brand-primary",
+                        "truncate leading-tight flex items-center gap-1.5",
+                        isActive || isPinned
+                          ? "text-foreground"
+                          : "text-muted-foreground/80",
                       )}
-                    />
-                  )}
+                    >
+                      {col.label}
+                    </Typography>
+                    {isPinned && (
+                      <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none mt-1">
+                        Pinned Column
+                      </div>
+                    )}
+                  </div>
                 </button>
               );
             })}
-          </div>
-
-          <div className="mt-4 px-4 pt-3 border-t border-border/40 text-[9px] font-bold text-slate-400 italic">
-            Toggle columns to optimize your workspace density.
           </div>
         </motion.div>
       )}

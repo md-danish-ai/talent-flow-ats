@@ -462,7 +462,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                     <TableCell className="text-center font-bold text-slate-400 pl-8">
                                       {String(qIndex + 1).padStart(2, "0")}
                                     </TableCell>
-                                    <TableCell className="max-w-[400px]">
+                                    <TableCell className="max-w-[250px]">
                                       <Typography
                                         variant="body5"
                                         weight="bold"
