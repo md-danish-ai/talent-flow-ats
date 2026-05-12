@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
+import { Eraser } from "lucide-react";
+import { Tooltip } from "@components/ui-elements/Tooltip";
 
 import {
   type PersonalDetailsForm,
@@ -35,26 +37,29 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
               <th className="p-3 font-semibold text-sm w-[12%] border-r border-[#ffffff40]">
                 Education
               </th>
-              <th className="p-3 font-semibold text-sm w-[15%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[14%] border-r border-[#ffffff40]">
                 Education Details
               </th>
-              <th className="p-3 font-semibold text-sm w-[18%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[17%] border-r border-[#ffffff40]">
                 School/College
               </th>
-              <th className="p-3 font-semibold text-sm w-[18%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[17%] border-r border-[#ffffff40]">
                 Board/University
               </th>
-              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
-                Year of Passing
+              <th className="p-3 font-semibold text-sm w-[7%] border-r border-[#ffffff40]">
+                Year
               </th>
-              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
-                Division
+              <th className="p-3 font-semibold text-sm w-[7%] border-r border-[#ffffff40]">
+                Div
               </th>
-              <th className="p-3 font-semibold text-sm w-[8%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[7%] border-r border-[#ffffff40]">
                 %
               </th>
-              <th className="p-3 font-semibold text-sm w-[13%] text-center">
+              <th className="p-3 font-semibold text-sm w-[13%] border-r border-[#ffffff40] text-center">
                 Medium
+              </th>
+              <th className="p-3 font-semibold text-sm w-[6%] text-center">
+                Action
               </th>
             </tr>
           </thead>
@@ -239,7 +244,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         )}
                       </form.Field>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3 text-center border-r border-border">
                       <div className="flex justify-center flex-col xl:flex-row gap-2">
                         <form.Field name={`education[${index}].medium`}>
                           {(field) => (
@@ -266,6 +271,113 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           )}
                         </form.Field>
                       </div>
+                    </td>
+                    <td className="p-2 text-center">
+                      <Tooltip
+                        content={
+                          item.type === "10th Std" || item.type === "12th Std"
+                            ? "Required Row"
+                            : "Clear Row"
+                        }
+                        side="top"
+                      >
+                        <button
+                          type="button"
+                          disabled={
+                            item.type === "10th Std" || item.type === "12th Std"
+                          }
+                          onClick={() => {
+                            form.setFieldValue(
+                              `education[${index}].details`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `education[${index}].details`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `education[${index}].school`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `education[${index}].school`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(`education[${index}].board`, "");
+                            form.setFieldMeta(
+                              `education[${index}].board`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(`education[${index}].year`, "");
+                            form.setFieldMeta(
+                              `education[${index}].year`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `education[${index}].division`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `education[${index}].division`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `education[${index}].percentage`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `education[${index}].percentage`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `education[${index}].medium`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `education[${index}].medium`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+                          }}
+                          className="p-2 text-gray-400 hover:text-brand-primary transition-colors rounded-full hover:bg-brand-primary/10 flex items-center justify-center mx-auto disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                          aria-label="Clear row"
+                        >
+                          <Eraser className="w-4 h-4" />
+                        </button>
+                      </Tooltip>
                     </td>
                   </tr>
                 ))

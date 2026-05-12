@@ -89,7 +89,7 @@ function DownloadButton({
   const [loading, setLoading] = useLocalState(false);
   return (
     <TableIconButton
-      iconColor="brand"
+      iconColor="violet"
       animate="scale"
       title="Download Report Sheet"
       onClick={async (e) => {
@@ -609,7 +609,7 @@ export function ResultTableView({
                                 {latest.interviewers.length > 1 && (
                                   <Badge
                                     variant="outline"
-                                    color="default"
+                                    color="secondary"
                                     shape="square"
                                   >
                                     +{latest.interviewers.length - 1}
@@ -674,7 +674,7 @@ export function ResultTableView({
                         )}
                         <Link href={detailHref}>
                           <TableIconButton
-                            iconColor="brand"
+                            iconColor="orange"
                             animate="scale"
                             title="View Result"
                           >

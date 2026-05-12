@@ -97,8 +97,10 @@ export const familyMemberSchema = z
     const hasDetails =
       data.name.trim() !== "" ||
       data.occupation.trim() !== "" ||
-      data.dependent.trim() !== "" ||
-      (data.relationLabel === "Brother/Sister" && data.relation.trim() !== "");
+      data.dependent === "Yes" ||
+      data.dependent === "No" ||
+      (data.relationLabel === "Brother/Sister" &&
+        (data.relation === "Brother" || data.relation === "Sister"));
 
     if (isMandatory || hasDetails) {
       if (

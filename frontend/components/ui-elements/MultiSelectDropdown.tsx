@@ -48,6 +48,8 @@ export function MultiSelectDropdown({
     width: 0,
     height: 0,
   });
+  const [maxMenuHeight, setMaxMenuHeight] = useState(320);
+  const [computedPlacement, setComputedPlacement] = useState(placement);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -77,6 +79,24 @@ export function MultiSelectDropdown({
         width: rect.width,
         height: rect.height,
       });
+
+      // Calculate optimal placement and max height based on visual viewport
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom - 40;
+      const spaceAbove = rect.top - 40;
+
+      // If user specified something, we respect it, otherwise try bottom then flip if no space
+      let finalPlacement = placement;
+      if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+        // Flip to top if bottom space is too small and above is bigger
+        finalPlacement = "top";
+      }
+
+      setComputedPlacement(finalPlacement);
+
+      const maxAllowed = finalPlacement === "bottom" ? spaceBelow : spaceAbove;
+      // Ensure it's between 150px minimum and standard 320px maximum
+      setMaxMenuHeight(Math.min(320, Math.max(150, maxAllowed)));
     }
   };
 
@@ -121,30 +141,38 @@ export function MultiSelectDropdown({
           style={{
             position: "absolute",
             top:
-              placement === "top"
+              computedPlacement === "top"
                 ? coords.top - 8
                 : coords.top + coords.height + 8,
             left: coords.left,
             width: Math.max(coords.width, 280),
             zIndex: 10000,
-            transform: placement === "top" ? "translateY(-100%)" : "none",
+            transform:
+              computedPlacement === "top" ? "translateY(-100%)" : "none",
           }}
         >
           <motion.div
             initial={{
               opacity: 0,
-              y: placement === "top" ? 4 : -4,
+              y: computedPlacement === "top" ? 4 : -4,
               scale: 0.98,
             }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: placement === "top" ? 4 : -4, scale: 0.98 }}
+            exit={{
+              opacity: 0,
+              y: computedPlacement === "top" ? 4 : -4,
+              scale: 0.98,
+            }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
               "overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-2xl transition-colors",
             )}
             ref={dropdownRef}
           >
-            <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
+            <div
+              className="overflow-y-auto custom-scrollbar"
+              style={{ maxHeight: `${maxMenuHeight}px` }}
+            >
               {isLoading ? (
                 <div className="flex items-center justify-center py-4 px-4 gap-3">
                   <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
@@ -237,7 +265,7 @@ export function MultiSelectDropdown({
             "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
-        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 py-1">
+        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0 py-1 max-h-[120px] overflow-y-auto custom-scrollbar">
           {selectedOptions.length > 0 ? (
             selectedOptions.map((opt) => (
               <div

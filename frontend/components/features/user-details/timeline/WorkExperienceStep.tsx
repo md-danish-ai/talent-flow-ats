@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
+import { DatePicker } from "@components/ui-elements/DatePicker";
 
 import {
   type PersonalDetailsForm,
@@ -124,18 +125,17 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <form.Field name={`workExp[${index}].joinDate`}>
                         {(field) => (
                           <div className="flex flex-col">
-                            <Input
-                              type="date"
+                            <DatePicker
                               value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
+                              onChange={(date) => field.handleChange(date)}
                               onBlur={field.handleBlur}
-                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                              className="h-12 min-h-0 bg-transparent border-transparent hover:border-border px-2 gap-2 !text-[11px] shadow-none rounded-none"
                               error={
                                 field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0
                               }
+                              placeholder="Select Date"
+                              disableFuture
                             />
                             {field.state.meta.isTouched &&
                               field.state.meta.errors.length > 0 && (
@@ -151,18 +151,17 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <form.Field name={`workExp[${index}].relieveDate`}>
                         {(field) => (
                           <div className="flex flex-col">
-                            <Input
-                              type="date"
+                            <DatePicker
                               value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
+                              onChange={(date) => field.handleChange(date)}
                               onBlur={field.handleBlur}
-                              className="h-12 border-transparent bg-transparent hover:border-border focus:bg-input text-xs [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                              className="h-12 min-h-0 bg-transparent border-transparent hover:border-border px-2 gap-2 !text-[11px] shadow-none rounded-none"
                               error={
                                 field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0
                               }
+                              placeholder="Select Date"
+                              disableFuture
                             />
                             {field.state.meta.isTouched &&
                               field.state.meta.errors.length > 0 && (
