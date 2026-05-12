@@ -79,21 +79,21 @@ export function MultiSelectDropdown({
         width: rect.width,
         height: rect.height,
       });
-      
+
       // Calculate optimal placement and max height based on visual viewport
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom - 40;
       const spaceAbove = rect.top - 40;
-      
+
       // If user specified something, we respect it, otherwise try bottom then flip if no space
       let finalPlacement = placement;
       if (spaceBelow < 200 && spaceAbove > spaceBelow) {
         // Flip to top if bottom space is too small and above is bigger
         finalPlacement = "top";
       }
-      
+
       setComputedPlacement(finalPlacement);
-      
+
       const maxAllowed = finalPlacement === "bottom" ? spaceBelow : spaceAbove;
       // Ensure it's between 150px minimum and standard 320px maximum
       setMaxMenuHeight(Math.min(320, Math.max(150, maxAllowed)));
@@ -147,7 +147,8 @@ export function MultiSelectDropdown({
             left: coords.left,
             width: Math.max(coords.width, 280),
             zIndex: 10000,
-            transform: computedPlacement === "top" ? "translateY(-100%)" : "none",
+            transform:
+              computedPlacement === "top" ? "translateY(-100%)" : "none",
           }}
         >
           <motion.div
@@ -157,14 +158,18 @@ export function MultiSelectDropdown({
               scale: 0.98,
             }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: computedPlacement === "top" ? 4 : -4, scale: 0.98 }}
+            exit={{
+              opacity: 0,
+              y: computedPlacement === "top" ? 4 : -4,
+              scale: 0.98,
+            }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
               "overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-2xl transition-colors",
             )}
             ref={dropdownRef}
           >
-            <div 
+            <div
               className="overflow-y-auto custom-scrollbar"
               style={{ maxHeight: `${maxMenuHeight}px` }}
             >

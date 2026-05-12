@@ -192,7 +192,8 @@ export function ResetSubjectsModal({
                   {isAttemptSubmitted ? (
                     <Badge
                       color="success"
-                      variant="fill"
+                      variant="outline"
+                      shape="square"
                       icon={<Lock size={12} />}
                     >
                       SUBMITTED (LOCKED)
@@ -282,8 +283,9 @@ export function ResetSubjectsModal({
                       <div className="flex items-center gap-3">
                         {isSubjectSubmitted ? (
                           <Badge
-                            variant="fill"
+                            variant="outline"
                             color="success"
+                            shape="square"
                             icon={<Lock size={12} />}
                           >
                             LOCKED
@@ -334,18 +336,19 @@ export function ResetSubjectsModal({
         <div className="flex justify-end gap-3 border-t border-border/50 pt-7">
           <Button
             variant="outline"
+            color="primary"
+            animate="scale"
             onClick={onClose}
             disabled={resetting}
-            className="px-6 font-bold uppercase tracking-widest text-[11px]"
           >
             Cancel
           </Button>
           <Button
             variant="primary"
             color="primary"
+            animate="scale"
             onClick={handleReset}
             disabled={resetting || !data || selectedSubjects.length === 0}
-            className="min-w-[160px] font-black uppercase tracking-widest text-[11px] h-11"
           >
             {resetting ? (
               <div className="flex items-center gap-2">

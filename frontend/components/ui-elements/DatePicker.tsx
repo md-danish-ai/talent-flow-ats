@@ -36,6 +36,7 @@ interface DatePickerProps {
   error?: boolean;
   disablePast?: boolean;
   disableFuture?: boolean;
+  placement?: "top" | "bottom";
 }
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
@@ -50,6 +51,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       error,
       disablePast = false,
       disableFuture = false,
+      placement = "bottom",
     },
     ref,
   ) => {
@@ -388,24 +390,30 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       );
     };
 
+    const isTop = placement === "top";
+
     const menuNode = (
       <AnimatePresence>
         {isOpen && (
           <div
             style={{
               position: "absolute",
-              top: coords.top + coords.height + 8,
+              top: isTop ? coords.top - 8 : coords.top + coords.height + 8,
               left: Math.max(16, coords.left + coords.width - 300),
               zIndex: 99999,
+              transform: isTop ? "translateY(-100%)" : "none",
             }}
             ref={dropdownRef}
           >
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: isTop ? 10 : -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              exit={{ opacity: 0, y: isTop ? 10 : -10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-card border-2 border-brand-primary/30 dark:border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl overflow-hidden origin-top-right ring-1 ring-black/5 dark:ring-white/5"
+              className={cn(
+                "bg-card border-2 border-brand-primary/30 dark:border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5",
+                isTop ? "origin-bottom-right" : "origin-top-right",
+              )}
             >
               {renderCalendar()}
             </motion.div>

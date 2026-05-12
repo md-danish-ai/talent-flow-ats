@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
+import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Eraser } from "lucide-react";
 
 import {
   type PersonalDetailsForm,
@@ -32,17 +34,20 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
             <tr className="bg-brand-primary text-white">
-              <th className="p-3 font-semibold text-sm w-[25%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
                 Relation
               </th>
-              <th className="p-3 font-semibold text-sm w-[35%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[32%] border-r border-[#ffffff40]">
                 Name
               </th>
-              <th className="p-3 font-semibold text-sm w-[25%] border-r border-[#ffffff40]">
+              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
                 Occupation
               </th>
-              <th className="p-3 font-semibold text-sm w-[15%] text-center">
+              <th className="p-3 font-semibold text-sm w-[15%] border-r border-[#ffffff40] text-center">
                 Dependent Y/N
+              </th>
+              <th className="p-3 font-semibold text-sm w-[7%] text-center">
+                Action
               </th>
             </tr>
           </thead>
@@ -146,7 +151,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                         )}
                       </form.Field>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3 text-center border-r border-border">
                       <div className="flex justify-center gap-4">
                         <form.Field name={`family[${index}].dependent`}>
                           {(field) => (
@@ -173,6 +178,76 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                           )}
                         </form.Field>
                       </div>
+                    </td>
+                    <td className="p-2 text-center">
+                      <Tooltip
+                        content={
+                          member.relationLabel === "Father" ||
+                          member.relationLabel === "Mother"
+                            ? "Required Row"
+                            : "Clear Row"
+                        }
+                        side="top"
+                      >
+                        <button
+                          type="button"
+                          disabled={
+                            member.relationLabel === "Father" ||
+                            member.relationLabel === "Mother"
+                          }
+                          onClick={() => {
+                            // Direct calls are 100% type-safe and preferred over iterations that generalize to 'string'
+                            form.setFieldValue(`family[${index}].name`, "");
+                            form.setFieldMeta(
+                              `family[${index}].name`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `family[${index}].occupation`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `family[${index}].occupation`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(
+                              `family[${index}].dependent`,
+                              "",
+                            );
+                            form.setFieldMeta(
+                              `family[${index}].dependent`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+
+                            form.setFieldValue(`family[${index}].relation`, "");
+                            form.setFieldMeta(
+                              `family[${index}].relation`,
+                              (meta) => ({
+                                ...meta,
+                                isTouched: false,
+                                errors: [],
+                              }),
+                            );
+                          }}
+                          className="p-2 hover:bg-red-50 rounded-full text-muted-foreground hover:text-red-500 transition-all group inline-flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                        >
+                          <Eraser className="w-4 h-4 group-hover:scale-110" />
+                        </button>
+                      </Tooltip>
                     </td>
                   </tr>
                 ))

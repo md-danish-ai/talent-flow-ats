@@ -143,6 +143,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                       value={field.state.value}
                       onChange={(val) => field.handleChange(val)}
                       onBlur={field.handleBlur}
+                      placement="top"
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0

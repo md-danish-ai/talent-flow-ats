@@ -11,6 +11,9 @@ import { zodValidator } from "@tanstack/zod-form-adapter";
 import {
   personalDetailsSchema,
   type PersonalDetailsFormValues,
+  type FamilyMember,
+  type Education,
+  type WorkExperience,
 } from "@lib/validations/personal-details";
 
 import { stepFields, defaultPersonalDetailsValues } from "./constants";
@@ -31,6 +34,56 @@ import {
 } from "@hooks/api/user-details/use-user-details";
 import type { UserDetails } from "@types";
 
+const sanitizeStr = (val: unknown, fallback = ""): string => {
+  if (val === null || val === undefined) return fallback;
+  const s = String(val).trim();
+  return s || fallback;
+};
+
+const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
+  return (familyArr || []).map((m) => {
+    const member = m as Record<string, unknown>;
+    return {
+      ...member,
+      relation: sanitizeStr(member.relation),
+      name: sanitizeStr(member.name),
+      occupation: sanitizeStr(member.occupation),
+      dependent: sanitizeStr(member.dependent),
+    };
+  }) as FamilyMember[];
+};
+
+const sanitizeEducation = (arr: unknown[]): Education[] => {
+  return (arr || []).map((i) => {
+    const item = i as Record<string, unknown>;
+    return {
+      ...item,
+      school: sanitizeStr(item.school),
+      board: sanitizeStr(item.board),
+      year: sanitizeStr(item.year),
+      division: sanitizeStr(item.division),
+      percentage: sanitizeStr(item.percentage),
+      medium: sanitizeStr(item.medium),
+      details: sanitizeStr(item.details),
+    };
+  }) as Education[];
+};
+
+const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
+  return (arr || []).map((i) => {
+    const item = i as Record<string, unknown>;
+    return {
+      ...item,
+      company: sanitizeStr(item.company),
+      designation: sanitizeStr(item.designation),
+      joinDate: sanitizeStr(item.joinDate),
+      relieveDate: sanitizeStr(item.relieveDate),
+      reason: sanitizeStr(item.reason),
+      salary: sanitizeStr(item.salary),
+    };
+  }) as WorkExperience[];
+};
+
 interface UserFormProps {
   initialData?: UserDetails;
   userId?: string | number;
@@ -45,6 +98,7 @@ export function UserForm({
   isAdmin = false,
 }: UserFormProps) {
   const router = useRouter();
+  const initializedRef = React.useRef(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [touchedSteps, setTouchedSteps] = useState<number[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -92,11 +146,16 @@ export function UserForm({
         sameAddress: Boolean(p.sameAddress),
         family:
           initialData.familyDetails?.length > 0
-            ? initialData.familyDetails
+            ? sanitizeFamily(initialData.familyDetails)
             : defaultPersonalDetailsValues.family,
-        interviewedBefore:
-          initialData.sourceOfInformation?.interviewedBefore || "No",
-        workedBefore: initialData.sourceOfInformation?.workedBefore || "No",
+        interviewedBefore: sanitizeStr(
+          initialData.sourceOfInformation?.interviewedBefore,
+          "No",
+        ),
+        workedBefore: sanitizeStr(
+          initialData.sourceOfInformation?.workedBefore,
+          "No",
+        ),
         source: {
           campus: Boolean(initialData.sourceOfInformation?.source?.campus),
           website: Boolean(initialData.sourceOfInformation?.source?.website),
@@ -108,11 +167,11 @@ export function UserForm({
         },
         education:
           initialData.educationDetails?.length > 0
-            ? initialData.educationDetails
+            ? sanitizeEducation(initialData.educationDetails)
             : defaultPersonalDetailsValues.education,
         workExp:
           initialData.workExperienceDetails?.length > 0
-            ? initialData.workExperienceDetails
+            ? sanitizeWorkExp(initialData.workExperienceDetails)
             : defaultPersonalDetailsValues.workExp,
         ...(initialData.otherDetails || {}),
       };
@@ -237,9 +296,10 @@ export function UserForm({
 
   // Pre-populate form when existing details are loaded (primarily for self-portal via React Query)
   useEffect(() => {
-    if (!initialData && selfDetails) {
+    if (!initialData && selfDetails && !initializedRef.current) {
       const details = selfDetails as unknown as UserDetails;
       if (!details.personalDetails) return;
+      initializedRef.current = true; // Prevent future resets from background fetches
       const p = details.personalDetails;
 
       const mappedSource = {
@@ -274,19 +334,24 @@ export function UserForm({
         sameAddress: Boolean(p.sameAddress),
         family:
           details.familyDetails?.length > 0
-            ? details.familyDetails
+            ? sanitizeFamily(details.familyDetails)
             : defaultPersonalDetailsValues.family,
-        interviewedBefore:
-          details.sourceOfInformation?.interviewedBefore || "No",
-        workedBefore: details.sourceOfInformation?.workedBefore || "No",
+        interviewedBefore: sanitizeStr(
+          details.sourceOfInformation?.interviewedBefore,
+          "No",
+        ),
+        workedBefore: sanitizeStr(
+          details.sourceOfInformation?.workedBefore,
+          "No",
+        ),
         source: mappedSource,
         education:
           details.educationDetails?.length > 0
-            ? details.educationDetails
+            ? sanitizeEducation(details.educationDetails)
             : defaultPersonalDetailsValues.education,
         workExp:
           details.workExperienceDetails?.length > 0
-            ? details.workExperienceDetails
+            ? sanitizeWorkExp(details.workExperienceDetails)
             : defaultPersonalDetailsValues.workExp,
         ...(details.otherDetails || {}),
       });
