@@ -42,9 +42,5 @@ export const classificationsApi = {
     });
   },
 
-  deleteClassification: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.CLASSIFICATIONS.DELETE(id), {
-      silentSuccess: true,
-    });
-  },
+
 };

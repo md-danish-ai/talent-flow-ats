@@ -120,16 +120,7 @@ export async function toggleUserStatus(
   );
 }
 
-// DELETE /auth/delete/{user_id} - Delete a user
-export async function deleteUser(
-  userId: number,
-  options?: Pick<ApiRequestOptions, "cookies">,
-): Promise<{ id: number; message: string }> {
-  return api.delete<{ id: number; message: string }>(
-    ENDPOINTS.AUTH.DELETE_USER(userId),
-    { ...options, silentSuccess: true },
-  );
-}
+
 
 // PUT /auth/update-basic-info/{user_id} - Update basic user info
 export async function updateBasicInfo(

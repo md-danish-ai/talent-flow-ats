@@ -71,10 +71,7 @@ export const questionsApi = {
       { silentSuccess: true },
     );
   },
-  deleteQuestion: async (id: number) => {
-    // Backend exposes DELETE /questions/{question_id}
-    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id), { silentSuccess: true });
-  },
+
   uploadImage: async (file: File) => {
     const formData = new FormData();
     formData.append("image", file);

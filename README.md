@@ -276,3 +276,24 @@ To maintain a clean and stable codebase, follow this branching strategy:
 
 > [!IMPORTANT]
 > Always target `develop` when creating a Pull Request from a feature branch.
+
+## Redis Cache Management
+
+During development and testing, you might need to inspect or clear the Redis cache.
+
+### 1. View all cached keys
+```bash
+docker exec -it talent-flow-redis redis-cli KEYS "*"
+```
+
+### 2. View specific formatted JSON data
+To view the cached details of a specific paper (replace `1` with the paper ID) in a pretty JSON format using `jq` from your terminal:
+```bash
+docker exec talent-flow-redis redis-cli GET "paper:1:details" | jq .
+```
+*(If `jq` is not installed, you can pipe to `python3 -m json.tool` instead).*
+
+### 3. Clear all Redis cache
+```bash
+docker exec -it talent-flow-redis redis-cli FLUSHALL
+```

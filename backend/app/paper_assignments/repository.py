@@ -10,6 +10,7 @@ from app.papers.repository import get_paper
 from app.questions import repository as question_repository
 from app.users.models import User
 from app.utils.status_codes import StatusCode
+from app.core.redis_client import get_cached_data, set_cached_data
 
 from sqlalchemy import func, or_
 from app.user_details.models import UserDetail
@@ -674,19 +675,41 @@ def get_my_interview_paper(
     if not assignment:
         return None
 
-    paper = get_paper(db, assignment.paper_id)
-    if not paper or not paper.is_active:
+    # Check Redis cache first
+    cache_key = f"paper:{assignment.paper_id}:details"
+    cached_paper = get_cached_data(cache_key)
+    if cached_paper:
+        return {
+            "assignment_id": assignment.id,
+            "assigned_date": effective_date,
+            **cached_paper
+        }
+
+    paper_details = build_paper_details(db, assignment.paper_id)
+    if not paper_details:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND,
-            detail=f"Active paper {assignment.paper_id} not found",
+            detail=f"Active paper {assignment.paper_id} not found or missing questions",
         )
+
+    # Store in Redis (Permanent cache)
+    set_cached_data(cache_key, paper_details, expire_seconds=None)
+
+    return {
+        "assignment_id": assignment.id,
+        "assigned_date": effective_date,
+        **paper_details
+    }
+
+
+def build_paper_details(db: Session, paper_id: int) -> dict | None:
+    paper = get_paper(db, paper_id)
+    if not paper or not paper.is_active:
+        return None
 
     question_ids = _extract_question_ids(paper.question_id)
     if not question_ids:
-        raise HTTPException(
-            status_code=StatusCode.BAD_REQUEST,
-            detail="Assigned paper does not contain any questions",
-        )
+        return None
 
     question_rows = question_repository.get_questions_by_ids(question_ids)
     question_by_id = {question["id"]: question for question in question_rows}
@@ -789,8 +812,6 @@ def get_my_interview_paper(
             )
 
     return {
-        "assignment_id": assignment.id,
-        "assigned_date": effective_date,
         "paper": {
             "id": paper.id,
             "paper_name": paper.paper_name,
@@ -807,3 +828,16 @@ def get_my_interview_paper(
         ),
         "sections": sections,
     }
+
+
+def rebuild_paper_cache(db: Session, paper_id: int) -> None:
+    """Helper to manually rebuild paper cache from DB and store it in Redis."""
+    paper_details = build_paper_details(db, paper_id)
+    cache_key = f"paper:{paper_id}:details"
+    
+    if paper_details:
+        set_cached_data(cache_key, paper_details, expire_seconds=None)
+    else:
+        # If paper became inactive or lost all questions, we should just delete its cache
+        from app.core.redis_client import delete_cached_data
+        delete_cached_data(cache_key)

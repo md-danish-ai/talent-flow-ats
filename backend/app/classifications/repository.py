@@ -282,23 +282,7 @@ def check_dependencies(classification_id: int) -> dict:
         db_session.close()
 
 
-def delete(classification_id: int):
-    db_session = SessionLocal()
-    try:
-        classification = (
-            db_session.query(Classification)
-            .filter(Classification.id == classification_id)
-            .first()
-        )
-        if classification:
-            db_session.delete(classification)
-            db_session.commit()
-        return {"message": f"Classification {classification_id} deleted permanently"}
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
-    finally:
-        db_session.close()
+
 
 
 def count_by_name_and_type(name: str, type_: str):

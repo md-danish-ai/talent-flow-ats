@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Trash2, Building2 } from "lucide-react";
+import { Plus, Edit, Building2 } from "lucide-react";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
@@ -21,7 +21,6 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { departmentsApi } from "@lib/api/departments";
 import { type Department, PaginatedResponse } from "@types";
 import { ManageDepartmentModal } from "./ManageDepartmentModal";
-import { ConfirmModal } from "./ConfirmModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
@@ -66,35 +65,15 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
   );
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deptToDelete, setDeptToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+
 
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = (id: number) => {
-    setDeptToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
 
-  const confirmDelete = async () => {
-    if (!deptToDelete) return;
-    setIsDeleting(true);
-    try {
-      await departmentsApi.deleteDepartment(deptToDelete);
-      void refresh();
-      setIsDeleteModalOpen(false);
-      toast.success("Department deleted successfully");
-    } catch (error) {
-      console.error("Delete failed:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const handleToggleStatus = async (dept: Department) => {
     setTogglingId(dept.id);
@@ -256,15 +235,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                             >
                               <Edit size={16} />
                             </TableIconButton>
-                            <TableIconButton
-                              iconColor="red"
-                              btnSize="sm"
-                              animate="scale"
-                              onClick={() => handleDeleteClick(dept.id)}
-                              title="Delete Department"
-                            >
-                              <Trash2 size={16} />
-                            </TableIconButton>
+
                           </div>
                         </TableCell>
                       </TableRow>
@@ -305,16 +276,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         onSuccess={() => void refresh()}
       />
 
-      <ConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Department"
-        description="Are you sure you want to delete this department? This action cannot be undone."
-        variant="danger"
-        confirmText="Delete"
-        isLoading={isDeleting}
-      />
+
     </>
   );
 }

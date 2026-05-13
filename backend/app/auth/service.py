@@ -547,28 +547,7 @@ def toggle_user_status(user_id: int):
         db_session.close()
 
 
-def delete_user(user_id: int):
-    db_session = SessionLocal()
-    try:
-        user = db_session.query(User).filter(User.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND,
-                detail="User not found.",
-            )
-        db_session.delete(user)
-        db_session.commit()
-        return {"id": user_id, "message": "User deleted successfully"}
-    except HTTPException:
-        raise
-    except Exception:
-        db_session.rollback()
-        raise HTTPException(
-            status_code=StatusCode.INTERNAL_SERVER_ERROR,
-            detail="An internal server error occurred.",
-        )
-    finally:
-        db_session.close()
+
 
 
 def update_user_basic_info(user_id: int, data):

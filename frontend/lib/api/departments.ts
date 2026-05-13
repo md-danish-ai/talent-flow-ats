@@ -42,9 +42,5 @@ export const departmentsApi = {
     });
   },
 
-  deleteDepartment: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.DEPARTMENTS.DELETE(id), {
-      silentSuccess: true,
-    });
-  },
+
 };

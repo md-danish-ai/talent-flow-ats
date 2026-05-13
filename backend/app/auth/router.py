@@ -6,7 +6,6 @@ from app.auth.service import (
     create_project_lead,
     get_users_by_role,
     toggle_user_status,
-    delete_user,
     get_user_by_id,
     update_user_basic_info,
     change_password,
@@ -127,12 +126,7 @@ async def toggle_status(user_id: int):
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete(
-    "/remove-user-account/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
-)
-async def delete_user_route(user_id: int):
-    data = delete_user(user_id)
-    return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
+
 
 
 @router.put(
