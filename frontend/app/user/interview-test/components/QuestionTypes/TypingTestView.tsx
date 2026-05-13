@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useMemo, useCallback } from "react";
+import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import { Zap, Target, AlertTriangle, Clock, Trophy } from "lucide-react";
@@ -17,59 +17,86 @@ export const TypingTestView = memo(function TypingTestView({
   currentAnswer,
   onChangeAnswer,
 }: TypingTestViewProps) {
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [endTime, setEndTime] = useState<number | null>(null);
-  const [lastActivityTime, setLastActivityTime] = useState<number | null>(null);
-  const [isFinished, setIsFinished] = useState(false);
-
-  // Parse incoming JSON or use default
-  const parsedData = useMemo(() => {
+  // Parse once purely for initialization injection (pure, idempotent memoization)
+  const initialParsed = useMemo(() => {
+    if (!currentAnswer) return null;
     try {
-      if (!currentAnswer)
-        return { typedText: "", sourcePassage: passage, stats: null };
       const parsed = JSON.parse(currentAnswer);
-      // Fallback for old plain-text format
-      if (typeof parsed !== "object" || parsed === null) {
-        return {
-          typedText: currentAnswer,
-          sourcePassage: passage,
-          stats: null,
-        };
-      }
-      return {
-        typedText: parsed.typed_text || "",
-        sourcePassage: parsed.passage || passage,
-        stats: parsed.stats || null,
-      };
+      if (parsed && typeof parsed === "object") return parsed;
     } catch {
-      return { typedText: currentAnswer, sourcePassage: passage, stats: null };
+      // ignore
     }
-  }, [currentAnswer, passage]);
+    return null;
+  }, [currentAnswer]);
 
-  const typedText = parsedData.typedText;
+  // Local typing text for 0ms zero-lag input updates, eagerly loaded via lazy state!
+  const [localTypedText, setLocalTypedText] = useState<string>(() => {
+    if (initialParsed) return initialParsed.typed_text || "";
+    return typeof currentAnswer === "string" ? currentAnswer : "";
+  });
 
-  // Derived stats
+  // Smooth resuming: deduce past startTime based on elapsed seconds recorded during mount
+  const [startTime, setStartTime] = useState<number | null>(() => {
+    const savedStats = initialParsed?.stats;
+    if (
+      savedStats &&
+      typeof savedStats.time_taken === "number" &&
+      savedStats.time_taken > 0
+    ) {
+      return Date.now() - savedStats.time_taken * 1000;
+    }
+    return null;
+  });
+
+  const [endTime, setEndTime] = useState<number | null>(null);
+  const [liveTime, setLiveTime] = useState<number>(() => Date.now());
+
+  // Eagerly resolve finished state directly on load
+  const [isFinished, setIsFinished] = useState<boolean>(() => {
+    const textLength = initialParsed
+      ? initialParsed.typed_text?.length || 0
+      : typeof currentAnswer === "string"
+        ? currentAnswer.length
+        : 0;
+    return textLength >= passage.length;
+  });
+
+  // Live Ticking Clock effect updating every 100ms to yield fluid real-time WPM and Duration metrics
+  useEffect(() => {
+    if (!startTime || isFinished) return;
+
+    const timer = setInterval(() => {
+      setLiveTime(Date.now());
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [startTime, isFinished]);
+
+  // Pure Real-Time Derived Stats (triggers instantaneously upon state/ticking adjustments!)
   const stats = useMemo(() => {
-    if (!startTime || typedText.length === 0) {
+    if (!startTime || localTypedText.length === 0) {
       return { wpm: 0, accuracy: 100, errors: 0, timeTaken: 0 };
     }
 
-    const currentEndTime = endTime || lastActivityTime || startTime;
-    const timeTakenSeconds = Math.max((currentEndTime - startTime) / 1000, 0.1);
+    const finalActiveTime = isFinished ? endTime || liveTime : liveTime;
+    const timeTakenSeconds = Math.max(
+      (finalActiveTime - startTime) / 1000,
+      0.1,
+    );
 
-    // Calculate correct characters
+    // Identify mistakes by mapping against original source
     let correctChars = 0;
-    for (let i = 0; i < typedText.length; i++) {
-      if (typedText[i] === passage[i]) {
+    for (let i = 0; i < localTypedText.length; i++) {
+      if (localTypedText[i] === passage[i]) {
         correctChars++;
       }
     }
 
-    const errors = typedText.length - correctChars;
-    const accuracy = Math.round((correctChars / typedText.length) * 100);
+    const errors = localTypedText.length - correctChars;
+    const accuracy = Math.round((correctChars / localTypedText.length) * 100);
 
-    // Standard WPM calculation: (characters / 5) / (minutes)
-    const words = typedText.length / 5;
+    // Standard WPM calculation formula
+    const words = localTypedText.length / 5;
     const minutes = timeTakenSeconds / 60;
     const wpm = Math.round(words / minutes);
 
@@ -79,9 +106,9 @@ export const TypingTestView = memo(function TypingTestView({
       errors,
       timeTaken: Math.round(timeTakenSeconds),
     };
-  }, [typedText, passage, startTime, endTime, lastActivityTime]);
+  }, [localTypedText, passage, startTime, endTime, liveTime, isFinished]);
 
-  // Local handler to track start and end time
+  // Optimized zero-latency local change handler
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (isFinished) return;
@@ -89,43 +116,50 @@ export const TypingTestView = memo(function TypingTestView({
       const val = e.target.value;
       const now = Date.now();
 
-      // Start timing on first character
-      if (val.length === 1 && !startTime) {
+      // Clock initiates the absolute millisecond the first character is registered
+      let actualStart = startTime;
+      if (val.length > 0 && !startTime) {
+        actualStart = now;
         setStartTime(now);
+        setLiveTime(now);
       }
 
-      setLastActivityTime(now);
+      // Instantly update local typing state to prevent UI visual lag
+      setLocalTypedText(val);
 
-      // Current stats for immediate persistence
-      const timeTakenNow = (now - (startTime || now)) / 1000;
-      let correctNow = 0;
+      // Run instantaneous stat projections for accurate DB snapshot logging
+      const activeSeconds = actualStart ? (now - actualStart) / 1000 : 0;
+      let correctCharsCount = 0;
       for (let i = 0; i < val.length; i++) {
-        if (val[i] === passage[i]) correctNow++;
+        if (val[i] === passage[i]) correctCharsCount++;
       }
-      const wpmNow = Math.round(
-        val.length / 5 / (Math.max(timeTakenNow, 0.1) / 60),
-      );
-      const accuracyNow = Math.round((correctNow / val.length) * 100);
 
-      const currentStats = {
-        wpm: wpmNow,
-        accuracy: accuracyNow,
-        errors: val.length - correctNow,
-        time_taken: timeTakenNow,
+      const instantWPM = Math.round(
+        val.length / 5 / (Math.max(activeSeconds, 0.1) / 60),
+      );
+      const instantAccuracy = Math.round(
+        (correctCharsCount / val.length) * 100,
+      );
+
+      const logStats = {
+        wpm: instantWPM,
+        accuracy: instantAccuracy,
+        errors: val.length - correctCharsCount,
+        time_taken: Math.round(activeSeconds),
       };
 
-      // Check for completion
+      // Auto-complete hook when text length meets passage limit
       if (val.length >= passage.length) {
         setIsFinished(true);
         setEndTime(now);
       }
 
-      // Store as JSON
+      // Dispatches update cleanly to parent context
       onChangeAnswer(
         JSON.stringify({
           passage,
           typed_text: val,
-          stats: currentStats,
+          stats: logStats,
         }),
       );
     },
@@ -137,14 +171,14 @@ export const TypingTestView = memo(function TypingTestView({
       let colorClass = "text-foreground/40"; // Default
       let bgClass = "";
 
-      if (index < typedText.length) {
-        if (typedText[index] === char) {
+      if (index < localTypedText.length) {
+        if (localTypedText[index] === char) {
           colorClass = "text-emerald-500 font-bold";
         } else {
           colorClass = "text-rose-500 font-bold";
           bgClass = "bg-rose-500/10";
         }
-      } else if (index === typedText.length && !isFinished) {
+      } else if (index === localTypedText.length && !isFinished) {
         bgClass =
           "bg-brand-primary/20 border-b-2 border-brand-primary animate-pulse";
       }
@@ -158,7 +192,7 @@ export const TypingTestView = memo(function TypingTestView({
         </span>
       );
     });
-  }, [passage, typedText, isFinished]);
+  }, [passage, localTypedText, isFinished]);
 
   return (
     <div className="space-y-6 pt-2 text-foreground">
@@ -282,7 +316,7 @@ export const TypingTestView = memo(function TypingTestView({
               variant="body5"
               className="font-mono text-[11px] text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md"
             >
-              {typedText.length} / {passage.length} characters
+              {localTypedText.length} / {passage.length} characters
             </Typography>
           </div>
         </div>
@@ -298,7 +332,7 @@ export const TypingTestView = memo(function TypingTestView({
                 ? "Test completed. Please click 'Save & Next' to continue."
                 : "Focus and start typing here..."
             }
-            value={typedText}
+            value={localTypedText}
             onChange={handleInputChange}
             disabled={isFinished}
             className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${

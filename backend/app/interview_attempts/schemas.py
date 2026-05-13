@@ -32,6 +32,7 @@ class AttemptSummaryResponse(BaseModel):
     obtained_marks: Optional[float]
     overall_grade: str
     is_auto_submitted: bool
+    active_duration_seconds: int = 0
 
 
 class AttemptSavedResponse(BaseModel):

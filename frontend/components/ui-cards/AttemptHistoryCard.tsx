@@ -38,6 +38,7 @@ interface AttemptHistoryCardProps {
     errors: number;
     time_taken: number;
   } | null;
+  activeDurationSeconds?: number;
 }
 
 export const AttemptHistoryCard = ({
@@ -57,15 +58,24 @@ export const AttemptHistoryCard = ({
   userId,
   statusBadge,
   typingStats,
+  activeDurationSeconds,
 }: AttemptHistoryCardProps) => {
   const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
 
   // Calculate Duration
   const getDuration = () => {
+    // Prefer cumulative active seconds recorded by backend
+    if (activeDurationSeconds && activeDurationSeconds > 0) {
+      const mins = Math.floor(activeDurationSeconds / 60);
+      const secs = activeDurationSeconds % 60;
+      return `${mins}m ${secs}s`;
+    }
+
+    // Fallback for legacy attempts or in-progress states
     if (!startedAt || !submittedAt) return "--:--";
     const start = parseUTC(startedAt).getTime();
     const end = parseUTC(submittedAt).getTime();
-    const diff = Math.floor((end - start) / 1000);
+    const diff = Math.max(0, Math.floor((end - start) / 1000));
     const mins = Math.floor(diff / 60);
     const secs = diff % 60;
     return `${mins}m ${secs}s`;

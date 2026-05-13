@@ -752,6 +752,12 @@ def finalize_attempt(
         record.is_auto_submitted = is_auto_submitted
         record.submitted_at = datetime.utcnow()
 
+        # Calculate session time difference and add it cumulatively to active_duration_seconds
+        if record.started_at:
+            diff = (record.submitted_at - record.started_at).total_seconds()
+            current_accumulated = record.active_duration_seconds or 0
+            record.active_duration_seconds = current_accumulated + max(int(diff), 0)
+
         # 4. Compute and store grades permanently
         paper_obj = _get_paper_or_404(db, record.paper_id)
         _recompute_grades(record, db, paper_obj)
@@ -799,6 +805,7 @@ def finalize_attempt(
             "obtained_marks": float(record.obtained_marks),
             "overall_grade": record.overall_grade,
             "is_auto_submitted": record.is_auto_submitted,
+            "active_duration_seconds": record.active_duration_seconds,
         }
 
     except HTTPException:
@@ -830,6 +837,7 @@ def get_attempt_summary(record_id: int, user_id: int) -> dict:
             "obtained_marks": float(record.obtained_marks),
             "overall_grade": record.overall_grade,
             "is_auto_submitted": record.is_auto_submitted,
+            "active_duration_seconds": record.active_duration_seconds,
         }
     finally:
         db.close()
@@ -1001,6 +1009,7 @@ def get_admin_user_results(
                         "total_marks": float(record.total_marks),
                         "obtained_marks": float(record.obtained_marks),
                         "overall_grade": record.overall_grade,
+                        "active_duration_seconds": record.active_duration_seconds,
                         "typing_stats": typing_stats,
                         "subject_results": record.subject_grades,
                         "interviewers": [
@@ -1091,6 +1100,7 @@ def get_admin_user_attempts(user_id: int) -> dict:
                     "obtained_marks": float(record.obtained_marks),
                     "overall_grade": record.overall_grade,
                     "is_auto_submitted": record.is_auto_submitted,
+                    "active_duration_seconds": record.active_duration_seconds,
                     "typing_stats": typing_stats,
                     "subject_results": record.subject_grades,
                 }

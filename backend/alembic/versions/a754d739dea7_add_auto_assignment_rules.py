@@ -3,7 +3,7 @@
 Revision ID: a754d739dea7
 Revises: 8e5e9518d410
 Create Date: 2026-04-17 12:50:57.419296
-Created By: unknown
+Created By: md-danish-ai
 
 """
 
@@ -29,8 +29,10 @@ def upgrade() -> None:
         sa.Column("department_id", sa.Integer(), nullable=False),
         sa.Column("test_level_id", sa.Integer(), nullable=False),
         sa.Column("assigned_date", sa.Date(), nullable=False),
-        sa.Column("paper_ids", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column("is_active", sa.Boolean(), server_default="true", nullable=False),
+        sa.Column("paper_ids", postgresql.JSONB(
+            astext_type=sa.Text()), nullable=False),
+        sa.Column("is_active", sa.Boolean(),
+                  server_default="true", nullable=False),
         sa.Column("created_by", sa.Integer(), nullable=False),
         sa.Column(
             "created_at",
@@ -98,10 +100,12 @@ def upgrade() -> None:
         ),
     )
     op.add_column(
-        "paper_assignments", sa.Column("auto_rule_id", sa.Integer(), nullable=True)
+        "paper_assignments", sa.Column(
+            "auto_rule_id", sa.Integer(), nullable=True)
     )
     op.create_foreign_key(
-        None, "paper_assignments", "auto_assignment_rules", ["auto_rule_id"], ["id"]
+        None, "paper_assignments", "auto_assignment_rules", [
+            "auto_rule_id"], ["id"]
     )
     # ### end Alembic commands ###
 

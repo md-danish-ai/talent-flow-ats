@@ -482,6 +482,7 @@ export function UserResultDetailClient({
                     totalQuestions={attempt.total_questions}
                     unattemptedCount={attempt.unattempted_count}
                     typingStats={attempt.typing_stats}
+                    activeDurationSeconds={attempt.active_duration_seconds}
                   />
                 ))}
               </div>

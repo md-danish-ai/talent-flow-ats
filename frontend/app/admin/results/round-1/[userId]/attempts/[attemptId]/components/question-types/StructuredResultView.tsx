@@ -11,15 +11,14 @@ interface StructuredResultViewProps {
 }
 
 export const StructuredResultView = ({ answer }: StructuredResultViewProps) => {
-  const getParsedData = (dataString?: string | null, fallbackSource?: unknown) => {
+  const getParsedData = (
+    dataString?: string | null,
+    fallbackSource?: unknown,
+  ) => {
     let displayData = dataString;
 
     // Safely check if fallbackSource is an object instead of an array without relying on explicit 'any'
-    if (
-      !displayData &&
-      fallbackSource &&
-      !Array.isArray(fallbackSource)
-    ) {
+    if (!displayData && fallbackSource && !Array.isArray(fallbackSource)) {
       try {
         displayData =
           typeof fallbackSource === "string"
