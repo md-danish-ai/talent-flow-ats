@@ -279,21 +279,26 @@ To maintain a clean and stable codebase, follow this branching strategy:
 
 ## Redis Cache Management
 
-During development and testing, you might need to inspect or clear the Redis cache.
+During development and testing, you can inspect, monitor, or clear the Redis cache visually or via the CLI.
 
-### 1. View all cached keys
+### 1. Visual GUI Dashboard (Recommended)
+With Redis Stack, a powerful graphical UI (**RedisInsight**) is available out of the box.
+- **URL:** [http://localhost:8001](http://localhost:8001)
+- **Usage:** Open in your browser to visually browse cached JSON papers (`paper:{id}:details`), monitor memory usage, and interact with data without commands.
+
+### 2. View all cached keys (CLI)
 ```bash
 docker exec -it talent-flow-redis redis-cli KEYS "*"
 ```
 
-### 2. View specific formatted JSON data
+### 3. View specific formatted JSON data (CLI)
 To view the cached details of a specific paper (replace `1` with the paper ID) in a pretty JSON format using `jq` from your terminal:
 ```bash
 docker exec talent-flow-redis redis-cli GET "paper:1:details" | jq .
 ```
 *(If `jq` is not installed, you can pipe to `python3 -m json.tool` instead).*
 
-### 3. Clear all Redis cache
+### 4. Clear all Redis cache
 ```bash
 docker exec -it talent-flow-redis redis-cli FLUSHALL
 ```
