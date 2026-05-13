@@ -57,10 +57,12 @@ export const questionsApi = {
     );
   },
   createQuestion: async (data: QuestionCreate) => {
-    return api.post(ENDPOINTS.QUESTIONS.CREATE, data);
+    return api.post(ENDPOINTS.QUESTIONS.CREATE, data, { silentSuccess: true });
   },
   updateQuestion: async (id: number, data: Partial<QuestionCreate>) => {
-    return api.put(ENDPOINTS.QUESTIONS.UPDATE(id), data);
+    return api.put(ENDPOINTS.QUESTIONS.UPDATE(id), data, {
+      silentSuccess: true,
+    });
   },
   toggleQuestionStatus: async (id: number) => {
     return api.put<{ message: string; is_active: boolean }>(
@@ -71,7 +73,7 @@ export const questionsApi = {
   },
   deleteQuestion: async (id: number) => {
     // Backend exposes DELETE /questions/{question_id}
-    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id));
+    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id), { silentSuccess: true });
   },
   uploadImage: async (file: File) => {
     const formData = new FormData();

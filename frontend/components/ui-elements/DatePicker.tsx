@@ -9,7 +9,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "./Button";
-import { Typography } from "./Typography";
 import {
   format,
   startOfMonth,

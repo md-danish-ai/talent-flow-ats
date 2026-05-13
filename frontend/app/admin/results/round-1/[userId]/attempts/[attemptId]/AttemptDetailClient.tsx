@@ -434,7 +434,7 @@ export function AttemptDetailClient({
                       </div>
                       <div>
                         <Typography
-                          variant="h4"
+                          variant="h3"
                           className="font-black tracking-tight leading-none mb-1.5"
                         >
                           {subject.section_name}

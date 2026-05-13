@@ -114,6 +114,7 @@ export function LeadGenerationClient() {
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -270,7 +271,7 @@ export function LeadGenerationClient() {
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}

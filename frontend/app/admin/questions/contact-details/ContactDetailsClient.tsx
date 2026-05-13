@@ -134,6 +134,7 @@ export function ContactDetailsClient() {
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -287,7 +288,7 @@ export function ContactDetailsClient() {
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}

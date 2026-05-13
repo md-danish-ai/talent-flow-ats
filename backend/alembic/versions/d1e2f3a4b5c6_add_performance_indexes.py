@@ -1,0 +1,71 @@
+"""add_performance_indexes_for_concurrent_candidates
+
+Revision ID: d1e2f3a4b5c6
+Revises: bbebf9c48f6f
+Create Date: 2026-05-12 16:00:00.000000
+
+Adds composite DB indexes to handle 50-100 concurrent candidates without
+full table scans. Critical for:
+- start_attempt: filters on (paper_id, user_id, status)
+- get-my-assigned-paper: filters on (user_id, assigned_date)
+- questions bulk fetch: filters on (subject_type, is_active)
+"""
+
+from typing import Sequence, Union
+from alembic import op
+
+revision: str = "d1e2f3a4b5c6"
+down_revision: Union[str, Sequence[str], None] = "bbebf9c48f6f"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    # Composite index for start_attempt query:
+    # filter(paper_id == X, user_id == Y, status IN ("started"))
+    op.create_index(
+        "ix_interview_records_paper_user_status",
+        "interview_records",
+        ["paper_id", "user_id", "status"],
+        unique=False,
+        if_not_exists=True,
+    )
+
+    # Composite index for get-my-assigned-paper query:
+    # filter(user_id == X, assigned_date == today)
+    op.create_index(
+        "ix_paper_assignments_user_date",
+        "paper_assignments",
+        ["user_id", "assigned_date"],
+        unique=False,
+        if_not_exists=True,
+    )
+
+    # Index for backfill_assignments_for_rule:
+    # filter(assigned_date == X, user_id IN [...], is_attempted == False)
+    op.create_index(
+        "ix_paper_assignments_date_attempted",
+        "paper_assignments",
+        ["assigned_date", "is_attempted"],
+        unique=False,
+        if_not_exists=True,
+    )
+
+    # Composite index for questions bulk fetch:
+    # filter(subject_type == X, is_active == True)
+    op.create_index(
+        "ix_questions_subject_active",
+        "questions",
+        ["subject_type", "is_active"],
+        unique=False,
+        if_not_exists=True,
+    )
+
+
+def downgrade() -> None:
+    op.drop_index("ix_questions_subject_active", table_name="questions")
+    op.drop_index("ix_paper_assignments_date_attempted", table_name="paper_assignments")
+    op.drop_index("ix_paper_assignments_user_date", table_name="paper_assignments")
+    op.drop_index(
+        "ix_interview_records_paper_user_status", table_name="interview_records"
+    )

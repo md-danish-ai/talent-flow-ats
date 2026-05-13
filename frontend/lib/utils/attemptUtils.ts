@@ -2,6 +2,7 @@ export interface ParsedOption {
   optionLabel: string;
   optionText: string;
   isCorrect: boolean;
+  imageUrl?: string | null;
 }
 
 export const normalizeText = (value?: string | null) =>
@@ -24,5 +25,6 @@ export const parseQuestionOptions = (
     ).toUpperCase(),
     optionText: String(raw.option_text ?? ""),
     isCorrect: Boolean(raw.is_correct),
+    imageUrl: raw.image_url ? String(raw.image_url) : null,
   }));
 };

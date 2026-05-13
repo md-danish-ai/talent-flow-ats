@@ -218,7 +218,7 @@ export function UserResultDetailClient({
           <Button
             variant="outline"
             color="primary"
-            className="shadow-md shadow-brand-primary/10 bg-white"
+            className="shadow-md shadow-brand-primary/10"
             startIcon={
               downloadingPdf ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -482,6 +482,7 @@ export function UserResultDetailClient({
                     totalQuestions={attempt.total_questions}
                     unattemptedCount={attempt.unattempted_count}
                     typingStats={attempt.typing_stats}
+                    activeDurationSeconds={attempt.active_duration_seconds}
                   />
                 ))}
               </div>

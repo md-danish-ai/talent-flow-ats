@@ -44,7 +44,7 @@ export function QuestionTableSkeleton({
               return (
                 <TableCell key={colId} className="min-w-[300px]">
                   <div className="flex flex-col gap-2">
-                    <Skeleton className="h-6 w-full max-w-[400px] rounded" />
+                    <Skeleton className="h-6 w-full max-w-[250px] rounded" />
                     <Skeleton className="h-3 w-1/2 rounded opacity-60" />
                   </div>
                 </TableCell>

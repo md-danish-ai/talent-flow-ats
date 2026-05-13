@@ -31,14 +31,20 @@ export const classificationsApi = {
   },
 
   createClassification: async (data: ClassificationCreate) => {
-    return api.post<Classification>(ENDPOINTS.CLASSIFICATIONS.CREATE, data);
+    return api.post<Classification>(ENDPOINTS.CLASSIFICATIONS.CREATE, data, {
+      silentSuccess: true,
+    });
   },
 
   updateClassification: async (id: number, data: ClassificationUpdate) => {
-    return api.put<Classification>(ENDPOINTS.CLASSIFICATIONS.UPDATE(id), data);
+    return api.put<Classification>(ENDPOINTS.CLASSIFICATIONS.UPDATE(id), data, {
+      silentSuccess: true,
+    });
   },
 
   deleteClassification: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.CLASSIFICATIONS.DELETE(id));
+    return api.delete<void>(ENDPOINTS.CLASSIFICATIONS.DELETE(id), {
+      silentSuccess: true,
+    });
   },
 };

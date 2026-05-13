@@ -22,7 +22,7 @@ services:
       HF_TOKEN: ${HF_TOKEN}
     volumes:
       - ./backend:/backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 4000 --reload
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 60 --graceful-timeout 30
 
   migrations:
     image: talent-flow-ats-backend
@@ -53,6 +53,14 @@ services:
       - "5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Performance tuning for 50-100 concurrent candidates
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=512MB
+      -c work_mem=4MB
+      -c checkpoint_completion_target=0.9
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
