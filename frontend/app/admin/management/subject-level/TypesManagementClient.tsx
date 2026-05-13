@@ -112,13 +112,6 @@ export function TypesManagementClient({
         ? "exam_level"
         : "interview_result";
 
-  const currentEntityName =
-    activeTab === "subjects"
-      ? "Subject"
-      : activeTab === "levels"
-        ? "Level"
-        : "Verdict";
-
   const tabs: TabItem[] = [
     { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
     { label: "Exam Levels", value: "levels", icon: <Gauge size={18} /> },
@@ -191,8 +184,6 @@ export function TypesManagementClient({
       setIsLoading(false);
     }
   };
-
-
 
   const handleToggleStatus = async (item: BaseType) => {
     setTogglingId(item.id);
@@ -292,7 +283,6 @@ export function TypesManagementClient({
               pageSize={pageSize}
               togglingId={togglingId}
               onEdit={handleOpenModal}
-
               onToggleStatus={handleToggleStatus}
             />
 
@@ -336,8 +326,6 @@ export function TypesManagementClient({
         onSubmit={handleSubmit}
         isLoading={isLoading}
       />
-
-
     </PageContainer>
   );
 }
