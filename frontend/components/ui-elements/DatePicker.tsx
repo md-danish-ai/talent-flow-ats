@@ -9,7 +9,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "./Button";
-import { Typography } from "./Typography";
 import {
   format,
   startOfMonth,
@@ -34,6 +33,9 @@ interface DatePickerProps {
   placeholder?: string;
   label?: React.ReactNode;
   error?: boolean;
+  disablePast?: boolean;
+  disableFuture?: boolean;
+  placement?: "top" | "bottom";
 }
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
@@ -46,15 +48,30 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       placeholder = "Select Date",
       label,
       error,
+      disablePast = false,
+      disableFuture = false,
+      placement = "bottom",
     },
     ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
+    const [prevValue, setPrevValue] = useState(value);
     const [currentMonth, setCurrentMonth] = useState(
       value ? new Date(value) : new Date(),
     );
+
+    const [viewMode, setViewMode] = useState<"days" | "months" | "years">(
+      "days",
+    );
+
+    if (value !== prevValue) {
+      setPrevValue(value);
+      if (value) {
+        setCurrentMonth(new Date(value));
+      }
+    }
 
     const [coords, setCoords] = useState({
       top: 0,
@@ -82,6 +99,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       if (!mounted) setMounted(true);
       if (!isOpen) {
         updateCoords();
+        setViewMode("days");
       }
       setIsOpen(!isOpen);
     };
@@ -121,22 +139,85 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       const days = eachDayOfInterval({ start, end });
       const selectedDate = value ? startOfDay(new Date(value)) : null;
 
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const currentYearNum = new Date().getFullYear();
+      const maxYear = disableFuture ? currentYearNum : currentYearNum + 10;
+      const years = Array.from({ length: 100 }, (_, i) => maxYear - i);
+
+      const isNextMonthFuture =
+        startOfMonth(addMonths(currentMonth, 1)) > startOfMonth(new Date());
+      const disableRightArrow =
+        disableFuture &&
+        ((viewMode === "days" && isNextMonthFuture) ||
+          (viewMode === "years" &&
+            currentMonth.getFullYear() + 10 > currentYearNum));
+
       return (
         <div className="w-[300px] p-4 bg-card">
-          <div className="flex items-center justify-between mb-4">
-            <Typography
-              variant="body3"
-              weight="bold"
-              className="capitalize text-slate-800 dark:text-slate-100"
-            >
-              {format(currentMonth, "MMMM yyyy")}
-            </Typography>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex gap-1.5 items-center">
+              <button
+                type="button"
+                onClick={() =>
+                  setViewMode(viewMode === "months" ? "days" : "months")
+                }
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider border transition-all duration-200 shadow-sm",
+                  viewMode === "months"
+                    ? "bg-brand-primary text-white border-brand-primary shadow-brand-primary/20"
+                    : "bg-brand-primary/5 hover:bg-brand-primary/10 dark:bg-brand-primary/10 dark:hover:bg-brand-primary/15 border-brand-primary/40 dark:border-brand-primary/30 text-brand-primary",
+                )}
+              >
+                {months[currentMonth.getMonth()].slice(0, 3)}
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setViewMode(viewMode === "years" ? "days" : "years")
+                }
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider border transition-all duration-200 shadow-sm",
+                  viewMode === "years"
+                    ? "bg-brand-primary text-white border-brand-primary shadow-brand-primary/20"
+                    : "bg-brand-primary/5 hover:bg-brand-primary/10 dark:bg-brand-primary/10 dark:hover:bg-brand-primary/15 border-brand-primary/40 dark:border-brand-primary/30 text-brand-primary",
+                )}
+              >
+                {currentMonth.getFullYear()}
+              </button>
+            </div>
             <div className="flex gap-1">
               <Button
                 variant="ghost"
                 size="icon-sm"
                 className="h-8 w-8 rounded-lg"
-                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                onClick={() => {
+                  if (viewMode === "days") {
+                    setCurrentMonth(subMonths(currentMonth, 1));
+                  } else if (viewMode === "years") {
+                    setCurrentMonth(
+                      new Date(
+                        currentMonth.getFullYear() - 10,
+                        currentMonth.getMonth(),
+                        1,
+                      ),
+                    );
+                  }
+                }}
+                disabled={viewMode === "months"}
               >
                 <ChevronLeft size={16} />
               </Button>
@@ -144,58 +225,154 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                 variant="ghost"
                 size="icon-sm"
                 className="h-8 w-8 rounded-lg"
-                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                onClick={() => {
+                  if (viewMode === "days") {
+                    setCurrentMonth(addMonths(currentMonth, 1));
+                  } else if (viewMode === "years") {
+                    setCurrentMonth(
+                      new Date(
+                        currentMonth.getFullYear() + 10,
+                        currentMonth.getMonth(),
+                        1,
+                      ),
+                    );
+                  }
+                }}
+                disabled={viewMode === "months" || disableRightArrow}
               >
                 <ChevronRight size={16} />
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-              <div
-                key={day}
-                className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((day, i) => {
-              const isCurrentMonth = getMonth(day) === getMonth(currentMonth);
-              const isSelected = selectedDate && isSameDay(day, selectedDate);
-              const isTodayDate = isToday(day);
 
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={!isCurrentMonth}
-                  onClick={() => handleDateClick(day)}
-                  className={cn(
-                    "h-9 text-[11px] font-medium flex items-center justify-center transition-all relative rounded-md",
-                    !isCurrentMonth &&
-                      "text-slate-200 dark:text-slate-700 cursor-default",
-                    isCurrentMonth &&
-                      "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
-                    isSelected &&
-                      "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/20 scale-105 z-10 hover:bg-brand-primary hover:text-white",
-                    isTodayDate &&
-                      !isSelected &&
-                      "text-brand-primary font-bold after:content-[''] after:absolute after:bottom-1.5 after:w-1 after:h-1 after:bg-brand-primary after:rounded-full",
-                  )}
-                >
-                  {format(day, "d")}
-                </button>
-              );
-            })}
-          </div>
+          {viewMode === "days" && (
+            <>
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                  <div
+                    key={day}
+                    className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-wider"
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, i) => {
+                  const isCurrentMonth =
+                    getMonth(day) === getMonth(currentMonth);
+                  const isSelected =
+                    selectedDate && isSameDay(day, selectedDate);
+                  const isTodayDate = isToday(day);
+                  const isPast = startOfDay(day) < startOfDay(new Date());
+                  const isFutureDay =
+                    disableFuture && startOfDay(day) > startOfDay(new Date());
+                  const isDisabled =
+                    !isCurrentMonth || (disablePast && isPast) || isFutureDay;
+
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => handleDateClick(day)}
+                      className={cn(
+                        "h-9 text-[11px] font-medium flex items-center justify-center transition-all relative rounded-md",
+                        !isCurrentMonth &&
+                          "text-slate-200 dark:text-slate-700 cursor-default",
+                        isCurrentMonth &&
+                          isDisabled &&
+                          "text-slate-300 dark:text-slate-700 cursor-not-allowed hover:bg-transparent opacity-40",
+                        isCurrentMonth &&
+                          !isDisabled &&
+                          "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
+                        isSelected &&
+                          "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/20 scale-105 z-10 hover:bg-brand-primary hover:text-white",
+                        isTodayDate &&
+                          !isSelected &&
+                          "text-brand-primary font-bold after:content-[''] after:absolute after:bottom-1.5 after:w-1 after:h-1 after:bg-brand-primary after:rounded-full",
+                      )}
+                    >
+                      {format(day, "d")}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {viewMode === "months" && (
+            <div className="grid grid-cols-3 gap-2 py-2 min-h-[220px] items-center animate-in fade-in zoom-in-95 duration-200">
+              {months.map((month, index) => {
+                const isSelected = currentMonth.getMonth() === index;
+                const isFutureMonth =
+                  disableFuture &&
+                  currentMonth.getFullYear() === currentYearNum &&
+                  index > new Date().getMonth();
+                return (
+                  <button
+                    key={month}
+                    type="button"
+                    disabled={isFutureMonth}
+                    onClick={() => {
+                      const updatedDate = new Date(currentMonth);
+                      updatedDate.setMonth(index);
+                      setCurrentMonth(updatedDate);
+                      setViewMode("days");
+                    }}
+                    className={cn(
+                      "py-3 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all border border-transparent",
+                      isSelected
+                        ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20 scale-105"
+                        : isFutureMonth
+                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40 hover:bg-transparent"
+                          : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
+                    )}
+                  >
+                    {month.slice(0, 3)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {viewMode === "years" && (
+            <div className="grid grid-cols-4 gap-2 py-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 animate-in fade-in zoom-in-95 duration-200">
+              {years.map((year) => {
+                const isSelected = currentMonth.getFullYear() === year;
+                return (
+                  <button
+                    key={year}
+                    type="button"
+                    onClick={() => {
+                      const updatedDate = new Date(currentMonth);
+                      updatedDate.setFullYear(year);
+                      setCurrentMonth(updatedDate);
+                      setViewMode("days");
+                    }}
+                    className={cn(
+                      "py-2 text-[11px] font-bold rounded-lg transition-all border border-transparent",
+                      isSelected
+                        ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20 scale-105"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
+                    )}
+                  >
+                    {year}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <Button
               variant="ghost"
               size="sm"
               className="text-[10px] h-7 text-brand-primary font-bold uppercase"
-              onClick={() => handleDateClick(new Date())}
+              onClick={() => {
+                setViewMode("days");
+                handleDateClick(new Date());
+              }}
             >
               Today
             </Button>
@@ -212,24 +389,30 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       );
     };
 
+    const isTop = placement === "top";
+
     const menuNode = (
       <AnimatePresence>
         {isOpen && (
           <div
             style={{
               position: "absolute",
-              top: coords.top + coords.height + 8,
+              top: isTop ? coords.top - 8 : coords.top + coords.height + 8,
               left: Math.max(16, coords.left + coords.width - 300),
               zIndex: 99999,
+              transform: isTop ? "translateY(-100%)" : "none",
             }}
             ref={dropdownRef}
           >
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: isTop ? 10 : -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              exit={{ opacity: 0, y: isTop ? 10 : -10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-card border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden origin-top-right shadow-brand-primary/5"
+              className={cn(
+                "bg-card border-2 border-brand-primary/30 dark:border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5",
+                isTop ? "origin-bottom-right" : "origin-top-right",
+              )}
             >
               {renderCalendar()}
             </motion.div>

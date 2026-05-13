@@ -103,7 +103,7 @@ export function DashboardClient({
 
   return (
     <div className="min-h-screen dark:bg-[radial-gradient(circle_at_top_right,_rgba(39,39,42,0.1),_transparent_40%)] py-4 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto">
         {/* Dashboard Header */}
         <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-2">

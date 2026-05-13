@@ -64,24 +64,14 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("department") && (
         <TableCell>
-          <Badge
-            variant="outline"
-            color="secondary"
-            shape="square"
-            className="font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 border-blue-200/50 text-blue-600"
-          >
+          <Badge variant="outline" color="secondary" shape="square">
             {row.department_name ?? "N/A"}
           </Badge>
         </TableCell>
       )}
       {isVisible("test_level") && (
         <TableCell>
-          <Badge
-            variant="outline"
-            color="primary"
-            shape="square"
-            className="font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 border-orange-200/50 text-brand-primary"
-          >
+          <Badge variant="outline" color="primary" shape="square">
             {row.test_level_name ?? "N/A"}
           </Badge>
         </TableCell>

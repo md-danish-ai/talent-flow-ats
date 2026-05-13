@@ -26,6 +26,7 @@ import { QuestionCreationModal } from "@components/features/questions/QuestionCr
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { TypingTestRow } from "./components/TypingTestRow";
 import EditTypingTestModal from "./components/EditTypingTestModal";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -49,6 +50,7 @@ export function TypingTestClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
@@ -105,6 +107,7 @@ export function TypingTestClient() {
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -240,7 +243,7 @@ export function TypingTestClient() {
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}
@@ -284,6 +287,10 @@ export function TypingTestClient() {
                         togglingId={togglingId}
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -341,6 +348,13 @@ export function TypingTestClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.TYPING_TEST}
+      />
     </PageContainer>
   );
 }

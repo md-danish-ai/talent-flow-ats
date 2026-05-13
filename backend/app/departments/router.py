@@ -39,7 +39,10 @@ def create(payload: DepartmentCreate):
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
 
 
-@router.put("/update-department/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.put(
+    "/update-department/{department_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
 def update(department_id: int, payload: DepartmentUpdate):
     data = service.update(department_id, payload)
     if not data:
@@ -47,7 +50,10 @@ def update(department_id: int, payload: DepartmentUpdate):
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/remove-department/{department_id}", dependencies=[Depends(require_roles(["admin"]))])
+@router.delete(
+    "/remove-department/{department_id}",
+    dependencies=[Depends(require_roles(["admin"]))],
+)
 def delete(department_id: int):
     success = service.delete(department_id)
     if not success:

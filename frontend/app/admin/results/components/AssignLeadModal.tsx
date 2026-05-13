@@ -214,7 +214,6 @@ export function AssignLeadModal({
                         color={
                           item.status === "completed" ? "success" : "warning"
                         }
-                        className="text-[9px] font-black uppercase"
                       >
                         {item.status}
                       </Badge>

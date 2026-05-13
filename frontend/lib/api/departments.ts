@@ -31,14 +31,20 @@ export const departmentsApi = {
   },
 
   createDepartment: async (data: DepartmentCreate) => {
-    return api.post<Department>(ENDPOINTS.DEPARTMENTS.CREATE, data);
+    return api.post<Department>(ENDPOINTS.DEPARTMENTS.CREATE, data, {
+      silentSuccess: true,
+    });
   },
 
   updateDepartment: async (id: number, data: DepartmentUpdate) => {
-    return api.put<Department>(ENDPOINTS.DEPARTMENTS.UPDATE(id), data);
+    return api.put<Department>(ENDPOINTS.DEPARTMENTS.UPDATE(id), data, {
+      silentSuccess: true,
+    });
   },
 
   deleteDepartment: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.DEPARTMENTS.DELETE(id));
+    return api.delete<void>(ENDPOINTS.DEPARTMENTS.DELETE(id), {
+      silentSuccess: true,
+    });
   },
 };

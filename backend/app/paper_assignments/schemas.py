@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -43,7 +44,7 @@ class InterviewPaperQuestionResponse(BaseModel):
     image_url: str | None = None
     passage: str | None = None
     marks: int | None = None
-    options: list[str] = []
+    options: list[Any] = []
 
 
 class InterviewPaperSectionResponse(BaseModel):
@@ -77,6 +78,7 @@ class AssignedInterviewPaperResponse(BaseModel):
 
 
 # Auto Assignment Rule Schemas
+
 
 class AutoAssignmentRuleBase(BaseModel):
     department_id: int

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { Badge } from "@components/ui-elements/Badge";
@@ -206,14 +207,22 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="relative rounded-[2rem] border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500">
+      <div
+        className={cn(
+          "relative border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500",
+          STYLE_CONFIG.cardRadius,
+        )}
+      >
         <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-slate-50/50 dark:bg-slate-800/30">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={onBack}
-              className="rounded-xl hover:bg-brand-primary/10 hover:text-brand-primary"
+              className={cn(
+                STYLE_CONFIG.iconRadius,
+                "hover:bg-brand-primary/10 hover:text-brand-primary",
+              )}
             >
               <ArrowLeft size={18} />
             </Button>
@@ -274,8 +283,18 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-8 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/desc transition-all duration-300 hover:border-brand-primary/20">
-              <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-10">
+            <div
+              className={cn(
+                "md:col-span-8 p-6 bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/desc transition-all duration-300 hover:border-brand-primary/20",
+                STYLE_CONFIG.innerCardRadius,
+              )}
+            >
+              <div
+                className={cn(
+                  "absolute -top-3 left-6 px-3 py-1 bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-10",
+                  STYLE_CONFIG.badgeRadius,
+                )}
+              >
                 <FileText size={12} className="text-brand-primary" />
                 <Typography
                   variant="body5"
@@ -293,7 +312,12 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
               </Typography>
             </div>
 
-            <div className="md:col-span-4 p-6 rounded-2xl bg-brand-primary/[0.03] border border-brand-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden group/level">
+            <div
+              className={cn(
+                "md:col-span-4 p-6 bg-brand-primary/[0.03] border border-brand-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden group/level",
+                STYLE_CONFIG.innerCardRadius,
+              )}
+            >
               <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
                 <Layers size={80} />
               </div>
@@ -329,7 +353,12 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
           <div className="h-[1px] flex-1 bg-gradient-to-r from-border/60 to-transparent" />
         </div>
 
-        <div className="border border-border rounded-[1.5rem] overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] bg-white dark:bg-slate-950">
+        <div
+          className={cn(
+            "border border-border overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] bg-white dark:bg-slate-950",
+            STYLE_CONFIG.cardRadius,
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -433,7 +462,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                     <TableCell className="text-center font-bold text-slate-400 pl-8">
                                       {String(qIndex + 1).padStart(2, "0")}
                                     </TableCell>
-                                    <TableCell className="max-w-[400px]">
+                                    <TableCell className="max-w-[250px]">
                                       <Typography
                                         variant="body5"
                                         weight="bold"
@@ -447,7 +476,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                         variant="outline"
                                         shape="square"
                                         color="primary"
-                                        className="font-black text-[9px] px-2 py-0.5 border-brand-primary/20 uppercase tracking-widest whitespace-nowrap"
                                       >
                                         {q.question_type?.name || "N/A"}
                                       </Badge>
@@ -506,7 +534,6 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             ? "success"
                             : "primary"
                         }
-                        className="font-black text-[10px] px-3 py-1 border-brand-primary/20"
                       >
                         {
                           assignedQuestions.filter(
@@ -532,7 +559,12 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell className="text-center pr-8">
-                      <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-brand-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-slate-900/20 dark:shadow-brand-primary/20 transition-transform duration-300 group-hover/row:scale-110">
+                      <div
+                        className={cn(
+                          "w-9 h-9 bg-slate-900 dark:bg-brand-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-slate-900/20 dark:shadow-brand-primary/20 transition-transform duration-300 group-hover/row:scale-110",
+                          STYLE_CONFIG.badgeRadius,
+                        )}
+                      >
                         {config.order}
                       </div>
                     </TableCell>
@@ -581,12 +613,18 @@ const StatsCard = ({
 }) => (
   <div
     className={cn(
-      "flex items-center gap-4 p-4 rounded-2xl border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md",
+      "flex items-center gap-4 p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md",
+      STYLE_CONFIG.innerCardRadius,
       bgColor,
       borderColor,
     )}
   >
-    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm">
+    <div
+      className={cn(
+        "p-2.5 bg-white dark:bg-slate-900 shadow-sm",
+        STYLE_CONFIG.iconRadius,
+      )}
+    >
       {icon}
     </div>
     <div className="flex flex-col">

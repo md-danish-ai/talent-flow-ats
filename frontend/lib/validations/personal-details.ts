@@ -25,6 +25,7 @@ export interface Education {
   division: string;
   percentage: string;
   medium: string;
+  details: string;
 }
 
 export interface WorkExperience {
@@ -96,8 +97,10 @@ export const familyMemberSchema = z
     const hasDetails =
       data.name.trim() !== "" ||
       data.occupation.trim() !== "" ||
-      data.dependent.trim() !== "" ||
-      (data.relationLabel === "Brother/Sister" && data.relation.trim() !== "");
+      data.dependent === "Yes" ||
+      data.dependent === "No" ||
+      (data.relationLabel === "Brother/Sister" &&
+        (data.relation === "Brother" || data.relation === "Sister"));
 
     if (isMandatory || hasDetails) {
       if (
@@ -144,6 +147,7 @@ export const educationSchema = z
     division: z.string().default(""),
     percentage: z.string().default(""),
     medium: z.string().default(""),
+    details: z.string().default(""),
   })
   .superRefine((data, ctx) => {
     const isMandatory = data.type === "10th Std" || data.type === "12th Std";
@@ -248,13 +252,17 @@ const baseSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
   dob: z.string().min(1, "Date of birth is required"),
-  primaryMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
-  alternateMobile: z.string().default(""),
-  email: z
+  primaryMobile: z
     .string()
-    .email("Invalid email address")
-    .or(z.literal(""))
-    .default(""),
+    .length(10, "Mobile number must be exactly 10 digits.")
+    .regex(/^\d+$/, "Mobile number must contain only digits."),
+  alternateMobile: z
+    .string()
+    .length(10, "Alternate mobile must be exactly 10 digits.")
+    .regex(/^\d+$/, "Alternate mobile must contain only digits.")
+    .optional()
+    .or(z.literal("")),
+  email: z.string().email("Valid email address is required"),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
   presentState: z.string().min(1, "State is required"),

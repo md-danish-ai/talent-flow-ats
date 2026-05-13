@@ -21,18 +21,13 @@ import { type GradeSetting } from "@types";
 import { toast } from "@lib/toast";
 import { Trash2, Edit2, Loader2 } from "lucide-react";
 
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+
 interface GradeSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   paperId: number;
 }
-
-const GRADE_OPTIONS = [
-  { label: "Poor", value: "Poor" },
-  { label: "Average", value: "Average" },
-  { label: "Good", value: "Good" },
-  { label: "Excellent", value: "Excellent" },
-];
 
 export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
   isOpen,
@@ -195,10 +190,7 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                 placeholder="Please Select Grade"
                 value={formLabel}
                 onChange={(value) => setFormLabel(String(value))}
-                options={GRADE_OPTIONS.map((opt) => ({
-                  id: opt.value,
-                  label: opt.label,
-                }))}
+                options={GRADE_OPTIONS}
               />
             </div>
           </div>

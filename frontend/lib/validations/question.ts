@@ -7,6 +7,14 @@ export const mcqOptionSchema = z.object({
   isCorrect: z.boolean(),
 });
 
+export const imageMCQOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  content: z.string().optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
+  isCorrect: z.boolean(),
+});
+
 export const mcqSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
@@ -27,10 +35,10 @@ export const imageMCQSchema = z.object({
   examLevel: z.string().min(1, "Exam Level is required"),
   marks: z.coerce.number().min(1).max(50),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
-  questionImageUrl: z.string().min(1, "Question image is required"),
+  questionImageUrl: z.string().optional().or(z.literal("")),
   // Note: Add image fields here later if required (e.g., questionImage: z.any())
   options: z
-    .array(mcqOptionSchema)
+    .array(imageMCQOptionSchema)
     .min(2, "At least two options are required")
     .refine((options) => options.some((opt) => opt.isCorrect), {
       message: "One option must be marked as correct",
@@ -66,7 +74,12 @@ export const passageSchema = z.object({
   marks: z.coerce.number().min(1).max(50),
   passage: z.string().min(20, "Passage must be at least 20 characters"),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
-  answerText: z.string().min(1, "Answer is required"),
+  options: z
+    .array(mcqOptionSchema)
+    .min(2, "At least two options are required")
+    .refine((options) => options.some((opt) => opt.isCorrect), {
+      message: "One option must be marked as correct",
+    }),
   explanation: z.string().optional(),
 });
 
@@ -97,6 +110,9 @@ export const leadGenerationSchema = z.object({
   name: z.string().min(1, "Name is required"),
   title: z.string().min(1, "Title is required"),
   email: z.string().email("Invalid email").min(1, "Email is required"),
+  linkedinUrl: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
 });
 
 // Company Contact Details Validations

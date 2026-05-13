@@ -239,12 +239,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
                 </div>
 
                 {userLevel && (
-                  <Badge
-                    variant="outline"
-                    color="primary"
-                    shape="square"
-                    className="font-black text-[9px] px-2.5 py-1 border-brand-primary/20 uppercase tracking-widest"
-                  >
+                  <Badge variant="outline" color="primary" shape="square">
                     {userLevel}
                   </Badge>
                 )}

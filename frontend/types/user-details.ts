@@ -45,6 +45,7 @@ export interface EducationDetail {
   division: string;
   percentage: string;
   medium: string;
+  details: string;
 }
 
 export interface WorkExperienceDetail {

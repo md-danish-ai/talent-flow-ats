@@ -2,21 +2,15 @@ import { z } from "zod";
 
 export const evaluationSchema = z.object({
   evaluation_data: z.object({
-    Communication: z.string().min(1, "Communication rating is required"),
-    "Domain Knowledge": z
-      .string()
-      .min(1, "Domain Knowledge rating is required"),
-    "Critical Thinking": z
-      .string()
-      .min(1, "Critical Thinking rating is required"),
-    Professionalism: z.string().min(1, "Professionalism rating is required"),
-    "Cultural Fit": z.string().min(1, "Cultural Fit rating is required"),
-    "Learning Ability": z
-      .string()
-      .min(1, "Learning Ability rating is required"),
+    Communication: z.string().optional().or(z.literal("")),
+    "Domain Knowledge": z.string().optional().or(z.literal("")),
+    "Critical Thinking": z.string().optional().or(z.literal("")),
+    Professionalism: z.string().optional().or(z.literal("")),
+    "Cultural Fit": z.string().optional().or(z.literal("")),
+    "Learning Ability": z.string().optional().or(z.literal("")),
   }),
-  overall_grade: z.string().min(1, "Overall grade is required"),
-  final_result_id: z.coerce.number().min(1, "Final result is required"),
+  overall_grade: z.string().optional().or(z.literal("")),
+  final_result_id: z.coerce.number().optional().or(z.literal(0)),
   comments: z.string().optional().or(z.literal("")),
 });
 

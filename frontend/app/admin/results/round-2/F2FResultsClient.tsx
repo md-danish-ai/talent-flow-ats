@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { Typography } from "@components/ui-elements/Typography";
+
 import { MainCard } from "@components/ui-cards/MainCard";
 import {
   Table,
@@ -74,22 +74,12 @@ export default function F2FResultsClient() {
   });
 
   return (
-    <PageContainer className="space-y-8 max-w-7xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <Typography variant="h2" className="font-black tracking-tight">
-          Face-to-Face Round Results
-        </Typography>
-        <Typography variant="body4" className="text-muted-foreground">
-          View all candidates currently in or completed the Round 2 interview
-          process.
-        </Typography>
-      </div>
-
+    <PageContainer className="space-y-8">
       <MainCard
         title={
           <div className="flex items-center gap-2">
             <Users size={18} className="text-brand-primary" />
-            <span>Interview Evaluations</span>
+            <span>Round 2 Face-to-Face Round Results</span>
           </div>
         }
         action={
@@ -180,7 +170,6 @@ export default function F2FResultsClient() {
                                 ? "success"
                                 : "warning"
                             }
-                            className="uppercase tracking-widest text-[9px] font-black"
                           >
                             {item.status}
                           </Badge>
@@ -200,7 +189,6 @@ export default function F2FResultsClient() {
                                       ? "warning"
                                       : "error"
                               }
-                              className="font-bold uppercase"
                             >
                               {item.overall_grade}
                             </Badge>

@@ -13,6 +13,8 @@ import {
   Eye,
 } from "lucide-react";
 import Link from "next/link";
+import { STYLE_CONFIG } from "@lib/config/style";
+import { cn } from "@lib/utils";
 
 interface AttemptHistoryCardProps {
   attemptId: number;
@@ -36,6 +38,7 @@ interface AttemptHistoryCardProps {
     errors: number;
     time_taken: number;
   } | null;
+  activeDurationSeconds?: number;
 }
 
 export const AttemptHistoryCard = ({
@@ -55,15 +58,24 @@ export const AttemptHistoryCard = ({
   userId,
   statusBadge,
   typingStats,
+  activeDurationSeconds,
 }: AttemptHistoryCardProps) => {
   const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
 
   // Calculate Duration
   const getDuration = () => {
+    // Prefer cumulative active seconds recorded by backend
+    if (activeDurationSeconds && activeDurationSeconds > 0) {
+      const mins = Math.floor(activeDurationSeconds / 60);
+      const secs = activeDurationSeconds % 60;
+      return `${mins}m ${secs}s`;
+    }
+
+    // Fallback for legacy attempts or in-progress states
     if (!startedAt || !submittedAt) return "--:--";
     const start = parseUTC(startedAt).getTime();
     const end = parseUTC(submittedAt).getTime();
-    const diff = Math.floor((end - start) / 1000);
+    const diff = Math.max(0, Math.floor((end - start) / 1000));
     const mins = Math.floor(diff / 60);
     const secs = diff % 60;
     return `${mins}m ${secs}s`;
@@ -83,7 +95,12 @@ export const AttemptHistoryCard = ({
   };
 
   return (
-    <div className="group relative flex flex-col gap-6 overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-2 hover:border-brand-primary/50 hover:shadow-2xl hover:shadow-brand-primary/10">
+    <div
+      className={cn(
+        "group relative flex flex-col gap-6 overflow-hidden border border-border bg-card p-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-2 hover:border-brand-primary/50 hover:shadow-2xl hover:shadow-brand-primary/10",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
       {/* Left Side Status Pillar */}
       <div
         className={`absolute inset-y-0 left-0 w-1.5 transition-colors duration-300 ${getPillarColor(status)}`}
@@ -114,23 +131,27 @@ export const AttemptHistoryCard = ({
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {statusBadge}
 
-              <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-muted/40 border border-border/40">
-                <Badge
-                  variant="outline"
-                  color={isAutoSubmitted ? "warning" : "secondary"}
-                  className="border-none bg-transparent p-0 text-[10px] lowercase font-bold tracking-widest text-muted-foreground"
-                >
-                  {isAutoSubmitted
-                    ? "Auto-Submit"
-                    : completionReason || "Manual"}
-                </Badge>
-              </div>
+              <Badge
+                variant="outline"
+                color={isAutoSubmitted ? "warning" : "secondary"}
+                shape="square"
+                className="font-black"
+              >
+                {isAutoSubmitted
+                  ? "AUTO-SUBMIT"
+                  : (completionReason || "Manual").toUpperCase()}
+              </Badge>
             </div>
           </div>
         </div>
 
         {/* Time Data Row (Integrated into specialized card) */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl bg-muted/20 px-4 py-3 border border-border/30">
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-x-4 gap-y-3 bg-muted/20 px-4 py-3 border border-border/30",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
           {/* Date Column */}
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
@@ -205,7 +226,12 @@ export const AttemptHistoryCard = ({
 
       {/* Typing Stats Preview (if available) */}
       {typingStats && (
-        <div className="flex flex-wrap items-center gap-4 px-4 py-2 bg-brand-primary/5 rounded-xl border border-brand-primary/10 -mt-2 animate-in fade-in slide-in-from-left-2 duration-700">
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-4 px-4 py-2 bg-brand-primary/5 border border-brand-primary/10 -mt-2 animate-in fade-in slide-in-from-left-2 duration-700",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary opacity-60">
               Typing Speed
@@ -239,7 +265,12 @@ export const AttemptHistoryCard = ({
       )}
 
       {/* Performance Footer */}
-      <div className="flex flex-wrap items-center justify-between rounded-xl bg-muted/30 p-4 ring-1 ring-border/50 gap-4">
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between bg-muted/30 p-4 ring-1 ring-border/50 gap-4",
+          STYLE_CONFIG.innerCardRadius,
+        )}
+      >
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">

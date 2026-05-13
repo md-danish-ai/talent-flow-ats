@@ -8,7 +8,6 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Button } from "@components/ui-elements/Button";
 import { Plus, FileText } from "lucide-react";
-import { toast } from "@lib/toast";
 import { PaperSetupTable } from "./components/PaperSetupTable";
 import { papersApi } from "@lib/api/papers";
 import { PaperSetup } from "@types";
@@ -103,7 +102,6 @@ export function PaperSetupClient() {
     try {
       await papersApi.togglePaperStatus(id, !currentStatus);
       void refresh();
-      toast.success(`Paper ${!currentStatus ? "activated" : "deactivated"}`);
     } catch {
       // Error is handled by API client
     } finally {
@@ -124,7 +122,7 @@ export function PaperSetupClient() {
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <FileText size={18} />
             </div>
-            Active Test Papers
+            Paper Setup
           </div>
         }
         action={

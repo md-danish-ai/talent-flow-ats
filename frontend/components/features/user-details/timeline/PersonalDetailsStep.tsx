@@ -85,7 +85,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
             {(field) => (
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                  E-Mail
+                  E-Mail <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="email"
@@ -204,6 +204,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0
                   }
+                  disableFuture={true}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (

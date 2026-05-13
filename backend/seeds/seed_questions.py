@@ -99,7 +99,15 @@ def seed_data():
                     elif q_type == "PASSAGE_CONTENT":
                         passage = f"This is a sample passage for {subject} regarding concept {i}. It describes the fundamental principles and their applications in a {level} level environment."
                         q_text = f"Based on the provided passage, what is the best strategy for handling {subject} scenario {i}?"
-                        ans_text = f"The best strategy involves identifying the {subject} variables mentioned in the passage and addressing them sequentially."
+                        correct_ans = f"The best strategy involves identifying the {subject} variables mentioned in the passage and addressing them sequentially."
+                        
+                        options = [
+                            {"option_label": "A", "option_text": correct_ans, "is_correct": True},
+                            {"option_label": "B", "option_text": f"Distractor Option B for {subject} {i}", "is_correct": False},
+                            {"option_label": "C", "option_text": f"Distractor Option C for {subject} {i}", "is_correct": False},
+                            {"option_label": "D", "option_text": f"Distractor Option D for {subject} {i}", "is_correct": False},
+                        ]
+                        ans_text = "A"
 
                         existing_passage_q = db.query(Question).filter(
                             Question.question_type == q_type,

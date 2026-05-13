@@ -26,6 +26,7 @@ import { QuestionCreationModal } from "@components/features/questions/QuestionCr
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
 import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
+import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -49,6 +50,7 @@ export function LeadGenerationClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
 
@@ -95,6 +97,8 @@ export function LeadGenerationClient() {
     { id: "name", label: "Name" },
     { id: "title", label: "Title" },
     { id: "linkedInUrl", label: "LinkedIn URL" },
+    { id: "phone", label: "Phone" },
+    { id: "address", label: "Address/Location" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -110,6 +114,7 @@ export function LeadGenerationClient() {
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -253,6 +258,12 @@ export function LeadGenerationClient() {
                     {visibleColumns.includes("linkedInUrl") && (
                       <TableHead>LinkedIn URL</TableHead>
                     )}
+                    {visibleColumns.includes("phone") && (
+                      <TableHead>Phone</TableHead>
+                    )}
+                    {visibleColumns.includes("address") && (
+                      <TableHead>Address/Location</TableHead>
+                    )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
                     )}
@@ -260,7 +271,7 @@ export function LeadGenerationClient() {
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}
@@ -304,6 +315,10 @@ export function LeadGenerationClient() {
                         togglingId={togglingId}
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -361,6 +376,13 @@ export function LeadGenerationClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => void refresh()}
+        questionType={QUESTION_TYPES.LEAD_GENERATION}
+      />
     </PageContainer>
   );
 }

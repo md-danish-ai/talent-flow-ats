@@ -4,6 +4,7 @@ import traceback
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.auth.router import router as auth_router
@@ -39,6 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# GZip compression: Reduces large JSON responses (e.g. paper with 100 questions) by ~60-70%
+# Especially useful on LAN where payload size still matters
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 2. STATIC FILES & STORAGE
@@ -104,8 +109,7 @@ app.include_router(departments_router)
 app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
-app.include_router(evaluations_router,
-                   prefix="/evaluations", tags=["Evaluations"])
+app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

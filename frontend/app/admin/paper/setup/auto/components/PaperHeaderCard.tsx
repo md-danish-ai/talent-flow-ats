@@ -3,8 +3,10 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Typography } from "@components/ui-elements/Typography";
+import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import {
-  ChevronLeft,
+  ArrowLeft,
   Wand2,
   Layers,
   BookOpen,
@@ -14,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import { Button } from "@components/ui-elements/Button";
 import { PaperSetup } from "@types";
 import { StatsCard } from "./StatsCard";
 
@@ -25,15 +28,25 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col gap-8 mb-6 p-6 md:p-6 lg:px-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] transition-all">
+    <div
+      className={cn(
+        "flex flex-col gap-8 mb-6 p-6 md:p-6 lg:px-6 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.05)] transition-all",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800/50 pb-6">
         <div className="flex items-center gap-6">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => router.back()}
-            className="bg-slate-50 dark:bg-slate-800/80 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100 hover:border-brand-primary/30 transition-all rounded-full min-w-[3.5rem] w-14 h-14 flex items-center justify-center text-slate-500 hover:text-brand-primary active:scale-95 shrink-0"
+            className={cn(
+              STYLE_CONFIG.iconRadius,
+              "hover:bg-brand-primary/10 hover:text-brand-primary shrink-0",
+            )}
           >
-            <ChevronLeft size={22} strokeWidth={2.5} className="mr-0.5" />
-          </button>
+            <ArrowLeft size={18} />
+          </Button>
           <div className="flex flex-col space-y-1.5">
             <Typography
               variant="h3"
@@ -52,7 +65,12 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
           </div>
         </div>
 
-        <div className="flex bg-brand-primary/[0.08] dark:bg-brand-primary/10 border border-brand-primary/20 px-6 py-4 rounded-[1rem] gap-3.5 items-center shrink-0">
+        <div
+          className={cn(
+            "flex bg-brand-primary/[0.08] dark:bg-brand-primary/10 border border-brand-primary/20 px-6 py-4 gap-3.5 items-center shrink-0",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
           <Wand2 size={24} className="text-brand-primary" strokeWidth={2.5} />
           <div className="flex flex-col gap-0.5">
             <Typography
@@ -109,8 +127,18 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-2">
-        <div className="md:col-span-8 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/desc transition-all duration-300 hover:border-brand-primary/20">
-          <div className="absolute -top-3 left-6 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-10">
+        <div
+          className={cn(
+            "md:col-span-8 p-6 bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/desc transition-all duration-300 hover:border-brand-primary/20",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
+          <div
+            className={cn(
+              "absolute -top-3 left-6 px-3 py-1 bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-10",
+              STYLE_CONFIG.badgeRadius,
+            )}
+          >
             <FileText size={12} className="text-brand-primary" />
             <Typography
               variant="body5"
@@ -131,7 +159,12 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
           </Typography>
         </div>
 
-        <div className="md:col-span-4 p-6 rounded-2xl bg-brand-primary/[0.03] border border-brand-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden group/level">
+        <div
+          className={cn(
+            "md:col-span-4 p-6 bg-brand-primary/[0.03] border border-brand-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden group/level",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
           <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
             <Layers size={80} />
           </div>

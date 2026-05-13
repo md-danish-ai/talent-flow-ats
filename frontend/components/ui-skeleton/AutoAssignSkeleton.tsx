@@ -3,7 +3,7 @@ import { Skeleton } from "@components/ui-elements/Skeleton";
 
 export function AutoAssignSkeleton() {
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 animate-in fade-in duration-500">
       {/* Header Card Skeleton */}
       <div className="flex flex-col gap-8 mb-6 p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-border/40 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border/40 pb-6">

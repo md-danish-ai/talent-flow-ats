@@ -31,8 +31,11 @@ export const papersApi = {
     return api.get<Paper>(ENDPOINTS.PAPERS.GET_BY_ID(id));
   },
 
-  createPaper: async (data: PaperCreate) => {
-    return api.post<Paper>(ENDPOINTS.PAPERS.CREATE, data);
+  createPaper: async (data: PaperCreate, options?: ApiRequestOptions) => {
+    return api.post<Paper>(ENDPOINTS.PAPERS.CREATE, data, {
+      silentSuccess: true,
+      ...options,
+    });
   },
 
   updatePaper: async (
@@ -40,18 +43,39 @@ export const papersApi = {
     data: Partial<PaperCreate>,
     options?: ApiRequestOptions,
   ) => {
-    return api.put<Paper>(ENDPOINTS.PAPERS.UPDATE(id), data, options);
+    return api.put<Paper>(ENDPOINTS.PAPERS.UPDATE(id), data, {
+      silentSuccess: true,
+      ...options,
+    });
   },
 
-  deletePaper: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.PAPERS.DELETE(id));
+  deletePaper: async (id: number, options?: ApiRequestOptions) => {
+    return api.delete<void>(ENDPOINTS.PAPERS.DELETE(id), {
+      silentSuccess: true,
+      ...options,
+    });
   },
 
-  togglePaperStatus: async (id: number, is_active: boolean) => {
-    return api.put<Paper>(ENDPOINTS.PAPERS.UPDATE(id), { is_active });
+  togglePaperStatus: async (
+    id: number,
+    is_active: boolean,
+    options?: ApiRequestOptions,
+  ) => {
+    return api.put<Paper>(
+      ENDPOINTS.PAPERS.UPDATE(id),
+      { is_active },
+      { silentSuccess: true, ...options },
+    );
   },
 
-  updateGradeSettings: async (id: number, grade_settings: GradeSetting[]) => {
-    return api.put<Paper>(ENDPOINTS.PAPERS.GRADE_SETTINGS(id), grade_settings);
+  updateGradeSettings: async (
+    id: number,
+    grade_settings: GradeSetting[],
+    options?: ApiRequestOptions,
+  ) => {
+    return api.put<Paper>(ENDPOINTS.PAPERS.GRADE_SETTINGS(id), grade_settings, {
+      silentSuccess: true,
+      ...options,
+    });
   },
 };

@@ -19,6 +19,8 @@ import { toast } from "@lib/toast";
 import { PaperSubjectConfig, Classification } from "@types";
 
 import { filterQuestionTypesForSubject, humanizeString } from "@lib/utils";
+import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface SubjectAssignmentCardProps {
   subj: PaperSubjectConfig;
@@ -161,7 +163,13 @@ export function SubjectAssignmentCard({
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className={`w-10 h-10 rounded-xl transition-all duration-300 ${isCollapsed ? "bg-slate-100 dark:bg-slate-800" : "bg-brand-primary/10 text-brand-primary"}`}
+            className={cn(
+              "w-10 h-10 transition-all duration-300",
+              STYLE_CONFIG.iconRadius,
+              isCollapsed
+                ? "bg-slate-100 dark:bg-slate-800"
+                : "bg-brand-primary/10 text-brand-primary",
+            )}
           >
             <motion.div
               animate={{ rotate: isCollapsed ? 0 : 180 }}
@@ -223,11 +231,17 @@ export function SubjectAssignmentCard({
                         hidden: { y: 10, opacity: 0 },
                         visible: { y: 0, opacity: 1 },
                       }}
-                      className={`relative p-5 rounded-[2rem] border transition-all duration-500 group overflow-hidden ${
+                      className={cn(
+                        "relative p-5 border transition-all duration-500 group overflow-hidden",
+                        STYLE_CONFIG.innerCardRadius,
                         Object.values(markReqs).some((v) => v > 0)
                           ? "border-brand-primary/50 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.07] ring-1 ring-brand-primary/20"
-                          : "border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50"
-                      } ${isTargetReached && !Object.values(markReqs).some((v) => v > 0) ? "opacity-40 scale-[0.98]" : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5"}`}
+                          : "border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50",
+                        isTargetReached &&
+                          !Object.values(markReqs).some((v) => v > 0)
+                          ? "opacity-40 scale-[0.98]"
+                          : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5",
+                      )}
                     >
                       <div className="flex flex-col gap-5 relative z-10">
                         <div className="flex flex-col gap-1">
@@ -266,7 +280,12 @@ export function SubjectAssignmentCard({
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+                                <div
+                                  className={cn(
+                                    "flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 border border-slate-200/50 dark:border-slate-800/50",
+                                    STYLE_CONFIG.innerCardRadius,
+                                  )}
+                                >
                                   <button
                                     onClick={() =>
                                       onQtyChange(
@@ -277,7 +296,13 @@ export function SubjectAssignmentCard({
                                       )
                                     }
                                     disabled={val <= 0}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${val > 0 ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95" : "text-slate-300 dark:text-slate-700 cursor-not-allowed"}`}
+                                    className={cn(
+                                      "w-10 h-10 flex items-center justify-center transition-all",
+                                      STYLE_CONFIG.iconRadius,
+                                      val > 0
+                                        ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95"
+                                        : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
+                                    )}
                                   >
                                     <Minus size={16} strokeWidth={3} />
                                   </button>
@@ -327,7 +352,13 @@ export function SubjectAssignmentCard({
                                       )
                                     }
                                     disabled={isTargetReached}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${!isTargetReached ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95" : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"}`}
+                                    className={cn(
+                                      "w-10 h-10 flex items-center justify-center transition-all",
+                                      STYLE_CONFIG.iconRadius,
+                                      !isTargetReached
+                                        ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95"
+                                        : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed",
+                                    )}
                                   >
                                     <Plus size={16} strokeWidth={3} />
                                   </button>
@@ -373,7 +404,13 @@ export function SubjectAssignmentCard({
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`p-2.5 rounded-full ${isPerfect ? "bg-brand-success/10 text-brand-success" : "bg-brand-primary/10 text-brand-primary"}`}
+                  className={cn(
+                    "p-2.5",
+                    STYLE_CONFIG.badgeRadius,
+                    isPerfect
+                      ? "bg-brand-success/10 text-brand-success"
+                      : "bg-brand-primary/10 text-brand-primary",
+                  )}
                 >
                   <AlertCircle size={22} strokeWidth={2} />
                 </div>

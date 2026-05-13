@@ -27,74 +27,104 @@ from app.database.db import SessionLocal
 # ─────────────────────────────────────────────────────────────────────────────
 LEADS = [
     {
-        "companyName": "Blake Jarrett & Co",
+        "company_name": "Blake Jarrett & Co",
         "website": "blakejarrett.ca",
-        "name": "Blake Jarrett",
-        "title": "CEO",
+        "contact_name": "Blake Jarrett",
+        "designation": "CEO",
         "email": "blake@blakejarrett.ca",
+        "linkedin_url": "https://www.linkedin.com/in/blakejarrett",
+        "phone": "+1 416-555-0101",
+        "address": "Toronto, ON, Canada",
     },
     {
-        "companyName": "Beracal Homes, Inc.",
+        "company_name": "Beracal Homes, Inc.",
         "website": "beracalhomes.com",
-        "name": "Trent Collins",
-        "title": "Contractor Sales",
+        "contact_name": "Trent Collins",
+        "designation": "Contractor Sales",
         "email": "trent@beracalhomes.com",
+        "linkedin_url": "https://www.linkedin.com/in/trentcollins",
+        "phone": "+1 613-555-0102",
+        "address": "Ottawa, ON, Canada",
     },
     {
-        "companyName": "American Excelsior Company",
+        "company_name": "American Excelsior Company",
         "website": "americanexcelsior.com",
-        "name": "Terry Sadowski",
-        "title": "President",
+        "contact_name": "Terry Sadowski",
+        "designation": "President",
         "email": "tsadowski@americanexcelsior.com",
+        "linkedin_url": "https://www.linkedin.com/in/terrysadowski",
+        "phone": "+1 817-555-0103",
+        "address": "Arlington, TX, USA",
     },
     {
-        "companyName": "Calgon Carbon Corporation",
+        "company_name": "Calgon Carbon Corporation",
         "website": "calgoncarbon.com",
-        "name": "Doug Conley",
-        "title": "Marketing Manager - Municipal",
+        "contact_name": "Doug Conley",
+        "designation": "Marketing Manager - Municipal",
         "email": "dconley@calgoncarbon.com",
+        "linkedin_url": "https://www.linkedin.com/in/dougconley",
+        "phone": "+1 412-555-0104",
+        "address": "Pittsburgh, PA, USA",
     },
     {
-        "companyName": "American Tank & Fabricating Company",
+        "company_name": "American Tank & Fabricating Company",
         "website": "atfco.com",
-        "name": "Ted Thorbjornsen",
-        "title": "General Manager",
+        "contact_name": "Ted Thorbjornsen",
+        "designation": "General Manager",
         "email": "tedt@atfco.com",
+        "linkedin_url": "https://www.linkedin.com/in/tedthorbjornsen",
+        "phone": "+1 216-555-0105",
+        "address": "Cleveland, OH, USA",
     },
     {
-        "companyName": "Paul Evans",
+        "company_name": "Paul Evans",
         "website": "paulevansny.com",
-        "name": "Evan Fript",
-        "title": "CEO",
+        "contact_name": "Evan Fript",
+        "designation": "CEO",
         "email": "evan@paulevansny.com",
+        "linkedin_url": "https://www.linkedin.com/in/evanfript",
+        "phone": "+1 212-555-0106",
+        "address": "New York, NY, USA",
     },
     {
-        "companyName": "Horizon Tech Solutions",
+        "company_name": "Horizon Tech Solutions",
         "website": "horizontech.io",
-        "name": "Sarah Mitchell",
-        "title": "VP of Sales",
+        "contact_name": "Sarah Mitchell",
+        "designation": "VP of Sales",
         "email": "sarah.mitchell@horizontech.io",
+        "linkedin_url": "https://www.linkedin.com/in/sarahmitchell",
+        "phone": "+1 408-555-0107",
+        "address": "San Jose, CA, USA",
     },
     {
-        "companyName": "Global Foods Inc.",
+        "company_name": "Global Foods Inc.",
         "website": "globalfoods.com",
-        "name": "Raj Mehta",
-        "title": "Head of Procurement",
+        "contact_name": "Raj Mehta",
+        "designation": "Head of Procurement",
         "email": "raj.mehta@globalfoods.com",
+        "linkedin_url": "https://www.linkedin.com/in/rajmehta",
+        "phone": "+1 312-555-0108",
+        "address": "Chicago, IL, USA",
     },
     {
-        "companyName": "Sterling Capital Group",
+        "company_name": "Sterling Capital Group",
         "website": "sterlingcapital.com",
-        "name": "James O'Brien",
-        "title": "Managing Director",
+        "contact_name": "James O'Brien",
+        "designation": "Managing Director",
         "email": "jobrien@sterlingcapital.com",
+        "linkedin_url": "https://www.linkedin.com/in/jamesobrien",
+        "phone": "+1 212-555-0109",
+        "address": "New York, NY, USA",
     },
     {
-        "companyName": "EcoBuilders LLC",
+        "company_name": "EcoBuilders LLC",
         "website": "ecobuilders.net",
-        "name": "Nina Patel",
-        "title": "Operations Manager",
+        "contact_name": "Nina Patel",
+        "designation": "Operations Manager",
         "email": "nina@ecobuilders.net",
+        "linkedin_url": "https://www.linkedin.com/in/ninapatel",
+        "phone": "+1 503-555-0110",
+        "address": "Portland, OR, USA",
     },
 ]
 
@@ -236,15 +266,15 @@ def seed_special_questions():
         # question_type = LEAD_GENERATION | subject_type = LEAD_GENERATION
         print("\n🚀 Seeding Lead Generation questions...")
         for lead in LEADS:
-            q_text = lead["companyName"]
+            q_text = lead["company_name"]
             existing = db.query(Question).filter(
                 Question.question_type == "LEAD_GENERATION",
                 Question.subject_type == "LEAD_GENERATION",
                 Question.question_text == q_text,
             ).first()
             if existing:
-                total_skipped += 1
-                print(f"  ⏭ Skipped (exists): {q_text}")
+                existing.options = lead
+                print(f"  🔄 Updated lead: {q_text}")
                 continue
 
             new_q = Question(
@@ -281,8 +311,8 @@ def seed_special_questions():
                 Question.question_text == q_text,
             ).first()
             if existing:
-                total_skipped += 1
-                print(f"  ⏭ Skipped (exists): {q_text}")
+                existing.options = contact
+                print(f"  🔄 Updated contact: {contact['companyName']}")
                 continue
 
             new_q = Question(
@@ -319,8 +349,8 @@ def seed_special_questions():
                 Question.question_text == q_text,
             ).first()
             if existing:
-                total_skipped += 1
-                print(f"  ⏭ Skipped (exists): {q_text}")
+                existing.passage = typing["paragraph"]
+                print(f"  🔄 Updated typing test: {q_text}")
                 continue
 
             new_q = Question(

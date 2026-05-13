@@ -124,8 +124,8 @@ export function TodayUserListing({
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
-              <Users size={20} />
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Users size={18} />
             </div>
             CANDIDATES LIST
           </div>

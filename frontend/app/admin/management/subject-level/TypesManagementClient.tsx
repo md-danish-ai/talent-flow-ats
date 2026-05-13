@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
@@ -103,6 +102,7 @@ export function TypesManagementClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    code: "",
     description: "",
     is_exclusive: false,
   });
@@ -140,12 +140,13 @@ export function TypesManagementClient({
       setEditingType(item);
       setFormData({
         name: item.name,
+        code: item.code,
         description: item.description,
         is_exclusive: item.metadata?.is_exclusive === true,
       });
     } else {
       setEditingType(null);
-      setFormData({ name: "", description: "", is_exclusive: false });
+      setFormData({ name: "", code: "", description: "", is_exclusive: false });
     }
     setIsModalOpen(true);
   };
@@ -153,7 +154,7 @@ export function TypesManagementClient({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingType(null);
-    setFormData({ name: "", description: "", is_exclusive: false });
+    setFormData({ name: "", code: "", description: "", is_exclusive: false });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,12 +174,14 @@ export function TypesManagementClient({
       if (editingType) {
         await classificationsApi.updateClassification(editingType.id, {
           name: formData.name,
+          code: formData.code,
           metadata: metadataToSubmit,
         });
       } else {
         await classificationsApi.createClassification({
           type: classificationType,
           name: formData.name,
+          code: formData.code,
           metadata: metadataToSubmit,
         });
       }
@@ -228,11 +231,6 @@ export function TypesManagementClient({
 
   return (
     <PageContainer animate>
-      <PageHeader
-        title="Master Data Management"
-        description="Configure and manage subjects, exam levels, and interview results in one place."
-      />
-
       <MainCard
         title={
           <div className="flex items-center gap-6">
@@ -240,7 +238,7 @@ export function TypesManagementClient({
               <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
                 <Layers size={18} />
               </div>
-              Master Data Definitions
+              Master Data Management
             </div>
             <div className="h-8 w-px bg-border/50" />
             <Tabs

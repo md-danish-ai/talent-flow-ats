@@ -67,6 +67,7 @@ export function MCQClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -129,7 +130,6 @@ export function MCQClient({
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
@@ -141,6 +141,7 @@ export function MCQClient({
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -291,13 +292,11 @@ export function MCQClient({
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableHead>Created By</TableHead>
-                    )}
+
                     {visibleColumns.includes("createdDate") && (
                       <TableHead>Created Date</TableHead>
                     )}
@@ -338,6 +337,10 @@ export function MCQClient({
                         togglingId={togglingId}
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}

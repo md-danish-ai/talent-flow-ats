@@ -1,9 +1,9 @@
 import React from "react";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { ResetUserListing } from "./components/ResetUserListing";
 import { getUsersByRole } from "@lib/api/auth";
 import { cookies } from "next/headers";
+import { AttemptStatusLegend } from "@components/ui-elements/StatusLegend";
 
 export const dynamic = "force-dynamic";
 
@@ -27,9 +27,9 @@ export default async function ResetStatusPage() {
 
   return (
     <PageContainer className="py-2">
-      <PageHeader
+      <AttemptStatusLegend
         title="Reset User Status"
-        description="List of all registered candidates. Manage their daily interview progress and application details."
+        subtitle="Manage daily interview progress and application details for all candidates."
       />
       <ResetUserListing initialData={initialData || undefined} />
     </PageContainer>

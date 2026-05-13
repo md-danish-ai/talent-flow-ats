@@ -105,6 +105,7 @@ export function RuleModal({
         const response = await papersApi.getPapers({
           department_id: formData.department_id,
           test_level_id: formData.test_level_id,
+          is_active: true,
         });
 
         if (response && response.data) {
@@ -226,6 +227,7 @@ export function RuleModal({
                   assigned_date: val,
                 }))
               }
+              disablePast
             />
           </div>
 

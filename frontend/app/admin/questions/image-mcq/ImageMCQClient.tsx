@@ -26,7 +26,7 @@ import { toast } from "@lib/toast";
 import { EditImageQuestionModal } from "./components/EditImageQuestionModal";
 import { AddImageQuestionForm } from "@features/questions/AddImageQuestionForm";
 import { QuestionCreationModal } from "@components/features/questions/QuestionCreationModal";
-import ImageLightbox from "./components/ImageLightbox";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
@@ -66,6 +66,7 @@ export function ImageMCQClient({
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const handleAuthError = useCallback(
     (error: unknown): boolean => {
@@ -129,7 +130,6 @@ export function ImageMCQClient({
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
-    { id: "createdBy", label: "Created By" },
     { id: "createdDate", label: "Created Date" },
     { id: "status", label: "Status" },
     { id: "actions", label: "Action", pinned: true },
@@ -142,6 +142,7 @@ export function ImageMCQClient({
     "subject",
     "examLevel",
     "marks",
+    "status",
     "actions",
   ];
 
@@ -297,13 +298,11 @@ export function ImageMCQClient({
                       <TableHead>Exam Level</TableHead>
                     )}
                     {visibleColumns.includes("marks") && (
-                      <TableHead className="w-[80px] text-center">
+                      <TableHead className="w-[80px] text-left">
                         Marks
                       </TableHead>
                     )}
-                    {visibleColumns.includes("createdBy") && (
-                      <TableHead>Created By</TableHead>
-                    )}
+
                     {visibleColumns.includes("createdDate") && (
                       <TableHead>Created Date</TableHead>
                     )}
@@ -346,6 +345,10 @@ export function ImageMCQClient({
                         onToggleStatus={handleToggleStatus}
                         onEdit={setEditingQuestion}
                         onImageClick={setLightboxUrl}
+                        isExpanded={expandedRowId === row.id}
+                        onExpandChange={(expanded) =>
+                          setExpandedRowId(expanded ? row.id : null)
+                        }
                       />
                     ))
                   )}
@@ -400,9 +403,12 @@ export function ImageMCQClient({
         />
       )}
 
-      {lightboxUrl && (
-        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
-      )}
+      <ImageLightbox
+        isOpen={!!lightboxUrl}
+        src={lightboxUrl || ""}
+        onClose={() => setLightboxUrl(null)}
+        title="Question Image Preview"
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}

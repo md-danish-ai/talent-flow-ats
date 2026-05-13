@@ -3,6 +3,8 @@ import { memo, useState } from "react";
 import { Building2, Globe, Mail, User as UserIcon } from "lucide-react";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
+import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface LeadGenerationViewProps {
   questionText: string;
@@ -92,7 +94,12 @@ export const LeadGenerationView = memo(function LeadGenerationView({
     <div className="space-y-6 pt-2">
       {/* Header Section */}
       <div className="flex items-center gap-4 group">
-        <div className="bg-brand-primary/10 p-3 rounded-2xl border border-brand-primary/20 group-hover:bg-brand-primary/20 transition-all">
+        <div
+          className={cn(
+            "bg-brand-primary/10 p-3 border border-brand-primary/20 group-hover:bg-brand-primary/20 transition-all",
+            STYLE_CONFIG.iconRadius,
+          )}
+        >
           <Globe className="w-5 h-5 text-brand-primary" />
         </div>
         <div className="space-y-0.5">
@@ -113,8 +120,18 @@ export const LeadGenerationView = memo(function LeadGenerationView({
 
       <div className="space-y-5">
         {/* Source Section */}
-        <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
-          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
+        <div
+          className={cn(
+            "border border-border bg-muted/10 p-1 relative pt-5 shadow-sm",
+            STYLE_CONFIG.innerCardRadius,
+          )}
+        >
+          <div
+            className={cn(
+              "absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 border border-border shadow-sm",
+              STYLE_CONFIG.badgeRadius,
+            )}
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
             <Typography
               variant="body5"
@@ -141,7 +158,10 @@ export const LeadGenerationView = memo(function LeadGenerationView({
         {groups.map((group) => (
           <div
             key={group.title}
-            className="flex flex-col rounded-xl border border-border bg-muted/10 overflow-hidden shadow-sm"
+            className={cn(
+              "flex flex-col border border-border bg-muted/10 overflow-hidden shadow-sm",
+              STYLE_CONFIG.innerCardRadius,
+            )}
           >
             <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/20">
               {group.icon}

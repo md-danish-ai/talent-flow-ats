@@ -7,9 +7,17 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Badge, type BadgeColor } from "@components/ui-elements/Badge";
 import { Input } from "@components/ui-elements/Input";
 import { Button } from "@components/ui-elements/Button";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { type AdminUserResultAnswer } from "@types";
 import { humanizeString, type ParsedOption } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
+
+// Specialized Question Type Renderers
+import { MCQResultView } from "./question-types/MCQResultView";
+import { TypingResultView } from "./question-types/TypingResultView";
+import { SubjectiveResultView } from "./question-types/SubjectiveResultView";
+import { StructuredResultView } from "./question-types/StructuredResultView";
 
 interface QuestionResultCardProps {
   answer: AdminUserResultAnswer;
@@ -39,9 +47,41 @@ export const QuestionResultCard = ({
   normalizeText,
 }: QuestionResultCardProps) => {
   const options = parseQuestionOptions(answer.options || []);
+  const [lightboxData, setLightboxData] = React.useState<{
+    isOpen: boolean;
+    src: string;
+    title: string;
+  }>({ isOpen: false, src: "", title: "" });
+
+  const openLightbox = (src: string, title: string) => {
+    setLightboxData({ isOpen: true, src, title });
+  };
   const optionSelectedByKey = extractOptionKey(answer.user_answer);
   const normalizedUserAnswer = normalizeText(answer.user_answer);
   const isChoiceType = options.length > 0;
+
+  const hasImage = !!answer.image_url;
+  const isMcqImage = answer.question_type === "IMAGE_MULTIPLE_CHOICE";
+  const hasSubjectiveImage = hasImage && !isMcqImage;
+  const hasEvaluation =
+    answer.question_type !== "MULTIPLE_CHOICE" &&
+    answer.question_type !== "IMAGE_MULTIPLE_CHOICE" &&
+    answer.question_type !== "PASSAGE_CONTENT" &&
+    answer.is_attempted;
+
+  let mainContentSpanClass = "lg:col-span-8";
+  if (isMcqImage) {
+    mainContentSpanClass = hasImage ? "lg:col-span-6" : "lg:col-span-12";
+  } else if (hasSubjectiveImage) {
+    mainContentSpanClass = hasEvaluation ? "lg:col-span-4" : "lg:col-span-6";
+  } else if (
+    answer.question_type === "MULTIPLE_CHOICE" ||
+    answer.question_type === "PASSAGE_CONTENT"
+  ) {
+    mainContentSpanClass = "lg:col-span-12";
+  } else if (!hasEvaluation) {
+    mainContentSpanClass = "lg:col-span-12";
+  }
 
   const statusConfig =
     answer.status === "correct"
@@ -67,82 +107,96 @@ export const QuestionResultCard = ({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-[2rem] border transition-all shadow-2xl shadow-slate-300/30 dark:shadow-none hover:shadow-brand-primary/10 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
+      className={`group relative overflow-hidden ${STYLE_CONFIG.cardRadius} border transition-all shadow-2xl shadow-slate-300/30 dark:shadow-none hover:shadow-brand-primary/10 ${statusConfig.border} ${statusConfig.bg} p-6 md:p-8`}
     >
       {/* Question Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-foreground/5 text-[11px] font-black text-foreground/70 border border-foreground/5">
-              {index + 1}
-            </span>
+            <Badge variant="outline" color="primary" shape="square">
+              Q{index + 1}
+            </Badge>
             <Badge
               variant="outline"
               color={statusConfig.badge as BadgeColor}
-              className="px-4 py-1 font-black text-[9px] uppercase tracking-widest border-none bg-card/50 shadow-sm"
+              shape="square"
             >
               {humanizeString(answer.status)}
             </Badge>
             {answer.question_type && (
-              <Badge
-                variant="outline"
-                color="default"
-                className="px-4 py-1 font-black text-[9px] uppercase tracking-widest opacity-60"
-              >
+              <Badge variant="outline" color="violet" shape="square">
                 {humanizeString(answer.question_type)}
               </Badge>
             )}
           </div>
           <Typography
-            variant="h3"
-            className="font-black leading-[1.3] text-foreground tracking-tight"
+            variant="h2"
+            className="font-black leading-[1.3] text-foreground tracking-tight text-2xl md:text-3xl"
           >
             {answer.question_text}
           </Typography>
         </div>
       </div>
 
-      {answer.image_url && answer.question_type !== "IMAGE_MULTIPLE_CHOICE" && (
-        <div className="mb-8 w-fit mx-auto border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.01] transition-transform duration-500">
-          <Image
-            src={getCanonicalImageUrl(answer.image_url) as string}
-            alt="Question Content"
-            width={800}
-            height={400}
-            className="w-auto h-auto max-h-[300px] max-w-full rounded-[1rem] object-contain"
-            unoptimized
-          />
-        </div>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {answer.question_type === "IMAGE_MULTIPLE_CHOICE" &&
-          answer.image_url && (
-            <div className="lg:col-span-6 flex flex-col justify-center items-center lg:items-start">
-              <div className="w-fit border border-border/50 bg-muted/20 p-2.5 rounded-[1.5rem] shadow-inner group-hover:scale-[1.05] transition-transform duration-500">
-                <Image
-                  src={getCanonicalImageUrl(answer.image_url) as string}
-                  alt="Question Content"
-                  width={800}
-                  height={600}
-                  className="w-auto h-auto max-h-[400px] max-w-full rounded-[1rem] object-contain"
-                  unoptimized
-                />
-              </div>
+        {/* MCQ Image Container */}
+        {isMcqImage && hasImage && (
+          <div className="lg:col-span-6 flex flex-col justify-center items-center lg:items-start">
+            <div
+              className={`w-fit border border-border/50 bg-muted/20 p-2 ${STYLE_CONFIG.innerCardRadius} shadow-inner cursor-zoom-in hover:scale-[1.02] transition-all active:scale-[0.98] duration-300`}
+              onClick={() =>
+                openLightbox(
+                  answer.image_url || "",
+                  answer.question_text || "Question Content",
+                )
+              }
+            >
+              <Image
+                src={getCanonicalImageUrl(answer.image_url) as string}
+                alt="Question Content"
+                width={800}
+                height={600}
+                className={`w-auto h-auto max-h-[400px] max-w-full ${STYLE_CONFIG.innerCardRadius} object-contain`}
+                unoptimized
+              />
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Subjective/Other Reference Media Container */}
+        {hasSubjectiveImage && (
+          <div
+            className={`${hasEvaluation ? "lg:col-span-4" : "lg:col-span-6"} space-y-6 flex flex-col animate-in fade-in slide-in-from-left-3 duration-500`}
+          >
+            <div className="flex items-center gap-3">
+              <Typography
+                variant="body5"
+                className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
+              >
+                Reference Media
+              </Typography>
+              <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
+            </div>
+            <div
+              className={`w-full border border-border/50 bg-muted/20 p-2 ${STYLE_CONFIG.innerCardRadius} shadow-inner cursor-zoom-in hover:scale-[1.01] hover:border-brand-primary/30 transition-all active:scale-[0.98] duration-300`}
+              onClick={() =>
+                openLightbox(answer.image_url || "", "Reference Media")
+              }
+            >
+              <Image
+                src={getCanonicalImageUrl(answer.image_url) as string}
+                alt="Question Content"
+                width={800}
+                height={600}
+                className={`w-full h-auto max-h-[400px] rounded-sm object-contain bg-black/5 dark:bg-white/5`}
+                unoptimized
+              />
+            </div>
+          </div>
+        )}
 
         {/* Main Content Area */}
-        <div
-          className={
-            answer.question_type === "IMAGE_MULTIPLE_CHOICE" && answer.image_url
-              ? "lg:col-span-6 space-y-6"
-              : answer.question_type === "MULTIPLE_CHOICE" ||
-                  answer.question_type === "IMAGE_MULTIPLE_CHOICE"
-                ? "lg:col-span-12 space-y-6"
-                : "lg:col-span-8 space-y-6"
-          }
-        >
+        <div className={`${mainContentSpanClass} space-y-6`}>
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
             <Typography
@@ -154,410 +208,181 @@ export const QuestionResultCard = ({
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
           </div>
 
-          {isChoiceType ? (
-            <div
-              className={`grid gap-4 ${
-                answer.question_type === "IMAGE_MULTIPLE_CHOICE" &&
-                answer.image_url
-                  ? "grid-cols-1"
-                  : "grid-cols-1 md:grid-cols-2"
-              }`}
-            >
-              {options.map((opt) => {
-                const isSelected =
-                  optionSelectedByKey === opt.optionLabel ||
-                  normalizeText(opt.optionText) === normalizedUserAnswer;
-                const isCorrect = opt.isCorrect;
-                const isWrong = isSelected && !isCorrect;
-
-                let cardStyle = "border-border bg-card/50";
-                let labelStyle = "border-border text-muted-foreground/60";
-
-                if (isCorrect) {
-                  cardStyle =
-                    "border-emerald-500/30 bg-emerald-500/[0.04] shadow-sm shadow-emerald-500/10";
-                  labelStyle =
-                    "border-emerald-500/30 bg-emerald-500/10 text-emerald-600";
-                } else if (isWrong) {
-                  cardStyle =
-                    "border-rose-500/30 bg-rose-500/[0.04] shadow-sm shadow-rose-500/10";
-                  labelStyle =
-                    "border-rose-500/30 bg-rose-500/10 text-rose-600";
-                } else if (isSelected) {
-                  cardStyle = "border-brand-primary/30 bg-brand-primary/[0.04]";
-                  labelStyle =
-                    "border-brand-primary/30 bg-brand-primary/10 text-brand-primary";
-                }
-
-                return (
-                  <div
-                    key={opt.optionLabel}
-                    className={`group/opt relative rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] ${cardStyle}`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div
-                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[11px] font-black transition-colors ${labelStyle}`}
-                      >
-                        {opt.optionLabel}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Typography
-                          variant="body4"
-                          className="font-bold leading-snug"
-                        >
-                          {opt.optionText}
-                        </Typography>
-                        <div className="mt-2.5 flex flex-wrap gap-2">
-                          {isSelected && (
-                            <div
-                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${isWrong ? "bg-rose-500/10 text-rose-600" : "bg-brand-primary/10 text-brand-primary"}`}
-                            >
-                              <div
-                                className={`w-1 h-1 rounded-full ${isWrong ? "bg-rose-600" : "bg-brand-primary"}`}
-                              />
-                              Candidate Answer
-                            </div>
-                          )}
-                          {isCorrect && (
-                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-wider">
-                              <div className="w-1 h-1 rounded-full bg-emerald-600" />
-                              Correct Choice
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6">
-              {answer.typing_stats && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-1000">
-                  {[
-                    {
-                      label: "Speed",
-                      value: `${answer.typing_stats.wpm} WPM`,
-                      bg: "bg-brand-primary/5",
-                      color: "text-brand-primary",
-                    },
-                    {
-                      label: "Accuracy",
-                      value: `${answer.typing_stats.accuracy}%`,
-                      bg: "bg-emerald-500/5",
-                      color: "text-emerald-600",
-                    },
-                    {
-                      label: "Errors",
-                      value: answer.typing_stats.errors,
-                      bg: "bg-rose-500/5",
-                      color: "text-rose-600",
-                    },
-                    {
-                      label: "Duration",
-                      value: `${Math.round(answer.typing_stats.time_taken)}s`,
-                      bg: "bg-amber-500/5",
-                      color: "text-amber-600",
-                    },
-                  ].map((stat, i) => (
-                    <div
-                      key={i}
-                      className={`p-4 rounded-2xl border border-border/50 ${stat.bg} transition-all hover:scale-[1.05]`}
-                    >
-                      <Typography
-                        variant="body5"
-                        className="font-black text-muted-foreground/60 uppercase tracking-widest text-[9px] mb-1"
-                      >
-                        {stat.label}
-                      </Typography>
-                      <Typography
-                        variant="body3"
-                        className={`font-black ${stat.color} tracking-tight`}
-                      >
-                        {stat.value}
-                      </Typography>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500">
-                <Typography
-                  variant="body5"
-                  className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
-                >
-                  {answer.question_type === "TYPING_TEST"
-                    ? "SOURCE PASSAGE"
-                    : "EXPECTED ANSWER"}
-                </Typography>
-                <Typography
-                  as="div"
-                  variant="body4"
-                  className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-xs"
-                >
-                  {(() => {
-                    const isStructuredType =
-                      answer.question_type === "LEAD_GENERATION" ||
-                      answer.question_type === "CONTACT_DETAILS";
-                    let displayData: string | null | undefined =
-                      answer.correct_answer || answer.passage;
-
-                    // For structured types, prioritize options field if others are empty
-                    if (
-                      isStructuredType &&
-                      !displayData &&
-                      answer.options &&
-                      !Array.isArray(answer.options)
-                    ) {
-                      displayData = JSON.stringify(answer.options);
-                    }
-
-                    if (
-                      displayData &&
-                      typeof displayData === "string" &&
-                      displayData.trim().startsWith("{")
-                    ) {
-                      try {
-                        const parsed = JSON.parse(displayData);
-                        if (typeof parsed === "object" && parsed !== null) {
-                          return (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 not-italic">
-                              {Object.entries(parsed).map(([key, value]) => {
-                                const label = humanizeString(
-                                  key
-                                    .replace(/([A-Z])/g, " $1")
-                                    .replace(/^./, (str) => str.toUpperCase()),
-                                );
-                                return (
-                                  <div
-                                    key={key}
-                                    className="p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5"
-                                  >
-                                    <Typography
-                                      variant="body5"
-                                      className="font-black text-[9px] uppercase tracking-wider text-emerald-600/50 mb-1 leading-none"
-                                    >
-                                      {label}
-                                    </Typography>
-                                    <Typography
-                                      variant="body4"
-                                      className="font-bold text-emerald-700/80 break-words leading-tight"
-                                    >
-                                      {String(value || "N/A")}
-                                    </Typography>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        }
-                      } catch {
-                        /* fallback */
-                      }
-                    }
-                    return displayData || "N/A";
-                  })()}
-                </Typography>
-              </div>
-              <div className="rounded-2xl border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <Typography
-                  variant="body5"
-                  className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
-                >
-                  {answer.question_type === "TYPING_TEST"
-                    ? "TYPED TEXT (ERROR TRACKING)"
-                    : "CANDIDATE RESPONSE"}
-                </Typography>
-                <Typography
-                  as="div"
-                  variant="body4"
-                  className="font-mono leading-relaxed whitespace-pre-wrap select-all text-xs"
-                >
-                  {(() => {
-                    if (
-                      answer.question_type === "TYPING_TEST" &&
-                      answer.user_answer &&
-                      (answer.correct_answer || answer.passage)
-                    ) {
-                      return (answer.user_answer as string)
-                        .split("")
-                        .map((char, i) => {
-                          const source =
-                            answer.correct_answer || (answer.passage as string);
-                          const isCorrect = char === source[i];
-                          return (
-                            <span
-                              key={i}
-                              className={
-                                isCorrect
-                                  ? "text-foreground"
-                                  : "text-rose-600 bg-rose-500/10 font-black underline decoration-rose-500/50 underline-offset-[3px]"
-                              }
-                            >
-                              {char}
-                            </span>
-                          );
-                        });
-                    }
-
-                    // Handle JSON/Structured responses (Lead Gen, Contact Details)
-                    if (
-                      answer.user_answer &&
-                      answer.user_answer.trim().startsWith("{")
-                    ) {
-                      try {
-                        const parsed = JSON.parse(answer.user_answer);
-                        if (typeof parsed === "object" && parsed !== null) {
-                          return (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                              {Object.entries(parsed).map(([key, value]) => {
-                                const label = humanizeString(
-                                  key
-                                    .replace(/([A-Z])/g, " $1")
-                                    .replace(/^./, (str) => str.toUpperCase()),
-                                );
-                                return (
-                                  <div
-                                    key={key}
-                                    className="p-3 rounded-xl bg-white/40 border border-black/[0.03] shadow-sm"
-                                  >
-                                    <Typography
-                                      variant="body5"
-                                      className="font-black text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-1 leading-none"
-                                    >
-                                      {label}
-                                    </Typography>
-                                    <Typography
-                                      variant="body4"
-                                      className="font-bold text-foreground break-words leading-tight"
-                                    >
-                                      {String(value || "N/A")}
-                                    </Typography>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        }
-                      } catch {
-                        /* fallback */
-                      }
-                    }
-
-                    return answer.user_answer || "No response recorded.";
-                  })()}
-                </Typography>
-              </div>
-            </div>
-          )}
+          {(() => {
+            if (answer.question_type === "TYPING_TEST") {
+              return <TypingResultView answer={answer} />;
+            }
+            if (
+              answer.question_type === "LEAD_GENERATION" ||
+              answer.question_type === "CONTACT_DETAILS"
+            ) {
+              return <StructuredResultView answer={answer} />;
+            }
+            if (isChoiceType) {
+              return (
+                <MCQResultView
+                  answer={answer}
+                  options={options}
+                  optionSelectedByKey={optionSelectedByKey}
+                  normalizedUserAnswer={normalizedUserAnswer}
+                  getCanonicalImageUrl={getCanonicalImageUrl}
+                  normalizeText={normalizeText}
+                  openLightbox={openLightbox}
+                />
+              );
+            }
+            return <SubjectiveResultView answer={answer} />;
+          })()}
         </div>
 
         {/* Evaluation Sidebar Part */}
-        {answer.question_type !== "MULTIPLE_CHOICE" &&
-          answer.question_type !== "IMAGE_MULTIPLE_CHOICE" &&
-          answer.is_attempted && (
-            <div className="lg:col-span-4 space-y-6">
-              <div className="flex items-center gap-3">
-                <Typography
-                  variant="body5"
-                  className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
-                >
-                  Evaluation
-                </Typography>
-                <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
-              </div>
-              <div className="rounded-[1.75rem] border border-border/50 bg-card/80 backdrop-blur-md p-6 shadow-sm space-y-6">
-                <div className="p-4 rounded-2xl bg-foreground/5 space-y-2">
+        {hasEvaluation && (
+          <div className="lg:col-span-4 space-y-6">
+            <div className="flex items-center gap-3">
+              <Typography
+                variant="body5"
+                className="font-black uppercase tracking-[0.2em] text-muted-foreground/60 whitespace-nowrap"
+              >
+                Evaluation
+              </Typography>
+              <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent opacity-50" />
+            </div>
+            <div
+              className={`${STYLE_CONFIG.cardRadius} border border-slate-200/60 dark:border-white/[0.06] bg-gradient-to-b from-card/95 via-card/90 to-card/95 dark:from-card/90 dark:via-card/80 dark:to-card/95 shadow-xl shadow-slate-200/50 dark:shadow-none backdrop-blur-xl p-6 space-y-6 relative overflow-hidden animate-in fade-in duration-500`}
+            >
+              {/* Glowing background element for visual richness */}
+              <div className="absolute -top-12 -right-12 w-24 h-24 bg-brand-primary/10 dark:bg-brand-primary/5 rounded-full blur-2xl opacity-60 pointer-events-none" />
+
+              {/* Redesigned System Score Dashboard Widget */}
+              <div
+                className={`p-5 ${STYLE_CONFIG.innerCardRadius} bg-gradient-to-br from-foreground/[0.01] to-foreground/[0.04] dark:from-white/[0.01] dark:to-white/[0.04] border border-border/40 dark:border-white/[0.03] shadow-inner space-y-3 relative transition-all duration-300 hover:border-border/70 hover:bg-foreground/[0.02] dark:hover:bg-white/[0.02]`}
+              >
+                <div className="flex items-center justify-between">
                   <Typography
-                    variant="body5"
-                    className="font-black text-muted-foreground/60 uppercase tracking-widest"
+                    variant="body4"
+                    className="font-black text-muted-foreground/70 uppercase tracking-widest text-[11px]"
                   >
-                    SYSTEM SCORE
+                    System Calculated Score
                   </Typography>
-                  <div className="flex items-baseline gap-2">
-                    <Typography
-                      variant="h2"
-                      className="font-black tracking-tighter"
-                    >
-                      {answer.marks_obtained}
-                    </Typography>
-                    <Typography
-                      variant="h4"
-                      className="text-muted-foreground/40 font-black"
-                    >
-                      / {answer.max_marks}
-                    </Typography>
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className={`h-1.5 w-1.5 rounded-full ${answer.status === "correct" ? "bg-emerald-500 shadow-[0_0_6px_#10b981]" : "bg-rose-500 shadow-[0_0_6px_#f43f5e]"} animate-pulse`}
+                    />
+                    <span className="text-[11px] font-black text-muted-foreground/45 uppercase">
+                      {answer.status}
+                    </span>
                   </div>
-                  <div className="w-full h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                </div>
+
+                <div className="flex items-baseline gap-1.5">
+                  <Typography
+                    variant="h1"
+                    className="font-black tracking-tighter text-4xl md:text-5xl bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text select-none"
+                  >
+                    {answer.marks_obtained}
+                  </Typography>
+                  <Typography
+                    variant="h3"
+                    className="text-muted-foreground/30 font-black tracking-tight"
+                  >
+                    / {answer.max_marks}
+                  </Typography>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="w-full h-2.5 bg-muted/50 dark:bg-black/30 rounded-full overflow-hidden border border-border/20 dark:border-white/[0.02] p-[1.5px]">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{
                         width: `${(answer.marks_obtained / (answer.max_marks || 1)) * 100}%`,
                       }}
-                      className={`h-full ${answer.status === "correct" ? "bg-emerald-500" : "bg-rose-500"}`}
+                      className={`h-full rounded-full transition-all duration-1000 ${
+                        answer.status === "correct"
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                          : "bg-gradient-to-r from-rose-500 to-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
+                      }`}
                     />
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Typography
-                      variant="body5"
-                      className="font-black text-muted-foreground/60 uppercase tracking-widest"
-                    >
-                      MANUAL OVERRIDE
-                    </Typography>
-                    <PencilLine
-                      size={14}
-                      className="text-muted-foreground/40"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={answer.max_marks}
-                      value={manualMarksValue}
-                      onChange={(e) =>
-                        onManualMarksChange(e.target.value.replace(/\D/g, ""))
-                      }
-                      placeholder={`Score (0-${answer.max_marks})`}
-                      className="rounded-[1.25rem] border-none bg-foreground/5 h-12 font-black transition-all focus:bg-white focus:text-black shadow-inner"
-                    />
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-[1.25rem] h-12 border-2 hover:bg-brand-primary hover:text-white transition-all duration-300 font-black shadow-sm"
-                      onClick={onManualMarksApply}
-                    >
-                      Adjust Marks
-                    </Button>
-
-                    <AnimatePresence>
-                      {isManualMarksApplied && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="flex items-center gap-2 p-3 text-[10px] font-black text-emerald-600 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
-                        >
-                          <FileCheck2 size={12} />
-                          MARKS APPLIED: {manualMarksValue}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <Typography
-                      variant="body5"
-                      className="text-center text-muted-foreground/40 italic"
-                    >
-                      Manual override will skip system calculations.
-                    </Typography>
+                  <div className="flex justify-between text-[10px] font-black tracking-wider uppercase text-muted-foreground/35 select-none px-0.5">
+                    <span>Min</span>
+                    <span>Max Marks</span>
                   </div>
                 </div>
               </div>
+
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+
+              {/* Redesigned Manual Override Block */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Typography
+                    variant="body4"
+                    className="font-black text-muted-foreground/60 uppercase tracking-widest text-[11px]"
+                  >
+                    Manual Evaluation
+                  </Typography>
+                  <PencilLine size={14} className="text-muted-foreground/40" />
+                </div>
+
+                <div className="space-y-3.5">
+                  {/* PRESERVED INPUT: Exactly matching user's styling without modifications */}
+                  <Input
+                    type="number"
+                    min={0}
+                    max={answer.max_marks}
+                    value={manualMarksValue}
+                    onChange={(e) =>
+                      onManualMarksChange(e.target.value.replace(/\D/g, ""))
+                    }
+                    placeholder={`Score (0-${answer.max_marks})`}
+                    className="font-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+
+                  <Button
+                    variant="primary"
+                    color="primary"
+                    animate="scale"
+                    className="w-full h-12 transition-all duration-300 font-black shadow-md hover:shadow-lg hover:shadow-brand-primary/10 active:scale-[0.98]"
+                    onClick={onManualMarksApply}
+                  >
+                    Adjust Marks
+                  </Button>
+
+                  <AnimatePresence>
+                    {isManualMarksApplied && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        className={`flex items-center justify-between p-3 text-[12px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-lg border border-emerald-500/25 backdrop-blur-sm shadow-sm shadow-emerald-500/10 animate-in zoom-in-95`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileCheck2
+                            size={14}
+                            className="text-emerald-600 dark:text-emerald-400"
+                          />
+                          <span className="tracking-wide uppercase text-[11px]">
+                            Marks Applied:
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-0.5 bg-emerald-600 dark:bg-emerald-500 text-white rounded font-mono shadow-sm leading-normal">
+                          {manualMarksValue}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <Typography
+                    variant="body5"
+                    className="text-center text-muted-foreground/45 italic tracking-wide text-[11px]"
+                  >
+                    * Manual override overrides system calculations.
+                  </Typography>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Decorative elements */}
@@ -566,6 +391,13 @@ export const QuestionResultCard = ({
           <Trophy size={200} />
         </div>
       )}
+
+      <ImageLightbox
+        isOpen={lightboxData.isOpen}
+        onClose={() => setLightboxData((prev) => ({ ...prev, isOpen: false }))}
+        src={lightboxData.src}
+        title={lightboxData.title}
+      />
     </div>
   );
 };

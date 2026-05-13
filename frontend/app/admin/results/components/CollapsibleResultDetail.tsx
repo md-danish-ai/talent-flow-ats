@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  History as HistoryIcon,
-  LayoutGrid,
-  UserX,
-} from "lucide-react";
+import { Gauge, Target, AlertCircle, Timer } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { cn, getGradeConfig } from "@lib/utils";
@@ -59,7 +54,6 @@ export function CollapsibleResultDetail({
                   variant="fill"
                   shape="square"
                   color={getGradeConfig(res.grade).badgeColor}
-                  className="text-[9px] px-1.5 py-0 h-5 shrink-0 font-bold tracking-wider"
                 >
                   {res.grade}
                 </Badge>
@@ -100,59 +94,98 @@ export function CollapsibleResultDetail({
           >
             Typing Test Result
           </Typography>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                label: "Words Per Minute",
+                label: "Speed",
                 value: `${latest.typing_stats.wpm} WPM`,
-                icon: <LayoutGrid size={18} />,
-                color: "text-orange-500",
-                bg: "bg-orange-500/10",
+                color: "text-amber-500 dark:text-amber-400",
+                icon: (
+                  <Gauge
+                    className="text-amber-500 dark:text-amber-400"
+                    size={18}
+                  />
+                ),
+                accentBg: "bg-amber-500/10 dark:bg-amber-500/5",
+                accentBorder:
+                  "hover:border-amber-500/30 hover:shadow-amber-500/[0.03]",
               },
               {
                 label: "Accuracy",
                 value: `${latest.typing_stats.accuracy}%`,
-                icon: <CheckCircle2 size={18} />,
-                color: getGradeConfig(latest?.overall_grade).color,
-                bg: getGradeConfig(latest?.overall_grade).bg,
+                color: "text-emerald-600 dark:text-emerald-400",
+                icon: (
+                  <Target
+                    className="text-emerald-600 dark:text-emerald-400"
+                    size={18}
+                  />
+                ),
+                accentBg: "bg-emerald-500/10 dark:bg-emerald-500/5",
+                accentBorder:
+                  "hover:border-emerald-500/30 hover:shadow-emerald-500/[0.03]",
               },
               {
-                label: "Total Errors",
+                label: "Errors",
                 value: latest.typing_stats.errors,
-                icon: <UserX size={18} />,
-                color: "text-rose-500",
-                bg: "bg-rose-500/10",
+                color: "text-rose-500 dark:text-rose-400",
+                icon: (
+                  <AlertCircle
+                    className="text-rose-500 dark:text-rose-400"
+                    size={18}
+                  />
+                ),
+                accentBg: "bg-rose-500/10 dark:bg-rose-500/5",
+                accentBorder:
+                  "hover:border-rose-500/30 hover:shadow-rose-500/[0.03]",
               },
               {
-                label: "Time Taken",
+                label: "Duration",
                 value:
                   latest.typing_stats.time_taken < 60
                     ? `${Math.round(latest.typing_stats.time_taken)}s`
                     : `${Math.floor(latest.typing_stats.time_taken / 60)}m ${Math.round(
                         latest.typing_stats.time_taken % 60,
                       )}s`,
-                icon: <HistoryIcon size={18} />,
-                color: "text-blue-500",
-                bg: "bg-blue-500/10",
+                color: "text-indigo-500 dark:text-indigo-400",
+                icon: (
+                  <Timer
+                    className="text-indigo-500 dark:text-indigo-400"
+                    size={18}
+                  />
+                ),
+                accentBg: "bg-indigo-500/10 dark:bg-indigo-500/5",
+                accentBorder:
+                  "hover:border-indigo-500/30 hover:shadow-indigo-500/[0.03]",
               },
             ].map((stat, sidx) => (
               <div
                 key={sidx}
-                className="bg-card p-4 rounded-2xl border border-border/40 shadow-sm flex items-center gap-4"
+                className={`group/stat p-5 rounded-2xl border border-border/50 dark:border-white/[0.04] bg-card/80 backdrop-blur-md shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg flex items-center justify-between relative overflow-hidden ${stat.accentBorder}`}
               >
-                <div className={cn("p-3 rounded-xl", stat.bg, stat.color)}>
-                  {stat.icon}
-                </div>
-                <div>
+                {/* Subtle background glow flare */}
+                <div
+                  className={`absolute -top-6 -right-6 w-20 h-20 ${stat.accentBg} rounded-full blur-xl opacity-60 group-hover/stat:opacity-100 transition-all duration-500 pointer-events-none`}
+                />
+
+                <div className="space-y-1.5 relative z-10">
                   <Typography
                     variant="body5"
-                    className="text-muted-foreground font-medium"
+                    className="font-black text-muted-foreground/60 uppercase tracking-widest text-[10px] select-none"
                   >
                     {stat.label}
                   </Typography>
-                  <Typography variant="body2" className="font-bold">
+                  <Typography
+                    variant="h2"
+                    className={`font-black ${stat.color} tracking-tighter text-xl md:text-2xl bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text select-none`}
+                  >
                     {stat.value}
                   </Typography>
+                </div>
+
+                <div
+                  className={`h-10 w-10 rounded-xl ${stat.accentBg} border border-border/20 dark:border-white/[0.02] flex items-center justify-center shadow-sm relative z-10 group-hover/stat:scale-110 transition-all duration-300`}
+                >
+                  {stat.icon}
                 </div>
               </div>
             ))}

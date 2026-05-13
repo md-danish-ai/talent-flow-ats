@@ -18,6 +18,8 @@ interface ContactDetailsRowProps {
   togglingId: number | null;
   onToggleStatus: (id: number) => void;
   onEdit: (question: Question) => void;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
@@ -29,12 +31,16 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
   togglingId,
   onToggleStatus,
   onEdit,
+  isExpanded,
+  onExpandChange,
 }) => {
   const options = (row.options as Record<string, unknown>) || {};
 
   return (
     <TableCollapsibleRow
       key={row.id}
+      isOpen={isExpanded}
+      onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
       className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
       expandedContent={<QuestionCollapsibleDetail question={row} />}
@@ -145,13 +151,8 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
       )}
 
       {visibleColumns.includes("marks") && (
-        <TableCell className="text-center font-bold text-slate-600 dark:text-slate-300">
-          <Badge
-            color="primary"
-            variant="outline"
-            shape="square"
-            className="flex items-center justify-center w-8 h-8 mx-auto"
-          >
+        <TableCell className="text-left font-bold text-slate-600 dark:text-slate-300">
+          <Badge color="primary" variant="outline" shape="square">
             {row.marks || "0"}
           </Badge>
         </TableCell>

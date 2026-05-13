@@ -26,8 +26,10 @@ import {
 } from "lucide-react";
 import { toast } from "@lib/toast";
 import Image from "next/image";
-import { QUESTION_TYPES } from "@lib/constants/questions";
+import { QUESTION_TYPES, MARKS_OPTIONS } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
+import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
+import { ZoomIn } from "lucide-react";
 
 export const AddImageSubjectiveQuestionForm = ({
   questionId,
@@ -42,6 +44,10 @@ export const AddImageSubjectiveQuestionForm = ({
   const [examLevels, setExamLevels] = React.useState<Classification[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = React.useState<{
+    url: string;
+    title: string;
+  } | null>(null);
 
   React.useEffect(() => {
     const fetchClassifications = async () => {
@@ -179,31 +185,49 @@ export const AddImageSubjectiveQuestionForm = ({
                   <div className="flex flex-col gap-2">
                     {field.state.value ? (
                       <div className="flex flex-col gap-2">
-                        <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30">
+                        <div
+                          className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30 group shadow-sm transition-all hover:border-brand-primary/30 cursor-zoom-in"
+                          onClick={() =>
+                            setPreviewImage({
+                              url: (field.state.value as string) || "",
+                              title: "Question Image Preview",
+                            })
+                          }
+                        >
                           <Image
                             src={
-                              getCanonicalImageUrl(field.state.value) as string
+                              getCanonicalImageUrl(
+                                field.state.value as string,
+                              ) as string
                             }
                             alt="Preview"
                             fill
                             className="object-contain"
                             unoptimized
                           />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover/img:opacity-100 z-10">
+                            <div className="bg-white/90 p-1.5 rounded-full shadow-lg transform scale-90 group-hover/img:scale-100 transition-all">
+                              <ZoomIn className="w-4 h-4 text-brand-primary" />
+                            </div>
+                          </div>
+                          <div className="absolute top-2 right-2 z-20">
                             <button
                               type="button"
-                              onClick={() => field.handleChange("")}
-                              className="p-2.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all scale-90 group-hover:scale-100 shadow-xl"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                field.handleChange("");
+                              }}
+                              className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
                               title="Remove Image"
                             >
-                              <X size={18} />
+                              <X size={16} />
                             </button>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
                           <FileImage size={14} />
                           <span className="truncate flex-1">
-                            {field.state.value
+                            {((field.state.value as string) || "")
                               .split("/")
                               .pop()
                               ?.replace(/^[0-9a-f]{32}_/, "")}
@@ -348,10 +372,7 @@ export const AddImageSubjectiveQuestionForm = ({
                         placeholder="Select Marks"
                         value={String(field.state.value)}
                         onChange={(val) => field.handleChange(Number(val))}
-                        options={Array.from({ length: 50 }, (_, i) => ({
-                          id: String(i + 1),
-                          label: String(i + 1),
-                        }))}
+                        options={MARKS_OPTIONS}
                         className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                         error={field.state.meta.errors.length > 0}
                       />
@@ -497,6 +518,12 @@ export const AddImageSubjectiveQuestionForm = ({
           )}
         </form.Subscribe>
       </div>
+      <ImageLightbox
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage?.url || ""}
+        title={previewImage?.title}
+      />
     </form>
   );
 };

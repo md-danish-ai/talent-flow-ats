@@ -2,9 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /backend
 
-# System deps (needed for postgres tooling / pg_isready)
+# System deps: postgres tools + build tools for pycairo (xhtml2pdf dep)
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends postgresql-client \
+    && apt-get install -y --no-install-recommends \
+       postgresql-client \
+       build-essential \
+       gcc \
+       libcairo2-dev \
+       pkg-config \
+       python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Python deps

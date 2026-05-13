@@ -52,7 +52,8 @@ export function ListingBadge({
           <Badge
             variant="outline"
             color="default"
-            className="font-bold border-border/50 bg-card whitespace-nowrap"
+            shape="square"
+            className="font-bold whitespace-nowrap"
           >
             {totalItems} {itemLabel.toUpperCase()}
           </Badge>

@@ -3,6 +3,7 @@
 import { User, Calendar, Clock, CheckCircle, History } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { motion } from "framer-motion";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { formatDate, formatTime, parseUTCDate } from "@lib/utils";
 
 interface ProfileSummaryStripProps {
@@ -40,7 +41,9 @@ export const ProfileSummaryStrip = ({
         animate={{ opacity: 1, x: 0 }}
         className="flex items-center gap-4 px-2"
       >
-        <div className="h-12 w-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary border border-brand-primary/20 shadow-inner">
+        <div
+          className={`h-12 w-12 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 flex items-center justify-center text-brand-primary border border-brand-primary/20 shadow-inner`}
+        >
           <User size={24} />
         </div>
         <div>
@@ -65,7 +68,7 @@ export const ProfileSummaryStrip = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="relative overflow-hidden rounded-3xl border border-border/50 bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none"
+        className={`relative overflow-hidden ${STYLE_CONFIG.cardRadius} border border-border/50 bg-card backdrop-blur-xl p-5 shadow-2xl shadow-slate-300/30 dark:shadow-none`}
       >
         <div className="flex flex-col md:flex-row items-stretch justify-between gap-6 md:gap-0">
           {/* Paper Name */}
@@ -77,7 +80,9 @@ export const ProfileSummaryStrip = ({
               Paper
             </Typography>
             <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-lg bg-brand-primary/10 border border-brand-primary/20">
+              <div
+                className={`p-1.5 px-3 ${STYLE_CONFIG.badgeRadius} bg-brand-primary/10 border border-brand-primary/20`}
+              >
                 <Typography
                   variant="body5"
                   className="font-black text-brand-primary text-[10px]"

@@ -18,9 +18,15 @@ interface ManageTypeModalProps {
   onClose: () => void;
   type: "subject" | "exam_level" | "interview_result";
   editingType: BaseType | null;
-  formData: { name: string; description: string; is_exclusive: boolean };
+  formData: {
+    name: string;
+    code: string;
+    description: string;
+    is_exclusive: boolean;
+  };
   setFormData: (data: {
     name: string;
+    code: string;
     description: string;
     is_exclusive: boolean;
   }) => void;
@@ -64,17 +70,35 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
       title={editingType ? `Edit ${typeLabel}` : `Add ${typeLabel}`}
     >
       <form onSubmit={onSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Typography variant="body4" weight="semibold">
-            {nameLabel}
-          </Typography>
-          <Input
-            required
-            placeholder={placeholder}
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            disabled={isLoading}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Typography variant="body4" weight="semibold">
+              {nameLabel}
+            </Typography>
+            <Input
+              required
+              placeholder={placeholder}
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Typography variant="body4" weight="semibold">
+              Code
+            </Typography>
+            <Input
+              required
+              placeholder="e.g. TECH_01"
+              value={formData.code}
+              onChange={(e) =>
+                setFormData({ ...formData, code: e.target.value.toUpperCase() })
+              }
+              disabled={isLoading}
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Typography variant="body4" weight="semibold">

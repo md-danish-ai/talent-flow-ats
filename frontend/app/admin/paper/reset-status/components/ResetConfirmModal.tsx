@@ -33,7 +33,6 @@ export function ResetConfirmModal({
       onClose();
     } catch (error) {
       console.error("Reset failed:", error);
-      toast.error("Failed to reset user status.");
     } finally {
       setLoading(false);
     }

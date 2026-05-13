@@ -80,10 +80,12 @@ export function Tooltip({
   };
 
   const arrowClasses = {
-    top: "bottom-[-4px] left-1/2 -translate-x-1/2 border-t-slate-900/90",
-    bottom: "top-[-4px] left-1/2 -translate-x-1/2 border-b-slate-900/90",
-    left: "right-[-4px] top-1/2 -translate-y-1/2 border-l-slate-900/90",
-    right: "left-[-4px] top-1/2 -translate-y-1/2 border-r-slate-900/90",
+    top: "bottom-[-4px] left-1/2 -translate-x-1/2 border-t-white/95 dark:border-t-slate-900/90",
+    bottom:
+      "top-[-4px] left-1/2 -translate-x-1/2 border-b-white/95 dark:border-b-slate-900/90",
+    left: "right-[-4px] top-1/2 -translate-y-1/2 border-l-white/95 dark:border-l-slate-900/90",
+    right:
+      "left-[-4px] top-1/2 -translate-y-1/2 border-r-white/95 dark:border-r-slate-900/90",
   };
 
   return (
@@ -116,7 +118,7 @@ export function Tooltip({
                   ...sideOriginMap[side],
                 }}
                 className={cn(
-                  "min-w-[max-content] max-w-[220px] rounded-xl px-3 py-2 text-[10px] font-bold text-white shadow-2xl border border-white/10 backdrop-blur-md bg-slate-900/90 pointer-events-none ring-1 ring-white/5 whitespace-normal text-center",
+                  "min-w-[max-content] max-w-[250px] rounded-xl px-3 py-2 text-[10px] font-bold text-slate-800 dark:text-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-2xl border border-border dark:border-white/10 backdrop-blur-md bg-white/95 dark:bg-slate-900/90 pointer-events-none ring-1 ring-black/5 dark:ring-white/5 whitespace-normal",
                   className,
                 )}
               >
@@ -128,7 +130,7 @@ export function Tooltip({
                   )}
                 />
                 {/* Subtle Inner Glow */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-white/20 to-transparent" />
               </motion.div>
             )}
           </AnimatePresence>,

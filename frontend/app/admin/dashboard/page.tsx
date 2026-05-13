@@ -16,6 +16,9 @@ import {
   Target,
   UserX,
   ArrowRight,
+  AlertTriangle,
+  FileCheck,
+  UserCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
@@ -32,6 +35,8 @@ import { PulseCard } from "@components/ui-cards/PulseCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
 import { Button } from "@components/ui-elements/Button";
+import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
 
 // Types for better safety
 interface DashboardNotification {
@@ -106,12 +111,7 @@ export default function DashboardPage() {
 
   const displayGrades = today_pulse?.grades?.length
     ? today_pulse.grades
-    : [
-        { label: "Excellent", count: 0 },
-        { label: "Good", count: 0 },
-        { label: "Average", count: 0 },
-        { label: "Poor", count: 0 },
-      ];
+    : GRADE_OPTIONS.map((r) => ({ label: r.label, count: 0 }));
 
   const statCards = [
     {
@@ -192,11 +192,23 @@ export default function DashboardPage() {
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",
     },
+    "Above Average": {
+      icon: <BadgeCheck />,
+      color: "text-violet-500",
+      bgColor: "bg-violet-500/10",
+      borderColor: "border-violet-500/20",
+    },
     Average: {
       icon: <Target />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20",
+    },
+    "Below Average": {
+      icon: <Target />,
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/20",
     },
     Poor: {
       icon: <UserX />,
@@ -265,7 +277,7 @@ export default function DashboardPage() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {/* Pulse Section with internal skeletons */}
+          {/* Top-Left: Dashboard Pulse */}
           <div className="lg:col-span-2">
             <MainCard
               title={
@@ -281,12 +293,13 @@ export default function DashboardPage() {
                 </div>
               }
               className="h-full"
+              bodyClassName="p-4 pb-2"
             >
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-1"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 p-1"
               >
                 {pulseMetrics.map((metric) => (
                   <motion.div key={metric.label} variants={itemVariants}>
@@ -297,7 +310,7 @@ export default function DashboardPage() {
             </MainCard>
           </div>
 
-          {/* Activity Section */}
+          {/* Top-Right: Activity & Focus */}
           <div className="lg:col-span-1">
             <MainCard
               title={
@@ -315,7 +328,7 @@ export default function DashboardPage() {
               className="h-full"
               bodyClassName="p-1"
             >
-              <div className="flex flex-col flex-1 h-full">
+              <div className="flex flex-col flex-1 h-full min-h-[240px]">
                 <div className="flex-1 space-y-1">
                   {notificationsLoading ? (
                     <div className="p-4 space-y-4">
@@ -337,31 +350,67 @@ export default function DashboardPage() {
                       animate="visible"
                       className="space-y-1"
                     >
-                      {notifications.map((notif) => (
-                        <motion.div key={notif.id} variants={itemVariants}>
-                          <ActivityItem
-                            icon={
-                              notif.type === "duplicate_user" ? (
-                                <UserPlus size={18} />
-                              ) : (
-                                <FileText size={18} />
-                              )
-                            }
-                            title={notif.title}
-                            description={notif.message}
-                            time={formatDistanceToNow(
-                              new Date(notif.created_at),
-                              { addSuffix: true },
-                            )}
-                            color={
-                              notif.type === "duplicate_user"
-                                ? "text-rose-500"
-                                : "text-blue-500"
-                            }
-                            className="p-3"
-                          />
-                        </motion.div>
-                      ))}
+                      {notifications.slice(0, 3).map((notif) => {
+                        const t = notif.title?.toLowerCase() || "";
+                        const tp = notif.type?.toLowerCase() || "";
+
+                        let icon = <Bell size={18} />;
+                        let colorClass = "text-slate-500";
+                        let bgClass = "bg-slate-500/10 dark:bg-slate-500/20";
+
+                        if (
+                          t.includes("duplicate") ||
+                          tp.includes("duplicate")
+                        ) {
+                          icon = <AlertTriangle size={18} />;
+                          colorClass = "text-amber-500";
+                          bgClass = "bg-amber-500/10 dark:bg-amber-500/20";
+                        } else if (
+                          t.includes("unassigned") ||
+                          tp.includes("unassigned")
+                        ) {
+                          icon = <UserX size={18} />;
+                          colorClass = "text-red-500";
+                          bgClass = "bg-red-500/10 dark:bg-red-500/20";
+                        } else if (
+                          t.includes("submitted") ||
+                          tp.includes("submitted")
+                        ) {
+                          icon = <FileCheck size={18} />;
+                          colorClass = "text-emerald-500";
+                          bgClass = "bg-emerald-500/10 dark:bg-emerald-500/20";
+                        } else if (
+                          t.includes("interview") ||
+                          t.includes("assigned") ||
+                          tp.includes("assigned")
+                        ) {
+                          icon = <UserCheck size={18} />;
+                          colorClass = "text-brand-primary";
+                          bgClass =
+                            "bg-brand-primary/10 dark:bg-brand-primary/20";
+                        }
+
+                        return (
+                          <motion.div key={notif.id} variants={itemVariants}>
+                            <ActivityItem
+                              icon={icon}
+                              title={notif.title}
+                              description={
+                                <NotificationFormatter
+                                  message={notif.message}
+                                />
+                              }
+                              time={formatDistanceToNow(
+                                new Date(notif.created_at),
+                                { addSuffix: true },
+                              )}
+                              color={colorClass}
+                              bgClassName={bgClass}
+                              className="p-3"
+                            />
+                          </motion.div>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </div>
@@ -384,7 +433,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Performance Insights with internal skeletons */}
+        {/* Bottom: Performance Insights */}
         <MainCard
           title={
             <div className="flex items-center gap-3">
@@ -398,12 +447,13 @@ export default function DashboardPage() {
               </Typography>
             </div>
           }
+          className="h-full"
         >
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-1"
           >
             {displayGrades.map((grade) => {
               const config = gradeConfigs[grade.label] || gradeConfigs.Average;

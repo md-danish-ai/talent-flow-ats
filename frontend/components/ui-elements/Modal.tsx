@@ -10,6 +10,7 @@ interface ModalProps {
   onClose: () => void;
   title?: React.ReactNode;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   className?: string;
   closeOnOutsideClick?: boolean;
 }
@@ -19,6 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
+  footer,
   className,
   closeOnOutsideClick = false,
 }) => {
@@ -89,9 +91,14 @@ export const Modal: React.FC<ModalProps> = ({
                 </Button>
               </div>
             )}
-            <div className="p-6 overflow-y-auto bg-card text-foreground">
+            <div className="p-6 overflow-y-auto bg-card text-foreground flex-1 custom-scrollbar">
               {children}
             </div>
+            {footer && (
+              <div className="px-6 py-4 border-t border-border bg-card shrink-0">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </div>
       )}

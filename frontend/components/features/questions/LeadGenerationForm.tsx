@@ -16,7 +16,7 @@ import { HelpCircle, Loader2 } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { type Classification, type QuestionCreate } from "@types";
-import { QUESTION_TYPES } from "@lib/constants/questions";
+import { QUESTION_TYPES, MARKS_OPTIONS } from "@lib/constants/questions";
 import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 
 export const LeadGenerationForm = ({
@@ -44,6 +44,9 @@ export const LeadGenerationForm = ({
         name: "",
         title: "",
         email: "",
+        linkedinUrl: "",
+        phone: "",
+        address: "",
       } as LeadGenerationFormValues),
     validators: {
       onChange: leadGenerationSchema,
@@ -54,14 +57,17 @@ export const LeadGenerationForm = ({
           question_type: QUESTION_TYPES.LEAD_GENERATION,
           subject: value.subject,
           exam_level: value.examLevel,
-          question_text: value.companyName,
+          question_text: value.questionText || "",
           marks: value.marks,
           options: {
-            companyName: value.companyName,
+            company_name: value.companyName,
             website: value.website,
-            name: value.name,
-            title: value.title,
+            contact_name: value.name,
+            designation: value.title,
             email: value.email,
+            linkedin_url: value.linkedinUrl,
+            phone: value.phone,
+            address: value.address,
           },
           answer: {
             answer_text: "",
@@ -145,7 +151,7 @@ export const LeadGenerationForm = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
-            {/* Subject field ... */}
+            {/* Subject field */}
             <form.Field name="subject">
               {(field) => (
                 <>
@@ -181,7 +187,7 @@ export const LeadGenerationForm = ({
             </form.Field>
           </div>
           <div className="md:col-span-1">
-            {/* Exam Level field ... */}
+            {/* Exam Level field */}
             <form.Field name="examLevel">
               {(field) => (
                 <>
@@ -216,7 +222,7 @@ export const LeadGenerationForm = ({
             </form.Field>
           </div>
           <div className="md:col-span-1">
-            {/* Marks field ... */}
+            {/* Marks field */}
             <form.Field name="marks">
               {(field) => (
                 <>
@@ -231,10 +237,7 @@ export const LeadGenerationForm = ({
                     placeholder="Select Marks"
                     value={String(field.state.value)}
                     onChange={(val) => field.handleChange(Number(val))}
-                    options={Array.from({ length: 50 }, (_, i) => ({
-                      id: String(i + 1),
-                      label: String(i + 1),
-                    }))}
+                    options={MARKS_OPTIONS}
                     className="h-12 bg-muted/20 w-full transition-colors border-border/60 hover:border-border"
                     error={field.state.meta.errors.length > 0}
                   />
@@ -367,7 +370,7 @@ export const LeadGenerationForm = ({
           </form.Field>
           <form.Field name="email">
             {(field) => (
-              <div className="md:col-span-2">
+              <div>
                 <Typography
                   variant="body5"
                   weight="semibold"
@@ -390,6 +393,66 @@ export const LeadGenerationForm = ({
                     {getErrorMessage(field.state.meta.errors[0])}
                   </Typography>
                 )}
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="linkedinUrl">
+            {(field) => (
+              <div>
+                <Typography
+                  variant="body5"
+                  weight="semibold"
+                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                >
+                  LinkedIn URL
+                </Typography>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="bg-muted/20"
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="phone">
+            {(field) => (
+              <div>
+                <Typography
+                  variant="body5"
+                  weight="semibold"
+                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                >
+                  Phone Number
+                </Typography>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="bg-muted/20"
+                />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="address">
+            {(field) => (
+              <div>
+                <Typography
+                  variant="body5"
+                  weight="semibold"
+                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
+                >
+                  Address / Location
+                </Typography>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0}
+                  className="bg-muted/20"
+                />
               </div>
             )}
           </form.Field>

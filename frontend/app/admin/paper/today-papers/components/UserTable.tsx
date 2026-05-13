@@ -14,9 +14,10 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { Badge } from "@components/ui-elements/Badge";
 import { CopyableText } from "@components/ui-elements/CopyableText";
-import { Mail, ClipboardCheck } from "lucide-react";
+import { Calendar, ClipboardCheck } from "lucide-react";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { UserListResponse } from "@types";
+import { formatDate } from "@lib/utils";
 
 interface UserTableProps {
   users: UserListResponse[];
@@ -48,7 +49,7 @@ export function UserTable({
               Contact Info
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-              Target Profile
+              Department / Exam Level
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               Assigned Paper
@@ -118,7 +119,6 @@ export function UserTable({
                             color="violet"
                             animate="pulse"
                             shape="square"
-                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             RETURNING
                           </Badge>
@@ -128,22 +128,30 @@ export function UserTable({
                             color="success"
                             animate="pulse"
                             shape="square"
-                            className="font-bold text-[9px] uppercase tracking-tighter"
                           >
                             NEW
                           </Badge>
                         )}
                       </div>
-                      <CopyableText
-                        value={row.email || "-"}
-                        className="text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
-                        title="Copy Email"
+                      <div
+                        className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300 font-medium italic mt-0.5"
+                        title={
+                          row.is_reinterview
+                            ? "Re-interview Date"
+                            : "Registration Date"
+                        }
                       >
-                        <Mail size={11} />
+                        <Calendar size={11} className="shrink-0" />
                         <span className="text-[11px] truncate max-w-[150px]">
-                          {row.email || "-"}
+                          {row.is_reinterview
+                            ? row.reinterview_date
+                              ? formatDate(row.reinterview_date)
+                              : "No Date"
+                            : row.created_at
+                              ? formatDate(row.created_at)
+                              : "No Date"}
                         </span>
-                      </CopyableText>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
@@ -167,7 +175,7 @@ export function UserTable({
                       color="primary"
                       shape="square"
                       variant="outline"
-                      className="text-[9px] font-bold py-0 h-4 px-1"
+                      //
                     >
                       {row.assignment?.test_level_name ||
                         row.test_level_name ||
@@ -195,7 +203,6 @@ export function UserTable({
                       color="success"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       SUBMITTED
                     </Badge>
@@ -203,39 +210,27 @@ export function UserTable({
                     row.assignment?.has_started ? (
                     <Badge
                       variant="outline"
-                      color="violet"
+                      color="primary"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       IN PROGRESS
                     </Badge>
                   ) : row.process_status === "ready" ? (
                     <Badge
                       variant="outline"
-                      color="primary"
+                      color="blue"
                       animate="pulse"
                       shape="square"
-                      className="font-bold text-[10px]"
                     >
                       READY
                     </Badge>
                   ) : row.process_status === "expired" ? (
-                    <Badge
-                      variant="outline"
-                      color="error"
-                      shape="square"
-                      className="font-bold text-[10px]"
-                    >
+                    <Badge variant="outline" color="error" shape="square">
                       EXPIRED
                     </Badge>
                   ) : (
-                    <Badge
-                      variant="outline"
-                      shape="square"
-                      color="warning"
-                      className="font-bold text-[10px]"
-                    >
+                    <Badge variant="outline" shape="square" color="warning">
                       PENDING
                     </Badge>
                   )}

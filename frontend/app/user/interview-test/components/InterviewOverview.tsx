@@ -73,19 +73,73 @@ export function InterviewOverview({
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,99,49,0.12),transparent_45%)]" />
 
-      <div className="relative z-10 space-y-5">
-        <div className="flex flex-wrap items-center gap-2 px-1">
-          <div className="flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-brand-primary shadow-sm shadow-brand-primary/10">
-            <Sparkles size={12} className="opacity-80" />
-            <span>Interview Module</span>
+      <div className="relative z-10 space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge
+              shape="square"
+              variant="outline"
+              color="primary"
+              icon={
+                <Sparkles
+                  size={12}
+                  className="opacity-80 animate-pulse duration-1000"
+                />
+              }
+              className="font-bold shadow-sm shadow-brand-primary/10"
+            >
+              Interview Module
+            </Badge>
+            <Badge
+              shape="square"
+              variant="outline"
+              color="default"
+              icon={
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              }
+              className="font-bold bg-background/50 backdrop-blur-sm"
+            >
+              Live Session
+            </Badge>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-border bg-background/50 backdrop-blur-sm px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-foreground/60">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-            <span>Live Session</span>
+
+          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+            <Link href="/user/dashboard" className="flex-1 sm:flex-none">
+              <Button
+                size="md"
+                variant="outline"
+                color="primary"
+                animate="scale"
+                startIcon={
+                  <ArrowLeft
+                    size={16}
+                    className="transition-transform duration-300 group-hover:-translate-x-1.5 ease-in-out"
+                  />
+                }
+                className="w-full group"
+              >
+                Back
+              </Button>
+            </Link>
+            <Button
+              size="md"
+              color="primary"
+              animate="scale"
+              startIcon={
+                <PlayCircle
+                  size={18}
+                  className="transition-all duration-300 group-hover:scale-125 group-hover:rotate-[15deg] ease-out"
+                />
+              }
+              onClick={onStart}
+              className="flex-1 sm:flex-none group"
+            >
+              Start Interview
+            </Button>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           <Typography variant="h1" className=" tracking-tight">
             Assess your potential with{" "}
             <span className="text-brand-primary">Confidence</span>
@@ -118,13 +172,13 @@ export function InterviewOverview({
         )}
 
         {/* Sections Grid Redesign */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
             <Typography variant="body1" weight="bold">
               Assessment Structure
             </Typography>
             <div className="h-[1px] flex-1 bg-border/40" />
-            <Badge variant="outline" className="bg-muted/30">
+            <Badge variant="outline" shape="square">
               {sections.length} Sections
             </Badge>
           </div>
@@ -199,7 +253,10 @@ export function InterviewOverview({
             <div className="mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20 shadow-inner">
-                  <AlertCircle size={24} />
+                  <AlertCircle
+                    size={24}
+                    className="animate-pulse duration-[3000ms]"
+                  />
                 </div>
                 <div>
                   <Typography variant="h4">Interview Protocol</Typography>
@@ -208,16 +265,16 @@ export function InterviewOverview({
                   </Typography>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-3 py-1 text-amber-600 dark:text-amber-400">
-                <ShieldCheck size={14} />
-                <Typography
-                  variant="body5"
-                  weight="bold"
-                  className="uppercase tracking-wide"
-                >
-                  Secure Session
-                </Typography>
-              </div>
+              <Badge
+                variant="outline"
+                color="warning"
+                shape="square"
+                animate="pulse"
+                icon={<ShieldCheck size={14} />}
+                className="font-bold px-3 py-1.5"
+              >
+                Secure Session
+              </Badge>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
@@ -241,31 +298,6 @@ export function InterviewOverview({
               ))}
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Button
-            size="lg"
-            color="primary"
-            animate="scale"
-            startIcon={<PlayCircle size={18} />}
-            onClick={onStart}
-            className="w-full sm:w-auto"
-          >
-            Start Interview
-          </Button>
-          <Link href="/user/dashboard">
-            <Button
-              size="lg"
-              variant="outline"
-              color="primary"
-              animate="scale"
-              startIcon={<ArrowLeft size={16} />}
-              className="w-full sm:w-auto"
-            >
-              Back
-            </Button>
-          </Link>
         </div>
       </div>
     </motion.div>

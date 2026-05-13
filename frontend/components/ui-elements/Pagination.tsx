@@ -101,6 +101,7 @@ export function Pagination({
               className="w-20 pl-4 py-2"
               placement="top"
               placeholder={pageSize.toString()}
+              isClearable={false}
             />
           </div>
         )}

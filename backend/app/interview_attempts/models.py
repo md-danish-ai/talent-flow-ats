@@ -34,6 +34,9 @@ class InterviewRecord(Base):
     )
     submitted_at = Column(TIMESTAMP, nullable=True)
 
+    # Track cumulative time spent actively across sessions (persists over subject resets)
+    active_duration_seconds = Column(Integer, nullable=False, server_default="0")
+
     # Question counts
     total_questions = Column(Integer, nullable=False, server_default="0")
     attempted_count = Column(Integer, nullable=False, server_default="0")

@@ -38,6 +38,7 @@ class AdminNotification(Base):
     __tablename__ = "admin_notifications"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     type = Column(String(100), nullable=False)  # 'duplicate_user'
     reference_id = Column(
         Integer, ForeignKey("duplicate_user_matches.id"), nullable=True

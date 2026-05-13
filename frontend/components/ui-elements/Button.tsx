@@ -147,7 +147,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={handleButtonClick}
         disabled={disabled || isLoading}
         className={cn(
-          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50",
+          "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-brand-primary disabled:opacity-50 tracking-wider",
           variantStyles,
           sizes[size],
           shadowClass,

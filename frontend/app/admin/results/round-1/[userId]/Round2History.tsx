@@ -15,6 +15,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { evaluationsApi } from "@lib/api";
 import { cn, formatDate, formatTime, humanizeString } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 import { EvaluationHistoryItem } from "@types";
 
@@ -63,7 +64,10 @@ export function Round2History({ userId }: Round2HistoryProps) {
         {[1, 2].map((i) => (
           <div
             key={i}
-            className="h-48 w-full rounded-2xl bg-muted/40 animate-pulse border border-border/50"
+            className={cn(
+              "h-48 w-full bg-muted/40 animate-pulse border border-border/50",
+              STYLE_CONFIG.cardRadius,
+            )}
           />
         ))}
       </div>
@@ -85,12 +89,20 @@ export function Round2History({ userId }: Round2HistoryProps) {
       {history.map((item) => (
         <div
           key={item.id}
-          className="group relative overflow-hidden rounded-[24px] border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-brand-primary/5 hover:-translate-y-1"
+          className={cn(
+            "group relative overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-brand-primary/5 hover:-translate-y-1",
+            STYLE_CONFIG.cardRadius,
+          )}
         >
           {/* Top Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-border/50 bg-muted/20">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shadow-inner">
+              <div
+                className={cn(
+                  "w-12 h-12 bg-brand-primary/10 flex items-center justify-center text-brand-primary shadow-inner",
+                  STYLE_CONFIG.iconRadius,
+                )}
+              >
                 <UserCheck size={24} />
               </div>
               <div>
@@ -129,14 +141,14 @@ export function Round2History({ userId }: Round2HistoryProps) {
                 variant="outline"
                 shape="square"
                 color={item.status === "completed" ? "success" : "warning"}
-                className="uppercase  text-[10px] font-black h-7 px-3"
               >
                 {item.status}
               </Badge>
               {item.overall_grade && (
                 <div
                   className={cn(
-                    "flex items-center gap-2 px-3 h-7 rounded-md shadow-lg",
+                    "flex items-center gap-2 px-3 h-7 shadow-lg",
+                    STYLE_CONFIG.badgeRadius,
                     item.overall_grade === "Excellent"
                       ? "bg-emerald-500 shadow-emerald-500/20"
                       : item.overall_grade === "Good"
@@ -180,7 +192,8 @@ export function Round2History({ userId }: Round2HistoryProps) {
                         <div
                           key={metric}
                           className={cn(
-                            "group/metric relative p-4 rounded-2xl border transition-all duration-300",
+                            "group/metric relative p-4 border transition-all duration-300",
+                            STYLE_CONFIG.innerCardRadius,
                             "bg-muted/30 border-border/50 hover:bg-white dark:hover:bg-white/5 hover:border-border hover:shadow-md",
                           )}
                         >
@@ -218,9 +231,19 @@ export function Round2History({ userId }: Round2HistoryProps) {
             {/* Verdict & Comments Section */}
             {item.status === "completed" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="relative group/verdict overflow-hidden p-5 rounded-[20px] bg-emerald-500/5 border border-emerald-500/10 transition-all hover:bg-emerald-500/10">
+                <div
+                  className={cn(
+                    "relative group/verdict overflow-hidden p-5 bg-emerald-500/5 border border-emerald-500/10 transition-all hover:bg-emerald-500/10",
+                    STYLE_CONFIG.innerCardRadius,
+                  )}
+                >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-600">
+                    <div
+                      className={cn(
+                        "w-8 h-8 bg-emerald-500/20 flex items-center justify-center text-emerald-600",
+                        STYLE_CONFIG.iconRadius,
+                      )}
+                    >
                       <ShieldCheck size={18} />
                     </div>
                     <Typography
@@ -238,9 +261,19 @@ export function Round2History({ userId }: Round2HistoryProps) {
                   </Typography>
                 </div>
 
-                <div className="relative group/comments overflow-hidden p-5 rounded-[20px] bg-slate-500/5 border border-slate-500/10 transition-all hover:bg-slate-500/10">
+                <div
+                  className={cn(
+                    "relative group/comments overflow-hidden p-5 bg-slate-500/5 border border-slate-500/10 transition-all hover:bg-slate-500/10",
+                    STYLE_CONFIG.innerCardRadius,
+                  )}
+                >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-slate-500/20 flex items-center justify-center text-slate-600">
+                    <div
+                      className={cn(
+                        "w-8 h-8 bg-slate-500/20 flex items-center justify-center text-slate-600",
+                        STYLE_CONFIG.iconRadius,
+                      )}
+                    >
                       <MessageSquare size={18} />
                     </div>
                     <Typography
@@ -262,7 +295,12 @@ export function Round2History({ userId }: Round2HistoryProps) {
 
             {/* Pending State */}
             {(item.status === "pending" || !item.status) && (
-              <div className="flex flex-col items-center justify-center py-10 bg-muted/10 rounded-[20px] border border-dashed border-border/60">
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center py-10 bg-muted/10 border border-dashed border-border/60",
+                  STYLE_CONFIG.innerCardRadius,
+                )}
+              >
                 <div className="w-12 h-12 rounded-full bg-muted/20 flex items-center justify-center mb-3 animate-pulse">
                   <Clock size={24} className="text-muted-foreground/40" />
                 </div>

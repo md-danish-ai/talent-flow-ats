@@ -33,7 +33,7 @@ export const stepFields: Record<number, (keyof PersonalDetailsFormValues)[]> = {
   ],
 };
 
-export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
+export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
   firstName: "John",
   lastName: "Doe",
   gender: "Male",
@@ -123,6 +123,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "1st",
       percentage: "85%",
       medium: "English",
+      details: "",
     },
     {
       id: 2,
@@ -133,6 +134,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "1st",
       percentage: "82%",
       medium: "English",
+      details: "Science",
     },
     {
       id: 3,
@@ -143,6 +145,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 4,
@@ -153,6 +156,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "1st",
       percentage: "90%",
       medium: "English",
+      details: "B.Tech CSE",
     },
     {
       id: 5,
@@ -163,6 +167,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 6,
@@ -173,6 +178,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
   ],
   workExp: [
@@ -220,7 +226,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   expectedSalary: "1200000",
 };
 
-export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
+export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   firstName: "",
   lastName: "",
   gender: "Male",
@@ -310,6 +316,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 2,
@@ -320,6 +327,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 3,
@@ -330,6 +338,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 4,
@@ -340,6 +349,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 5,
@@ -350,6 +360,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
     {
       id: 6,
@@ -360,6 +371,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       division: "",
       percentage: "",
       medium: "",
+      details: "",
     },
   ],
   workExp: [

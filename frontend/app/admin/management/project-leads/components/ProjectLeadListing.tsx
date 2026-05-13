@@ -188,7 +188,6 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                               variant="outline"
                               shape="square"
                               color={row.is_active ? "success" : "error"}
-                              className="text-[9px] font-bold"
                             >
                               {row.is_active ? "ACTIVE" : "INACTIVE"}
                             </Badge>

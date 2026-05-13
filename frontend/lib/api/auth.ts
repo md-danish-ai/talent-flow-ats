@@ -116,7 +116,7 @@ export async function toggleUserStatus(
   return api.put<{ id: number; is_active: boolean }>(
     ENDPOINTS.AUTH.TOGGLE_STATUS(userId),
     {},
-    options,
+    { ...options, silentSuccess: true },
   );
 }
 
@@ -127,7 +127,7 @@ export async function deleteUser(
 ): Promise<{ id: number; message: string }> {
   return api.delete<{ id: number; message: string }>(
     ENDPOINTS.AUTH.DELETE_USER(userId),
-    options,
+    { ...options, silentSuccess: true },
   );
 }
 

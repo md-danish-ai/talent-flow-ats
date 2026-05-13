@@ -24,7 +24,9 @@ import { NotificationRow } from "./components/NotificationRow";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
+import { useMe } from "@hooks/api/user/use-me";
 import { cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type NotificationListingFilters = {
@@ -32,6 +34,8 @@ type NotificationListingFilters = {
 };
 
 export function NotificationsClient() {
+  const { data: user } = useMe();
+  const isProjectLead = user?.role === "project_lead";
   const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [counts, setCounts] = useState({ read: 0, unread: 0, total: 0 });
@@ -98,6 +102,15 @@ export function NotificationsClient() {
     }
   };
 
+  const handleMarkRead = useCallback(async (id: number) => {
+    try {
+      await markNotificationsRead([id]);
+      window.dispatchEvent(new CustomEvent("notificationsUpdated"));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  }, []);
+
   const toggleSelection = useCallback((id: number) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
@@ -122,7 +135,12 @@ export function NotificationsClient() {
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+            <div
+              className={cn(
+                "w-8 h-8 bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0",
+                STYLE_CONFIG.iconRadius,
+              )}
+            >
               <Bell size={18} />
             </div>
             Recent Notifications
@@ -130,21 +148,6 @@ export function NotificationsClient() {
         }
         action={
           <div className="flex items-center gap-3">
-            <Tooltip content="Refresh Notifications" side="bottom">
-              <Button
-                variant="action"
-                size="rounded-icon"
-                animate="scale"
-                iconAnimation="rotate-180"
-                onClick={() => refresh()}
-                disabled={isLoading}
-              >
-                <div className={cn(isLoading && "animate-spin")}>
-                  <RefreshCcw size={18} />
-                </div>
-              </Button>
-            </Tooltip>
-            <div className="h-6 w-px bg-border/50 mx-1" />
             {selectedIds.length > 0 && (
               <div className="flex gap-2">
                 <Button
@@ -171,6 +174,21 @@ export function NotificationsClient() {
                 </Button>
               </div>
             )}
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <Tooltip content="Refresh Notifications" side="bottom">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                animate="scale"
+                iconAnimation="rotate-180"
+                onClick={() => refresh()}
+                disabled={isLoading}
+              >
+                <div className={cn(isLoading && "animate-spin")}>
+                  <RefreshCcw size={18} />
+                </div>
+              </Button>
+            </Tooltip>
           </div>
         }
         className="mb-6"
@@ -205,23 +223,34 @@ export function NotificationsClient() {
                   <TableHead className="w-[80px] text-center">
                     Sr. No.
                   </TableHead>
-                  <TableHead>Alert Type</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>New User</TableHead>
-                  <TableHead>Matched User</TableHead>
+                  <TableHead>
+                    {isProjectLead ? "Notification Details" : "Alert Type"}
+                  </TableHead>
+                  {!isProjectLead && (
+                    <>
+                      <TableHead>Score</TableHead>
+                      <TableHead>New User</TableHead>
+                      <TableHead>Matched User</TableHead>
+                    </>
+                  )}
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[120px]">
-                    Action
-                  </TableHead>
+                  {!isProjectLead && (
+                    <TableHead className="text-center w-[120px]">
+                      Action
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <SimpleTableSkeleton columnCount={9} rowCount={pageSize} />
+                  <SimpleTableSkeleton
+                    columnCount={isProjectLead ? 5 : 9}
+                    rowCount={pageSize}
+                  />
                 ) : notifications.length === 0 ? (
                   <EmptyState
-                    colSpan={9}
+                    colSpan={isProjectLead ? 5 : 9}
                     title="All caught up!"
                     description="You have no new notifications right now."
                   />
@@ -235,6 +264,8 @@ export function NotificationsClient() {
                       isExpanded={!!expandedRows[notif.id]}
                       onSelect={toggleSelection}
                       onExpand={toggleRow}
+                      isProjectLead={isProjectLead}
+                      onMarkRead={handleMarkRead}
                     />
                   ))
                 )}

@@ -54,18 +54,24 @@ export const resultsApi = {
   resetUserStatus: async (userId: number) => {
     return api.post<{ message: string }>(
       ENDPOINTS.RESULTS.RESET_ATTEMPT(userId),
+      undefined,
+      { silentSuccess: true },
     );
   },
 
   resetUserDetails: async (userId: number) => {
     return api.post<{ message: string }>(
       ENDPOINTS.RESULTS.RESET_DETAILS(userId),
+      undefined,
+      { silentSuccess: true },
     );
   },
 
   enableReInterview: async (userId: number) => {
     return api.post<{ message: string; reinterview_date?: string }>(
       ENDPOINTS.RESULTS.RE_INTERVIEW(userId),
+      undefined,
+      { silentSuccess: true },
     );
   },
 
@@ -77,6 +83,7 @@ export const resultsApi = {
     return api.post<{ message: string }>(
       ENDPOINTS.RESULTS.RESET_SUBJECTS(userId),
       { attempt_id: attemptId, section_names: sectionNames },
+      { silentSuccess: true },
     );
   },
 

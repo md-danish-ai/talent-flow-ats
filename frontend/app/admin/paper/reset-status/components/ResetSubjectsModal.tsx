@@ -112,7 +112,6 @@ export function ResetSubjectsModal({
       onClose();
     } catch (error: unknown) {
       console.error("Failed to reset subjects:", error);
-      toast.error("An error occurred while resetting subjects.");
     } finally {
       setResetting(false);
     }
@@ -193,18 +192,14 @@ export function ResetSubjectsModal({
                   {isAttemptSubmitted ? (
                     <Badge
                       color="success"
-                      variant="fill"
+                      variant="outline"
+                      shape="square"
                       icon={<Lock size={12} />}
-                      className="font-black px-3 py-1 shadow-sm"
                     >
                       SUBMITTED (LOCKED)
                     </Badge>
                   ) : (
-                    <Badge
-                      color="warning"
-                      variant="fill"
-                      className="font-black px-3 py-1 shadow-sm"
-                    >
+                    <Badge color="warning" variant="fill">
                       IN PROGRESS (LIVE)
                     </Badge>
                   )}
@@ -288,28 +283,19 @@ export function ResetSubjectsModal({
                       <div className="flex items-center gap-3">
                         {isSubjectSubmitted ? (
                           <Badge
-                            variant="fill"
+                            variant="outline"
                             color="success"
+                            shape="square"
                             icon={<Lock size={12} />}
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm"
                           >
                             LOCKED
                           </Badge>
                         ) : subject.attempted_count > 0 ? (
-                          <Badge
-                            variant="fill"
-                            color="warning"
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm"
-                          >
+                          <Badge variant="fill" color="warning">
                             IN PROGRESS
                           </Badge>
                         ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] font-black px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 border-slate-500/20"
-                          >
-                            READY
-                          </Badge>
+                          <Badge variant="outline">READY</Badge>
                         )}
                       </div>
                     </div>
@@ -350,18 +336,19 @@ export function ResetSubjectsModal({
         <div className="flex justify-end gap-3 border-t border-border/50 pt-7">
           <Button
             variant="outline"
+            color="primary"
+            animate="scale"
             onClick={onClose}
             disabled={resetting}
-            className="px-6 font-bold uppercase tracking-widest text-[11px]"
           >
             Cancel
           </Button>
           <Button
             variant="primary"
             color="primary"
+            animate="scale"
             onClick={handleReset}
             disabled={resetting || !data || selectedSubjects.length === 0}
-            className="min-w-[160px] font-black uppercase tracking-widest text-[11px] h-11"
           >
             {resetting ? (
               <div className="flex items-center gap-2">

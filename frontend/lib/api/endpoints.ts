@@ -47,6 +47,7 @@ export const ENDPOINTS = {
     AUTO_GENERATE: "/questions/auto-generate",
     TYPE_COUNTS: "/questions/type-counts",
     UPLOAD_IMAGE: "/questions/upload-image",
+    BULK_UPLOAD: "/questions/bulk-upload",
   },
 
   PAPERS: {

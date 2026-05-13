@@ -140,6 +140,7 @@ export interface AdminUserAttemptHistoryItem {
   total_marks?: number;
   overall_grade?: string;
   is_auto_submitted: boolean;
+  active_duration_seconds?: number;
   subject_results?: SubjectResult[];
   typing_stats?: TypingStats | null;
 }

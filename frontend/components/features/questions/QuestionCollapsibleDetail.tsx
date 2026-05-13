@@ -18,11 +18,34 @@ import {
 } from "lucide-react";
 import { cn } from "@lib/utils";
 import { QUESTION_TYPES } from "@lib/constants/questions";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 /**
  * Clean Border Animation Component
  */
 function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
+  const getRadius = () => {
+    switch (STYLE_CONFIG.cardRadius) {
+      case "rounded-none":
+        return "0px";
+      case "rounded-sm":
+        return "4px";
+      case "rounded-md":
+        return "6px";
+      case "rounded-lg":
+        return "8px";
+      case "rounded-xl":
+        return "12px";
+      case "rounded-2xl":
+        return "16px";
+      case "rounded-3xl":
+        return "24px";
+      default:
+        return "16px";
+    }
+  };
+  const r = getRadius();
+
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible">
       <motion.rect
@@ -30,8 +53,8 @@ function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
         y="0"
         width="100%"
         height="100%"
-        rx="16"
-        ry="16"
+        rx={r}
+        ry={r}
         fill="none"
         stroke={color}
         strokeWidth="4"
@@ -91,8 +114,12 @@ export const QuestionCollapsibleDetail: React.FC<
 
   const renderMetadataGrid = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-      <div className="flex items-center gap-3 bg-emerald-50/30 dark:bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10 shadow-sm">
-        <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+      <div
+        className={`flex items-center gap-3 bg-emerald-50/30 dark:bg-emerald-500/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 shadow-sm`}
+      >
+        <div
+          className={`p-2 ${STYLE_CONFIG.iconRadius} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400`}
+        >
           <BookOpen size={14} />
         </div>
         <div className="flex flex-col">
@@ -110,8 +137,12 @@ export const QuestionCollapsibleDetail: React.FC<
           </Typography>
         </div>
       </div>
-      <div className="flex items-center gap-3 bg-amber-50/30 dark:bg-amber-500/5 p-3 rounded-xl border border-amber-500/10 shadow-sm">
-        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+      <div
+        className={`flex items-center gap-3 bg-amber-50/30 dark:bg-amber-500/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-amber-500/10 shadow-sm`}
+      >
+        <div
+          className={`p-2 ${STYLE_CONFIG.iconRadius} bg-amber-500/10 text-amber-600 dark:text-amber-400`}
+        >
           <Layers size={14} />
         </div>
         <div className="flex flex-col">
@@ -129,8 +160,12 @@ export const QuestionCollapsibleDetail: React.FC<
           </Typography>
         </div>
       </div>
-      <div className="flex items-center gap-3 bg-brand-primary/5 p-3 rounded-xl border border-brand-primary/10 shadow-sm">
-        <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
+      <div
+        className={`flex items-center gap-3 bg-brand-primary/5 p-3 ${STYLE_CONFIG.innerCardRadius} border border-brand-primary/10 shadow-sm`}
+      >
+        <div
+          className={`p-2 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary`}
+        >
           <Trophy size={14} />
         </div>
         <div className="flex flex-col">
@@ -154,7 +189,12 @@ export const QuestionCollapsibleDetail: React.FC<
   );
 
   const renderSectionHeader = (icon: React.ReactNode, title: string) => (
-    <div className="absolute -top-3.5 left-5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-20">
+    <div
+      className={cn(
+        "absolute -top-3.5 left-5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-20",
+        STYLE_CONFIG.badgeRadius,
+      )}
+    >
       {icon}
       <Typography
         variant="body5"
@@ -169,7 +209,9 @@ export const QuestionCollapsibleDetail: React.FC<
   const renderLeadGeneration = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3">
+        <div
+          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3`}
+        >
           <div className="flex items-center gap-2 text-brand-primary">
             <Building2 size={16} />
             <Typography variant="body4" weight="bold">
@@ -185,7 +227,7 @@ export const QuestionCollapsibleDetail: React.FC<
                 Company Name
               </Typography>
               <Typography variant="body4" weight="semibold">
-                {String(options.companyName || "N/A")}
+                {String(options.company_name || "N/A")}
               </Typography>
             </div>
             <div>
@@ -203,9 +245,26 @@ export const QuestionCollapsibleDetail: React.FC<
                 {String(options.website || "N/A")}
               </Typography>
             </div>
+            <div>
+              <Typography
+                variant="body5"
+                className="text-muted-foreground uppercase text-[10px]"
+              >
+                LinkedIn URL
+              </Typography>
+              <Typography
+                variant="body4"
+                weight="semibold"
+                className="text-brand-primary break-all"
+              >
+                {String(options.linkedin_url || "N/A")}
+              </Typography>
+            </div>
           </div>
         </div>
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3">
+        <div
+          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3`}
+        >
           <div className="flex items-center gap-2 text-brand-primary">
             <User size={16} />
             <Typography variant="body4" weight="bold">
@@ -221,8 +280,8 @@ export const QuestionCollapsibleDetail: React.FC<
                 Contact Person
               </Typography>
               <Typography variant="body4" weight="semibold">
-                {String(options.name || "N/A")} (
-                {String(options.title || "N/A")})
+                {String(options.contact_name || "N/A")} (
+                {String(options.designation || "N/A")})
               </Typography>
             </div>
             <div>
@@ -236,10 +295,36 @@ export const QuestionCollapsibleDetail: React.FC<
                 {String(options.email || "N/A")}
               </Typography>
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground uppercase text-[10px]"
+                >
+                  Phone
+                </Typography>
+                <Typography variant="body4" weight="semibold">
+                  {String(options.phone || "N/A")}
+                </Typography>
+              </div>
+              <div>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground uppercase text-[10px]"
+                >
+                  Location
+                </Typography>
+                <Typography variant="body4" weight="semibold">
+                  {String(options.address || "N/A")}
+                </Typography>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="p-5 pt-8 rounded-2xl bg-brand-primary/[0.02] border border-brand-primary/10 relative">
+      <div
+        className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.02] border border-brand-primary/10 relative`}
+      >
         {renderSectionHeader(
           <Info size={12} className="text-brand-primary" />,
           "Task / Instructions",
@@ -257,7 +342,9 @@ export const QuestionCollapsibleDetail: React.FC<
   const renderContactDetails = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-border/50">
+        <div
+          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
+        >
           <div className="flex items-center gap-2 text-brand-primary mb-3">
             <Building2 size={16} />
             <Typography variant="body4" weight="bold">
@@ -293,7 +380,9 @@ export const QuestionCollapsibleDetail: React.FC<
             </div>
           </div>
         </div>
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-border/50">
+        <div
+          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
+        >
           <div className="flex items-center gap-2 text-emerald-600 mb-3">
             <Phone size={16} />
             <Typography variant="body4" weight="bold">
@@ -344,7 +433,9 @@ export const QuestionCollapsibleDetail: React.FC<
             </div>
           </div>
         </div>
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-border/50">
+        <div
+          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
+        >
           <div className="flex items-center gap-2 text-amber-600 mb-3">
             <MapPin size={16} />
             <Typography variant="body4" weight="bold">
@@ -383,7 +474,9 @@ export const QuestionCollapsibleDetail: React.FC<
 
   const renderTypingTest = () => (
     <div className="space-y-6">
-      <div className="p-5 pt-8 rounded-2xl bg-brand-primary/[0.02] border border-brand-primary/10 relative">
+      <div
+        className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.02] border border-brand-primary/10 relative`}
+      >
         {renderSectionHeader(
           <Keyboard size={12} className="text-brand-primary" />,
           "Test Assignment",
@@ -396,7 +489,9 @@ export const QuestionCollapsibleDetail: React.FC<
           {question.question_text}
         </Typography>
       </div>
-      <div className="p-5 pt-8 rounded-2xl bg-slate-50 dark:bg-slate-800/20 border border-border/50 relative">
+      <div
+        className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/20 border border-border/50 relative`}
+      >
         {renderSectionHeader(
           <FileText size={12} className="text-emerald-500" />,
           "Typing Content (Paragraph)",
@@ -433,7 +528,8 @@ export const QuestionCollapsibleDetail: React.FC<
     >
       <div
         className={cn(
-          "relative rounded-2xl border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+          "relative border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-300",
+          STYLE_CONFIG.cardRadius,
           isHovered && "scale-[1.01] border-brand-primary/30 shadow-2xl",
         )}
         onMouseEnter={() => setIsHovered(true)}
@@ -444,7 +540,12 @@ export const QuestionCollapsibleDetail: React.FC<
         {/* Header Section */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-slate-50/50 dark:bg-slate-800/30">
           <div className="flex items-center gap-4">
-            <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm">
+            <div
+              className={cn(
+                "p-2.5 bg-brand-primary/10 text-brand-primary shadow-sm",
+                STYLE_CONFIG.iconRadius,
+              )}
+            >
               <ListChecks size={20} />
             </div>
             <div>

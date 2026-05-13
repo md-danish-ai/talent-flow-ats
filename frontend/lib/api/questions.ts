@@ -57,10 +57,12 @@ export const questionsApi = {
     );
   },
   createQuestion: async (data: QuestionCreate) => {
-    return api.post(ENDPOINTS.QUESTIONS.CREATE, data);
+    return api.post(ENDPOINTS.QUESTIONS.CREATE, data, { silentSuccess: true });
   },
   updateQuestion: async (id: number, data: Partial<QuestionCreate>) => {
-    return api.put(ENDPOINTS.QUESTIONS.UPDATE(id), data);
+    return api.put(ENDPOINTS.QUESTIONS.UPDATE(id), data, {
+      silentSuccess: true,
+    });
   },
   toggleQuestionStatus: async (id: number) => {
     return api.put<{ message: string; is_active: boolean }>(
@@ -71,7 +73,7 @@ export const questionsApi = {
   },
   deleteQuestion: async (id: number) => {
     // Backend exposes DELETE /questions/{question_id}
-    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id));
+    return api.delete(ENDPOINTS.QUESTIONS.DELETE(id), { silentSuccess: true });
   },
   uploadImage: async (file: File) => {
     const formData = new FormData();
@@ -117,5 +119,68 @@ export const questionsApi = {
 
     const result = await response.json();
     return result.data as { image_url: string };
+  },
+  bulkUploadQuestions: async (
+    file: File,
+    zipFile: File | null,
+    params: {
+      subject?: string;
+      exam_level?: string;
+      marks?: number;
+      question_type?: string;
+    },
+  ) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (zipFile) formData.append("zip_file", zipFile);
+    if (params.subject) formData.append("subject", params.subject);
+    if (params.exam_level) formData.append("exam_level", params.exam_level);
+    if (params.marks) formData.append("marks", String(params.marks));
+    if (params.question_type)
+      formData.append("question_type", params.question_type);
+
+    const getCookie = (name: string) => {
+      if (typeof document === "undefined") return undefined;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return undefined;
+    };
+
+    let token = getCookie("auth_token");
+    if (token) {
+      token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+      try {
+        token = decodeURIComponent(token);
+      } catch {
+        /* keep raw */
+      }
+    }
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${BASE_URL}${ENDPOINTS.QUESTIONS.BULK_UPLOAD}`,
+      {
+        method: "POST",
+        body: formData,
+        headers,
+      },
+    );
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw { data: result, status: response.status };
+    }
+
+    const result = await response.json();
+    return result.data as {
+      success: boolean;
+      count?: number;
+      errors?: { row: number; errors: string[] }[];
+    };
   },
 };

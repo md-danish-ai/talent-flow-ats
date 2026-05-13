@@ -317,14 +317,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-card border border-border shadow-2xl rounded-2xl overflow-hidden flex origin-top-right"
+            className="bg-card border-2 border-brand-primary/30 dark:border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl overflow-hidden flex origin-top-right ring-1 ring-black/5 dark:ring-white/5"
           >
             {/* Presets Sidebar */}
-            <div className="w-[180px] bg-muted/30 border-r border-border/50 p-4 space-y-1">
+            <div className="w-[180px] bg-muted/30 border-r border-border/50 p-3.5 space-y-0.5">
               <Typography
                 variant="body5"
                 weight="bold"
-                className="px-2 mb-3 uppercase tracking-widest text-[9px] text-muted-foreground/60"
+                className="px-2 mb-2 uppercase tracking-widest text-[9px] text-muted-foreground/60"
               >
                 Suggestions
               </Typography>
@@ -333,22 +333,24 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   key={preset.label}
                   onClick={() => handlePresetSelect(preset)}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between group",
+                    "w-full text-left px-3 py-1.5 rounded-lg text-xs transition-all flex items-center justify-between group border border-transparent",
                     selectedLabel === preset.label
-                      ? "bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/10"
+                      ? "bg-brand-primary/10 text-brand-primary font-bold border-brand-primary/40 shadow-sm shadow-brand-primary/5"
                       : "hover:bg-muted hover:text-foreground text-foreground/70",
                   )}
                 >
                   <span>{preset.label}</span>
-                  {selectedLabel === preset.label && <Check size={12} />}
+                  {selectedLabel === preset.label && (
+                    <Check size={12} className="text-brand-primary" />
+                  )}
                 </button>
               ))}
 
-              <div className="pt-4 mt-4 border-t border-border/50">
+              <div className="pt-2 mt-2 border-t border-border/50">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start text-[10px] h-8 text-muted-foreground/70"
+                  className="w-full justify-start text-[10px] h-8 text-muted-foreground/70 rounded-lg"
                   onClick={() => {
                     setSelectedLabel("All Time");
                     setRangeFrom(null);
@@ -364,7 +366,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             </div>
 
             {/* Calendar Area */}
-            <div className="bg-card">{renderCalendar()}</div>
+            <div className="bg-card flex items-center">{renderCalendar()}</div>
           </motion.div>
         </div>
       )}
