@@ -11,7 +11,7 @@ def _rebuild_papers_containing_question(db, question_id: int):
     from app.paper_assignments.repository import rebuild_paper_cache, _extract_question_ids
     
     # Only check active papers
-    active_papers = db.query(Paper).filter(Paper.is_active == True).all()
+    active_papers = db.query(Paper).filter(Paper.is_active).all()
     for paper in active_papers:
         q_ids = _extract_question_ids(paper.question_id)
         if question_id in q_ids:
