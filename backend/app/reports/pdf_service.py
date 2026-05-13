@@ -142,8 +142,7 @@ def build_report_html(data: dict) -> str:
         data.get("left_col", []), data.get("right_col", [])
     )
     first_eval = data.get("first_evaluation") or {}
-    eval_metrics_rows = _evaluation_rows_html(
-        first_eval.get("evaluation_data") or {})
+    eval_metrics_rows = _evaluation_rows_html(first_eval.get("evaluation_data") or {})
 
     logo_html = ""
     if current_logo_base64:
