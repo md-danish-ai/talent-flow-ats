@@ -218,7 +218,7 @@ export function UserResultDetailClient({
           <Button
             variant="outline"
             color="primary"
-            className="shadow-md shadow-brand-primary/10 bg-white"
+            className="shadow-md shadow-brand-primary/10"
             startIcon={
               downloadingPdf ? (
                 <Loader2 size={16} className="animate-spin" />
