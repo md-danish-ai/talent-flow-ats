@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useMemo, useCallback, useEffect } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import { Zap, Target, AlertTriangle, Clock, Trophy } from "lucide-react";
