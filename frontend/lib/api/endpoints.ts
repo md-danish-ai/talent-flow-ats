@@ -25,14 +25,12 @@ export const ENDPOINTS = {
     CREATE: "/classifications/create-classification",
     UPDATE: (id: string | number) =>
       `/classifications/update-classification/${id}`,
-
   },
 
   DEPARTMENTS: {
     GET: "/departments/get-departments",
     CREATE: "/departments/create-department",
     UPDATE: (id: string | number) => `/departments/update-department/${id}`,
-
   },
 
   QUESTIONS: {

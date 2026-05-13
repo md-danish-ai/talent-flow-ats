@@ -67,13 +67,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
   );
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
-
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
     setIsModalOpen(true);
   };
-
-
 
   const handleToggleStatus = async (dept: Department) => {
     setTogglingId(dept.id);
@@ -235,7 +232,6 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                             >
                               <Edit size={16} />
                             </TableIconButton>
-
                           </div>
                         </TableCell>
                       </TableRow>
@@ -275,8 +271,6 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         editingDepartment={editingDepartment}
         onSuccess={() => void refresh()}
       />
-
-
     </>
   );
 }

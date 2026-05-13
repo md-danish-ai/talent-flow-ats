@@ -120,8 +120,6 @@ export async function toggleUserStatus(
   );
 }
 
-
-
 // PUT /auth/update-basic-info/{user_id} - Update basic user info
 export async function updateBasicInfo(
   userId: number,

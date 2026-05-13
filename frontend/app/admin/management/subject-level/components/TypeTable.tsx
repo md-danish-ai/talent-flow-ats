@@ -190,7 +190,6 @@ export function TypeTable({
                     >
                       <Edit size={16} />
                     </TableIconButton>
-
                   </div>
                 </TableCell>
               </TableRow>

@@ -49,7 +49,6 @@ export const papersApi = {
     });
   },
 
-
   togglePaperStatus: async (
     id: number,
     is_active: boolean,

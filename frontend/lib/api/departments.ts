@@ -41,6 +41,4 @@ export const departmentsApi = {
       silentSuccess: true,
     });
   },
-
-
 };

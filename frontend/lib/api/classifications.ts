@@ -41,6 +41,4 @@ export const classificationsApi = {
       silentSuccess: true,
     });
   },
-
-
 };
