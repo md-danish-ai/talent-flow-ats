@@ -28,10 +28,16 @@ export const useRealtimeNotifications = (
     const token = getCookie("auth_token");
 
     // Construct SSE URL with token
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
     const sseUrl = `${baseUrl}/notifications/stream?token=${encodeURIComponent(token || "")}&auth_token=${encodeURIComponent(token || "")}`;
 
-    console.log("SSE: Connecting to", sseUrl.split("?")[0], "with token present:", !!token);
+    console.log(
+      "SSE: Connecting to",
+      sseUrl.split("?")[0],
+      "with token present:",
+      !!token,
+    );
     const eventSource = new EventSource(sseUrl);
 
     eventSource.onmessage = (event) => {
@@ -49,7 +55,9 @@ export const useRealtimeNotifications = (
         }
 
         // 1. Show Toast (only if dropdown is not open)
-        const isDropdownOpen = (window as Window & { isNotificationDropdownOpen?: boolean }).isNotificationDropdownOpen;
+        const isDropdownOpen = (
+          window as Window & { isNotificationDropdownOpen?: boolean }
+        ).isNotificationDropdownOpen;
         if (!isDropdownOpen) {
           toast.success(data.message, {
             title: data.title || "New Notification",

@@ -14,17 +14,19 @@ def authenticate_user(request: Request) -> int:
     # 1. Try Authorization Header
     if auth_header and auth_header.startswith("Bearer "):
         token = auth_header.split(" ")[1]
-    
+
     # 2. Try 'token' Query Parameter (Fallback for SSE)
     if not token:
         token = request.query_params.get("token")
-    
+
     # 3. Try 'auth_token' Query Parameter (Just in case)
     if not token:
         token = request.query_params.get("auth_token")
 
     if not token or token == "undefined" or token == "null":
-        print(f"AUTH DEBUG: No token found. Headers: {dict(request.headers)}, Params: {dict(request.query_params)}")
+        print(
+            f"AUTH DEBUG: No token found. Headers: {dict(request.headers)}, Params: {dict(request.query_params)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",

@@ -27,9 +27,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   role,
 }) => {
   React.useEffect(() => {
-    (window as Window & { isNotificationDropdownOpen?: boolean }).isNotificationDropdownOpen = isOpen;
+    (
+      window as Window & { isNotificationDropdownOpen?: boolean }
+    ).isNotificationDropdownOpen = isOpen;
     return () => {
-      (window as Window & { isNotificationDropdownOpen?: boolean }).isNotificationDropdownOpen = false;
+      (
+        window as Window & { isNotificationDropdownOpen?: boolean }
+      ).isNotificationDropdownOpen = false;
     };
   }, [isOpen]);
 

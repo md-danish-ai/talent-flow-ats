@@ -274,8 +274,7 @@ async def delete_evaluation(db: Session, evaluation_id: int):
                     if db_obj.round_type
                     else "Round-2 (F2F)"
                 )
-                
-                
+
                 notification = AdminNotification(
                     type="evaluation_unassigned",
                     user_id=db_obj.project_lead_id,

@@ -23,7 +23,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const { ripples, createRipple, removeRipple } = useRipple();
   const { toggleSidebar } = useSidebar();
-  
+
   // Real-time listener
   useRealtimeNotifications(user?.id || null, user?.role || null);
 
