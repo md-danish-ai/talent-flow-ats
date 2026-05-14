@@ -43,7 +43,7 @@ def run_auto_expiration(db_session):
             ~User.id.in_(has_today_assignment),
             # Exclude users who are reset for re-interview today
             ~(
-                (UserDetail.is_reinterview == True)
+                UserDetail.is_reinterview
                 & (UserDetail.reinterview_date == today)
             ),
         )

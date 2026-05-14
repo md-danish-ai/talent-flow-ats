@@ -5,6 +5,9 @@ from .schemas import InterviewEvaluationCreate, InterviewEvaluationUpdate
 from app.users.models import User
 from app.classifications.models import Classification
 from app.core.realtime import realtime_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
