@@ -51,9 +51,7 @@ class UpdateUserSchema(BaseModel):
 
     @validator("name")
     def validate_full_name(cls, value):
-        value = value.strip()
-        if len(value.split()) < 2:
-            raise ValueError("Please provide your full name (first and last name).")
+        # Single word name is allowed now
         if not re.match(r"^[A-Za-z ]+$", value):
             raise ValueError("Full name must only contain alphabetic characters.")
         return value
@@ -106,9 +104,7 @@ class CreateAdminSchema(BaseModel):
 
     @validator("name")
     def validate_full_name(cls, value):
-        value = value.strip()
-        if len(value.split()) < 2:
-            raise ValueError("Name must be full name (first and last)")
+        # Single word name is allowed now
         if not re.match(r"^[A-Za-z ]+$", value):
             raise ValueError("Name must contain only letters")
         return value
