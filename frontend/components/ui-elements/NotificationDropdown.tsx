@@ -26,6 +26,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   unreadCount,
   role,
 }) => {
+  React.useEffect(() => {
+    (window as Window & { isNotificationDropdownOpen?: boolean }).isNotificationDropdownOpen = isOpen;
+    return () => {
+      (window as Window & { isNotificationDropdownOpen?: boolean }).isNotificationDropdownOpen = false;
+    };
+  }, [isOpen]);
+
   return (
     <div className="relative">
       <div className="relative inline-flex">
@@ -74,7 +81,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               duration: 0.3,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className="absolute right-0 mt-3 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right transition-colors"
+            className="absolute right-0 mt-3 w-[450px] bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right transition-colors"
           >
             <div className="px-5 py-4 border-b border-border bg-muted/20 flex items-center justify-between">
               <Typography variant="body3" weight="bold" color="text-foreground">

@@ -219,6 +219,11 @@ export async function apiClient<T>(
       "data" in result &&
       "status" in result
     ) {
+      // If the response has metadata like unread_count, return the whole object
+      if ("unread_count" in result) {
+        return result as T;
+      }
+
       if ("pagination" in result && result.pagination) {
         return {
           data: result.data,

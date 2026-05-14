@@ -7,6 +7,7 @@ from app.users.models import User
 from app.duplicates import repository
 from app.utils.pagination import create_paginated_response
 from typing import Optional
+from app.core.realtime import realtime_manager
 
 
 def get_string_similarity(str1: str, str2: str) -> float:
@@ -33,7 +34,7 @@ def get_family_member_name(family_details: list, relation: str) -> str:
     return ""
 
 
-def detect_duplicates(db: Session, new_user_id: int, new_data: UserDetailsSchema):
+async def detect_duplicates(db: Session, new_user_id: int, new_data: UserDetailsSchema):
     # Step 1: Blocking (Fetch users with same DOB)
     dob = new_data.personalDetails.dob
     if not dob:
@@ -266,6 +267,18 @@ def detect_duplicates(db: Session, new_user_id: int, new_data: UserDetailsSchema
         )
         db.add(notification)
         db.commit()
+
+        # Real-time broadcast to Admin
+        await realtime_manager.publish(
+            {
+                "id": notification.id,
+                "type": notification.type,
+                "title": notification.title,
+                "message": notification.message,
+                "created_at": notification.created_at,
+            },
+            user_id="admin",
+        )
 
 
 class DuplicateService:

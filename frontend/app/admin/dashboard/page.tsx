@@ -88,7 +88,7 @@ export default function DashboardPage() {
     end_date: endDate,
   });
   const { data: notificationsData, isLoading: notificationsLoading } =
-    useNotifications({ limit: 5 });
+    useNotifications({ limit: 20 });
 
   const notifications = (notificationsData?.data ||
     []) as DashboardNotification[];
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                       animate="visible"
                       className="space-y-1"
                     >
-                      {notifications.slice(0, 3).map((notif) => {
+                      {notifications.slice(0, 20).map((notif) => {
                         const t = notif.title?.toLowerCase() || "";
                         const tp = notif.type?.toLowerCase() || "";
 

@@ -18,7 +18,7 @@ def get_db():
 
 
 @router.post("/assign-lead-evaluation", status_code=StatusCode.CREATED)
-def assign_interviews(
+async def assign_interviews(
     payload: schemas.InterviewEvaluationCreate, db: Session = Depends(get_db)
 ):
     try:
@@ -39,7 +39,7 @@ def assign_interviews(
                 data=existing, message="Already assigned to this Lead for this attempt."
             )
 
-        evaluation = repository.create_evaluation(db, payload)
+        evaluation = await repository.create_evaluation(db, payload)
         return ResponseHandler.success(
             data=evaluation, message="Interview assigned successfully."
         )
@@ -48,11 +48,11 @@ def assign_interviews(
 
 
 @router.post("/bulk-assign-lead-evaluation", status_code=StatusCode.CREATED)
-def bulk_assign_interviews(
+async def bulk_assign_interviews(
     payload: schemas.BulkInterviewEvaluationCreate, db: Session = Depends(get_db)
 ):
     try:
-        evaluations = repository.bulk_create_evaluations(
+        evaluations = await repository.bulk_create_evaluations(
             db,
             payload.user_ids,
             payload.attempt_ids,
@@ -125,13 +125,13 @@ def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/submit-evaluation-results/{evaluation_id}")
-def submit_evaluation(
+async def submit_evaluation(
     evaluation_id: int,
     payload: schemas.InterviewEvaluationUpdate,
     db: Session = Depends(get_db),
 ):
     try:
-        evaluation = repository.update_evaluation(db, evaluation_id, payload)
+        evaluation = await repository.update_evaluation(db, evaluation_id, payload)
         if not evaluation:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND, detail="Evaluation record not found"
@@ -258,7 +258,7 @@ def get_evaluation_history(
 
 
 @router.delete("/remove-lead-assignment/{evaluation_id}")
-def unassign_interview(evaluation_id: int, db: Session = Depends(get_db)):
+async def unassign_interview(evaluation_id: int, db: Session = Depends(get_db)):
     try:
         eval_obj = repository.get_evaluation(db, evaluation_id)
         if not eval_obj:
@@ -272,7 +272,7 @@ def unassign_interview(evaluation_id: int, db: Session = Depends(get_db)):
                 detail="Cannot unassign a completed evaluation",
             )
 
-        repository.delete_evaluation(db, evaluation_id)
+        await repository.delete_evaluation(db, evaluation_id)
         return ResponseHandler.success(message="Assignment removed successfully.")
     except HTTPException as e:
         raise e
