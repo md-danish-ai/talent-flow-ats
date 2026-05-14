@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, Mail, UserCog, FileText, Plus } from "lucide-react";
+import { Users, Eye, Mail, Pencil, FileText, Plus } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
@@ -262,30 +262,21 @@ export function UserListing({ initialData }: UserListingProps) {
                                 size="sm"
                               />
                               {/* Status Dot Indicators */}
-                              {(row.process_status === "submitted" ||
-                                row.assignment?.is_attempted) && (
+                              {row.process_status === "submitted" ||
+                              row.is_interview_submitted ||
+                              row.assignment?.is_attempted ? (
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                              )}
-                              {(row.process_status === "inprogress" ||
-                                row.assignment?.has_started) && (
+                              ) : row.process_status === "inprogress" ||
+                                row.assignment?.has_started ? (
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse shadow-sm" />
-                              )}
-                              {row.process_status === "ready" &&
-                                !row.assignment?.has_started && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                                )}
-                              {row.process_status === "expired" && (
+                              ) : row.process_status === "ready" &&
+                                !row.assignment?.has_started ? (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                              ) : row.process_status === "expired" ? (
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                              ) : (
+                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                               )}
-                              {(!row.process_status ||
-                                row.process_status === "pending" ||
-                                !row.assignment?.is_assigned) &&
-                                row.process_status !== "submitted" &&
-                                row.process_status !== "inprogress" &&
-                                row.process_status !== "ready" &&
-                                row.process_status !== "expired" && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                                )}
                             </div>
                             <div className="flex flex-col">
                               <div className="flex items-center gap-3">
@@ -421,14 +412,26 @@ export function UserListing({ initialData }: UserListingProps) {
                         <TableCell className="align-middle py-3">
                           <div className="flex items-center justify-center gap-2">
                             <Link
-                              href={`/admin/management/users/view-details/${row.id}`}
+                              href={
+                                row.is_details_submitted
+                                  ? `/admin/management/users/view-details/${row.id}`
+                                  : "#"
+                              }
                               passHref
+                              onClick={(e) =>
+                                !row.is_details_submitted && e.preventDefault()
+                              }
                             >
                               <TableIconButton
                                 iconColor="brand"
                                 btnSize="sm"
                                 animate="scale"
-                                title="View Details"
+                                title={
+                                  row.is_details_submitted
+                                    ? "View Details"
+                                    : "Details Not Submitted"
+                                }
+                                disabled={!row.is_details_submitted}
                               >
                                 <Eye size={16} />
                               </TableIconButton>
@@ -440,18 +443,30 @@ export function UserListing({ initialData }: UserListingProps) {
                               title="Edit Basic Info"
                               onClick={() => handleEditUser(row)}
                             >
-                              <UserCog size={16} />
+                              <Pencil size={16} />
                             </TableIconButton>
 
                             <Link
-                              href={`/admin/management/users/update-details/${row.id}`}
+                              href={
+                                row.is_details_submitted
+                                  ? `/admin/management/users/update-details/${row.id}`
+                                  : "#"
+                              }
                               passHref
+                              onClick={(e) =>
+                                !row.is_details_submitted && e.preventDefault()
+                              }
                             >
                               <TableIconButton
                                 iconColor="violet"
                                 btnSize="sm"
                                 animate="scale"
-                                title="Edit Recruitment Form"
+                                title={
+                                  row.is_details_submitted
+                                    ? "Edit Recruitment Form"
+                                    : "Details Not Submitted"
+                                }
+                                disabled={!row.is_details_submitted}
                               >
                                 <FileText size={16} />
                               </TableIconButton>

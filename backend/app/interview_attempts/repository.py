@@ -987,6 +987,11 @@ def get_admin_user_results(
                     except Exception:
                         pass
 
+            # Fetch user details for the submitted flag
+            user_detail = (
+                db.query(UserDetail).filter(UserDetail.user_id == user.id).first()
+            )
+ 
             results.append(
                 {
                     "user_id": user.id,
@@ -995,6 +1000,9 @@ def get_admin_user_results(
                     "email": user.email,
                     "is_active": user.is_active,
                     "process_status": user.process_status,
+                    "is_interview_submitted": user_detail.is_interview_submitted
+                    if user_detail
+                    else False,
                     "attempts_count": attempts_count,
                     "is_reattempt": attempts_count > 1,
                     "latest_attempt": {

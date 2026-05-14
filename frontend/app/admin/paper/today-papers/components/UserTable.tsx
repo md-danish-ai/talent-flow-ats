@@ -83,30 +83,21 @@ export function UserTable({
                     <div className="relative">
                       <Avatar name={row.username} variant="brand" size="sm" />
                       {/* Status Dot Indicators */}
-                      {(row.process_status === "submitted" ||
-                        row.assignment?.is_attempted) && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full" />
+                      {row.process_status === "submitted" ||
+                      row.is_interview_submitted ||
+                      row.assignment?.is_attempted ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                      ) : row.process_status === "inprogress" ||
+                        row.assignment?.has_started ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse shadow-sm" />
+                      ) : row.process_status === "ready" &&
+                        !row.assignment?.has_started ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                      ) : row.process_status === "expired" ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                      ) : (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                       )}
-                      {(row.process_status === "inprogress" ||
-                        row.assignment?.has_started) && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse" />
-                      )}
-                      {row.process_status === "ready" &&
-                        !row.assignment?.has_started && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full" />
-                        )}
-                      {row.process_status === "expired" && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full" />
-                      )}
-                      {(!row.process_status ||
-                        row.process_status === "pending" ||
-                        !row.assignment?.is_assigned) &&
-                        row.process_status !== "submitted" &&
-                        row.process_status !== "inprogress" &&
-                        row.process_status !== "ready" &&
-                        row.process_status !== "expired" && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full" />
-                        )}
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-3">

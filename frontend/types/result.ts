@@ -49,6 +49,8 @@ export interface AdminUserResultListItem {
   attempts_count: number;
   is_reattempt?: boolean;
   process_status?: string;
+  is_active?: boolean;
+  is_interview_submitted?: boolean;
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 

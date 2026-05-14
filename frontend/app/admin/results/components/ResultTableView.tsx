@@ -370,7 +370,8 @@ export function ResultTableView({
                             className={cn(
                               "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
                               latest?.status === "submitted" ||
-                                latest?.status === "completed"
+                                latest?.status === "completed" ||
+                                item.is_interview_submitted
                                 ? "bg-green-500"
                                 : latest?.status === "auto_submitted"
                                   ? "bg-blue-500"
