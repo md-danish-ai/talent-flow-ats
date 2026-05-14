@@ -13,5 +13,3 @@ class DepartmentService:
 
     def update(self, department_id: int, data):
         return repository.update(department_id, data)
-
-

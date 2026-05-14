@@ -526,22 +526,28 @@ export function ResultTableView({
                       <Badge
                         variant="outline"
                         color={
-                          latest?.status === "submitted" ||
-                          latest?.status === "completed"
-                            ? "success"
-                            : latest?.status === "auto_submitted"
-                              ? "blue"
-                              : latest?.status === "started"
-                                ? "violet"
-                                : latest?.status === "expired"
-                                  ? "error"
-                                  : "default"
+                          latest?.status === "started"
+                            ? "violet"
+                            : item.process_status === "ready"
+                              ? "success"
+                              : latest?.status === "submitted" ||
+                                  latest?.status === "completed"
+                                ? "success"
+                                : latest?.status === "auto_submitted"
+                                  ? "blue"
+                                  : latest?.status === "expired"
+                                    ? "error"
+                                    : "default"
                         }
                         shape="square"
                       >
-                        {latest?.status
-                          ? humanizeString(latest.status)
-                          : "NOT STARTED"}
+                        {latest?.status === "started"
+                          ? "STARTED"
+                          : item.process_status === "ready"
+                            ? "READY"
+                            : latest?.status
+                              ? humanizeString(latest.status)
+                              : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}

@@ -92,7 +92,6 @@ def update_paper(
     )
 
 
-
 @router.put("/grade-settings/{paper_id}")
 def update_grade_settings(
     paper_id: int,

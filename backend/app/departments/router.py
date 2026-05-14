@@ -48,6 +48,3 @@ def update(department_id: int, payload: DepartmentUpdate):
     if not data:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
-
-
-

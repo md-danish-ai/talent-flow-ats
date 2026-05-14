@@ -219,7 +219,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <PageContainer className="space-y-8 py-8">
+    <PageContainer className="space-y-8">
       {/* PERSISTENT HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <motion.div

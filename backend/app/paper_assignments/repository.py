@@ -682,7 +682,7 @@ def get_my_interview_paper(
         return {
             "assignment_id": assignment.id,
             "assigned_date": effective_date,
-            **cached_paper
+            **cached_paper,
         }
 
     paper_details = build_paper_details(db, assignment.paper_id)
@@ -698,7 +698,7 @@ def get_my_interview_paper(
     return {
         "assignment_id": assignment.id,
         "assigned_date": effective_date,
-        **paper_details
+        **paper_details,
     }
 
 
@@ -834,10 +834,11 @@ def rebuild_paper_cache(db: Session, paper_id: int) -> None:
     """Helper to manually rebuild paper cache from DB and store it in Redis."""
     paper_details = build_paper_details(db, paper_id)
     cache_key = f"paper:{paper_id}:details"
-    
+
     if paper_details:
         set_cached_data(cache_key, paper_details, expire_seconds=None)
     else:
         # If paper became inactive or lost all questions, we should just delete its cache
         from app.core.redis_client import delete_cached_data
+
         delete_cached_data(cache_key)

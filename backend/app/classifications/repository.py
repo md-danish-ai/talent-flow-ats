@@ -282,9 +282,6 @@ def check_dependencies(classification_id: int) -> dict:
         db_session.close()
 
 
-
-
-
 def count_by_name_and_type(name: str, type_: str):
     db_session = SessionLocal()
     try:

@@ -57,6 +57,3 @@ def delete_cached_data(key: str) -> None:
         redis_client.delete(key)
     except Exception as e:
         logger.error(f"Redis delete error for key {key}: {e}")
-
-
-

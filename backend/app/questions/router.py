@@ -114,9 +114,6 @@ async def update_question_status(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-
-
-
 @router.post("/upload-image")
 async def upload_image(
     image: UploadFile = File(...),

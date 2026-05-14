@@ -53,6 +53,3 @@ def update(
 ):
     data = service.update(classification_id, payload)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
-
-
-

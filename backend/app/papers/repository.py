@@ -115,13 +115,13 @@ def update_paper(
 
     db.commit()
     db.refresh(db_paper)
-    
+
     # Invalidate and rebuild cache
     from app.paper_assignments.repository import rebuild_paper_cache
-    rebuild_paper_cache(db, paper_id)
-    
-    return get_paper(db, paper_id)
 
+    rebuild_paper_cache(db, paper_id)
+
+    return get_paper(db, paper_id)
 
 
 def update_paper_grade_settings(
@@ -134,9 +134,10 @@ def update_paper_grade_settings(
     db_paper.grade_settings = grade_settings
     db.commit()
     db.refresh(db_paper)
-    
+
     # Invalidate and rebuild cache
     from app.paper_assignments.repository import rebuild_paper_cache
+
     rebuild_paper_cache(db, paper_id)
-    
+
     return get_paper(db, paper_id)

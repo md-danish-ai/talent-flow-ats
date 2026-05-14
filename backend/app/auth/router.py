@@ -121,12 +121,11 @@ async def create_project_lead_user(data: CreateAdminSchema):
     "/toggle-user-active-status/{user_id}",
     dependencies=[Depends(require_roles(["admin"]))],
 )
-async def toggle_status(user_id: int):
-    data = toggle_user_status(user_id)
+async def toggle_status(user_id: int, payload: dict):
+    # payload should be {"is_active": true/false}
+    is_active = payload.get("is_active")
+    data = toggle_user_status(user_id, is_active)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
-
-
-
 
 
 @router.put(

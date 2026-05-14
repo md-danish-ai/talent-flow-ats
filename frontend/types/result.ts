@@ -48,6 +48,7 @@ export interface AdminUserResultListItem {
   email?: string | null;
   attempts_count: number;
   is_reattempt?: boolean;
+  process_status?: string;
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 

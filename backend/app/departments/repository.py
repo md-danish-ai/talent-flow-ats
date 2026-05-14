@@ -88,6 +88,3 @@ def update(department_id: int, data):
         raise e
     finally:
         db_session.close()
-
-
-

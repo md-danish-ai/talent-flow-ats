@@ -993,6 +993,7 @@ def get_admin_user_results(
                     "username": user.username,
                     "mobile": user.mobile,
                     "email": user.email,
+                    "process_status": user.process_status,
                     "attempts_count": attempts_count,
                     "is_reattempt": attempts_count > 1,
                     "latest_attempt": {
@@ -1387,6 +1388,21 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user_detail.is_interview_submitted = False
         user_detail.is_reinterview = True
         user_detail.reinterview_date = dt_date.today()
+
+        # Also reactivate the user and update status
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.is_active = True
+            user.process_status = "ready"
+
+            # Immediately assign a paper for today so they are not expired again
+            from app.paper_assignments.repository import assign_best_paper
+
+            if user.department_id and user.test_level_id:
+                assign_best_paper(
+                    db, user.id, user.department_id, user.test_level_id, dt_date.today()
+                )
+
         db.commit()
         return {
             "message": "Re-interview enabled. User will appear in Today's Papers as RETURNING.",

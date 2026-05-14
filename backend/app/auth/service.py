@@ -523,7 +523,7 @@ def get_users_by_role(
         db_session.close()
 
 
-def toggle_user_status(user_id: int):
+def toggle_user_status(user_id: int, is_active: bool = None):
     db_session = SessionLocal()
     try:
         user = db_session.query(User).filter(User.id == user_id).first()
@@ -532,7 +532,17 @@ def toggle_user_status(user_id: int):
                 status_code=StatusCode.NOT_FOUND,
                 detail="User not found.",
             )
-        user.is_active = not user.is_active
+
+        # If is_active is explicitly provided, use it. Otherwise toggle.
+        if is_active is not None:
+            user.is_active = is_active
+        else:
+            user.is_active = not user.is_active
+
+        from datetime import datetime
+
+        user.updated_at = datetime.now()
+
         db_session.commit()
         return {"id": user.id, "is_active": user.is_active}
     except HTTPException:
@@ -545,9 +555,6 @@ def toggle_user_status(user_id: int):
         )
     finally:
         db_session.close()
-
-
-
 
 
 def update_user_basic_info(user_id: int, data):

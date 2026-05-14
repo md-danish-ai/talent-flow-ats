@@ -122,5 +122,3 @@ class ClassificationService:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
-
-
