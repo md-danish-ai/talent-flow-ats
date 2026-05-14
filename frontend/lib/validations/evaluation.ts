@@ -9,8 +9,8 @@ export const evaluationSchema = z.object({
     "Cultural Fit": z.string().optional().or(z.literal("")),
     "Learning Ability": z.string().optional().or(z.literal("")),
   }),
-  overall_grade: z.string().optional().or(z.literal("")),
-  final_result_id: z.coerce.number().optional().or(z.literal(0)),
+  overall_grade: z.string().min(1, "Overall grade is required"),
+  final_result_id: z.coerce.number().min(1, "Final result is required"),
   comments: z.string().optional().or(z.literal("")),
 });
 

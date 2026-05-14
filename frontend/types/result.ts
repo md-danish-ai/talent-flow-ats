@@ -152,6 +152,10 @@ export interface AdminUserAttemptsResponse {
     username: string;
     mobile: string;
     email?: string | null;
+    department?: string;
+    test_level?: string;
+    is_active: boolean;
+    process_status: string;
   };
   attempts: AdminUserAttemptHistoryItem[];
 }

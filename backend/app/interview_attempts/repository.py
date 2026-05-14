@@ -993,6 +993,7 @@ def get_admin_user_results(
                     "username": user.username,
                     "mobile": user.mobile,
                     "email": user.email,
+                    "is_active": user.is_active,
                     "process_status": user.process_status,
                     "attempts_count": attempts_count,
                     "is_reattempt": attempts_count > 1,
@@ -1056,6 +1057,9 @@ def get_admin_user_attempts(user_id: int) -> dict:
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.id == user_id, User.role == "user").first()
+        print(
+            f"DEBUG BACKEND - User {user_id} is_active: {user.is_active if user else 'NOT FOUND'}"
+        )
         if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND, detail=f"User {user_id} not found"
@@ -1113,6 +1117,10 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 "username": user.username,
                 "mobile": user.mobile,
                 "email": user.email,
+                "department": user.department.name if user.department else "N/A",
+                "test_level": user.test_level.name if user.test_level else "N/A",
+                "is_active": user.is_active,
+                "process_status": user.process_status,
             },
             "attempts": attempts,
         }
@@ -1270,6 +1278,10 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "username": user.username,
                 "mobile": user.mobile,
                 "email": user.email,
+                "is_active": user.is_active,
+                "department": user.department.name if user.department else "N/A",
+                "test_level": user.test_level.name if user.test_level else "N/A",
+                "process_status": user.process_status,
             },
             "attempt": {
                 "attempt_id": record.id,

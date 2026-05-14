@@ -328,10 +328,10 @@ export default function DashboardPage() {
               className="h-full"
               bodyClassName="p-1"
             >
-              <div className="flex flex-col flex-1 h-full min-h-[240px]">
-                <div className="flex-1 space-y-1">
+              <div className="flex flex-col flex-1">
+                <div className="flex-1 space-y-1 overflow-y-auto max-h-[365px] p-3 pt-1 custom-scrollbar">
                   {notificationsLoading ? (
-                    <div className="p-4 space-y-4">
+                    <div className="space-y-4">
                       {[...Array(3)].map((_, i) => (
                         <div
                           key={i}
