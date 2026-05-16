@@ -1,2 +1,56 @@
-[tool.ruff]
-exclude = ["backend/seeds", "backend/venv", "frontend/node_modules", ".git", "__pycache__"]
+[project]
+name = "talent-flow-backend"
+version = "0.0.1"
+description = "A robust Backend Service for Talent Flow ATS"
+requires-python = ">=3.9,<3.13"
+authors = [
+    { name = "Mohammed Danish", email = "mohammed.danish@arcgate.com" }
+]
+dependencies = [
+    # FastAPI Ecosystem
+    "fastapi==0.110.0",
+    "uvicorn[standard]==0.25.0",
+    
+    # Database
+    "sqlalchemy==2.0.25",
+    "psycopg2-binary==2.9.11",
+    "alembic==1.13.1",
+    
+    # Authentication & Security
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt==4.0.1",
+    
+    # Pydantic
+    "pydantic==2.5.3",
+    "pydantic-settings==2.1.0",
+    
+    # Background Tasks
+    "celery[redis]==5.3.6",
+    
+    # ML/AI (For future facenet/embedding work)
+    "numpy==1.26.2",
+    "scipy==1.11.4",
+    
+    # Excel Parsing
+    "openpyxl==3.1.2",
+    
+    # Utility
+    "python-multipart==0.0.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.2.2",
+    "pytest==8.0.0",
+    "pytest-asyncio==0.23.5",
+    "requests==2.31.0",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
