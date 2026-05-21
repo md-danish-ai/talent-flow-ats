@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -o errexit
 
 ACTION=$1
 REVISION=${2:-head}

@@ -42,7 +42,8 @@ services:
       DB_NAME: talent_flow_ats
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
-    entrypoint: ["sh", "/backend/scripts/run_migrations.sh"]
+    # Normalize CRLF -> LF at runtime, then execute the script.
+    entrypoint: ["sh", "-c", "tr -d '\\r' < /backend/scripts/run_migrations.sh > /tmp/run_migrations.sh && exec sh /tmp/run_migrations.sh \"$@\"", "--"]
     command: ["upgrade", "head"]
 
   db:
