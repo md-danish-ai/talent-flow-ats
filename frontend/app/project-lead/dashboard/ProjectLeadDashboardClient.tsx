@@ -62,7 +62,7 @@ export default function ProjectLeadDashboardClient({
     const fetchNotifications = async () => {
       try {
         setLoadingNotifications(true);
-        const res = await getAllNotifications({ limit: 10 });
+        const res = await getAllNotifications({ limit: 20 });
         setNotifications(res.data || []);
       } catch (err) {
         console.error("Failed to fetch notifications", err);

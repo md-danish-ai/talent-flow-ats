@@ -48,6 +48,9 @@ export interface AdminUserResultListItem {
   email?: string | null;
   attempts_count: number;
   is_reattempt?: boolean;
+  process_status?: string;
+  is_active?: boolean;
+  is_interview_submitted?: boolean;
   latest_attempt?: AdminUserLatestAttempt | null;
 }
 
@@ -151,6 +154,10 @@ export interface AdminUserAttemptsResponse {
     username: string;
     mobile: string;
     email?: string | null;
+    department?: string;
+    test_level?: string;
+    is_active: boolean;
+    process_status: string;
   };
   attempts: AdminUserAttemptHistoryItem[];
 }

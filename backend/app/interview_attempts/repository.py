@@ -987,12 +987,22 @@ def get_admin_user_results(
                     except Exception:
                         pass
 
+            # Fetch user details for the submitted flag
+            user_detail = (
+                db.query(UserDetail).filter(UserDetail.user_id == user.id).first()
+            )
+ 
             results.append(
                 {
                     "user_id": user.id,
                     "username": user.username,
                     "mobile": user.mobile,
                     "email": user.email,
+                    "is_active": user.is_active,
+                    "process_status": user.process_status,
+                    "is_interview_submitted": user_detail.is_interview_submitted
+                    if user_detail
+                    else False,
                     "attempts_count": attempts_count,
                     "is_reattempt": attempts_count > 1,
                     "latest_attempt": {
@@ -1055,6 +1065,9 @@ def get_admin_user_attempts(user_id: int) -> dict:
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.id == user_id, User.role == "user").first()
+        print(
+            f"DEBUG BACKEND - User {user_id} is_active: {user.is_active if user else 'NOT FOUND'}"
+        )
         if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND, detail=f"User {user_id} not found"
@@ -1112,6 +1125,10 @@ def get_admin_user_attempts(user_id: int) -> dict:
                 "username": user.username,
                 "mobile": user.mobile,
                 "email": user.email,
+                "department": user.department.name if user.department else "N/A",
+                "test_level": user.test_level.name if user.test_level else "N/A",
+                "is_active": user.is_active,
+                "process_status": user.process_status,
             },
             "attempts": attempts,
         }
@@ -1269,6 +1286,10 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "username": user.username,
                 "mobile": user.mobile,
                 "email": user.email,
+                "is_active": user.is_active,
+                "department": user.department.name if user.department else "N/A",
+                "test_level": user.test_level.name if user.test_level else "N/A",
+                "process_status": user.process_status,
             },
             "attempt": {
                 "attempt_id": record.id,
@@ -1387,6 +1408,21 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user_detail.is_interview_submitted = False
         user_detail.is_reinterview = True
         user_detail.reinterview_date = dt_date.today()
+
+        # Also reactivate the user and update status
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.is_active = True
+            user.process_status = "ready"
+
+            # Immediately assign a paper for today so they are not expired again
+            from app.paper_assignments.repository import assign_best_paper
+
+            if user.department_id and user.test_level_id:
+                assign_best_paper(
+                    db, user.id, user.department_id, user.test_level_id, dt_date.today()
+                )
+
         db.commit()
         return {
             "message": "Re-interview enabled. User will appear in Today's Papers as RETURNING.",

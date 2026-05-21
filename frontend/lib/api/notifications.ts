@@ -26,11 +26,15 @@ export const getAllNotifications = (params?: {
 };
 
 export const markNotificationsRead = (notification_ids: number[]) =>
-  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.READ, {
-    notification_ids,
-  });
+  api.post<{ message: string }>(
+    ENDPOINTS.NOTIFICATIONS.READ,
+    { notification_ids },
+    { silentSuccess: true },
+  );
 
 export const markNotificationsUnread = (notification_ids: number[]) =>
-  api.post<{ message: string }>(ENDPOINTS.NOTIFICATIONS.UNREAD, {
-    notification_ids,
-  });
+  api.post<{ message: string }>(
+    ENDPOINTS.NOTIFICATIONS.UNREAD,
+    { notification_ids },
+    { silentSuccess: true },
+  );

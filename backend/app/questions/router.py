@@ -114,14 +114,6 @@ async def update_question_status(
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
 
 
-@router.delete("/remove-question/{question_id}")
-async def delete_question(
-    question_id: int, current_user: int = Depends(authenticate_user)
-):
-    data = await question_service.delete_question(question_id, current_user)
-    return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
-
-
 @router.post("/upload-image")
 async def upload_image(
     image: UploadFile = File(...),

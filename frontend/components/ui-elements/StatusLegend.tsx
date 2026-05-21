@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { Badge, BadgeColor } from "@components/ui-elements/Badge";
+import { Avatar } from "@components/ui-elements/Avatar";
 
 interface StatusLegendHeaderProps {
   title: string;
@@ -24,31 +25,24 @@ const LegendItem = ({
 }) => (
   <div
     className={cn(
-      "flex flex-col gap-2 p-3 transition-all",
+      "flex flex-col gap-1.5 p-2 transition-all",
       STYLE_CONFIG.innerCardRadius,
     )}
   >
-    <div className="flex items-center gap-3">
-      {/* Avatar Style matches the table's "brand" variant (usually squared/rounded-lg) */}
+    <div className="flex items-center gap-2">
+      {/* Avatar Style matches the table's "brand" variant */}
       <div className="relative shrink-0">
-        <div
-          className={cn(
-            "w-9 h-9 bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-[10px] font-bold text-brand-primary",
-            STYLE_CONFIG.iconRadius,
-          )}
-        >
-          MD
-        </div>
+        <Avatar name="M D" variant="brand" size="sm" />
         <span
           className={cn(
-            "absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
+            "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
             dotColor,
           )}
         />
       </div>
 
       <div className="flex flex-col">
-        <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none mb-1">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none mb-1">
           {label}
         </span>
         <Badge variant="outline" color={badgeColor} shape="square">
@@ -56,7 +50,7 @@ const LegendItem = ({
         </Badge>
       </div>
     </div>
-    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium italic leading-tight">
+    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium italic leading-tight">
       {description}
     </p>
   </div>
@@ -108,21 +102,21 @@ export function AttemptStatusLegend({
   return (
     <div
       className={cn(
-        "relative w-full mb-8 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
+        "relative w-full mb-4 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
         STYLE_CONFIG.cardRadius,
       )}
     >
-      <div className="relative p-6 md:p-8 flex flex-col gap-6">
+      <div className="relative p-4 md:p-5 flex flex-col gap-4">
         {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
-              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
                 {title}
               </h1>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium text-sm ml-4 uppercase tracking-wider opacity-80">
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] ml-3 uppercase tracking-wider opacity-80">
               {subtitle}
             </p>
           </div>

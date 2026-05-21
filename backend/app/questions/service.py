@@ -122,14 +122,6 @@ class QuestionService:
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
 
-    async def delete_question(self, question_id: int, user_id: int):
-        try:
-            return repository.delete_question(question_id)
-        except Exception as exception:
-            raise HTTPException(
-                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
-            )
-
     async def update_question_status(self, question_id: int):
         try:
             return repository.toggle_question_status(question_id)

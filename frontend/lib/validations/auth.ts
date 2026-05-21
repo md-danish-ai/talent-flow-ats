@@ -10,10 +10,6 @@ export const signUpSchema = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be under 100 characters")
     .refine(
-      (val) => val.trim().split(/\s+/).length >= 2,
-      "Please provide your full name (first and last name).",
-    )
-    .refine(
       (val) => /^[A-Za-z\s]+$/.test(val),
       "Full name must only contain alphabetic characters.",
     ),
@@ -61,10 +57,6 @@ export const createAdminSchema = z.object({
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be under 100 characters")
-    .refine(
-      (val) => val.trim().split(/\s+/).length >= 2,
-      "Please provide your full name (first and last name).",
-    )
     .refine(
       (val) => /^[A-Za-z\s]+$/.test(val),
       "Full name must only contain alphabetic characters.",

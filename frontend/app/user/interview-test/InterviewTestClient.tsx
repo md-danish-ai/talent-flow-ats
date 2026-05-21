@@ -176,6 +176,7 @@ export function InterviewTestClient() {
               description: undefined,
               passage: question.passage || undefined,
               imageUrl: question.image_url || undefined,
+              marks: question.marks || 0,
               options: question.options,
             })),
           }),
@@ -579,6 +580,7 @@ export function InterviewTestClient() {
           sections={sections}
           overallExamDurationMinutes={overallExamDurationMinutes}
           startError={startError}
+          paper={assignedPaper?.paper}
           onStart={() => {
             void handleStartInterview();
           }}

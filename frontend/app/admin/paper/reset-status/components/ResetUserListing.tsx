@@ -38,7 +38,12 @@ import {
   RotateCcw,
   BookOpenCheck,
   Calendar,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
+import { Switch } from "@components/ui-elements/Switch";
+import { toggleUserStatus } from "@lib/api/auth";
+import { toast } from "@lib/toast";
 
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -66,6 +71,22 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const [isReInterviewModalOpen, setIsReInterviewModalOpen] = useState(false);
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
+  const [togglingStatusIds, setTogglingStatusIds] = useState<number[]>([]);
+
+  const handleToggleStatus = async (userId: number, currentStatus: boolean) => {
+    setTogglingStatusIds((prev) => [...prev, userId]);
+    try {
+      await toggleUserStatus(userId, !currentStatus);
+      toast.success(
+        `Account ${currentStatus ? "disabled" : "enabled"} successfully`,
+      );
+      void refresh();
+    } catch {
+      toast.error("Failed to update account status");
+    } finally {
+      setTogglingStatusIds((prev) => prev.filter((id) => id !== userId));
+    }
+  };
 
   const {
     data: users,
@@ -189,6 +210,9 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                       <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
                         Attempt Status
                       </TableHead>
+                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                        Account Access
+                      </TableHead>
                       <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
                         Action
                       </TableHead>
@@ -222,30 +246,21 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   size="sm"
                                 />
                                 {/* Status Dot Indicators */}
-                                {(row.process_status === "submitted" ||
-                                  row.assignment?.is_attempted) && (
+                                {row.process_status === "submitted" ||
+                                row.is_interview_submitted ||
+                                row.assignment?.is_attempted ? (
                                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                                )}
-                                {(row.process_status === "inprogress" ||
-                                  row.assignment?.has_started) && (
+                                ) : row.process_status === "inprogress" ||
+                                  row.assignment?.has_started ? (
                                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-slate-950 rounded-full animate-pulse shadow-sm" />
-                                )}
-                                {row.process_status === "ready" &&
-                                  !row.assignment?.has_started && (
-                                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                                  )}
-                                {row.process_status === "expired" && (
+                                ) : row.process_status === "ready" &&
+                                  !row.assignment?.has_started ? (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                ) : row.process_status === "expired" ? (
                                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
+                                ) : (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                                 )}
-                                {(!row.process_status ||
-                                  row.process_status === "pending" ||
-                                  !row.assignment?.is_assigned) &&
-                                  row.process_status !== "submitted" &&
-                                  row.process_status !== "inprogress" &&
-                                  row.process_status !== "ready" &&
-                                  row.process_status !== "expired" && (
-                                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
-                                  )}
                               </div>
                               <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
@@ -382,6 +397,26 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                         ? "Session Expired"
                                         : "Awaiting Assignment"}
                               </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center align-middle py-3">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <Switch
+                                checked={row.is_active}
+                                onChange={() =>
+                                  handleToggleStatus(row.id, row.is_active)
+                                }
+                                disabled={togglingStatusIds.includes(row.id)}
+                                size="sm"
+                                color={row.is_active ? "success" : "error"}
+                              />
+                              <Badge
+                                variant="outline"
+                                shape="square"
+                                color={row.is_active ? "success" : "error"}
+                              >
+                                {row.is_active ? "Active" : "Disabled"}
+                              </Badge>
                             </div>
                           </TableCell>
                           <TableCell className="text-center align-middle py-3">

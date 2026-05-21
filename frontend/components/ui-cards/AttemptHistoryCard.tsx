@@ -11,10 +11,13 @@ import {
   FileText,
   History as HistoryIcon,
   Eye,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { cn } from "@lib/utils";
+import { useMe } from "@hooks/api/user/use-me";
+import { getGradeConfig } from "@lib/utils/gradeUtils";
 
 interface AttemptHistoryCardProps {
   attemptId: number;
@@ -39,6 +42,8 @@ interface AttemptHistoryCardProps {
     time_taken: number;
   } | null;
   activeDurationSeconds?: number;
+  overallGrade?: string;
+  interviewDate?: string;
 }
 
 export const AttemptHistoryCard = ({
@@ -59,7 +64,12 @@ export const AttemptHistoryCard = ({
   statusBadge,
   typingStats,
   activeDurationSeconds,
+  overallGrade,
+  interviewDate,
 }: AttemptHistoryCardProps) => {
+  const { data: user } = useMe();
+  const isProjectLead = user?.role === "project_lead";
+
   const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
 
   // Calculate Duration
@@ -158,7 +168,7 @@ export const AttemptHistoryCard = ({
               Date
             </span>
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
-              <FileText size={12} className="text-brand-primary" />
+              <HistoryIcon size={12} className="text-brand-primary" />
               <span>
                 {parseUTC(startedAt).toLocaleDateString([], {
                   month: "short",
@@ -303,20 +313,59 @@ export const AttemptHistoryCard = ({
               <span>{unattemptedCount}</span>
             </div>
           </div>
+
+          <div className="hidden lg:block h-8 w-px bg-border/60" />
+
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Overall Grade
+            </span>
+            <div
+              className={cn(
+                "flex items-center gap-1.5 font-black",
+                getGradeConfig(overallGrade).color,
+              )}
+            >
+              <Trophy size={14} />
+              <span>{overallGrade || "N/A"}</span>
+            </div>
+          </div>
+
+          <div className="hidden lg:block h-8 w-px bg-border/60" />
+
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Interview Date
+            </span>
+            <div className="flex items-center gap-1.5 text-brand-primary font-bold">
+              <CheckCircle2 size={14} />
+              <span>
+                {interviewDate
+                  ? parseUTC(interviewDate).toLocaleDateString([], {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "N/A"}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <Link href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}>
-          <Button
-            size="sm"
-            variant="primary"
-            color="primary"
-            shadow
-            animate="scale"
-            endIcon={<Eye size={14} />}
-          >
-            Analyze Attempt
-          </Button>
-        </Link>
+        {!isProjectLead && (
+          <Link href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}>
+            <Button
+              size="sm"
+              variant="primary"
+              color="primary"
+              shadow
+              animate="scale"
+              endIcon={<Eye size={14} />}
+            >
+              Analyze Attempt
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

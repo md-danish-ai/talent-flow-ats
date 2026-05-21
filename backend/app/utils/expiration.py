@@ -12,23 +12,39 @@ def run_auto_expiration(db_session):
     today = date.today()
 
     # Subquery: Users who have an assignment for TODAY (don't expire them yet)
-    has_today_assignment = db_session.query(PaperAssignment.user_id).filter(
-        PaperAssignment.assigned_date == today
+    has_today_assignment = (
+        db_session.query(PaperAssignment.user_id)
+        .filter(PaperAssignment.assigned_date == today)
+        .subquery()
     )
 
-    # We join with PaperAssignment to find users who have an unattempted assignment from a past date.
     # We care about users who are 'ready', 'inprogress', or 'pending' (if they already have an assignment).
+    from app.user_details.models import UserDetail
+    from sqlalchemy import or_, func
+
     to_expire_query = (
         db_session.query(User)
-        .join(PaperAssignment, User.id == PaperAssignment.user_id)
+        .outerjoin(PaperAssignment, User.id == PaperAssignment.user_id)
+        .outerjoin(UserDetail, User.id == UserDetail.user_id)
         .filter(
             User.role == "user",
             User.is_active.is_(True),
-            User.process_status.in_(["pending", "ready", "inprogress"]),
-            PaperAssignment.assigned_date < today,
-            PaperAssignment.is_attempted.is_(False),
+            User.process_status.in_(
+                ["pending", "ready", "inprogress", "submitted", "auto_submitted"]
+            ),
+            # Identify candidates from past dates (by assignment or registration)
+            or_(
+                PaperAssignment.assigned_date < today,
+                func.date(User.created_at) < today,
+            ),
+            # MUST NOT have been updated/touched today (Manual Override)
+            func.date(User.updated_at) < today,
+            # MUST NOT have an assignment for today
             ~User.id.in_(has_today_assignment),
+            # Exclude users who are reset for re-interview today
+            ~(UserDetail.is_reinterview & (UserDetail.reinterview_date == today)),
         )
+        .distinct()
     )
 
     expired_count = 0
@@ -36,7 +52,10 @@ def run_auto_expiration(db_session):
     users_to_expire = to_expire_query.all()
 
     for user in users_to_expire:
-        user.process_status = "expired"
+        # Only set process_status to 'expired' if they haven't submitted
+        if user.process_status not in ["submitted", "auto_submitted"]:
+            user.process_status = "expired"
+
         user.is_active = False
         expired_count += 1
 

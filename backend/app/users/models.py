@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     TIMESTAMP,
     Index,
+    func,
     text,
 )
 from sqlalchemy.orm import relationship
@@ -44,7 +45,8 @@ class User(Base):
     updated_at = Column(
         TIMESTAMP,
         nullable=False,
-        server_default=text("CURRENT_TIMESTAMP"),
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
     )
 
     # Self-referencing relationship (who created this user)

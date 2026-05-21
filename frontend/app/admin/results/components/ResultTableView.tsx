@@ -370,7 +370,8 @@ export function ResultTableView({
                             className={cn(
                               "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
                               latest?.status === "submitted" ||
-                                latest?.status === "completed"
+                                latest?.status === "completed" ||
+                                item.is_interview_submitted
                                 ? "bg-green-500"
                                 : latest?.status === "auto_submitted"
                                   ? "bg-blue-500"
@@ -526,22 +527,28 @@ export function ResultTableView({
                       <Badge
                         variant="outline"
                         color={
-                          latest?.status === "submitted" ||
-                          latest?.status === "completed"
-                            ? "success"
-                            : latest?.status === "auto_submitted"
-                              ? "blue"
-                              : latest?.status === "started"
-                                ? "violet"
-                                : latest?.status === "expired"
-                                  ? "error"
-                                  : "default"
+                          latest?.status === "started"
+                            ? "violet"
+                            : item.process_status === "ready"
+                              ? "success"
+                              : latest?.status === "submitted" ||
+                                  latest?.status === "completed"
+                                ? "success"
+                                : latest?.status === "auto_submitted"
+                                  ? "blue"
+                                  : latest?.status === "expired"
+                                    ? "error"
+                                    : "default"
                         }
                         shape="square"
                       >
-                        {latest?.status
-                          ? humanizeString(latest.status)
-                          : "NOT STARTED"}
+                        {latest?.status === "started"
+                          ? "STARTED"
+                          : item.process_status === "ready"
+                            ? "READY"
+                            : latest?.status
+                              ? humanizeString(latest.status)
+                              : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}

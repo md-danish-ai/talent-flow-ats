@@ -41,10 +41,4 @@ export const departmentsApi = {
       silentSuccess: true,
     });
   },
-
-  deleteDepartment: async (id: number) => {
-    return api.delete<void>(ENDPOINTS.DEPARTMENTS.DELETE(id), {
-      silentSuccess: true,
-    });
-  },
 };

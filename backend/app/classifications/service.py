@@ -122,29 +122,3 @@ class ClassificationService:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
-
-    def delete(self, classification_id: int):
-        existing = repository.get_by_id(classification_id)
-        if not existing:
-            raise HTTPException(
-                status_code=StatusCode.NOT_FOUND, detail="Classification not found"
-            )
-
-        # Guard: block deletion if this code is referenced by other tables
-        deps = repository.check_dependencies(classification_id)
-        if deps:
-            dep_lines = [
-                f"  • {table}: {count} record{'s' if count > 1 else ''}"
-                for table, count in deps.items()
-            ]
-            dep_summary = "\n".join(dep_lines)
-            raise HTTPException(
-                status_code=StatusCode.CONFLICT,
-                detail=(
-                    f"Cannot delete '{existing['name']}' because it is still referenced by:\n"
-                    f"{dep_summary}\n\n"
-                    "Please remove or reassign all dependent records before deleting this classification."
-                ),
-            )
-
-        return repository.delete(classification_id)

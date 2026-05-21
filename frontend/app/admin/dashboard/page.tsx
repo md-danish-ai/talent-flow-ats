@@ -88,7 +88,7 @@ export default function DashboardPage() {
     end_date: endDate,
   });
   const { data: notificationsData, isLoading: notificationsLoading } =
-    useNotifications({ limit: 5 });
+    useNotifications({ limit: 20 });
 
   const notifications = (notificationsData?.data ||
     []) as DashboardNotification[];
@@ -219,7 +219,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <PageContainer className="space-y-8 py-8">
+    <PageContainer className="space-y-8">
       {/* PERSISTENT HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <motion.div
@@ -328,10 +328,10 @@ export default function DashboardPage() {
               className="h-full"
               bodyClassName="p-1"
             >
-              <div className="flex flex-col flex-1 h-full min-h-[240px]">
-                <div className="flex-1 space-y-1">
+              <div className="flex flex-col flex-1">
+                <div className="flex-1 space-y-1 overflow-y-auto max-h-[365px] p-3 pt-1 custom-scrollbar">
                   {notificationsLoading ? (
-                    <div className="p-4 space-y-4">
+                    <div className="space-y-4">
                       {[...Array(3)].map((_, i) => (
                         <div
                           key={i}
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                       animate="visible"
                       className="space-y-1"
                     >
-                      {notifications.slice(0, 3).map((notif) => {
+                      {notifications.slice(0, 20).map((notif) => {
                         const t = notif.title?.toLowerCase() || "";
                         const tp = notif.type?.toLowerCase() || "";
 

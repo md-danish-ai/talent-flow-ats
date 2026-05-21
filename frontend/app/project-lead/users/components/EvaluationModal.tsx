@@ -135,7 +135,6 @@ export const EvaluationModal = React.memo(
         try {
           setSubmitting(true);
           await evaluationsApi.submitEvaluation(evaluationId, values);
-          toast.success("Evaluation submitted successfully!");
           if (onSuccess) onSuccess();
           onClose();
         } catch (err) {

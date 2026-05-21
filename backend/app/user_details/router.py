@@ -12,25 +12,25 @@ router = APIRouter(
 
 
 @router.post("/save-user-details")
-def add_user_details(
+async def add_user_details(
     data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
 ):
     """
     Add user recruitment details.
     If details already exist, they will be overwritten (updated).
     """
-    result = service.save_user_details(user_id, data)
+    result = await service.save_user_details(user_id, data)
     return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
 
 
 @router.put("/edit-user-details")
-def update_user_details(
+async def update_user_details(
     data: UserDetailsSchema, user_id: int = Depends(authenticate_user)
 ):
     """
     Update existing user recruitment details.
     """
-    result = service.save_user_details(user_id, data)
+    result = await service.save_user_details(user_id, data)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
 
 

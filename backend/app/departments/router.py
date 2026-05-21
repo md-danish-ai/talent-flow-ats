@@ -48,14 +48,3 @@ def update(department_id: int, payload: DepartmentUpdate):
     if not data:
         return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
-
-
-@router.delete(
-    "/remove-department/{department_id}",
-    dependencies=[Depends(require_roles(["admin"]))],
-)
-def delete(department_id: int):
-    success = service.delete(department_id)
-    if not success:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
-    return api_response(StatusCode.OK, ResponseMessage.DELETED)

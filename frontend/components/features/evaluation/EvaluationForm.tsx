@@ -73,7 +73,7 @@ export function EvaluationForm({
               <div className="space-y-1.5">
                 <Typography
                   variant="body5"
-                  className="font-bold uppercase tracking-wider text-muted-foreground text-[10px]"
+                  className="font-bold uppercase tracking-wider text-muted-foreground "
                 >
                   {metric}
                 </Typography>
@@ -109,9 +109,9 @@ export function EvaluationForm({
             <div className="space-y-1.5">
               <Typography
                 variant="body5"
-                className="font-bold uppercase tracking-wider text-brand-primary text-[10px]"
+                className="font-bold uppercase tracking-wider text-brand-primary "
               >
-                Overall Grade
+                Overall Grade *
               </Typography>
               <SelectDropdown
                 options={GRADE_OPTIONS}
@@ -143,9 +143,9 @@ export function EvaluationForm({
             <div className="space-y-1.5">
               <Typography
                 variant="body5"
-                className="font-bold uppercase tracking-wider text-emerald-600 text-[10px]"
+                className="font-bold uppercase tracking-wider text-emerald-600 "
               >
-                Final Result
+                Final Result *
               </Typography>
               <SelectDropdown
                 options={results.map((v) => ({ id: v.id, label: v.name }))}
@@ -178,7 +178,7 @@ export function EvaluationForm({
           <div className="space-y-1.5">
             <Typography
               variant="body5"
-              className="font-bold uppercase tracking-wider text-muted-foreground text-[10px]"
+              className="font-bold uppercase tracking-wider text-muted-foreground "
             >
               Comments & Feedback
             </Typography>
@@ -228,8 +228,10 @@ export function EvaluationForm({
       ) : (
         <div className="flex justify-end gap-3">
           <Button
-            variant="ghost"
+            variant="outline"
+            color="primary"
             type="button"
+            animate="scale"
             onClick={onCancel}
             disabled={submitting}
           >
@@ -238,6 +240,7 @@ export function EvaluationForm({
           <Button
             color="primary"
             type="submit"
+            animate="scale"
             disabled={submitting}
             startIcon={
               submitting ? (
