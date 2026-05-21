@@ -21,7 +21,7 @@ export default function Providers({ children }: { children: ReactNode }) {
         {children}
         <ToastProvider />
       </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }
