@@ -70,7 +70,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center px-1 rounded-full bg-red-500 text-[9px] font-black text-white ring-2 ring-background min-w-[18px] h-[18px] shadow-sm animate-in zoom-in duration-300 pointer-events-none z-20">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </div>
@@ -107,9 +107,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {notifications.map((notif: NotificationItem) => (
                     <div
                       key={notif.id}
-                      className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${
-                        !notif.is_read ? "bg-brand-primary/5" : ""
-                      }`}
+                      className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${!notif.is_read ? "bg-brand-primary/5" : ""
+                        }`}
                       onClick={async () => {
                         if (!notif.is_read) {
                           try {
@@ -218,12 +217,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                               notif.title?.toLowerCase().includes("duplicate")
                                 ? "text-amber-500 dark:text-amber-400"
                                 : notif.title
-                                      ?.toLowerCase()
-                                      .includes("evaluation")
+                                  ?.toLowerCase()
+                                  .includes("evaluation")
                                   ? "text-emerald-500 dark:text-emerald-400"
                                   : notif.title
-                                        ?.toLowerCase()
-                                        .includes("unassigned")
+                                    ?.toLowerCase()
+                                    .includes("unassigned")
                                     ? "text-red-500 dark:text-red-400"
                                     : ""
                             }
