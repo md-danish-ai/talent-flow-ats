@@ -92,14 +92,6 @@ def update_paper(
     )
 
 
-@router.delete("/remove-paper/{paper_id}")
-def delete_paper(paper_id: int, db: Session = Depends(get_db)):
-    success = repository.delete_paper(db=db, paper_id=paper_id)
-    if not success:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
-    return api_response(StatusCode.OK, ResponseMessage.DELETED)
-
-
 @router.put("/grade-settings/{paper_id}")
 def update_grade_settings(
     paper_id: int,

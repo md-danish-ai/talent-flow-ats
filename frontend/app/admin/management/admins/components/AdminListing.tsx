@@ -73,7 +73,7 @@ export function AdminListing({ initialData }: AdminListingProps) {
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
     try {
-      await toggleUserStatus(user.id);
+      await toggleUserStatus(user.id, !user.is_active);
       void refresh();
       toast.success("Status updated successfully");
     } catch (error) {

@@ -7,7 +7,7 @@ import { Button } from "@components/ui-elements/Button";
 import { Layers, Gauge, Plus, ShieldCheck } from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
-import { DeleteTypeModal } from "./components/DeleteTypeModal";
+
 import { classificationsApi } from "@lib/api/classifications";
 import { Classification, PaginatedResponse } from "@types";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -96,9 +96,7 @@ export function TypesManagementClient({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<BaseType | null>(null);
-  const [typeToDelete, setTypeToDelete] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -113,13 +111,6 @@ export function TypesManagementClient({
       : activeTab === "levels"
         ? "exam_level"
         : "interview_result";
-
-  const currentEntityName =
-    activeTab === "subjects"
-      ? "Subject"
-      : activeTab === "levels"
-        ? "Level"
-        : "Verdict";
 
   const tabs: TabItem[] = [
     { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
@@ -191,27 +182,6 @@ export function TypesManagementClient({
       // Error toast is handled globally
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setTypeToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (typeToDelete !== null) {
-      setIsLoading(true);
-      try {
-        await classificationsApi.deleteClassification(typeToDelete);
-        void refresh();
-        setIsDeleteModalOpen(false);
-        setTypeToDelete(null);
-      } catch {
-        // Error toast is handled globally
-      } finally {
-        setIsLoading(false);
-      }
     }
   };
 
@@ -313,7 +283,6 @@ export function TypesManagementClient({
               pageSize={pageSize}
               togglingId={togglingId}
               onEdit={handleOpenModal}
-              onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}
             />
 
@@ -355,14 +324,6 @@ export function TypesManagementClient({
         formData={formData}
         setFormData={setFormData}
         onSubmit={handleSubmit}
-        isLoading={isLoading}
-      />
-
-      <DeleteTypeModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        description={`This ${currentEntityName} will be permanently removed from the database.`}
         isLoading={isLoading}
       />
     </PageContainer>

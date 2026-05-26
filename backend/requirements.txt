@@ -31,3 +31,4 @@ Pillow
 pandas
 openpyxl
 xhtml2pdf
+redis

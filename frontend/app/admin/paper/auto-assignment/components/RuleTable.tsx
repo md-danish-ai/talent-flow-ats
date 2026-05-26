@@ -156,9 +156,7 @@ export function RuleTable({
                             key={i}
                             className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08] border border-brand-primary/10 hover:border-brand-primary/30 text-[10px] font-bold text-brand-primary uppercase tracking-wide shadow-sm hover:scale-[1.02] transition-all duration-200"
                           >
-                            <span className="truncate max-w-[150px]">
-                              {name}
-                            </span>
+                            <span>{name}</span>
                           </div>
                         ))
                       ) : (

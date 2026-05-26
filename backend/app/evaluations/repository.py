@@ -4,9 +4,13 @@ from .models import InterviewEvaluation
 from .schemas import InterviewEvaluationCreate, InterviewEvaluationUpdate
 from app.users.models import User
 from app.classifications.models import Classification
+from app.core.realtime import realtime_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
+async def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
     db_obj = InterviewEvaluation(
         user_id=obj_in.user_id,
         project_lead_id=obj_in.project_lead_id,
@@ -39,13 +43,25 @@ def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
         )
         db.add(notification)
         db.commit()
+
+        # Real-time broadcast to Project Lead
+        await realtime_manager.publish(
+            {
+                "id": notification.id,
+                "type": notification.type,
+                "title": notification.title,
+                "message": notification.message,
+                "created_at": notification.created_at,
+            },
+            user_id=obj_in.project_lead_id,
+        )
     except Exception as e:
         print(f"Error triggering assignment notification: {e}")
 
     return db_obj
 
 
-def bulk_create_evaluations(
+async def bulk_create_evaluations(
     db: Session,
     user_ids: list[int],
     attempt_ids: list[int],
@@ -104,7 +120,21 @@ def bulk_create_evaluations(
                     is_read=False,
                 )
                 db.add(notification)
+
             db.commit()
+
+            # Real-time broadcast to Project Lead
+            for obj in new_objs:
+                # Note: This could be optimized to send a single batch event if needed
+                await realtime_manager.publish(
+                    {
+                        "type": "evaluation_assigned",
+                        "title": "New Assignment",
+                        "message": f"You have {len(new_objs)} new evaluations assigned.",
+                    },
+                    user_id=lead_id,
+                )
+                break  # For now just send one alert for the batch
         except Exception as e:
             print(f"Error triggering bulk assignment notifications: {e}")
 
@@ -167,7 +197,7 @@ def get_evaluations_by_lead(
     return [dict(r._asdict()) for r in results], total
 
 
-def update_evaluation(
+async def update_evaluation(
     db: Session, evaluation_id: int, obj_in: InterviewEvaluationUpdate
 ):
     db_obj = get_evaluation(db, evaluation_id)
@@ -208,13 +238,25 @@ def update_evaluation(
         )
         db.add(notification)
         db.commit()
+
+        # Real-time broadcast to Admins
+        await realtime_manager.publish(
+            {
+                "id": notification.id,
+                "type": notification.type,
+                "title": notification.title,
+                "message": notification.message,
+                "created_at": notification.created_at,
+            },
+            user_id="admin",
+        )
     except Exception as e:
-        print(f"Error triggering submission notification: {e}")
+        logger.error(f"Error triggering submission notification: {e}")
 
     return db_obj
 
 
-def delete_evaluation(db: Session, evaluation_id: int):
+async def delete_evaluation(db: Session, evaluation_id: int):
     db_obj = get_evaluation(db, evaluation_id)
     if db_obj:
         # Trigger unassigned notification if evaluation is pending
@@ -232,6 +274,7 @@ def delete_evaluation(db: Session, evaluation_id: int):
                     if db_obj.round_type
                     else "Round-2 (F2F)"
                 )
+
                 notification = AdminNotification(
                     type="evaluation_unassigned",
                     user_id=db_obj.project_lead_id,
@@ -241,8 +284,20 @@ def delete_evaluation(db: Session, evaluation_id: int):
                 )
                 db.add(notification)
                 db.commit()
+
+                # Real-time broadcast to Project Lead
+                await realtime_manager.publish(
+                    {
+                        "id": notification.id,
+                        "type": notification.type,
+                        "title": notification.title,
+                        "message": notification.message,
+                        "created_at": notification.created_at,
+                    },
+                    user_id=db_obj.project_lead_id,
+                )
             except Exception as e:
-                print(f"Error triggering unassignment notification: {e}")
+                logger.error(f"Error triggering unassignment notification: {e}")
 
         db.delete(db_obj)
         db.commit()

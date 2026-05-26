@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Edit, Trash2, Copy, Check } from "lucide-react";
+import { Edit, Copy, Check } from "lucide-react";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
@@ -32,7 +32,7 @@ interface TypeTableProps {
   pageSize: number;
   togglingId: number | null;
   onEdit: (item: BaseType) => void;
-  onDelete: (id: number) => void;
+
   onToggleStatus: (item: BaseType) => void;
 }
 
@@ -80,7 +80,7 @@ export function TypeTable({
   pageSize,
   togglingId,
   onEdit,
-  onDelete,
+
   onToggleStatus,
 }: TypeTableProps) {
   const isSubject = activeTab === "subjects";
@@ -189,16 +189,6 @@ export function TypeTable({
                       aria-label={`Edit ${item.name}`}
                     >
                       <Edit size={16} />
-                    </TableIconButton>
-                    <TableIconButton
-                      iconColor="red"
-                      btnSize="sm"
-                      animate="scale"
-                      onClick={() => onDelete(item.id)}
-                      title={`Delete ${item.name}`}
-                      aria-label={`Delete ${item.name}`}
-                    >
-                      <Trash2 size={16} />
                     </TableIconButton>
                   </div>
                 </TableCell>

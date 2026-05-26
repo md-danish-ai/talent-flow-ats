@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import StreamingResponse
+import asyncio
+from app.core.realtime import realtime_manager
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.utils.dependencies import require_roles, authenticate_user
@@ -69,4 +72,49 @@ async def mark_notifications_unread(
         StatusCode.OK,
         ResponseMessage.UPDATED,
         data={"message": f"{count} notifications marked as unread"},
+    )
+
+
+@router.get("/stream")
+async def stream_notifications(
+    request: Request,
+    current_user: int = Depends(authenticate_user),
+):
+    """
+    SSE endpoint for real-time notifications.
+    """
+    user_role = getattr(request.state, "user_role", None)
+    # Admin gets all global events, others get specific ones
+    target_id = "admin" if user_role == "admin" else str(current_user)
+
+    async def event_generator():
+        print(f"SSE: User {target_id} connected")
+        queue = await realtime_manager.subscribe(target_id)
+        try:
+            while True:
+                if await request.is_disconnected():
+                    print(f"SSE: User {target_id} disconnected")
+                    break
+
+                try:
+                    data = await asyncio.wait_for(queue.get(), timeout=20.0)
+                    print(f"SSE: Sending data to {target_id}: {data}")
+                    yield f"data: {data}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keep-alive\n\n"
+
+        except asyncio.CancelledError:
+            print(f"SSE: User {target_id} cancelled")
+            pass
+        finally:
+            await realtime_manager.unsubscribe(queue, target_id)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Critical for Nginx
+        },
     )

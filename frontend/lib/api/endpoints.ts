@@ -13,7 +13,7 @@ export const ENDPOINTS = {
     GET_ALL_USERS: "/auth/get-all-system-users",
     TOGGLE_STATUS: (id: string | number) =>
       `/auth/toggle-user-active-status/${id}`,
-    DELETE_USER: (id: string | number) => `/auth/remove-user-account/${id}`,
+
     UPDATE_BASIC_INFO: (id: string | number) =>
       `/auth/update-user-profile/${id}`,
     USERS_BY_ROLE: (role: string) => `/auth/list-users-by-role/${role}`,
@@ -25,15 +25,12 @@ export const ENDPOINTS = {
     CREATE: "/classifications/create-classification",
     UPDATE: (id: string | number) =>
       `/classifications/update-classification/${id}`,
-    DELETE: (id: string | number) =>
-      `/classifications/remove-classification/${id}`,
   },
 
   DEPARTMENTS: {
     GET: "/departments/get-departments",
     CREATE: "/departments/create-department",
     UPDATE: (id: string | number) => `/departments/update-department/${id}`,
-    DELETE: (id: string | number) => `/departments/remove-department/${id}`,
   },
 
   QUESTIONS: {
@@ -42,7 +39,7 @@ export const ENDPOINTS = {
     CREATE: "/questions/create-question",
     UPDATE: (id: string | number) => `/questions/update-question/${id}`,
     UPDATE_STATUS: (id: string | number) => `/questions/questions-status/${id}`,
-    DELETE: (id: string | number) => `/questions/remove-question/${id}`,
+
     GET_BY_IDS: "/questions/get-by-ids",
     AUTO_GENERATE: "/questions/auto-generate",
     TYPE_COUNTS: "/questions/type-counts",
@@ -55,7 +52,7 @@ export const ENDPOINTS = {
     GET_BY_ID: (id: string | number) => `/papers/paper-details/${id}`,
     CREATE: "/papers/create-paper",
     UPDATE: (id: string | number) => `/papers/update-paper/${id}`,
-    DELETE: (id: string | number) => `/papers/remove-paper/${id}`,
+
     GRADE_SETTINGS: (id: string | number) => `/papers/grade-settings/${id}`,
   },
 

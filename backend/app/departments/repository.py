@@ -88,21 +88,3 @@ def update(department_id: int, data):
         raise e
     finally:
         db_session.close()
-
-
-def delete(department_id: int):
-    db_session = SessionLocal()
-    try:
-        department = (
-            db_session.query(Department).filter(Department.id == department_id).first()
-        )
-        if department:
-            db_session.delete(department)
-            db_session.commit()
-            return True
-        return False
-    except Exception as e:
-        db_session.rollback()
-        raise e
-    finally:
-        db_session.close()

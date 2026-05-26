@@ -7,6 +7,21 @@ from app.answer.models import QuestionAnswer
 from app.classifications.models import Classification
 
 
+def _rebuild_papers_containing_question(db, question_id: int):
+    from app.papers.models import Paper
+    from app.paper_assignments.repository import (
+        rebuild_paper_cache,
+        _extract_question_ids,
+    )
+
+    # Only check active papers
+    active_papers = db.query(Paper).filter(Paper.is_active).all()
+    for paper in active_papers:
+        q_ids = _extract_question_ids(paper.question_id)
+        if question_id in q_ids:
+            rebuild_paper_cache(db, paper.id)
+
+
 def create_question(
     data, question_type: str, subject: str, exam_level: str, user_id: int
 ):
@@ -339,24 +354,15 @@ def update_question(
                 )
                 db_session.add(new_answer_obj)
 
+        is_modified = len(db_session.dirty) > 0 or len(db_session.new) > 0
         db_session.commit()
+
+        # Only rebuild cache if something was actually changed
+        if is_modified:
+            _rebuild_papers_containing_question(db_session, question_id)
+
         return {"message": f"Question {question_id} updated successfully"}
 
-    except Exception as exception:
-        db_session.rollback()
-        raise exception
-    finally:
-        db_session.close()
-
-
-def delete_question(question_id: int):
-    db_session = SessionLocal()
-    try:
-        question = db_session.query(Question).filter(Question.id == question_id).first()
-        if question:
-            question.is_active = False
-            db_session.commit()
-        return {"message": f"Question {question_id} deactivated successfully"}
     except Exception as exception:
         db_session.rollback()
         raise exception
@@ -372,6 +378,10 @@ def toggle_question_status(question_id: int):
             return {"message": f"Question {question_id} not found"}
         question.is_active = not question.is_active
         db_session.commit()
+
+        # Rebuild caches for affected papers
+        _rebuild_papers_containing_question(db_session, question_id)
+
         return {
             "message": f"Question {question_id} {'activated' if question.is_active else 'deactivated'} successfully",
             "is_active": question.is_active,

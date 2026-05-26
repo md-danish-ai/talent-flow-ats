@@ -10,6 +10,7 @@ export interface SwitchProps {
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";
+  color?: "primary" | "success" | "error";
 }
 
 const sizeConfig = {
@@ -36,6 +37,7 @@ export const Switch: React.FC<SwitchProps> = ({
   disabled = false,
   className,
   size = "md",
+  color = "primary",
 }) => {
   const config = sizeConfig[size];
 
@@ -46,13 +48,24 @@ export const Switch: React.FC<SwitchProps> = ({
     }
   };
 
+  const getActiveColor = () => {
+    switch (color) {
+      case "success":
+        return "bg-emerald-500";
+      case "error":
+        return "bg-rose-500";
+      default:
+        return "bg-brand-primary";
+    }
+  };
+
   return (
     <div
       onClick={handleToggle}
       className={cn(
         "relative flex items-center rounded-full cursor-pointer transition-colors duration-300",
         config.container,
-        checked ? "bg-brand-primary" : "bg-slate-200 dark:bg-slate-700",
+        checked ? getActiveColor() : "bg-slate-200 dark:bg-slate-700",
         disabled && "opacity-50 cursor-not-allowed grayscale",
         className,
       )}

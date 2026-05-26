@@ -14,6 +14,7 @@ import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 import { api, getAllNotifications } from "@lib/api";
 import { type NotificationItem } from "@types";
 import { ENDPOINTS } from "@lib/api/endpoints";
+import { useRealtimeNotifications } from "@hooks/api/notifications/use-realtime-notifications";
 
 interface NavbarProps {
   user: CurrentUser | null;
@@ -22,6 +23,10 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const { ripples, createRipple, removeRipple } = useRipple();
   const { toggleSidebar } = useSidebar();
+
+  // Real-time listener
+  useRealtimeNotifications(user?.id || null, user?.role || null);
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -44,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
     const fetchNotifications = async () => {
       if (user?.role !== "admin" && user?.role !== "project_lead") return;
       try {
-        const res = await getAllNotifications({ limit: 5 });
+        const res = await getAllNotifications({ limit: 20 });
         setNotifications(res.data);
         setUnreadCount(res.unread_count);
       } catch (error) {

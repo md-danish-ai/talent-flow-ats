@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Check, Loader2, X } from "lucide-react";
@@ -70,7 +70,7 @@ export function MultiSelectDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const updateCoords = () => {
+  const updateCoords = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setCoords({
@@ -98,7 +98,7 @@ export function MultiSelectDropdown({
       // Ensure it's between 150px minimum and standard 320px maximum
       setMaxMenuHeight(Math.min(320, Math.max(150, maxAllowed)));
     }
-  };
+  }, [placement]);
 
   const toggleDropdown = () => {
     if (disabled) return;
@@ -118,7 +118,7 @@ export function MultiSelectDropdown({
       window.removeEventListener("scroll", updateCoords, true);
       window.removeEventListener("resize", updateCoords);
     };
-  }, [isOpen]);
+  }, [isOpen, updateCoords]);
 
   const toggleOption = (optionId: string | number) => {
     const newValue = value.includes(optionId)

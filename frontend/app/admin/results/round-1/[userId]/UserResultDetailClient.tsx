@@ -3,16 +3,20 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  CheckCircle2,
   History,
   User,
-  Phone,
-  LayoutDashboard,
-  Clock,
   UserCheck,
+  Download,
+  Loader2,
+  Calendar,
+  Layers,
+  Briefcase,
+  Target,
+  Copy,
+  Mail,
+  Smartphone,
 } from "lucide-react";
 import Link from "next/link";
-import { Download, Loader2 } from "lucide-react";
 import { toast } from "@lib/toast";
 import { BASE_URL } from "@lib/api/client";
 import { AttemptHistoryCard } from "@components/ui-cards/AttemptHistoryCard";
@@ -102,6 +106,11 @@ export function UserResultDetailClient({
     );
   }
 
+  if (attemptData) {
+    console.log("DEBUG - is_active value:", attemptData.user.is_active);
+    console.log("DEBUG - is_active type:", typeof attemptData.user.is_active);
+  }
+
   if (error || !attemptData) {
     return (
       <PageContainer className="py-20">
@@ -150,36 +159,6 @@ export function UserResultDetailClient({
   const lastAttemptDate = attemptData.attempts[0]?.started_at
     ? formatDate(attemptData.attempts[0].started_at)
     : "N/A";
-
-  const stats = [
-    {
-      label: "Total Sessions",
-      value: totalAttempts,
-      subValue: "Interview attempts",
-      icon: <LayoutDashboard size={20} />,
-      color: "text-brand-primary",
-      bg: "bg-brand-primary/10",
-      border: "border-brand-primary/20",
-    },
-    {
-      label: "Completed",
-      value: submittedAttempts,
-      subValue: `${totalAttempts > 0 ? ((submittedAttempts / totalAttempts) * 100).toFixed(0) : 0}% completion rate`,
-      icon: <CheckCircle2 size={20} />,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/20",
-    },
-    {
-      label: "Last Activity",
-      value: lastAttemptDate,
-      subValue: "Most recent attempt",
-      icon: <Clock size={20} />,
-      color: "text-amber-600",
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/20",
-    },
-  ];
 
   const TABS = [
     {
@@ -307,7 +286,14 @@ export function UserResultDetailClient({
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-2 right-2 h-6 w-6 rounded-full bg-emerald-500 border-4 border-card" />
+            <div
+              className={cn(
+                "absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-card transition-colors duration-300",
+                attemptData.user.is_active === false
+                  ? "bg-rose-500"
+                  : "bg-emerald-500",
+              )}
+            />
           </div>
 
           <div className="flex-1 text-center md:text-left space-y-4">
@@ -316,104 +302,152 @@ export function UserResultDetailClient({
                 <Typography variant="h3" className="font-bold">
                   {attemptData.user.username}
                 </Typography>
-                <Badge color="success" variant="fill" shape="square">
-                  Active Candidate
-                </Badge>
+                {attemptData.user.is_active === false ? (
+                  <Badge variant="outline" color="error" shape="square">
+                    DEACTIVATED
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" color="success" shape="square">
+                    ACTIVE
+                  </Badge>
+                )}
               </div>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-muted-foreground">
                 <div className="flex items-center gap-1.5">
-                  <Phone size={14} className="text-brand-primary" />
-                  <Typography variant="body5">
-                    {attemptData.user.mobile}
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                    <History size={14} />
+                  </div>
+                  <Typography variant="body5" className="font-bold">
+                    ID: #{userId}
                   </Typography>
                 </div>
-                <div className="h-1 w-1 rounded-full bg-border md:block hidden" />
-                <Typography variant="body5">ID: #{userId}</Typography>
+                <div className="h-4 w-px bg-border/60 hidden md:block" />
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(attemptData.user.mobile);
+                    toast.success("Mobile number copied!");
+                  }}
+                  className="group flex items-center gap-2 hover:text-brand-primary transition-colors duration-200"
+                  title="Click to copy mobile"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-all">
+                    <Smartphone size={14} />
+                  </div>
+                  <Typography variant="body5" className="font-bold">
+                    {attemptData.user.mobile}
+                  </Typography>
+                  <Copy size={12} className="text-brand-primary/40" />
+                </button>
+
+                {attemptData.user.email && (
+                  <>
+                    <div className="h-4 w-px bg-border/60 hidden md:block" />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          attemptData.user.email || "",
+                        );
+                        toast.success("Email address copied!");
+                      }}
+                      className="group flex items-center gap-2 hover:text-brand-primary transition-colors duration-200"
+                      title="Click to copy email"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all">
+                        <Mail size={14} />
+                      </div>
+                      <Typography
+                        variant="body5"
+                        className="text-muted-foreground font-bold"
+                      >
+                        {attemptData.user.email}
+                      </Typography>
+                      <Copy size={12} className="text-brand-primary/40" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-2">
+            <div className="pt-5 flex flex-wrap justify-center md:justify-start gap-4">
               <div
                 className={cn(
-                  "px-4 py-2 bg-muted/40 border border-border/50 backdrop-blur-sm",
-                  STYLE_CONFIG.innerCardRadius,
+                  "flex flex-wrap items-center gap-4 px-4 py-3 bg-slate-900/5 dark:bg-white/5 border border-border/40 backdrop-blur-md",
+                  STYLE_CONFIG.cardRadius,
                 )}
               >
-                <Typography
-                  variant="body5"
-                  className="text-muted-foreground font-medium mb-0.5"
-                >
-                  Primary Skill
-                </Typography>
-                <Typography variant="body4" className="font-bold">
-                  React Developer
-                </Typography>
-              </div>
-              <div
-                className={cn(
-                  "px-4 py-2 bg-muted/40 border border-border/50 backdrop-blur-sm",
-                  STYLE_CONFIG.innerCardRadius,
-                )}
-              >
-                <Typography
-                  variant="body5"
-                  className="text-muted-foreground font-medium mb-0.5"
-                >
-                  Applied For
-                </Typography>
-                <Typography variant="body4" className="font-bold">
-                  Senior Web Engineer
-                </Typography>
+                {/* Department Pill */}
+                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                  <Briefcase
+                    size={18}
+                    className="text-orange-600 dark:text-orange-400"
+                  />
+                  <div className="flex flex-col -space-y-0.5">
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-orange-600/70 dark:text-orange-400/70">
+                      Department
+                    </span>
+                    <span className="text-[15px] font-black text-orange-700 dark:text-orange-300">
+                      {attemptData.user.department || "N/A"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Level Pill */}
+                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <Target
+                    size={18}
+                    className="text-blue-600 dark:text-blue-400"
+                  />
+                  <div className="flex flex-col -space-y-0.5">
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-blue-600/70 dark:text-blue-400/70">
+                      Level
+                    </span>
+                    <span className="text-[15px] font-black text-blue-700 dark:text-blue-300">
+                      {attemptData.user.test_level || "N/A"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sessions Pill */}
+                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <Layers
+                    size={18}
+                    className="text-emerald-600 dark:text-emerald-400"
+                  />
+                  <div className="flex flex-col -space-y-0.5">
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-600/70 dark:text-emerald-400/70">
+                      Total Sessions
+                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[15px] font-black text-emerald-700 dark:text-emerald-300">
+                        {totalAttempts}
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-600/60 dark:text-emerald-400/60">
+                        ({submittedAttempts} Done)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Activity Pill */}
+                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-slate-500/10 border border-slate-500/20 rounded-xl">
+                  <Calendar
+                    size={18}
+                    className="text-slate-600 dark:text-slate-400"
+                  />
+                  <div className="flex flex-col -space-y-0.5">
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-slate-600/70 dark:text-slate-400/70">
+                      Last Activity
+                    </span>
+                    <span className="text-[15px] font-black text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      {lastAttemptDate}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Stats Quick Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className={cn(
-              `group relative overflow-hidden border ${stat.border} bg-card p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1`,
-              STYLE_CONFIG.cardRadius,
-            )}
-          >
-            <div className="relative z-10 flex flex-col gap-4">
-              <div
-                className={cn(
-                  `w-12 h-12 ${stat.bg} ${stat.color} flex items-center justify-center transition-transform group-hover:scale-110`,
-                  STYLE_CONFIG.iconRadius,
-                )}
-              >
-                {stat.icon}
-              </div>
-              <div>
-                <Typography
-                  variant="body5"
-                  className="font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  {stat.label}
-                </Typography>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <Typography variant="h2" className="font-black">
-                    {stat.value}
-                  </Typography>
-                  <Typography
-                    variant="body5"
-                    className="text-muted-foreground font-medium"
-                  >
-                    {stat.subValue}
-                  </Typography>
-                </div>
-              </div>
-            </div>
-            <div
-              className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full ${stat.bg} blur-2xl opacity-50 transition-opacity group-hover:opacity-80`}
-            />
-          </div>
-        ))}
       </div>
 
       {/* Tabs for Round 1 and Round 2 */}
@@ -483,6 +517,8 @@ export function UserResultDetailClient({
                     unattemptedCount={attempt.unattempted_count}
                     typingStats={attempt.typing_stats}
                     activeDurationSeconds={attempt.active_duration_seconds}
+                    overallGrade={attempt.overall_grade}
+                    interviewDate={attempt.started_at}
                   />
                 ))}
               </div>

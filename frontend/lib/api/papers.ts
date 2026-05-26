@@ -49,13 +49,6 @@ export const papersApi = {
     });
   },
 
-  deletePaper: async (id: number, options?: ApiRequestOptions) => {
-    return api.delete<void>(ENDPOINTS.PAPERS.DELETE(id), {
-      silentSuccess: true,
-      ...options,
-    });
-  },
-
   togglePaperStatus: async (
     id: number,
     is_active: boolean,

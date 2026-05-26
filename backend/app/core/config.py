@@ -16,6 +16,9 @@ class Settings:
     HF_TOKEN = os.getenv("HF_TOKEN")
     AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", 4000))
 
+    REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     MEDIA_ROOT = os.path.join(BASE_DIR, "images")
     UPLOAD_DIR = MEDIA_ROOT

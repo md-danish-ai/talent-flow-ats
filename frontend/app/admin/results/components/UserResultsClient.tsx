@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, HelpCircle, LayoutGrid, List } from "lucide-react";
+import { Users, LayoutGrid, List } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -152,7 +152,11 @@ export function UserResultsClient() {
   };
 
   return (
-    <PageContainer className="space-y-8">
+    <PageContainer className="space-y-4">
+      <ResultStatusLegend
+        title="Round 1 Results"
+        subtitle="Detailed interview results and performance metrics for all candidates."
+      />
       <MainCard
         title={
           <div className="flex items-center gap-3">
@@ -160,16 +164,6 @@ export function UserResultsClient() {
               <Users size={18} />
             </div>
             <span>Round 1 Results</span>
-            <Tooltip
-              content={<ResultStatusLegend compact />}
-              side="right"
-              className="p-0 border-0 bg-transparent shadow-none"
-            >
-              <HelpCircle
-                size={14}
-                className="text-slate-400 hover:text-brand-primary transition-colors cursor-help"
-              />
-            </Tooltip>
           </div>
         }
         className="mb-6 flex flex-col"

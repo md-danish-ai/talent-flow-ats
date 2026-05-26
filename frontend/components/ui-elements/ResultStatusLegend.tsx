@@ -3,6 +3,8 @@
 import React from "react";
 import { cn } from "@lib/utils";
 import { Badge, BadgeColor } from "@components/ui-elements/Badge";
+import { Avatar } from "@components/ui-elements/Avatar";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 interface StatusLegendHeaderProps {
   title?: string;
@@ -29,25 +31,23 @@ const LegendItem = ({
       "flex flex-col transition-all",
       compact
         ? "gap-1 p-2 border-b border-slate-100 dark:border-white/10 last:border-0"
-        : "gap-2 p-3 rounded-xl",
+        : cn("gap-1.5 p-2", STYLE_CONFIG.innerCardRadius),
     )}
   >
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <div className="relative shrink-0">
-        <div
-          className={cn(
-            "rounded-lg bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center font-bold text-brand-primary",
-            compact ? "w-7 h-7 text-[8px]" : "w-9 h-9 text-[10px]",
-          )}
-        >
-          RD
-        </div>
+        <Avatar
+          name="R D"
+          variant="brand"
+          size="sm"
+          className={compact ? "w-7 h-7" : ""}
+        />
         <span
           className={cn(
             "absolute border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
             compact
-              ? "-bottom-0.5 -right-0.5 w-2.5 h-2.5 border-1"
-              : "-bottom-0.5 -right-0.5 w-3 h-3",
+              ? "-bottom-0.5 -right-0.5 w-2 h-2 border-1"
+              : "-bottom-0.5 -right-0.5 w-2.5 h-2.5",
             dotColor,
           )}
         />
@@ -56,21 +56,13 @@ const LegendItem = ({
       <div className="flex flex-col">
         <span
           className={cn(
-            "font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none",
-            compact ? "text-[9px] mb-0.5" : "text-[11px] mb-1",
+            "font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none mb-1",
+            compact ? "text-[8px]" : "text-[10px]",
           )}
         >
           {label}
         </span>
-        <Badge
-          variant="outline"
-          color={badgeColor}
-          shape="square"
-          className={cn(
-            "font-bold py-0 px-1.5 w-fit",
-            compact ? "text-[7px] h-3.5" : "text-[9px] h-4",
-          )}
-        >
+        <Badge variant="outline" color={badgeColor} shape="square">
           {label}
         </Badge>
       </div>
@@ -78,7 +70,7 @@ const LegendItem = ({
     <p
       className={cn(
         "text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic opacity-70",
-        compact ? "text-[10px]" : "text-[10px]",
+        compact ? "text-[8px]" : "text-[9px]",
       )}
     >
       {description}
@@ -132,7 +124,7 @@ export function ResultStatusLegend({
 
   if (compact) {
     return (
-      <div className="flex flex-col w-[280px] p-2 bg-white dark:bg-slate-900/95 rounded-xl shadow-2xl border border-slate-200 dark:border-white/10">
+      <div className="flex flex-col w-[240px] p-2 bg-white dark:bg-slate-900/95 rounded-xl shadow-2xl border border-slate-200 dark:border-white/10">
         {statuses.map((status) => (
           <LegendItem key={status.label} {...status} compact={true} />
         ))}
@@ -141,18 +133,23 @@ export function ResultStatusLegend({
   }
 
   return (
-    <div className="relative w-full mb-8 rounded-2xl overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all">
-      <div className="relative p-6 md:p-8 flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-8 bg-brand-primary rounded-full shadow-[0_0_12px_rgba(249,99,49,0.4)]" />
-              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+    <div
+      className={cn(
+        "relative w-full mb-4 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
+      <div className="relative p-4 md:p-5 flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
                 {title}
               </h1>
             </div>
             {subtitle && (
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm ml-4 uppercase tracking-wider opacity-80">
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] ml-3 uppercase tracking-wider opacity-80">
                 {subtitle}
               </p>
             )}

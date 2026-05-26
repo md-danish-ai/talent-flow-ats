@@ -13,6 +13,3 @@ class DepartmentService:
 
     def update(self, department_id: int, data):
         return repository.update(department_id, data)
-
-    def delete(self, department_id: int):
-        return repository.delete(department_id)

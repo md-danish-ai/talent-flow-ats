@@ -111,22 +111,12 @@ export async function getUsersByRole(
 // PUT /auth/toggle-status/{user_id} - Toggle user's active status
 export async function toggleUserStatus(
   userId: number,
+  isActive: boolean,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ id: number; is_active: boolean }> {
   return api.put<{ id: number; is_active: boolean }>(
     ENDPOINTS.AUTH.TOGGLE_STATUS(userId),
-    {},
-    { ...options, silentSuccess: true },
-  );
-}
-
-// DELETE /auth/delete/{user_id} - Delete a user
-export async function deleteUser(
-  userId: number,
-  options?: Pick<ApiRequestOptions, "cookies">,
-): Promise<{ id: number; message: string }> {
-  return api.delete<{ id: number; message: string }>(
-    ENDPOINTS.AUTH.DELETE_USER(userId),
+    { is_active: isActive },
     { ...options, silentSuccess: true },
   );
 }

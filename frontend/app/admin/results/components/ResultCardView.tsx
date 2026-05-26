@@ -33,7 +33,13 @@ export function ResultCardView({ items }: ResultCardViewProps) {
               title={item.username || "Anonymous Candidate"}
               avatarContent={item.username?.[0]?.toUpperCase() || "A"}
               identityIcon={User2}
-              status={latest?.status || "not_started"}
+              status={
+                latest?.status === "started"
+                  ? "started"
+                  : item.process_status === "ready"
+                    ? "not_started"
+                    : latest?.status || "not_started"
+              }
               subtitle={
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
                   <div className="flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">

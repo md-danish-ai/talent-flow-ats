@@ -53,14 +53,3 @@ def update(
 ):
     data = service.update(classification_id, payload)
     return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
-
-
-@router.delete(
-    "/remove-classification/{classification_id}",
-    dependencies=[Depends(require_roles(["admin"]))],
-)
-def delete(
-    classification_id: int,
-):
-    data = service.delete(classification_id)
-    return api_response(StatusCode.OK, ResponseMessage.DELETED, data=data)
