@@ -1,3 +1,46 @@
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 deltet all
+[PM2][ERROR] Command not found
+
+usage: pm2 [options] <command>
+
+pm2 -h, --help             all available commands and options
+pm2 examples               display pm2 usage examples
+pm2 <command> -h           help on a specific command
+
+Access pm2 files in ~/.pm2
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 delete all
+[PM2] Applying action deleteProcessId on app [all](ids: [ 0 ])
+[PM2] [all](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 start npm --name "frontend" -- start
+[PM2] Starting C:\PROGRAM FILES\NODEJS\NPM.CMD in fork_mode (1 instance)
+[PM2] Done.
+[PM2][ERROR] Script not found: D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend\start
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 delete all
+[PM2] Applying action deleteProcessId on app [all](ids: [ 0 ])
+[PM2] [frontend](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 start .\ecosystem.config.js
+[PM2][WARN] Applications frontend not running, starting...
+[PM2] App [frontend] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ frontend           │ fork     │ 1    │ stopped   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 status
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ frontend           │ fork     │ 15   │ errored   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend>
+
+
 PS D:\New ArcInterview - Talent-flow-ATS\talent-flow-ats\frontend> pm2 start npm --name "frontend" -- start
 [PM2] Starting C:\PROGRAM FILES\NODEJS\NPM.CMD in fork_mode (1 instance)
 [PM2] Done.
