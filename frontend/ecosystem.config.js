@@ -2,8 +2,9 @@ module.exports = {
   apps: [
     {
       name: "frontend",
-      script: "cmd",
-      args: "/c npm run start",
+      script: "npm",
+      args: "run start",
+      shell: true,
       env: {
         NODE_ENV: "production",
       }
