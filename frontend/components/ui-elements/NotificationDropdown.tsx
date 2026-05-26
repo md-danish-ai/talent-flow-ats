@@ -107,8 +107,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {notifications.map((notif: NotificationItem) => (
                     <div
                       key={notif.id}
-                      className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${!notif.is_read ? "bg-brand-primary/5" : ""
-                        }`}
+                      className={`p-4 transition-colors hover:bg-muted/50 w-full text-left cursor-pointer ${
+                        !notif.is_read ? "bg-brand-primary/5" : ""
+                      }`}
                       onClick={async () => {
                         if (!notif.is_read) {
                           try {
@@ -217,12 +218,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                               notif.title?.toLowerCase().includes("duplicate")
                                 ? "text-amber-500 dark:text-amber-400"
                                 : notif.title
-                                  ?.toLowerCase()
-                                  .includes("evaluation")
+                                      ?.toLowerCase()
+                                      .includes("evaluation")
                                   ? "text-emerald-500 dark:text-emerald-400"
                                   : notif.title
-                                    ?.toLowerCase()
-                                    .includes("unassigned")
+                                        ?.toLowerCase()
+                                        .includes("unassigned")
                                     ? "text-red-500 dark:text-red-400"
                                     : ""
                             }

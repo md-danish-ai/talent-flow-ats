@@ -38,8 +38,6 @@ import {
   RotateCcw,
   BookOpenCheck,
   Calendar,
-  ShieldCheck,
-  ShieldAlert,
 } from "lucide-react";
 import { Switch } from "@components/ui-elements/Switch";
 import { toggleUserStatus } from "@lib/api/auth";

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@lib/toast"; // Assuming react-hot-toast is used
-import { api } from "@lib/api";
 
 export const useRealtimeNotifications = (
   userId: string | number | null,

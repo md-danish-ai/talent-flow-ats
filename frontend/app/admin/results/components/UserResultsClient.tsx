@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, HelpCircle, LayoutGrid, List } from "lucide-react";
+import { Users, LayoutGrid, List } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // PM2 starter script — plain CommonJS Node.js file, not part of the Next.js app
+    "start.js",
   ]),
 ]);
 
