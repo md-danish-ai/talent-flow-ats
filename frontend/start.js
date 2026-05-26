@@ -6,7 +6,14 @@
 const { spawn } = require("child_process");
 const path = require("path");
 
-const nextBin = path.join(__dirname, "node_modules", "next", "dist", "bin", "next");
+const nextBin = path.join(
+  __dirname,
+  "node_modules",
+  "next",
+  "dist",
+  "bin",
+  "next",
+);
 
 const child = spawn(process.execPath, [nextBin, "start"], {
   stdio: "inherit",

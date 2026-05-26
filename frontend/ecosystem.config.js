@@ -6,7 +6,7 @@ module.exports = {
       interpreter: "node",
       env: {
         NODE_ENV: "production",
-      }
-    }
-  ]
+      },
+    },
+  ],
 };

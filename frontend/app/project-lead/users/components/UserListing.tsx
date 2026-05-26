@@ -29,7 +29,7 @@ import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { EvaluationModal } from "./EvaluationModal";
-import { cn, getGradeConfig } from "@lib/utils";
+import { getGradeConfig } from "@lib/utils";
 import { EvaluationTask } from "@types";
 
 import { SearchInput } from "@components/ui-elements/SearchInput";

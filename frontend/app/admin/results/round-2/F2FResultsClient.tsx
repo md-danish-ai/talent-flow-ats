@@ -22,11 +22,8 @@ import {
   ShieldCheck,
   UserMinus,
   UserCheck,
-  AlertCircle,
-  RefreshCw,
   Loader2,
   AlertTriangle,
-  RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
 import { evaluationsApi } from "@lib/api/evaluations";
@@ -36,7 +33,6 @@ import { Skeleton } from "@components/ui-elements/Skeleton";
 import { toast } from "@lib/toast";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
-import { Typography } from "@components/ui-elements/Typography";
 
 import { Pagination } from "@components/ui-elements/Pagination";
 import { ListingIcons } from "@components/ui-elements/ListingHeaderActions";
