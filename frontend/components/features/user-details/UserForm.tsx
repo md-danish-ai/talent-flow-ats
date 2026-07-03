@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { Button } from "@components/ui-elements/Button";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { toast } from "@lib/toast";
 
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -52,28 +53,37 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
     };
   }) as FamilyMember[];
 
-  // Filter out extra blank rows (beyond the first 4) that were saved previously
+  // Filter out completely blank rows that are beyond the first 2 rows
   return sanitized.filter((m, index) => {
-    if (index < 4) return true;
-    const isBlank = !m.name && !m.occupation && !m.dependent && !m.relation;
+    if (index < 2) return true;
+    const isBlank = !m.relation && !m.name && !m.occupation && !m.dependent && (!m.relationLabel || m.relationLabel === "Spouse" || m.relationLabel === "Brother/Sister");
     return !isBlank;
   });
 };
 
 const sanitizeEducation = (arr: unknown[]): Education[] => {
-  return (arr || []).map((i) => {
-    const item = i as Record<string, unknown>;
+  const sanitized = (arr || []).map((e) => {
+    const item = e as Record<string, unknown>;
     return {
       ...item,
+      type: sanitizeStr(item.type),
       school: sanitizeStr(item.school),
       board: sanitizeStr(item.board),
-      year: sanitizeStr(item.year),
+      startYear: sanitizeStr(item.startYear),
+      endYear: sanitizeStr(item.endYear),
       division: sanitizeStr(item.division),
       percentage: sanitizeStr(item.percentage),
       medium: sanitizeStr(item.medium),
       details: sanitizeStr(item.details),
     };
   }) as Education[];
+
+  // Filter out extra blank rows (beyond the first 2) that were saved previously
+  return sanitized.filter((e, index) => {
+    if (index < 2) return true;
+    const isBlank = !e.school && !e.board && !e.startYear && !e.endYear && !e.division && !e.percentage && !e.medium && !e.details && (!e.type || e.type === "Post Graduation" || e.type === "Additional Qualification" || e.type === "Diploma" || e.type === "Graduation");
+    return !isBlank;
+  });
 };
 
 const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
@@ -240,7 +250,17 @@ export function UserForm({
             workedBefore: value.workedBefore,
             source: value.source,
           },
-          educationDetails: value.education,
+          educationDetails: value.education.map((edu, index) => ({
+            id: edu.id ?? index + 1,
+            type: edu.type,
+            school: edu.school,
+            board: edu.board,
+            year: `${edu.startYear}-${edu.endYear}`,
+            division: edu.division,
+            percentage: edu.percentage,
+            medium: edu.medium,
+            details: edu.details,
+          })),
           workExperienceDetails: value.workExp,
           otherDetails: {
             serviceCommitment: value.serviceCommitment,
@@ -427,6 +447,7 @@ export function UserForm({
 
     if (!isStepValid(currentStep)) {
       setIncompleteSteps([currentStep]);
+      toast.error("Please fill all required fields correctly.");
       return;
     }
 
