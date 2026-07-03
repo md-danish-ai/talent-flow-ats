@@ -21,9 +21,19 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <Typography variant="h1" weight="bold" className="text-center mb-6">
-        6. Other Details
-      </Typography>
+      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
+        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
+          7
+        </div>
+        <div>
+          <Typography variant="h3" className="mb-0">
+            Other Details
+          </Typography>
+          <Typography variant="body2" color="muted">
+            Provide additional employment details.
+          </Typography>
+        </div>
+      </div>
       <div className="mt-2 max-w-2xl mx-auto space-y-6">
         <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold text-muted-foreground mb-3 block">

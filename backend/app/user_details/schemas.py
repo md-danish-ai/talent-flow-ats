@@ -25,6 +25,18 @@ class PersonalDetailsSchema(BaseModel):
     sameAddress: bool
 
 
+class AdditionalPersonalDetailsSchema(BaseModel):
+    bloodGroup: Optional[str] = ""
+    aadhaarNo: str
+    nameAsPerAadhaar: str
+    panNo: str
+    nameAsPerPan: str
+    religion: str
+    category: str
+    maritalStatus: str
+    anniversaryDate: Optional[str] = ""
+
+
 class FamilyDetailSchema(BaseModel):
     id: int
     relationLabel: str
@@ -74,6 +86,7 @@ class UserDetailsSchema(BaseModel):
     is_submitted: bool = False
     is_interview_submitted: bool = False
     personalDetails: PersonalDetailsSchema
+    additionalPersonalDetails: Optional[AdditionalPersonalDetailsSchema] = None
     familyDetails: List[FamilyDetailSchema]
     sourceOfInformation: SourceOfInformationSchema
     educationDetails: List[EducationDetailSchema]

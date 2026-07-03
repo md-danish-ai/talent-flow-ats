@@ -20,6 +20,7 @@ import {
 import { stepFields, defaultPersonalDetailsValues } from "./constants";
 
 import { PersonalDetailsStep } from "./timeline/PersonalDetailsStep";
+import { PersonalDetailsPart2Step } from "./timeline/PersonalDetailsPart2Step";
 import { FamilyDetailsStep } from "./timeline/FamilyDetailsStep";
 import { SourceOfInformationStep } from "./timeline/SourceOfInformationStep";
 import { EducationDetailsStep } from "./timeline/EducationDetailsStep";
@@ -141,7 +142,7 @@ export function UserForm({
   const [touchedSteps, setTouchedSteps] = useState<number[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [incompleteSteps, setIncompleteSteps] = useState<number[]>([]);
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   // For User Portal (Self)
   const { data: selfDetails, isLoading: isLoadingSelf } = useUserDetails();
@@ -182,6 +183,18 @@ export function UserForm({
         permanentCity: p.permanentCity || "",
         permanentPincode: p.permanentPincode || "",
         sameAddress: Boolean(p.sameAddress),
+        bloodGroup: initialData.additionalPersonalDetails?.bloodGroup || "",
+        aadhaarNo: initialData.additionalPersonalDetails?.aadhaarNo || "",
+        nameAsPerAadhaar:
+          initialData.additionalPersonalDetails?.nameAsPerAadhaar || "",
+        panNo: initialData.additionalPersonalDetails?.panNo || "",
+        nameAsPerPan: initialData.additionalPersonalDetails?.nameAsPerPan || "",
+        religion: initialData.additionalPersonalDetails?.religion || "",
+        category: initialData.additionalPersonalDetails?.category || "",
+        maritalStatus:
+          initialData.additionalPersonalDetails?.maritalStatus || "",
+        anniversaryDate:
+          initialData.additionalPersonalDetails?.anniversaryDate || "",
         family:
           initialData.familyDetails?.length > 0
             ? sanitizeFamily(initialData.familyDetails)
@@ -264,6 +277,17 @@ export function UserForm({
               ? value.presentPincode
               : value.permanentPincode,
             sameAddress: value.sameAddress,
+          },
+          additionalPersonalDetails: {
+            bloodGroup: value.bloodGroup,
+            aadhaarNo: value.aadhaarNo,
+            nameAsPerAadhaar: value.nameAsPerAadhaar,
+            panNo: value.panNo,
+            nameAsPerPan: value.nameAsPerPan,
+            religion: value.religion,
+            category: value.category,
+            maritalStatus: value.maritalStatus,
+            anniversaryDate: value.anniversaryDate,
           },
           familyDetails: value.family,
           sourceOfInformation: {
@@ -380,6 +404,17 @@ export function UserForm({
         permanentCity: p.permanentCity || "",
         permanentPincode: p.permanentPincode || "",
         sameAddress: Boolean(p.sameAddress),
+        bloodGroup: details.additionalPersonalDetails?.bloodGroup || "",
+        aadhaarNo: details.additionalPersonalDetails?.aadhaarNo || "",
+        nameAsPerAadhaar:
+          details.additionalPersonalDetails?.nameAsPerAadhaar || "",
+        panNo: details.additionalPersonalDetails?.panNo || "",
+        nameAsPerPan: details.additionalPersonalDetails?.nameAsPerPan || "",
+        religion: details.additionalPersonalDetails?.religion || "",
+        category: details.additionalPersonalDetails?.category || "",
+        maritalStatus: details.additionalPersonalDetails?.maritalStatus || "",
+        anniversaryDate:
+          details.additionalPersonalDetails?.anniversaryDate || "",
         family:
           details.familyDetails?.length > 0
             ? sanitizeFamily(details.familyDetails)
@@ -545,19 +580,22 @@ export function UserForm({
                 <PersonalDetailsStep key="step1" form={form} />
               )}
               {currentStep === 2 && (
-                <FamilyDetailsStep key="step2" form={form} />
+                <PersonalDetailsPart2Step key="step2" form={form} />
               )}
               {currentStep === 3 && (
-                <SourceOfInformationStep key="step3" form={form} />
+                <FamilyDetailsStep key="step3" form={form} />
               )}
               {currentStep === 4 && (
-                <EducationDetailsStep key="step4" form={form} />
+                <SourceOfInformationStep key="step4" form={form} />
               )}
               {currentStep === 5 && (
-                <WorkExperienceStep key="step5" form={form} />
+                <EducationDetailsStep key="step5" form={form} />
               )}
               {currentStep === 6 && (
-                <OtherDetailsStep key="step6" form={form} />
+                <WorkExperienceStep key="step6" form={form} />
+              )}
+              {currentStep === 7 && (
+                <OtherDetailsStep key="step7" form={form} />
               )}
             </AnimatePresence>
           </div>

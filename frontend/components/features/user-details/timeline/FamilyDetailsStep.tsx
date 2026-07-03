@@ -52,10 +52,18 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="relative flex items-center justify-center mb-6">
-        <Typography variant="h1" weight="bold">
-          2. Family Details
-        </Typography>
+      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
+        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
+          3
+        </div>
+        <div>
+          <Typography variant="h3" className="mb-0">
+            Family Details
+          </Typography>
+          <Typography variant="body2" color="muted">
+            Provide information about your family members.
+          </Typography>
+        </div>
       </div>
       <div className="flex flex-col gap-4 mt-4">
         <form.Subscribe selector={(state) => [state.values.family]}>

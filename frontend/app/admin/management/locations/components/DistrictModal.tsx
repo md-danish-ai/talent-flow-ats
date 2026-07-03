@@ -76,11 +76,7 @@ export function DistrictModal({
           <label className="block text-sm font-medium mb-1 text-muted-foreground">
             State
           </label>
-          <Input
-            value={stateName}
-            disabled
-            className="bg-muted/50"
-          />
+          <Input value={stateName} disabled className="bg-muted/50" />
         </div>
 
         <div>

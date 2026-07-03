@@ -82,10 +82,18 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="relative flex items-center justify-center mb-6">
-        <Typography variant="h1" weight="bold">
-          4. Education Details
-        </Typography>
+      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
+        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
+          5
+        </div>
+        <div>
+          <Typography variant="h3" className="mb-0">
+            Education Details
+          </Typography>
+          <Typography variant="body2" color="muted">
+            Provide details about your academic qualifications.
+          </Typography>
+        </div>
       </div>
       <div className="flex flex-col gap-4 mt-4">
         <form.Subscribe selector={(state) => [state.values.education]}>

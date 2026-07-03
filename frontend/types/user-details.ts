@@ -21,6 +21,18 @@ export interface PersonalDetails {
   sameAddress: boolean;
 }
 
+export interface AdditionalPersonalDetails {
+  bloodGroup: string;
+  aadhaarNo: string;
+  nameAsPerAadhaar: string;
+  panNo: string;
+  nameAsPerPan: string;
+  religion: string;
+  category: string;
+  maritalStatus: string;
+  anniversaryDate?: string;
+}
+
 export interface FamilyDetail {
   id: number;
   relationLabel: string;
@@ -76,6 +88,7 @@ export interface UserDetails {
   test_level_name?: string;
   department_id?: number | string;
   personalDetails: PersonalDetails;
+  additionalPersonalDetails?: AdditionalPersonalDetails;
   familyDetails: FamilyDetail[];
   sourceOfInformation: SourceOfInformation;
   educationDetails: EducationDetail[];

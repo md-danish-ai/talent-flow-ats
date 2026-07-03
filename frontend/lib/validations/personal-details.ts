@@ -61,6 +61,15 @@ export interface PersonalDetailsFormValues {
   permanentCity: string;
   permanentPincode: string;
   sameAddress: boolean;
+  bloodGroup: string;
+  aadhaarNo: string;
+  nameAsPerAadhaar: string;
+  panNo: string;
+  nameAsPerPan: string;
+  religion: string;
+  category: string;
+  maritalStatus: string;
+  anniversaryDate: string;
   family: FamilyMember[];
   interviewedBefore: string;
   workedBefore: string;
@@ -296,28 +305,47 @@ export const workExperienceSchema = z
     }
   });
 
+export const bloodGroupSchema = z.string().min(1, "Blood Group is required");
+export const aadhaarNoSchema = z
+  .string()
+  .min(1, "Aadhaar Card Number is required")
+  .length(12, "Aadhaar number must be exactly 12 digits")
+  .regex(/^\d{12}$/, "Aadhaar number must contain only digits");
+export const nameAsPerAadhaarSchema = z
+  .string()
+  .min(1, "Name as per Aadhaar is required");
+export const panNoSchema = z
+  .string()
+  .min(1, "PAN Card Number is required")
+  .length(10, "PAN number must be exactly 10 characters")
+  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (e.g., ABCDE1234F)");
+export const nameAsPerPanSchema = z
+  .string()
+  .min(1, "Name as per PAN is required");
+export const religionSchema = z.string().min(1, "Religion is required");
+export const categorySchema = z.string().min(1, "Category is required");
+export const maritalStatusSchema = z
+  .string()
+  .min(1, "Marital Status is required");
+
 const baseSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
-  dob: z.string().min(1, "Date of birth is required"),
-  primaryMobile: z
-    .string()
-    .length(10, "Mobile number must be exactly 10 digits.")
-    .regex(/^\d+$/, "Mobile number must contain only digits."),
+  dob: z.string().min(1, "Date of Birth is required"),
+  primaryMobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
   alternateMobile: z
     .string()
-    .length(10, "Alternate mobile must be exactly 10 digits.")
-    .regex(/^\d+$/, "Alternate mobile must contain only digits.")
+    .regex(/^\d{10}$/, "Invalid alternate mobile number")
     .optional()
     .or(z.literal("")),
-  email: z.string().email("Valid email address is required"),
+  email: z.string().email("Invalid email address"),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
   presentState: z.string().min(1, "State is required"),
   presentDistrict: z.string().min(1, "District is required"),
   presentCity: z.string().min(1, "City is required"),
-  presentPincode: z.string().min(6, "Pincode must be 6 digits"),
+  presentPincode: z.string().min(1, "Pincode is required"),
   permanentAddressLine1: z.string().default(""),
   permanentAddressLine2: z.string().default(""),
   permanentState: z.string().default(""),
@@ -325,6 +353,15 @@ const baseSchema = z.object({
   permanentCity: z.string().default(""),
   permanentPincode: z.string().default(""),
   sameAddress: z.boolean(),
+  bloodGroup: bloodGroupSchema,
+  aadhaarNo: aadhaarNoSchema,
+  nameAsPerAadhaar: nameAsPerAadhaarSchema,
+  panNo: panNoSchema,
+  nameAsPerPan: nameAsPerPanSchema,
+  religion: religionSchema,
+  category: categorySchema,
+  maritalStatus: maritalStatusSchema,
+  anniversaryDate: z.string().default(""),
   family: z.array(familyMemberSchema),
   interviewedBefore: z.string().min(1, "Please select an option"),
   workedBefore: z.string().min(1, "Please select an option"),
@@ -399,6 +436,18 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
           });
         }
       }
+    }
+
+    // Logic for Anniversary Date
+    if (
+      data.maritalStatus === "Married" &&
+      data.anniversaryDate.trim() === ""
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Anniversary Date is required when Married",
+        path: ["anniversaryDate"],
+      });
     }
   }) as any;
 

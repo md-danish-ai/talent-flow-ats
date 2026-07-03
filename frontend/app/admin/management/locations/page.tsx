@@ -83,17 +83,19 @@ export default function LocationsManagementPage() {
                       setSelectedStateId(state.id);
                       setDistrictSearch("");
                     }}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all ${selectedStateId === state.id
-                      ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20"
-                      : "hover:bg-muted text-foreground border border-transparent"
-                      }`}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all ${
+                      selectedStateId === state.id
+                        ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20"
+                        : "hover:bg-muted text-foreground border border-transparent"
+                    }`}
                   >
                     <span className="font-medium text-sm">{state.name}</span>
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full ${selectedStateId === state.id
-                        ? "bg-brand-primary/20"
-                        : "bg-muted-foreground/10 text-muted-foreground"
-                        }`}
+                      className={`text-[10px] px-2 py-0.5 rounded-full ${
+                        selectedStateId === state.id
+                          ? "bg-brand-primary/20"
+                          : "bg-muted-foreground/10 text-muted-foreground"
+                      }`}
                     >
                       {state.code}
                     </span>
@@ -114,7 +116,12 @@ export default function LocationsManagementPage() {
                     <MapPin className="w-4 h-4 text-brand-primary" />
                     Districts ({districts.length})
                   </h2>
-                  <Button size="sm" onClick={handleAddDistrict} color="primary" className="h-8">
+                  <Button
+                    size="sm"
+                    onClick={handleAddDistrict}
+                    color="primary"
+                    className="h-8"
+                  >
                     <Plus className="w-4 h-4 mr-1" /> Add
                   </Button>
                 </div>
@@ -176,7 +183,9 @@ export default function LocationsManagementPage() {
                     setEditingDistrict(null);
                   }}
                   stateId={selectedStateId}
-                  stateName={states.find(s => s.id === selectedStateId)?.name || ""}
+                  stateName={
+                    states.find((s) => s.id === selectedStateId)?.name || ""
+                  }
                   existingDistrict={editingDistrict}
                 />
               )}

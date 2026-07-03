@@ -19,6 +19,7 @@ class UserDetail(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
 
     personal_details = Column(JSONB, nullable=True)
+    additional_personal_details = Column(JSONB, nullable=True)
     family_details = Column(JSONB, nullable=True)
     source_of_information = Column(JSONB, nullable=True)
     education_details = Column(JSONB, nullable=True)

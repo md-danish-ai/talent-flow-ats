@@ -14,6 +14,11 @@ async def save_user_details(user_id: int, data: UserDetailsSchema):
     try:
         # Convert Pydantic models to JSON-serializable dicts
         personal_details = data.personalDetails.model_dump()
+        additional_personal_details = (
+            data.additionalPersonalDetails.model_dump()
+            if data.additionalPersonalDetails
+            else None
+        )
         family_details = [item.model_dump() for item in data.familyDetails]
         source_of_information = data.sourceOfInformation.model_dump()
         education_details = [item.model_dump() for item in data.educationDetails]
@@ -34,6 +39,7 @@ async def save_user_details(user_id: int, data: UserDetailsSchema):
         upsert_stmt = insert(UserDetail).values(
             user_id=int(user_id),
             personal_details=personal_details,
+            additional_personal_details=additional_personal_details,
             family_details=family_details,
             source_of_information=source_of_information,
             education_details=education_details,
@@ -46,6 +52,7 @@ async def save_user_details(user_id: int, data: UserDetailsSchema):
             index_elements=["user_id"],
             set_={
                 "personal_details": upsert_stmt.excluded.personal_details,
+                "additional_personal_details": upsert_stmt.excluded.additional_personal_details,
                 "family_details": upsert_stmt.excluded.family_details,
                 "source_of_information": upsert_stmt.excluded.source_of_information,
                 "education_details": upsert_stmt.excluded.education_details,
@@ -108,6 +115,7 @@ def get_user_details(user_id: int):
             "department_id": user.department_id,
             "department_name": user.department.name if user.department else None,
             "personalDetails": details.personal_details,
+            "additionalPersonalDetails": details.additional_personal_details,
             "familyDetails": details.family_details,
             "sourceOfInformation": details.source_of_information,
             "educationDetails": details.education_details,
