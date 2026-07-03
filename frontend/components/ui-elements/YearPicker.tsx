@@ -194,8 +194,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
             onClick={toggleDropdown}
             disabled={disabled}
             className={cn(
-              "flex items-center gap-2 px-3 bg-slate-50 dark:bg-slate-900 border rounded-md transition-all h-full w-full hover:border-brand-primary/30 group",
-              "border-transparent bg-transparent hover:border-border focus:bg-input py-2",
+              "flex items-center gap-2 px-3 bg-slate-50 dark:bg-slate-900 border border-input rounded-md transition-all h-full w-full hover:border-brand-primary/30 group",
               isOpen && "ring-1 ring-brand-primary border-brand-primary",
               error && "border-red-500 ring-1 ring-red-500/20",
               disabled && "opacity-50 cursor-not-allowed bg-muted/20 hover:border-transparent",
