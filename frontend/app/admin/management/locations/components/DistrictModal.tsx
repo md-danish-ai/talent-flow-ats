@@ -11,6 +11,7 @@ interface DistrictModalProps {
   isOpen: boolean;
   onClose: () => void;
   stateId: number;
+  stateName: string;
   existingDistrict?: District | null;
 }
 
@@ -18,6 +19,7 @@ export function DistrictModal({
   isOpen,
   onClose,
   stateId,
+  stateName,
   existingDistrict,
 }: DistrictModalProps) {
   const [name, setName] = useState("");
@@ -70,6 +72,17 @@ export function DistrictModal({
       className="!max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1 text-muted-foreground">
+            State
+          </label>
+          <Input
+            value={stateName}
+            disabled
+            className="bg-muted/50"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">
             District Name <span className="text-destructive">*</span>

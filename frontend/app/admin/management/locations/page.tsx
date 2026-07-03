@@ -160,7 +160,7 @@ export default function LocationsManagementPage() {
                         </div>
                         <button
                           onClick={() => handleEditDistrict(district)}
-                          className="p-1.5 text-muted-foreground hover:text-brand-primary opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-muted shrink-0"
+                          className="p-1.5 text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 transition-colors rounded-md shrink-0"
                           title="Edit District"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -178,6 +178,7 @@ export default function LocationsManagementPage() {
                     setEditingDistrict(null);
                   }}
                   stateId={selectedStateId}
+                  stateName={states.find(s => s.id === selectedStateId)?.name || ""}
                   existingDistrict={editingDistrict}
                 />
               )}
