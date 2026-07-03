@@ -4,7 +4,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { DatePicker } from "@components/ui-elements/DatePicker";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Briefcase } from "lucide-react";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import {
@@ -39,19 +39,6 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
-        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
-          6
-        </div>
-        <div>
-          <Typography variant="h3" className="mb-0">
-            Work Experience
-          </Typography>
-          <Typography variant="body2" color="muted">
-            Provide details of your past employment.
-          </Typography>
-        </div>
-      </div>
       <Typography
         variant="body2"
         className="text-center text-brand-success font-semibold mb-5 "

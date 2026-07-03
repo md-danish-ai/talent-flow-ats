@@ -3,8 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Button } from "@components/ui-elements/Button";
+import { Typography } from "@components/ui-elements/Typography";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  User,
+  Fingerprint,
+  Users,
+  Info,
+  GraduationCap,
+  Briefcase,
+  FileText,
+} from "lucide-react";
 import { toast } from "@lib/toast";
 
 import { useForm } from "@tanstack/react-form";
@@ -28,6 +39,44 @@ import { WorkExperienceStep } from "./timeline/WorkExperienceStep";
 import { OtherDetailsStep } from "./timeline/OtherDetailsStep";
 import { Timeline } from "./components/Timeline";
 import { SubmitModal } from "./components/SubmitModal";
+
+const STEP_CONTENT = [
+  {
+    icon: User,
+    title: "Personal Details",
+    subtitle: "Provide your basic contact and demographic information.",
+  },
+  {
+    icon: Fingerprint,
+    title: "Additional Personal Details",
+    subtitle: "Provide your demographic and identity information.",
+  },
+  {
+    icon: Users,
+    title: "Family Details",
+    subtitle: "Provide details about your family members.",
+  },
+  {
+    icon: Info,
+    title: "Source of Information",
+    subtitle: "Let us know how you heard about this opportunity.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Education Details",
+    subtitle: "Provide details about your academic qualifications.",
+  },
+  {
+    icon: Briefcase,
+    title: "Work Experience",
+    subtitle: "Provide details of your employment history.",
+  },
+  {
+    icon: FileText,
+    title: "Other Details",
+    subtitle: "Provide additional employment details.",
+  },
+];
 
 import {
   useUserDetails,
@@ -565,7 +614,7 @@ export function UserForm({
         touchedSteps={touchedSteps}
         isStepValid={isStepValid}
       />
-      <div className="bg-card rounded-[2rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-border border-t-[6px] border-t-brand-primary flex flex-col relative overflow-hidden">
+      <div className="bg-card/90 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex flex-col relative overflow-hidden">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -574,6 +623,75 @@ export function UserForm({
           }}
           className="flex-1 w-full flex flex-col"
         >
+          {/* Static Header with Title on Left, Buttons on Right */}
+          <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
+                {(() => {
+                  const CurrentIcon =
+                    STEP_CONTENT[currentStep - 1]?.icon || User;
+                  return <CurrentIcon size={24} strokeWidth={2.5} />;
+                })()}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  className="mb-1 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent font-bold"
+                >
+                  {STEP_CONTENT[currentStep - 1]?.title}
+                </Typography>
+                <Typography variant="body2" color="muted">
+                  {STEP_CONTENT[currentStep - 1]?.subtitle}
+                </Typography>
+              </div>
+            </div>
+
+            {/* Next/Previous Buttons on Right */}
+            <div className="flex items-center gap-3">
+              {currentStep > 1 && (
+                <Button
+                  type="button"
+                  color="primary"
+                  size="md"
+                  animate="scale"
+                  shadow
+                  disabled={isSaving}
+                  onClick={handlePrev}
+                  className="px-6 text-sm font-semibold group flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                  PREVIOUS
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                color="primary"
+                size="md"
+                animate="scale"
+                shadow
+                disabled={isSaving}
+                onClick={handleNext}
+                className="px-6 text-sm font-semibold group flex items-center gap-2"
+              >
+                {isSaving ? (
+                  "SAVING..."
+                ) : currentStep === totalSteps ? (
+                  isAdmin ? (
+                    "UPDATE USER DETAILS"
+                  ) : (
+                    "SUBMIT DETAILS"
+                  )
+                ) : (
+                  <>
+                    NEXT
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
           <div className="flex-1 w-full relative">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
@@ -598,50 +716,6 @@ export function UserForm({
                 <OtherDetailsStep key="step7" form={form} />
               )}
             </AnimatePresence>
-          </div>
-
-          <div className="mt-8 flex justify-end items-center gap-3">
-            {currentStep > 1 && (
-              <Button
-                type="button"
-                color="primary"
-                size="md"
-                animate="scale"
-                shadow
-                disabled={isSaving}
-                onClick={handlePrev}
-                className="px-8 text-sm font-semibold group flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                PREVIOUS
-              </Button>
-            )}
-
-            <Button
-              type="button"
-              color="primary"
-              size="md"
-              animate="scale"
-              shadow
-              disabled={isSaving}
-              onClick={handleNext}
-              className="px-8 text-sm font-semibold group flex items-center gap-2"
-            >
-              {isSaving ? (
-                "SAVING..."
-              ) : currentStep === totalSteps ? (
-                isAdmin ? (
-                  "UPDATE USER DETAILS"
-                ) : (
-                  "SUBMIT DETAILS"
-                )
-              ) : (
-                <>
-                  NEXT
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
-            </Button>
           </div>
         </form>
       </div>

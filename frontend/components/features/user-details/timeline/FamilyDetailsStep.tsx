@@ -4,7 +4,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Users } from "lucide-react";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 
@@ -52,19 +52,6 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
-        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
-          3
-        </div>
-        <div>
-          <Typography variant="h3" className="mb-0">
-            Family Details
-          </Typography>
-          <Typography variant="body2" color="muted">
-            Provide information about your family members.
-          </Typography>
-        </div>
-      </div>
       <div className="flex flex-col gap-4 mt-4">
         <form.Subscribe selector={(state) => [state.values.family]}>
           {([family]) =>

@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Fingerprint } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
@@ -67,20 +68,6 @@ export function PersonalDetailsPart2Step({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      <div className="flex items-center gap-3 border-b border-border pb-4">
-        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
-          2
-        </div>
-        <div>
-          <Typography variant="h3" className="mb-0">
-            Additional Personal Details
-          </Typography>
-          <Typography variant="body2" color="muted">
-            Provide your demographic and identity information.
-          </Typography>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Identity Details */}
         <div className="space-y-4 md:col-span-2">

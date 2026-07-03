@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Info } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Radio } from "@components/ui-elements/Radio";
 import { Checkbox } from "@components/ui-elements/Checkbox";
@@ -18,19 +19,6 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="flex items-center gap-3 border-b border-border pb-4 mb-6">
-        <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold">
-          4
-        </div>
-        <div>
-          <Typography variant="h3" className="mb-0">
-            Source of Information
-          </Typography>
-          <Typography variant="body2" color="muted">
-            Let us know how you heard about this opportunity.
-          </Typography>
-        </div>
-      </div>
       <div className="space-y-4 mt-2 max-w-2xl mx-auto">
         <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
