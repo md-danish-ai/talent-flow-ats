@@ -99,14 +99,10 @@ export const familyMemberSchema = z
       data.occupation.trim() !== "" ||
       data.dependent === "Yes" ||
       data.dependent === "No" ||
-      (data.relationLabel === "Brother/Sister" &&
-        (data.relation === "Brother" || data.relation === "Sister"));
+      (!isMandatory && data.relation.trim() !== "");
 
     if (isMandatory || hasDetails) {
-      if (
-        data.relationLabel === "Brother/Sister" &&
-        data.relation.trim() === ""
-      ) {
+      if (!isMandatory && data.relation.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Relation required",

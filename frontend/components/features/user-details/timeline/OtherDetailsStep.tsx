@@ -24,7 +24,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
       <Typography
         variant="h1"
         weight="bold"
-        className="text-center mb-6 text-gray-800"
+        className="text-center mb-6"
       >
         6. Other Details
       </Typography>

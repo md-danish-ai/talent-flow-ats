@@ -21,7 +21,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
       <Typography
         variant="h1"
         weight="bold"
-        className="text-center mb-6 text-gray-800"
+        className="text-center mb-6"
       >
         3. Source of Information
       </Typography>

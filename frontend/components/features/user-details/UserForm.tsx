@@ -41,7 +41,7 @@ const sanitizeStr = (val: unknown, fallback = ""): string => {
 };
 
 const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
-  return (familyArr || []).map((m) => {
+  const sanitized = (familyArr || []).map((m) => {
     const member = m as Record<string, unknown>;
     return {
       ...member,
@@ -51,6 +51,13 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
       dependent: sanitizeStr(member.dependent),
     };
   }) as FamilyMember[];
+
+  // Filter out extra blank rows (beyond the first 4) that were saved previously
+  return sanitized.filter((m, index) => {
+    if (index < 4) return true;
+    const isBlank = !m.name && !m.occupation && !m.dependent && !m.relation;
+    return !isBlank;
+  });
 };
 
 const sanitizeEducation = (arr: unknown[]): Education[] => {
