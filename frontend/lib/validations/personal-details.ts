@@ -32,6 +32,7 @@ export interface Education {
 export interface WorkExperience {
   id: number;
   company: string;
+  employmentType: string;
   designation: string;
   joinDate: string;
   relieveDate: string;
@@ -232,6 +233,7 @@ export const workExperienceSchema = z
   .object({
     id: z.number(),
     company: z.string().default(""),
+    employmentType: z.string().default(""),
     designation: z.string().default(""),
     joinDate: z.string().default(""),
     relieveDate: z.string().default(""),
@@ -243,6 +245,12 @@ export const workExperienceSchema = z
     const hasCompany = data.company.trim() !== "";
 
     if (hasCompany) {
+      if (data.employmentType.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Employment type required",
+          path: ["employmentType"],
+        });
       if (data.designation.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -273,6 +281,18 @@ export const workExperienceSchema = z
           message: "Salary required",
           path: ["salary"],
         });
+        
+      if (data.joinDate.trim() !== "" && data.relieveDate.trim() !== "") {
+        const join = new Date(data.joinDate);
+        const relieve = new Date(data.relieveDate);
+        if (relieve < join) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be >= Join Date",
+            path: ["relieveDate"],
+          });
+        }
+      }
     }
   });
 

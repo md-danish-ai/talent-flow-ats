@@ -66,7 +66,12 @@ def upgrade() -> None:
         ('blood_group', 'O_POSITIVE', 'O+', true),
         ('blood_group', 'O_NEGATIVE', 'O-', true),
         ('blood_group', 'AB_POSITIVE', 'AB+', true),
-        ('blood_group', 'AB_NEGATIVE', 'AB-', true)\n        ON CONFLICT (type, code) DO UPDATE SET name = EXCLUDED.name, is_active = EXCLUDED.is_active;
+        ('blood_group', 'AB_NEGATIVE', 'AB-', true),
+        ('employment_type', 'FULL_TIME', 'Full-time', true),
+        ('employment_type', 'PART_TIME', 'Part-time', true),
+        ('employment_type', 'CONTRACT', 'Contract', true),
+        ('employment_type', 'INTERNSHIP', 'Internship', true)
+        ON CONFLICT (type, code) DO UPDATE SET name = EXCLUDED.name, is_active = EXCLUDED.is_active;
     ''')
 
 
@@ -77,7 +82,7 @@ def downgrade() -> None:
     op.execute('''
         DELETE FROM classifications WHERE type IN (
             'family_relation', 'marital_status', 'education_category', 
-            'language', 'religion', 'social_category', 'blood_group'
+            'language', 'religion', 'social_category', 'blood_group', 'employment_type'
         );
     ''')
 

@@ -92,6 +92,7 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
     return {
       ...item,
       company: sanitizeStr(item.company),
+      employmentType: sanitizeStr(item.employmentType),
       designation: sanitizeStr(item.designation),
       joinDate: sanitizeStr(item.joinDate),
       relieveDate: sanitizeStr(item.relieveDate),

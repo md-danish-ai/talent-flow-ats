@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, Plus, ShieldCheck, Users, Heart, Droplet, GraduationCap, Globe, BookOpen, Tag } from "lucide-react";
+import { Layers, Gauge, Plus, ShieldCheck, Users, Heart, Droplet, GraduationCap, Globe, BookOpen, Tag, Briefcase } from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 
@@ -114,6 +114,7 @@ export function TypesManagementClient({
     { label: "Language", value: "language", icon: <Globe size={18} /> },
     { label: "Religion", value: "religion", icon: <BookOpen size={18} /> },
     { label: "Category", value: "social_category", icon: <Tag size={18} /> },
+    { label: "Employment Type", value: "employment_type", icon: <Briefcase size={18} /> },
   ];
 
   const handleTabChange = (newTab: string) => {

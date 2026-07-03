@@ -35,6 +35,7 @@ interface DatePickerProps {
   error?: boolean;
   disablePast?: boolean;
   disableFuture?: boolean;
+  minDate?: string | Date;
   placement?: "top" | "bottom";
 }
 
@@ -50,6 +51,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       error,
       disablePast = false,
       disableFuture = false,
+      minDate,
       placement = "bottom",
     },
     ref,
@@ -267,8 +269,9 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                   const isPast = startOfDay(day) < startOfDay(new Date());
                   const isFutureDay =
                     disableFuture && startOfDay(day) > startOfDay(new Date());
+                  const isBeforeMinDate = minDate && startOfDay(day) <= startOfDay(new Date(minDate));
                   const isDisabled =
-                    !isCurrentMonth || (disablePast && isPast) || isFutureDay;
+                    !isCurrentMonth || (disablePast && isPast) || isFutureDay || !!isBeforeMinDate;
 
                   return (
                     <button
@@ -309,11 +312,14 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                   disableFuture &&
                   currentMonth.getFullYear() === currentYearNum &&
                   index > new Date().getMonth();
+                const isBeforeMinMonth = minDate && (currentMonth.getFullYear() < new Date(minDate).getFullYear() || (currentMonth.getFullYear() === new Date(minDate).getFullYear() && index < new Date(minDate).getMonth()));
+                const isDisabledMonth = isFutureMonth || !!isBeforeMinMonth;
+                
                 return (
                   <button
                     key={month}
                     type="button"
-                    disabled={isFutureMonth}
+                    disabled={isDisabledMonth}
                     onClick={() => {
                       const updatedDate = new Date(currentMonth);
                       updatedDate.setMonth(index);
@@ -324,7 +330,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                       "py-3 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all border border-transparent",
                       isSelected
                         ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20 scale-105"
-                        : isFutureMonth
+                        : isDisabledMonth
                           ? "text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40 hover:bg-transparent"
                           : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
                     )}
@@ -340,10 +346,12 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
             <div className="grid grid-cols-4 gap-2 py-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 animate-in fade-in zoom-in-95 duration-200">
               {years.map((year) => {
                 const isSelected = currentMonth.getFullYear() === year;
+                const isBeforeMinYear = minDate && year < new Date(minDate).getFullYear();
                 return (
                   <button
                     key={year}
                     type="button"
+                    disabled={!!isBeforeMinYear}
                     onClick={() => {
                       const updatedDate = new Date(currentMonth);
                       updatedDate.setFullYear(year);
@@ -354,7 +362,9 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                       "py-2 text-[11px] font-bold rounded-lg transition-all border border-transparent",
                       isSelected
                         ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20 scale-105"
-                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
+                        : isBeforeMinYear
+                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40 hover:bg-transparent"
+                          : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300",
                     )}
                   >
                     {year}
