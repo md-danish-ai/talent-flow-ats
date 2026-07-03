@@ -53,6 +53,161 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
         >
           2. Family Details
         </Typography>
+      </div>
+      <div className="flex flex-col gap-4 mt-4">
+        <form.Subscribe selector={(state) => [state.values.family]}>
+          {([family]) =>
+            family.map((member: FamilyMember, index: number) => {
+              const isMandatory = member.relationLabel === "Father" || member.relationLabel === "Mother";
+              const isRelationSelected = Boolean(
+                member.relation &&
+                  (isLoadingRelations ||
+                    relationOptions.some(
+                      (opt: { id: string | number }) => String(opt.id) === String(member.relation)
+                    ))
+              );
+              
+              const selectedLabel = relationOptions.find((opt: { id: string | number; label: string }) => String(opt.id) === String(member.relation))?.label;
+              const headerTitle = selectedLabel ? `Family Member - ${selectedLabel}` : `Family Member ${index + 1}`;
+
+              return (
+                <div
+                  key={member.id}
+                  className="p-5 border border-border rounded-xl bg-card shadow-sm relative group transition-all hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                    <h4 className="text-sm font-semibold text-brand-primary uppercase tracking-wider">
+                      {headerTitle} {isMandatory && <span className="text-red-500">*</span>}
+                    </h4>
+                    <Tooltip
+                      content={isMandatory ? "Required Row" : "Delete Row"}
+                      side="top"
+                    >
+                      <button
+                        type="button"
+                        disabled={isMandatory}
+                        onClick={() => {
+                          form.removeFieldValue("family", index);
+                        }}
+                        className="p-2 hover:bg-red-50 rounded-full text-muted-foreground hover:text-red-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {/* Relation */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Relation</label>
+                      <form.Field name={`family[${index}].relation`}>
+                        {(field) => (
+                          <div className="flex flex-col relative">
+                            <SelectDropdown
+                              options={relationOptions}
+                              value={field.state.value}
+                              onChange={(val) => field.handleChange(val as string)}
+                              placeholder="Select Relation"
+                              isLoading={isLoadingRelations}
+                              disabled={isMandatory}
+                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                            />
+                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                              <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    {/* Name */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Name</label>
+                      <form.Field name={`family[${index}].name`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              onBlur={field.handleBlur}
+                              disabled={!isRelationSelected}
+                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              placeholder="Enter name..."
+                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                            />
+                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                              <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    {/* Occupation */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Occupation</label>
+                      <form.Field name={`family[${index}].occupation`}>
+                        {(field) => (
+                          <div className="flex flex-col">
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              onBlur={field.handleBlur}
+                              disabled={!isRelationSelected}
+                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              placeholder="Enter occupation..."
+                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                            />
+                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                              <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    {/* Dependent Y/N */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Dependent Y/N</label>
+                      <form.Field name={`family[${index}].dependent`}>
+                        {(field) => (
+                          <div className="flex flex-row items-center gap-4 h-10 relative">
+                            <Radio
+                              label="Yes"
+                              checked={field.state.value === "Yes"}
+                              onChange={() => field.handleChange("Yes")}
+                              disabled={!isRelationSelected}
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                            <Radio
+                              label="No"
+                              checked={field.state.value === "No"}
+                              onChange={() => field.handleChange("No")}
+                              disabled={!isRelationSelected}
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                              <p className="text-[10px] text-red-500 mt-1 absolute -bottom-4">
+                                {getErrorMessage(field.state.meta.errors[0])}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          }
+        </form.Subscribe>
+
         <button
           type="button"
           onClick={() => {
@@ -65,198 +220,11 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
               dependent: "",
             });
           }}
-          className="absolute right-0 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 mt-2 w-fit text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          Add More
+          Add More Family Member
         </button>
-      </div>
-      <div className="overflow-x-auto rounded-xl ring-1 ring-border mt-2 shadow-sm bg-card">
-        <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead>
-            <tr className="bg-brand-primary text-white">
-              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
-                Relation
-              </th>
-              <th className="p-3 font-semibold text-sm w-[32%] border-r border-[#ffffff40]">
-                Name
-              </th>
-              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
-                Occupation
-              </th>
-              <th className="p-3 font-semibold text-sm w-[15%] border-r border-[#ffffff40] text-center">
-                Dependent Y/N
-              </th>
-              <th className="p-3 font-semibold text-sm w-[7%] text-center">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-card divide-y divide-border">
-            <form.Subscribe selector={(state) => [state.values.family]}>
-              {([family]) =>
-                family.map((member: FamilyMember, index: number) => {
-                  const isMandatory = member.relationLabel === "Father" || member.relationLabel === "Mother";
-                  const isRelationSelected = Boolean(
-                    member.relation &&
-                      (isLoadingRelations ||
-                        relationOptions.some(
-                          (opt: { id: string | number }) => String(opt.id) === String(member.relation)
-                        ))
-                  );
-                  return (
-                  <tr
-                    key={member.id}
-                    className="hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="p-3 border-r border-border">
-                        <form.Field name={`family[${index}].relation`}>
-                          {(field) => (
-                            <div className="flex flex-col relative">
-                              <SelectDropdown
-                                options={relationOptions}
-                                value={field.state.value}
-                                onChange={(val) => field.handleChange(val as string)}
-                                placeholder="Select Relation"
-                                isLoading={isLoadingRelations}
-                                disabled={isMandatory}
-                                error={
-                                  field.state.meta.isTouched &&
-                                  field.state.meta.errors.length > 0
-                                }
-                              />
-                              {isMandatory && (
-                                <span className="text-red-500 absolute -top-1 -right-1 text-xs">*</span>
-                              )}
-                              {field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0 && (
-                                  <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                    {getErrorMessage(field.state.meta.errors[0])}
-                                  </p>
-                                )}
-                            </div>
-                          )}
-                        </form.Field>
-                    </td>
-                    <td className="p-2 border-r border-border">
-                      <form.Field name={`family[${index}].name`}>
-                        {(field) => (
-                          <div className="flex flex-col">
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              disabled={!isRelationSelected}
-                              className="h-10 border-transparent bg-transparent hover:border-border focus:bg-input disabled:opacity-50 disabled:cursor-not-allowed"
-                              placeholder="Enter name..."
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </td>
-                    <td className="p-2 border-r border-border">
-                      <form.Field name={`family[${index}].occupation`}>
-                        {(field) => (
-                          <div className="flex flex-col">
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              disabled={!isRelationSelected}
-                              className="h-10 border-transparent bg-transparent hover:border-border focus:bg-input disabled:opacity-50 disabled:cursor-not-allowed"
-                              placeholder="Enter occupation..."
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </td>
-                    <td className="p-3 text-center border-r border-border">
-                      <div className="flex justify-center gap-4">
-                        <form.Field name={`family[${index}].dependent`}>
-                          {(field) => (
-                            <>
-                              <Radio
-                                label="Yes"
-                                checked={field.state.value === "Yes"}
-                                onChange={() => field.handleChange("Yes")}
-                                disabled={!isRelationSelected}
-                                className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              />
-                              <Radio
-                                label="No"
-                                checked={field.state.value === "No"}
-                                onChange={() => field.handleChange("No")}
-                                disabled={!isRelationSelected}
-                                className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              />
-                              {field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0 && (
-                                  <p className="text-[10px] text-red-500 mt-1">
-                                    {getErrorMessage(
-                                      field.state.meta.errors[0],
-                                    )}
-                                  </p>
-                                )}
-                            </>
-                          )}
-                        </form.Field>
-                      </div>
-                    </td>
-                    <td className="p-2 text-center">
-                      <Tooltip
-                        content={
-                          member.relationLabel === "Father" ||
-                          member.relationLabel === "Mother"
-                            ? "Required Row"
-                            : "Delete Row"
-                        }
-                        side="top"
-                      >
-                        <button
-                          type="button"
-                          disabled={
-                            member.relationLabel === "Father" ||
-                            member.relationLabel === "Mother"
-                          }
-                          onClick={() => {
-                            form.removeFieldValue("family", index);
-                          }}
-                          className="p-2 hover:bg-red-50 rounded-full text-muted-foreground hover:text-red-500 transition-all group inline-flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                        >
-                          <Trash2 className="w-4 h-4 group-hover:scale-110" />
-                        </button>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              })}
-            </form.Subscribe>
-          </tbody>
-        </table>
       </div>
     </motion.div>
   );
