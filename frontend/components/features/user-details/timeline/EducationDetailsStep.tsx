@@ -181,7 +181,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. Science, Arts, B.Tech..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -206,7 +206,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter school/college..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -231,7 +231,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter board/university..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -257,7 +257,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               placeholder="Start"
                               disabled={!isEducationSelected}
                               minYear={prevEndYear}
-                              className="h-10 w-full"
+                              className="w-full"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
                             {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
@@ -282,7 +282,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               placeholder="End"
                               disabled={!isEducationSelected}
                               minYear={item.startYear ? parseInt(item.startYear, 10) + 1 : undefined}
-                              className="h-10 w-full"
+                              className="w-full"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
                             {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
@@ -306,7 +306,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. 1st, 2nd"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -331,7 +331,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. 85%"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -358,7 +358,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               placeholder="Select Medium"
                               isLoading={isLoadingLanguage}
                               disabled={!isEducationSelected}
-                              className="h-10 w-full"
+                              className="w-full"
                               wrapperClassName="w-full"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />

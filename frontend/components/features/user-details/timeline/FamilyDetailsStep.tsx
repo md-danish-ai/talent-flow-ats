@@ -133,7 +133,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isRelationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter name..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -158,7 +158,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
                               disabled={!isRelationSelected}
-                              className="h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter occupation..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -177,7 +177,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">Dependent Y/N</label>
                       <form.Field name={`family[${index}].dependent`}>
                         {(field) => (
-                          <div className="flex flex-row items-center gap-4 h-10 relative">
+                          <div className="flex flex-row items-center gap-4 relative">
                             <Radio
                               label="Yes"
                               checked={field.state.value === "Yes"}

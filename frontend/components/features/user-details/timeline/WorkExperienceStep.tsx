@@ -103,7 +103,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
-                              className="h-10"
+                              className=""
                               placeholder="Enter company name..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -151,7 +151,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
-                              className="h-10"
+                              className=""
                               placeholder="Enter designation..."
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -175,7 +175,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(date) => field.handleChange(date)}
                               onBlur={field.handleBlur}
-                              className="h-10 w-full text-sm"
+                              className="w-full text-sm"
                               placeholder="Select Date"
                               disableFuture
                               minDate={prevRelieveDate}
@@ -201,7 +201,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(date) => field.handleChange(date)}
                               onBlur={field.handleBlur}
-                              className="h-10 w-full text-sm"
+                              className="w-full text-sm"
                               placeholder="Select Date"
                               disableFuture
                               minDate={exp.joinDate}
@@ -227,7 +227,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
-                              className="h-10"
+                              className=""
                               placeholder="e.g. Better Opportunity"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />
@@ -251,7 +251,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               value={field.state.value}
                               onChange={(e) => field.handleChange(e.target.value)}
                               onBlur={field.handleBlur}
-                              className="h-10"
+                              className=""
                               placeholder="e.g. 5,00,000"
                               error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                             />

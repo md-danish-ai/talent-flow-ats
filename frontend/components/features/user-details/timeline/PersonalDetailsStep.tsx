@@ -14,6 +14,9 @@ export interface PersonalDetailsStepProps {
 }
 
 export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
+  const maxDobDate = new Date();
+  maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
+  maxDobDate.setDate(maxDobDate.getDate() - 1);
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -205,6 +208,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     field.state.meta.errors.length > 0
                   }
                   disableFuture={true}
+                  maxDate={maxDobDate}
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
