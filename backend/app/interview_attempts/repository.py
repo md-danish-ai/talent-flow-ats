@@ -991,7 +991,7 @@ def get_admin_user_results(
             user_detail = (
                 db.query(UserDetail).filter(UserDetail.user_id == user.id).first()
             )
- 
+
             results.append(
                 {
                     "user_id": user.id,

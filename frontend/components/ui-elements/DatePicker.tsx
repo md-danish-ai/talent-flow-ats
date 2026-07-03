@@ -271,10 +271,16 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                   const isPast = startOfDay(day) < startOfDay(new Date());
                   const isFutureDay =
                     disableFuture && startOfDay(day) > startOfDay(new Date());
-                  const isBeforeMinDate = minDate && startOfDay(day) <= startOfDay(new Date(minDate));
-                  const isAfterMaxDate = maxDate && startOfDay(day) > startOfDay(new Date(maxDate));
+                  const isBeforeMinDate =
+                    minDate && startOfDay(day) <= startOfDay(new Date(minDate));
+                  const isAfterMaxDate =
+                    maxDate && startOfDay(day) > startOfDay(new Date(maxDate));
                   const isDisabled =
-                    !isCurrentMonth || (disablePast && isPast) || isFutureDay || !!isBeforeMinDate || !!isAfterMaxDate;
+                    !isCurrentMonth ||
+                    (disablePast && isPast) ||
+                    isFutureDay ||
+                    !!isBeforeMinDate ||
+                    !!isAfterMaxDate;
 
                   return (
                     <button
@@ -315,10 +321,23 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                   disableFuture &&
                   currentMonth.getFullYear() === currentYearNum &&
                   index > new Date().getMonth();
-                const isBeforeMinMonth = minDate && (currentMonth.getFullYear() < new Date(minDate).getFullYear() || (currentMonth.getFullYear() === new Date(minDate).getFullYear() && index < new Date(minDate).getMonth()));
-                const isAfterMaxMonth = maxDate && (currentMonth.getFullYear() > new Date(maxDate).getFullYear() || (currentMonth.getFullYear() === new Date(maxDate).getFullYear() && index > new Date(maxDate).getMonth()));
-                const isDisabledMonth = isFutureMonth || !!isBeforeMinMonth || !!isAfterMaxMonth;
-                
+                const isBeforeMinMonth =
+                  minDate &&
+                  (currentMonth.getFullYear() <
+                    new Date(minDate).getFullYear() ||
+                    (currentMonth.getFullYear() ===
+                      new Date(minDate).getFullYear() &&
+                      index < new Date(minDate).getMonth()));
+                const isAfterMaxMonth =
+                  maxDate &&
+                  (currentMonth.getFullYear() >
+                    new Date(maxDate).getFullYear() ||
+                    (currentMonth.getFullYear() ===
+                      new Date(maxDate).getFullYear() &&
+                      index > new Date(maxDate).getMonth()));
+                const isDisabledMonth =
+                  isFutureMonth || !!isBeforeMinMonth || !!isAfterMaxMonth;
+
                 return (
                   <button
                     key={month}
@@ -350,8 +369,10 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
             <div className="grid grid-cols-4 gap-2 py-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 animate-in fade-in zoom-in-95 duration-200">
               {years.map((year) => {
                 const isSelected = currentMonth.getFullYear() === year;
-                const isBeforeMinYear = minDate && year < new Date(minDate).getFullYear();
-                const isAfterMaxYear = maxDate && year > new Date(maxDate).getFullYear();
+                const isBeforeMinYear =
+                  minDate && year < new Date(minDate).getFullYear();
+                const isAfterMaxYear =
+                  maxDate && year > new Date(maxDate).getFullYear();
                 const isDisabledYear = !!isBeforeMinYear || !!isAfterMaxYear;
                 return (
                   <button

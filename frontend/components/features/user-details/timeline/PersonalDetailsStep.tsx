@@ -14,7 +14,15 @@ export interface PersonalDetailsStepProps {
   form: PersonalDetailsForm;
 }
 
-const StateDropdown = ({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) => {
+const StateDropdown = ({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  error?: boolean;
+}) => {
   const { data: states = [], isLoading } = useStates();
   return (
     <SelectDropdown
@@ -28,7 +36,19 @@ const StateDropdown = ({ value, onChange, error }: { value: string; onChange: (v
   );
 };
 
-const DistrictDropdown = ({ stateName, value, onChange, error, disabled }: { stateName: string; value: string; onChange: (v: string) => void; error?: boolean; disabled?: boolean }) => {
+const DistrictDropdown = ({
+  stateName,
+  value,
+  onChange,
+  error,
+  disabled,
+}: {
+  stateName: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: boolean;
+  disabled?: boolean;
+}) => {
   const { data: states = [] } = useStates();
   const stateId = states.find((s) => s.name === stateName)?.id || null;
   const { data: districts = [], isLoading } = useDistrictsByState(stateId);
@@ -42,7 +62,9 @@ const DistrictDropdown = ({ stateName, value, onChange, error, disabled }: { sta
       placeholder="Select district"
       error={error}
       disabled={disabled || !stateId}
-      emptyMessage={!stateId ? "Please select a state first" : "No districts available"}
+      emptyMessage={
+        !stateId ? "Please select a state first" : "No districts available"
+      }
     />
   );
 };
@@ -57,11 +79,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-6"
-      >
+      <Typography variant="h1" weight="bold" className="text-center mb-6">
         1. Personal Details
       </Typography>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -333,7 +351,9 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
 
               <form.Field name="presentDistrict">
                 {(field) => (
-                  <form.Subscribe selector={(state) => [state.values.presentState]}>
+                  <form.Subscribe
+                    selector={(state) => [state.values.presentState]}
+                  >
                     {([presentState]) => (
                       <div>
                         <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -505,7 +525,9 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     </form.Field>
                     <form.Field name="permanentDistrict">
                       {(field) => (
-                        <form.Subscribe selector={(state) => [state.values.permanentState]}>
+                        <form.Subscribe
+                          selector={(state) => [state.values.permanentState]}
+                        >
                           {([permanentState]) => (
                             <div>
                               <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -523,7 +545,9 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                               {field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0 && (
                                   <p className="text-xs text-red-500 mt-1">
-                                    {getErrorMessage(field.state.meta.errors[0])}
+                                    {getErrorMessage(
+                                      field.state.meta.errors[0],
+                                    )}
                                   </p>
                                 )}
                             </div>

@@ -36,7 +36,7 @@ export const locationsApi = {
   createDistrict: async (stateId: number, data: DistrictCreate) => {
     const response = await api.post<District>(
       `/api/v1/locations/states/${stateId}/districts`,
-      data
+      data,
     );
     return response;
   },
@@ -44,7 +44,7 @@ export const locationsApi = {
   updateDistrict: async (districtId: number, data: DistrictUpdate) => {
     const response = await api.put<District>(
       `/api/v1/locations/districts/${districtId}`,
-      data
+      data,
     );
     return response;
   },

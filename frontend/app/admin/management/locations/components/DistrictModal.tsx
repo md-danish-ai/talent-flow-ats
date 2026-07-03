@@ -33,7 +33,7 @@ export function DistrictModal({
   if (isOpen !== prevIsOpen || existingDistrict?.id !== prevDistrictId) {
     setPrevIsOpen(isOpen);
     setPrevDistrictId(existingDistrict?.id);
-    setName(isOpen ? (existingDistrict?.name || "") : "");
+    setName(isOpen ? existingDistrict?.name || "" : "");
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +48,7 @@ export function DistrictModal({
           onSuccess: () => {
             onClose();
           },
-        }
+        },
       );
     } else {
       createDistrict.mutate(
@@ -57,7 +57,7 @@ export function DistrictModal({
           onSuccess: () => {
             onClose();
           },
-        }
+        },
       );
     }
   };
@@ -94,7 +94,11 @@ export function DistrictModal({
           >
             Cancel
           </Button>
-          <Button color="primary" type="submit" disabled={isPending || !name.trim()}>
+          <Button
+            color="primary"
+            type="submit"
+            disabled={isPending || !name.trim()}
+          >
             {isPending ? "Saving..." : "Save"}
           </Button>
         </div>

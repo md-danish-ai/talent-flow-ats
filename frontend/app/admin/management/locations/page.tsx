@@ -16,7 +16,8 @@ export default function LocationsManagementPage() {
   const [editingDistrict, setEditingDistrict] = useState<District | null>(null);
 
   const { data: states = [], isLoading: isStatesLoading } = useStates();
-  const { data: districts = [], isLoading: isDistrictsLoading } = useDistrictsByState(selectedStateId);
+  const { data: districts = [], isLoading: isDistrictsLoading } =
+    useDistrictsByState(selectedStateId);
 
   const handleAddDistrict = () => {
     setEditingDistrict(null);
@@ -29,11 +30,11 @@ export default function LocationsManagementPage() {
   };
 
   const filteredStates = states.filter((state) =>
-    state.name.toLowerCase().includes(stateSearch.toLowerCase())
+    state.name.toLowerCase().includes(stateSearch.toLowerCase()),
   );
 
   const filteredDistricts = districts.filter((district) =>
-    district.name.toLowerCase().includes(districtSearch.toLowerCase())
+    district.name.toLowerCase().includes(districtSearch.toLowerCase()),
   );
 
   return (
@@ -63,7 +64,7 @@ export default function LocationsManagementPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
             {isStatesLoading ? (
               <div className="flex items-center justify-center h-40">
@@ -89,9 +90,13 @@ export default function LocationsManagementPage() {
                     }`}
                   >
                     <span className="font-medium text-sm">{state.name}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      selectedStateId === state.id ? "bg-brand-primary/20" : "bg-muted-foreground/10 text-muted-foreground"
-                    }`}>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full ${
+                        selectedStateId === state.id
+                          ? "bg-brand-primary/20"
+                          : "bg-muted-foreground/10 text-muted-foreground"
+                      }`}
+                    >
                       {state.code}
                     </span>
                   </button>
@@ -146,7 +151,10 @@ export default function LocationsManagementPage() {
                           <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0">
                             <MapPin className="w-4 h-4 text-brand-primary" />
                           </div>
-                          <span className="text-sm font-medium truncate" title={district.name}>
+                          <span
+                            className="text-sm font-medium truncate"
+                            title={district.name}
+                          >
                             {district.name}
                           </span>
                         </div>
@@ -179,7 +187,8 @@ export default function LocationsManagementPage() {
               <Map className="w-12 h-12 mb-4 opacity-20" />
               <p className="text-lg font-medium">No State Selected</p>
               <p className="text-sm opacity-70 max-w-md mt-1">
-                Please select a state from the left panel to view its corresponding districts.
+                Please select a state from the left panel to view its
+                corresponding districts.
               </p>
             </div>
           )}

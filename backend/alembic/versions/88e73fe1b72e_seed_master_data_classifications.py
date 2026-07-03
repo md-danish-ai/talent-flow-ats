@@ -1,4 +1,3 @@
-
 """seed_master_data_classifications
 
 Revision ID: 88e73fe1b72e
@@ -7,15 +6,15 @@ Create Date: 2026-07-03 11:11:01.590310
 Created By: md-danish-ai
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '88e73fe1b72e'
-down_revision: Union[str, Sequence[str], None] = '3edb2b743922'
+revision: str = "88e73fe1b72e"
+down_revision: Union[str, Sequence[str], None] = "3edb2b743922"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -23,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
 
-    op.execute('''
+    op.execute("""
         INSERT INTO classifications (type, code, name, is_active) VALUES
         ('family_relation', 'FATHER', 'Father', true),
         ('family_relation', 'MOTHER', 'Mother', true),
@@ -72,17 +71,15 @@ def upgrade() -> None:
         ('employment_type', 'CONTRACT', 'Contract', true),
         ('employment_type', 'INTERNSHIP', 'Internship', true)
         ON CONFLICT (type, code) DO UPDATE SET name = EXCLUDED.name, is_active = EXCLUDED.is_active;
-    ''')
-
+    """)
 
 
 def downgrade() -> None:
     """Downgrade schema."""
 
-    op.execute('''
+    op.execute("""
         DELETE FROM classifications WHERE type IN (
             'family_relation', 'marital_status', 'education_category', 
             'language', 'religion', 'social_category', 'blood_group', 'employment_type'
         );
-    ''')
-
+    """)

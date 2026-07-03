@@ -44,7 +44,9 @@ export function SelectDropdown({
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [actualPlacement, setActualPlacement] = useState<"top" | "bottom">(placement);
+  const [actualPlacement, setActualPlacement] = useState<"top" | "bottom">(
+    placement,
+  );
   const [coords, setCoords] = useState({
     top: 0,
     left: 0,
@@ -78,13 +80,21 @@ export function SelectDropdown({
   const updateCoords = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      
+
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
       // We assume max dropdown height is around 320px
-      if (placement === "bottom" && spaceBelow < 320 && spaceAbove > spaceBelow) {
+      if (
+        placement === "bottom" &&
+        spaceBelow < 320 &&
+        spaceAbove > spaceBelow
+      ) {
         setActualPlacement("top");
-      } else if (placement === "top" && spaceAbove < 320 && spaceBelow > spaceAbove) {
+      } else if (
+        placement === "top" &&
+        spaceAbove < 320 &&
+        spaceBelow > spaceAbove
+      ) {
         setActualPlacement("bottom");
       } else {
         setActualPlacement(placement);
@@ -149,7 +159,11 @@ export function SelectDropdown({
               scale: 0.98,
             }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: actualPlacement === "top" ? 4 : -4, scale: 0.98 }}
+            exit={{
+              opacity: 0,
+              y: actualPlacement === "top" ? 4 : -4,
+              scale: 0.98,
+            }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
               "overflow-hidden rounded-md border border-border bg-card p-1.5 shadow-2xl transition-colors",

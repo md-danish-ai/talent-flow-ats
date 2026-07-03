@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { locationsApi, State, District, DistrictCreate, DistrictUpdate } from "@lib/api/locations";
+import {
+  locationsApi,
+  State,
+  District,
+  DistrictCreate,
+  DistrictUpdate,
+} from "@lib/api/locations";
 import { toast } from "@lib/toast";
 
 export const useStates = () => {
@@ -26,8 +32,13 @@ export const useCreateDistrict = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ stateId, data }: { stateId: number; data: DistrictCreate }) =>
-      locationsApi.createDistrict(stateId, data),
+    mutationFn: ({
+      stateId,
+      data,
+    }: {
+      stateId: number;
+      data: DistrictCreate;
+    }) => locationsApi.createDistrict(stateId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["locations", "states", variables.stateId, "districts"],
@@ -43,8 +54,13 @@ export const useUpdateDistrict = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ districtId, data }: { districtId: number; data: DistrictUpdate }) =>
-      locationsApi.updateDistrict(districtId, data),
+    mutationFn: ({
+      districtId,
+      data,
+    }: {
+      districtId: number;
+      data: DistrictUpdate;
+    }) => locationsApi.updateDistrict(districtId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["locations", "states"],

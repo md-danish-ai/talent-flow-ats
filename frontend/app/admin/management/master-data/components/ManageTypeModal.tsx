@@ -45,17 +45,20 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
-    const typeLabel =
+  const typeLabel =
     type === "subject"
       ? "Subject"
       : type === "exam_level"
         ? "Level"
         : type === "interview_result"
           ? "Interview Result"
-          : type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-          
+          : type
+              .split("_")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+
   const nameLabel = "Name";
-          
+
   const placeholder =
     type === "subject"
       ? "e.g. Technical"
@@ -74,34 +77,34 @@ export const ManageTypeModal: React.FC<ManageTypeModalProps> = ({
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-            <Typography variant="body4" weight="semibold">
-              {nameLabel}
-            </Typography>
-            <Input
-              required
-              placeholder={placeholder}
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Typography variant="body4" weight="semibold">
-              Code
-            </Typography>
-            <Input
-              required
-              placeholder="e.g. TECH_01"
-              value={formData.code}
-              onChange={(e) =>
-                setFormData({ ...formData, code: e.target.value.toUpperCase() })
-              }
-              disabled={isLoading}
-            />
-          </div>
-        {(type === "subject" || type === "exam_level" || type === "interview_result") && (
+          <Typography variant="body4" weight="semibold">
+            {nameLabel}
+          </Typography>
+          <Input
+            required
+            placeholder={placeholder}
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            disabled={isLoading}
+          />
+        </div>
+        <div className="space-y-2">
+          <Typography variant="body4" weight="semibold">
+            Code
+          </Typography>
+          <Input
+            required
+            placeholder="e.g. TECH_01"
+            value={formData.code}
+            onChange={(e) =>
+              setFormData({ ...formData, code: e.target.value.toUpperCase() })
+            }
+            disabled={isLoading}
+          />
+        </div>
+        {(type === "subject" ||
+          type === "exam_level" ||
+          type === "interview_result") && (
           <div className="space-y-2">
             <Typography variant="body4" weight="semibold">
               Description

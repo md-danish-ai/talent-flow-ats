@@ -42,7 +42,7 @@ app.add_middleware(
         "http://192.168.136.5:3001",
         "http://interview.arcgate.in",
         "http://interview.arcgate.in:3000",
-        "http://interview.arcgate.in:3001"
+        "http://interview.arcgate.in:3001",
     ],
     allow_credentials=True,
     allow_methods=["*"],

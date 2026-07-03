@@ -4,7 +4,20 @@ import React, { useState, useMemo } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, Plus, ShieldCheck, Users, Heart, Droplet, GraduationCap, Globe, BookOpen, Tag, Briefcase } from "lucide-react";
+import {
+  Layers,
+  Gauge,
+  Plus,
+  ShieldCheck,
+  Users,
+  Heart,
+  Droplet,
+  GraduationCap,
+  Globe,
+  BookOpen,
+  Tag,
+  Briefcase,
+} from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 
@@ -106,15 +119,35 @@ export function TypesManagementClient({
   const tabs: TabItem[] = [
     { label: "Subjects", value: "subject", icon: <Layers size={18} /> },
     { label: "Exam Levels", value: "exam_level", icon: <Gauge size={18} /> },
-    { label: "Interview Results", value: "interview_result", icon: <ShieldCheck size={18} /> },
-    { label: "Family Relation", value: "family_relation", icon: <Users size={18} /> },
-    { label: "Marital Status", value: "marital_status", icon: <Heart size={18} /> },
+    {
+      label: "Interview Results",
+      value: "interview_result",
+      icon: <ShieldCheck size={18} />,
+    },
+    {
+      label: "Family Relation",
+      value: "family_relation",
+      icon: <Users size={18} />,
+    },
+    {
+      label: "Marital Status",
+      value: "marital_status",
+      icon: <Heart size={18} />,
+    },
     { label: "Blood Group", value: "blood_group", icon: <Droplet size={18} /> },
-    { label: "Education", value: "education_category", icon: <GraduationCap size={18} /> },
+    {
+      label: "Education",
+      value: "education_category",
+      icon: <GraduationCap size={18} />,
+    },
     { label: "Language", value: "language", icon: <Globe size={18} /> },
     { label: "Religion", value: "religion", icon: <BookOpen size={18} /> },
     { label: "Category", value: "social_category", icon: <Tag size={18} /> },
-    { label: "Employment Type", value: "employment_type", icon: <Briefcase size={18} /> },
+    {
+      label: "Employment Type",
+      value: "employment_type",
+      icon: <Briefcase size={18} />,
+    },
   ];
 
   const handleTabChange = (newTab: string) => {
@@ -213,7 +246,9 @@ export function TypesManagementClient({
               isLoading={isFetching}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
-              itemLabel={tabs.find((t) => t.value === activeTab)?.label || "Records"}
+              itemLabel={
+                tabs.find((t) => t.value === activeTab)?.label || "Records"
+              }
               onRefresh={refresh}
               onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
               isFilterOpen={isFilterOpen}
@@ -255,7 +290,7 @@ export function TypesManagementClient({
         <div
           className={cn(
             "flex-1 flex flex-col min-w-0 relative bg-background",
-            isFilterOpen && "border-r border-border/50"
+            isFilterOpen && "border-r border-border/50",
           )}
         >
           <ListingTransition
@@ -309,5 +344,4 @@ export function TypesManagementClient({
       />
     </PageContainer>
   );
-
 }

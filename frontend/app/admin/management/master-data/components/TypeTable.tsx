@@ -85,7 +85,10 @@ export function TypeTable({
 }: TypeTableProps) {
   const isSubject = activeTab === "subject";
   const isLevel = activeTab === "exam_level";
-  const hasDescription = activeTab === "subject" || activeTab === "exam_level" || activeTab === "interview_result";
+  const hasDescription =
+    activeTab === "subject" ||
+    activeTab === "exam_level" ||
+    activeTab === "interview_result";
   const colSpan = 5 + (hasDescription ? 1 : 0) + (isSubject ? 1 : 0);
 
   return (

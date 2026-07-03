@@ -18,11 +18,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-6"
-      >
+      <Typography variant="h1" weight="bold" className="text-center mb-6">
         3. Source of Information
       </Typography>
       <div className="space-y-4 mt-2 max-w-2xl mx-auto">

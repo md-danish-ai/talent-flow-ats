@@ -23,12 +23,14 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       type: "employment_type",
       is_active: true,
     });
-    
+
   const employmentTypeOptions = React.useMemo(() => {
-    return (employmentRes?.data || []).map((c: { name: string, code: string }) => ({
-      id: c.code,
-      label: c.name,
-    }));
+    return (employmentRes?.data || []).map(
+      (c: { name: string; code: string }) => ({
+        id: c.code,
+        label: c.name,
+      }),
+    );
   }, [employmentRes]);
 
   return (
@@ -37,11 +39,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-1 pb-1"
-      >
+      <Typography variant="h1" weight="bold" className="text-center mb-1 pb-1">
         5. Work Experience Details
       </Typography>
       <Typography
@@ -51,21 +49,26 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
         If you are fresher then no need to fill this form and click
         &quot;Next&quot; to continue
       </Typography>
-            <div className="flex flex-col gap-4 mt-4">
+      <div className="flex flex-col gap-4 mt-4">
         <form.Subscribe selector={(state) => [state.values.workExp]}>
           {([workExp]) =>
             workExp.map((exp: WorkExperience, index: number) => {
-              const headerTitle = exp.company ? `Company - ${exp.company}` : `Company ${index + 1}`;
+              const headerTitle = exp.company
+                ? `Company - ${exp.company}`
+                : `Company ${index + 1}`;
               let prevRelieveDate: string | undefined = undefined;
               if (exp.employmentType !== "PART_TIME") {
                 for (let i = index - 1; i >= 0; i--) {
-                  if (workExp[i].employmentType !== "PART_TIME" && workExp[i].relieveDate) {
+                  if (
+                    workExp[i].employmentType !== "PART_TIME" &&
+                    workExp[i].relieveDate
+                  ) {
                     prevRelieveDate = workExp[i].relieveDate;
                     break;
                   }
                 }
               }
-              
+
               return (
                 <div
                   key={exp.id}
@@ -75,10 +78,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                     <h4 className="text-sm font-semibold text-brand-primary uppercase tracking-wider">
                       {headerTitle}
                     </h4>
-                    <Tooltip
-                      content="Delete Row"
-                      side="top"
-                    >
+                    <Tooltip content="Delete Row" side="top">
                       <button
                         type="button"
                         onClick={() => {
@@ -95,23 +95,31 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {/* Name of Company */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Name of Company</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Name of Company
+                      </label>
                       <form.Field name={`workExp[${index}].company`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               className=""
                               placeholder="Enter company name..."
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -119,23 +127,31 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Employment Type */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Employment Type</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Employment Type
+                      </label>
                       <form.Field name={`workExp[${index}].employmentType`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
                             <SelectDropdown
                               options={employmentTypeOptions}
                               value={field.state.value}
-                              onChange={(val) => field.handleChange(val as string)}
+                              onChange={(val) =>
+                                field.handleChange(val as string)
+                              }
                               placeholder="Select Employment Type"
                               disabled={isLoadingEmploymentType}
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -143,23 +159,31 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Designation */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Designation</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Designation
+                      </label>
                       <form.Field name={`workExp[${index}].designation`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               className=""
                               placeholder="Enter designation..."
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -167,7 +191,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Joining Date */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Joining Date</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Joining Date
+                      </label>
                       <form.Field name={`workExp[${index}].joinDate`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
@@ -179,13 +205,17 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               placeholder="Select Date"
                               disableFuture
                               minDate={prevRelieveDate}
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -193,7 +223,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Relieving Date */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Relieving Date</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Relieving Date
+                      </label>
                       <form.Field name={`workExp[${index}].relieveDate`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
@@ -205,13 +237,17 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               placeholder="Select Date"
                               disableFuture
                               minDate={exp.joinDate}
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -219,23 +255,31 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Reason of Leaving */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Reason of Leaving</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Reason of Leaving
+                      </label>
                       <form.Field name={`workExp[${index}].reason`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               className=""
                               placeholder="e.g. Better Opportunity"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -243,23 +287,31 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
                     {/* Last Salary Drawn */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Last Salary Drawn</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Last Salary Drawn
+                      </label>
                       <form.Field name={`workExp[${index}].salary`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               className=""
                               placeholder="e.g. 5,00,000"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>

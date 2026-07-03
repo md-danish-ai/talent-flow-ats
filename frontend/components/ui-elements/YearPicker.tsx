@@ -129,7 +129,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
                       : "text-slate-600 dark:text-slate-300",
                     isDisabledOption
                       ? "opacity-30 cursor-not-allowed bg-slate-50 dark:bg-slate-800"
-                      : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800",
                   )}
                 >
                   {year}
@@ -197,7 +197,8 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
               "flex items-center gap-3 px-4 py-3.5 bg-slate-50 dark:bg-slate-900 border border-input rounded-md transition-all w-full hover:border-brand-primary/30 group text-left",
               isOpen && "ring-1 ring-brand-primary border-brand-primary",
               error && "border-red-500 ring-1 ring-red-500/20",
-              disabled && "opacity-50 cursor-not-allowed bg-muted/20 hover:border-transparent",
+              disabled &&
+                "opacity-50 cursor-not-allowed bg-muted/20 hover:border-transparent",
               className,
             )}
           >

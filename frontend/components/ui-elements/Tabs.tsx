@@ -17,7 +17,13 @@ interface TabsProps {
   activeTab: string;
   onChange: (value: string) => void;
   className?: string;
-  variant?: "pills" | "underline" | "glass" | "bordered" | "gradient" | "sidebar";
+  variant?:
+    | "pills"
+    | "underline"
+    | "glass"
+    | "bordered"
+    | "gradient"
+    | "sidebar";
   orientation?: "horizontal" | "vertical";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
@@ -79,7 +85,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
       variant === "underline" &&
         "bg-transparent border-none p-0 gap-8 rounded-none",
       variant === "gradient" && "bg-muted/20 rounded-xl p-1",
-      variant === "sidebar" && "bg-transparent border-none p-0 gap-1.5 rounded-none",
+      variant === "sidebar" &&
+        "bg-transparent border-none p-0 gap-1.5 rounded-none",
 
       className,
     );
@@ -108,7 +115,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                 sizeStyles[size],
                 fullWidth ? "flex-1" : "flex-none",
                 variant === "underline" && "rounded-none",
-                variant === "sidebar" && "rounded-r-xl rounded-l-sm overflow-visible",
+                variant === "sidebar" &&
+                  "rounded-r-xl rounded-l-sm overflow-visible",
                 isActive
                   ? variant === "pills"
                     ? "text-brand-primary"

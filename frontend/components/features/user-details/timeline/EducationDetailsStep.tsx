@@ -27,13 +27,13 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       type: "education_category",
       is_active: true,
     });
-    
+
   const { data: languageRes, isLoading: isLoadingLanguage } =
     useClassifications({
       type: "language",
       is_active: true,
     });
-  
+
   const languageOptions = React.useMemo(() => {
     return (languageRes?.data || []).map((c: { name: string }) => ({
       id: c.name,
@@ -45,7 +45,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
     const apiOptions = (educationRes?.data || []).map((c: { name: string }) => {
       let id = c.name;
       let label = c.name;
-      
+
       // Map backend values to our internal constants to avoid duplicates
       if (c.name === "10th / High School" || c.name === "10th Std") {
         id = "10th Std";
@@ -54,15 +54,23 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
         id = "12th Std";
         label = "12th / Intermediate";
       }
-      
+
       return { id, label };
     });
-    
+
     // Ensure 10th and 12th Std exist even before loading finishes
-    if (!apiOptions.some((o: { id: string; label: string }) => o.id === "10th Std")) {
+    if (
+      !apiOptions.some(
+        (o: { id: string; label: string }) => o.id === "10th Std",
+      )
+    ) {
       apiOptions.unshift({ id: "10th Std", label: "10th / High School" });
     }
-    if (!apiOptions.some((o: { id: string; label: string }) => o.id === "12th Std")) {
+    if (
+      !apiOptions.some(
+        (o: { id: string; label: string }) => o.id === "12th Std",
+      )
+    ) {
       apiOptions.splice(1, 0, { id: "12th Std", label: "12th / Intermediate" });
     }
     return apiOptions;
@@ -75,10 +83,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       exit={{ opacity: 0, x: -20 }}
     >
       <div className="relative flex items-center justify-center mb-6">
-        <Typography
-          variant="h1"
-          weight="bold"
-        >
+        <Typography variant="h1" weight="bold">
           4. Education Details
         </Typography>
       </div>
@@ -89,14 +94,21 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
               const isMandatory = index < 2;
               const isEducationSelected = Boolean(
                 item.type &&
-                  (isLoadingEducation ||
-                    educationOptions.some(
-                      (opt: { id: string | number }) => String(opt.id) === String(item.type)
-                    ))
+                (isLoadingEducation ||
+                  educationOptions.some(
+                    (opt: { id: string | number }) =>
+                      String(opt.id) === String(item.type),
+                  )),
               );
-              const prevEndYear = index > 0 ? education[index - 1]?.endYear : undefined;
-              const selectedLabel = educationOptions.find((opt: { id: string | number; label: string }) => String(opt.id) === String(item.type))?.label;
-              const headerTitle = selectedLabel ? `Education - ${selectedLabel}` : `Education ${index + 1}`;
+              const prevEndYear =
+                index > 0 ? education[index - 1]?.endYear : undefined;
+              const selectedLabel = educationOptions.find(
+                (opt: { id: string | number; label: string }) =>
+                  String(opt.id) === String(item.type),
+              )?.label;
+              const headerTitle = selectedLabel
+                ? `Education - ${selectedLabel}`
+                : `Education ${index + 1}`;
               return (
                 <div
                   key={item.id}
@@ -104,7 +116,8 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                 >
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
                     <h4 className="text-sm font-semibold text-brand-primary uppercase tracking-wider">
-                      {headerTitle} {isMandatory && <span className="text-red-500">*</span>}
+                      {headerTitle}{" "}
+                      {isMandatory && <span className="text-red-500">*</span>}
                     </h4>
                     <Tooltip
                       content={isMandatory ? "Required Row" : "Delete Row"}
@@ -127,7 +140,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {/* Education Type */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Education</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Education
+                      </label>
                       <form.Field name={`education[${index}].type`}>
                         {(field) => (
                           <div className="flex flex-col relative">
@@ -150,7 +165,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   fieldsToTouch.forEach((f) => {
                                     form.setFieldMeta(
                                       `education[${index}].${f}` as DeepKeys<PersonalDetailsFormValues>,
-                                      (meta) => ({ ...meta, isTouched: true })
+                                      (meta) => ({ ...meta, isTouched: true }),
                                     );
                                   });
                                 }
@@ -158,13 +173,17 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               placeholder="Select Education"
                               isLoading={isLoadingEducation}
                               disabled={isMandatory}
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -172,24 +191,32 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Education Details */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Education Details</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Education Details
+                      </label>
                       <form.Field name={`education[${index}].details`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. Science, Arts, B.Tech..."
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -197,24 +224,32 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* School/College */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">School/College</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        School/College
+                      </label>
                       <form.Field name={`education[${index}].school`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter school/college..."
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -222,24 +257,32 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Board/University */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Board/University</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Board/University
+                      </label>
                       <form.Field name={`education[${index}].board`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="Enter board/university..."
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -247,7 +290,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Start Year */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Start Year</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Start Year
+                      </label>
                       <form.Field name={`education[${index}].startYear`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
@@ -258,13 +303,17 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               disabled={!isEducationSelected}
                               minYear={prevEndYear}
                               className="w-full"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -272,7 +321,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* End Year */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">End Year</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        End Year
+                      </label>
                       <form.Field name={`education[${index}].endYear`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
@@ -281,15 +332,23 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               onChange={(val) => field.handleChange(val)}
                               placeholder="End"
                               disabled={!isEducationSelected}
-                              minYear={item.startYear ? parseInt(item.startYear, 10) + 1 : undefined}
+                              minYear={
+                                item.startYear
+                                  ? parseInt(item.startYear, 10) + 1
+                                  : undefined
+                              }
                               className="w-full"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -297,24 +356,32 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Division */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Division</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Division
+                      </label>
                       <form.Field name={`education[${index}].division`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. 1st, 2nd"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -322,24 +389,32 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Percentage */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Percentage (%)</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Percentage (%)
+                      </label>
                       <form.Field name={`education[${index}].percentage`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
                               placeholder="e.g. 85%"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>
@@ -347,26 +422,34 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
                     {/* Medium */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Medium</label>
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Medium
+                      </label>
                       <form.Field name={`education[${index}].medium`}>
                         {(field) => (
                           <div className="flex flex-col relative w-full text-left">
                             <SelectDropdown
                               options={languageOptions}
                               value={field.state.value}
-                              onChange={(val) => field.handleChange(val as string)}
+                              onChange={(val) =>
+                                field.handleChange(val as string)
+                              }
                               placeholder="Select Medium"
                               isLoading={isLoadingLanguage}
                               disabled={!isEducationSelected}
                               className="w-full"
                               wrapperClassName="w-full"
-                              error={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                              error={
+                                field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0
+                              }
                             />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
-                              <p className="text-[10px] text-red-500 w-full mt-1 pl-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
+                            {field.state.meta.isTouched &&
+                              field.state.meta.errors.length > 0 && (
+                                <p className="text-[10px] text-red-500 w-full mt-1 pl-1">
+                                  {getErrorMessage(field.state.meta.errors[0])}
+                                </p>
+                              )}
                           </div>
                         )}
                       </form.Field>

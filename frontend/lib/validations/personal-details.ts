@@ -281,7 +281,7 @@ export const workExperienceSchema = z
           message: "Salary required",
           path: ["salary"],
         });
-        
+
       if (data.joinDate.trim() !== "" && data.relieveDate.trim() !== "") {
         const join = new Date(data.joinDate);
         const relieve = new Date(data.relieveDate);

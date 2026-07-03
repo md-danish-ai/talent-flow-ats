@@ -56,7 +56,14 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
   // Filter out completely blank rows that are beyond the first 2 rows
   return sanitized.filter((m, index) => {
     if (index < 2) return true;
-    const isBlank = !m.relation && !m.name && !m.occupation && !m.dependent && (!m.relationLabel || m.relationLabel === "Spouse" || m.relationLabel === "Brother/Sister");
+    const isBlank =
+      !m.relation &&
+      !m.name &&
+      !m.occupation &&
+      !m.dependent &&
+      (!m.relationLabel ||
+        m.relationLabel === "Spouse" ||
+        m.relationLabel === "Brother/Sister");
     return !isBlank;
   });
 };
@@ -81,7 +88,20 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
   // Filter out extra blank rows (beyond the first 2) that were saved previously
   return sanitized.filter((e, index) => {
     if (index < 2) return true;
-    const isBlank = !e.school && !e.board && !e.startYear && !e.endYear && !e.division && !e.percentage && !e.medium && !e.details && (!e.type || e.type === "Post Graduation" || e.type === "Additional Qualification" || e.type === "Diploma" || e.type === "Graduation");
+    const isBlank =
+      !e.school &&
+      !e.board &&
+      !e.startYear &&
+      !e.endYear &&
+      !e.division &&
+      !e.percentage &&
+      !e.medium &&
+      !e.details &&
+      (!e.type ||
+        e.type === "Post Graduation" ||
+        e.type === "Additional Qualification" ||
+        e.type === "Diploma" ||
+        e.type === "Graduation");
     return !isBlank;
   });
 };
