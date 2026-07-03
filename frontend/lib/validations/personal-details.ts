@@ -21,7 +21,8 @@ export interface Education {
   type: string;
   school: string;
   board: string;
-  year: string;
+  startYear: string;
+  endYear: string;
   division: string;
   percentage: string;
   medium: string;
@@ -139,7 +140,8 @@ export const educationSchema = z
     type: z.string(),
     school: z.string().default(""),
     board: z.string().default(""),
-    year: z.string().default(""),
+    startYear: z.string().default(""),
+    endYear: z.string().default(""),
     division: z.string().default(""),
     percentage: z.string().default(""),
     medium: z.string().default(""),
@@ -148,14 +150,29 @@ export const educationSchema = z
   .superRefine((data, ctx) => {
     const isMandatory = data.type === "10th Std" || data.type === "12th Std";
     const hasDetails =
+      data.type.trim() !== "" ||
       data.school.trim() !== "" ||
       data.board.trim() !== "" ||
-      data.year.trim() !== "" ||
+      data.startYear.trim() !== "" ||
+      data.endYear.trim() !== "" ||
       data.division.trim() !== "" ||
       data.percentage.trim() !== "" ||
-      data.medium.trim() !== "";
+      data.medium.trim() !== "" ||
+      data.details.trim() !== "";
 
     if (isMandatory || hasDetails) {
+      if (data.type.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Education required",
+          path: ["type"],
+        });
+      if (data.details.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Details required",
+          path: ["details"],
+        });
       if (data.school.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -168,11 +185,17 @@ export const educationSchema = z
           message: "Board required",
           path: ["board"],
         });
-      if (data.year.trim() === "")
+      if (data.startYear.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Year required",
-          path: ["year"],
+          message: "Start Year required",
+          path: ["startYear"],
+        });
+      if (data.endYear.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End Year required",
+          path: ["endYear"],
         });
       if (data.division.trim() === "")
         ctx.addIssue({
@@ -192,6 +215,16 @@ export const educationSchema = z
           message: "Medium required",
           path: ["medium"],
         });
+    }
+
+    if (data.startYear.trim() !== "" && data.endYear.trim() !== "") {
+      if (parseInt(data.endYear, 10) <= parseInt(data.startYear, 10)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Must be > Start Year",
+          path: ["endYear"],
+        });
+      }
     }
   });
 
