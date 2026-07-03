@@ -24,7 +24,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       <Typography
         variant="h1"
         weight="bold"
-        className="text-center mb-1 pb-1 text-gray-800"
+        className="text-center mb-1 pb-1"
       >
         5. Work Experience Details
       </Typography>

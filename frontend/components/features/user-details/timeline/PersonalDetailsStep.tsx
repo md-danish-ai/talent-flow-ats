@@ -23,7 +23,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
       <Typography
         variant="h1"
         weight="bold"
-        className="text-center mb-6 text-gray-800"
+        className="text-center mb-6"
       >
         1. Personal Details
       </Typography>
