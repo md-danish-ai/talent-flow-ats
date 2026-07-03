@@ -5,13 +5,47 @@ import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { DatePicker } from "@components/ui-elements/DatePicker";
-
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { useStates, useDistrictsByState } from "@hooks/useLocations";
 import { type PersonalDetailsForm } from "@lib/validations/personal-details";
 import { getErrorMessage } from "@lib/utils";
 
 export interface PersonalDetailsStepProps {
   form: PersonalDetailsForm;
 }
+
+const StateDropdown = ({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) => {
+  const { data: states = [], isLoading } = useStates();
+  return (
+    <SelectDropdown
+      options={states.map((s) => ({ id: s.name, label: s.name }))}
+      value={value}
+      onChange={(val) => onChange(String(val))}
+      isLoading={isLoading}
+      placeholder="Select state"
+      error={error}
+    />
+  );
+};
+
+const DistrictDropdown = ({ stateName, value, onChange, error, disabled }: { stateName: string; value: string; onChange: (v: string) => void; error?: boolean; disabled?: boolean }) => {
+  const { data: states = [] } = useStates();
+  const stateId = states.find((s) => s.name === stateName)?.id || null;
+  const { data: districts = [], isLoading } = useDistrictsByState(stateId);
+
+  return (
+    <SelectDropdown
+      options={districts.map((d) => ({ id: d.name, label: d.name }))}
+      value={value}
+      onChange={(val) => onChange(String(val))}
+      isLoading={isLoading}
+      placeholder="Select district"
+      error={error}
+      disabled={disabled || !stateId}
+      emptyMessage={!stateId ? "Please select a state first" : "No districts available"}
+    />
+  );
+};
 
 export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
   const maxDobDate = new Date();
@@ -275,11 +309,13 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     <label className="text-sm font-semibold text-muted-foreground mb-1 block">
                       State <span className="text-red-500">*</span>
                     </label>
-                    <Input
+                    <StateDropdown
                       value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Enter state"
+                      onChange={(val) => {
+                        field.handleChange(val);
+                        // Reset district when state changes
+                        form.setFieldValue("presentDistrict", "");
+                      }}
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0
@@ -297,27 +333,30 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
 
               <form.Field name="presentDistrict">
                 {(field) => (
-                  <div>
-                    <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                      District <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Enter district"
-                      error={
-                        field.state.meta.isTouched &&
-                        field.state.meta.errors.length > 0
-                      }
-                    />
-                    {field.state.meta.isTouched &&
-                      field.state.meta.errors.length > 0 && (
-                        <p className="text-xs text-red-500 mt-1">
-                          {getErrorMessage(field.state.meta.errors[0])}
-                        </p>
-                      )}
-                  </div>
+                  <form.Subscribe selector={(state) => [state.values.presentState]}>
+                    {([presentState]) => (
+                      <div>
+                        <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                          District <span className="text-red-500">*</span>
+                        </label>
+                        <DistrictDropdown
+                          stateName={presentState}
+                          value={field.state.value}
+                          onChange={(val) => field.handleChange(val)}
+                          error={
+                            field.state.meta.isTouched &&
+                            field.state.meta.errors.length > 0
+                          }
+                        />
+                        {field.state.meta.isTouched &&
+                          field.state.meta.errors.length > 0 && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {getErrorMessage(field.state.meta.errors[0])}
+                            </p>
+                          )}
+                      </div>
+                    )}
+                  </form.Subscribe>
                 )}
               </form.Field>
             </div>
@@ -327,13 +366,13 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                 {(field) => (
                   <div>
                     <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                      City <span className="text-red-500">*</span>
+                      City / Town <span className="text-red-500">*</span>
                     </label>
                     <Input
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Enter city"
+                      placeholder="Enter city / town"
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0
@@ -443,11 +482,13 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                           <label className="text-sm font-semibold text-muted-foreground mb-1 block">
                             State
                           </label>
-                          <Input
+                          <StateDropdown
                             value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Enter state"
+                            onChange={(val) => {
+                              field.handleChange(val);
+                              // Reset district when state changes
+                              form.setFieldValue("permanentDistrict", "");
+                            }}
                             error={
                               field.state.meta.isTouched &&
                               field.state.meta.errors.length > 0
@@ -464,27 +505,30 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                     </form.Field>
                     <form.Field name="permanentDistrict">
                       {(field) => (
-                        <div>
-                          <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                            District
-                          </label>
-                          <Input
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Enter district"
-                            error={
-                              field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0
-                            }
-                          />
-                          {field.state.meta.isTouched &&
-                            field.state.meta.errors.length > 0 && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {getErrorMessage(field.state.meta.errors[0])}
-                              </p>
-                            )}
-                        </div>
+                        <form.Subscribe selector={(state) => [state.values.permanentState]}>
+                          {([permanentState]) => (
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                                District
+                              </label>
+                              <DistrictDropdown
+                                stateName={permanentState}
+                                value={field.state.value}
+                                onChange={(val) => field.handleChange(val)}
+                                error={
+                                  field.state.meta.isTouched &&
+                                  field.state.meta.errors.length > 0
+                                }
+                              />
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0 && (
+                                  <p className="text-xs text-red-500 mt-1">
+                                    {getErrorMessage(field.state.meta.errors[0])}
+                                  </p>
+                                )}
+                            </div>
+                          )}
+                        </form.Subscribe>
                       )}
                     </form.Field>
                   </div>
@@ -494,13 +538,13 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                       {(field) => (
                         <div>
                           <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                            City
+                            City / Town
                           </label>
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Enter city"
+                            placeholder="Enter city / town"
                             error={
                               field.state.meta.isTouched &&
                               field.state.meta.errors.length > 0
