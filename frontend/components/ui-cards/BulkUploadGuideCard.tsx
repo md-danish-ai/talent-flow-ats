@@ -73,7 +73,7 @@ export function BulkUploadGuideCard({
                       Exam Level Code
                     </span>
                     <Link
-                      href="/admin/management/subject-level"
+                      href="/admin/management/master-data"
                       target="_blank"
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary hover:bg-brand-primary/20 dark:hover:bg-brand-primary/30 transition-colors font-bold text-[9px]"
                     >
