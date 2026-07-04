@@ -66,9 +66,9 @@ export function PersonalDetailsPart2Step({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
+      className="space-y-6 pt-2"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Identity Details */}
         <div className="space-y-4 md:col-span-2">
           <Typography variant="h4" className="mb-2">

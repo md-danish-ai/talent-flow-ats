@@ -51,8 +51,9 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-5 pt-2"
     >
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="flex flex-col gap-5">
         <form.Subscribe selector={(state) => [state.values.family]}>
           {([family]) =>
             family.map((member: FamilyMember, index: number) => {

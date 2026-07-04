@@ -608,47 +608,68 @@ export function UserForm({
 
   return (
     <div className="w-full mx-auto max-w-[1400px]">
-      <Timeline
-        totalSteps={totalSteps}
-        currentStep={currentStep}
-        touchedSteps={touchedSteps}
-        isStepValid={isStepValid}
-      />
-      <div className="bg-card/90 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex flex-col relative overflow-hidden">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="flex-1 w-full flex flex-col"
-        >
-          {/* Static Header with Title on Left, Buttons on Right */}
-          <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
-                {(() => {
-                  const CurrentIcon =
-                    STEP_CONTENT[currentStep - 1]?.icon || User;
-                  return <CurrentIcon size={24} strokeWidth={2.5} />;
-                })()}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  className="mb-1 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent font-bold"
-                >
-                  {STEP_CONTENT[currentStep - 1]?.title}
-                </Typography>
-                <Typography variant="body2" color="muted">
-                  {STEP_CONTENT[currentStep - 1]?.subtitle}
-                </Typography>
-              </div>
-            </div>
+      <div className="flex items-start gap-6">
+        {/* Left: Vertical Timeline sidebar */}
+        <div className="hidden md:block shrink-0 sticky top-8">
+          <Timeline
+            totalSteps={totalSteps}
+            currentStep={currentStep}
+            touchedSteps={touchedSteps}
+            isStepValid={isStepValid}
+          />
+        </div>
 
-            {/* Next/Previous Buttons on Right */}
-            <div className="flex items-center gap-3">
-              {currentStep > 1 && (
+        {/* Right: Form card */}
+        <div className="flex-1 min-w-0 bg-card/90 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex flex-col relative overflow-hidden">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="flex-1 w-full flex flex-col"
+          >
+            {/* Static Header with Title on Left, Buttons on Right */}
+            <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
+                  {(() => {
+                    const CurrentIcon =
+                      STEP_CONTENT[currentStep - 1]?.icon || User;
+                    return <CurrentIcon size={24} strokeWidth={2.5} />;
+                  })()}
+                </div>
+                <div>
+                  <Typography
+                    variant="h3"
+                    className="mb-1 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent font-bold"
+                  >
+                    {STEP_CONTENT[currentStep - 1]?.title}
+                  </Typography>
+                  <Typography variant="body2" color="muted">
+                    {STEP_CONTENT[currentStep - 1]?.subtitle}
+                  </Typography>
+                </div>
+              </div>
+
+              {/* Next/Previous Buttons on Right */}
+              <div className="flex items-center gap-3">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    color="primary"
+                    size="md"
+                    animate="scale"
+                    shadow
+                    disabled={isSaving}
+                    onClick={handlePrev}
+                    className="px-6 text-sm font-semibold group flex items-center gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                    PREVIOUS
+                  </Button>
+                )}
+
                 <Button
                   type="button"
                   color="primary"
@@ -656,68 +677,54 @@ export function UserForm({
                   animate="scale"
                   shadow
                   disabled={isSaving}
-                  onClick={handlePrev}
+                  onClick={handleNext}
                   className="px-6 text-sm font-semibold group flex items-center gap-2"
                 >
-                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                  PREVIOUS
-                </Button>
-              )}
-
-              <Button
-                type="button"
-                color="primary"
-                size="md"
-                animate="scale"
-                shadow
-                disabled={isSaving}
-                onClick={handleNext}
-                className="px-6 text-sm font-semibold group flex items-center gap-2"
-              >
-                {isSaving ? (
-                  "SAVING..."
-                ) : currentStep === totalSteps ? (
-                  isAdmin ? (
-                    "UPDATE USER DETAILS"
+                  {isSaving ? (
+                    "SAVING..."
+                  ) : currentStep === totalSteps ? (
+                    isAdmin ? (
+                      "UPDATE USER DETAILS"
+                    ) : (
+                      "SUBMIT DETAILS"
+                    )
                   ) : (
-                    "SUBMIT DETAILS"
-                  )
-                ) : (
-                  <>
-                    NEXT
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </Button>
+                    <>
+                      NEXT
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <div className="flex-1 w-full relative">
-            <AnimatePresence mode="wait">
-              {currentStep === 1 && (
-                <PersonalDetailsStep key="step1" form={form} />
-              )}
-              {currentStep === 2 && (
-                <PersonalDetailsPart2Step key="step2" form={form} />
-              )}
-              {currentStep === 3 && (
-                <FamilyDetailsStep key="step3" form={form} />
-              )}
-              {currentStep === 4 && (
-                <SourceOfInformationStep key="step4" form={form} />
-              )}
-              {currentStep === 5 && (
-                <EducationDetailsStep key="step5" form={form} />
-              )}
-              {currentStep === 6 && (
-                <WorkExperienceStep key="step6" form={form} />
-              )}
-              {currentStep === 7 && (
-                <OtherDetailsStep key="step7" form={form} />
-              )}
-            </AnimatePresence>
-          </div>
-        </form>
+            <div className="flex-1 w-full relative">
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <PersonalDetailsStep key="step1" form={form} />
+                )}
+                {currentStep === 2 && (
+                  <PersonalDetailsPart2Step key="step2" form={form} />
+                )}
+                {currentStep === 3 && (
+                  <FamilyDetailsStep key="step3" form={form} />
+                )}
+                {currentStep === 4 && (
+                  <SourceOfInformationStep key="step4" form={form} />
+                )}
+                {currentStep === 5 && (
+                  <EducationDetailsStep key="step5" form={form} />
+                )}
+                {currentStep === 6 && (
+                  <WorkExperienceStep key="step6" form={form} />
+                )}
+                {currentStep === 7 && (
+                  <OtherDetailsStep key="step7" form={form} />
+                )}
+              </AnimatePresence>
+            </div>
+          </form>
+        </div>
       </div>
 
       <SubmitModal

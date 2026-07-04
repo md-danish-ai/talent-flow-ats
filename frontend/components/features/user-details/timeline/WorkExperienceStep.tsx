@@ -38,15 +38,16 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-5 pt-2"
     >
       <Typography
         variant="body2"
-        className="text-center text-brand-success font-semibold mb-5 "
+        className="text-center text-brand-success font-semibold"
       >
         If you are fresher then no need to fill this form and click
         &quot;Next&quot; to continue
       </Typography>
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="flex flex-col gap-5">
         <form.Subscribe selector={(state) => [state.values.workExp]}>
           {([workExp]) =>
             workExp.map((exp: WorkExperience, index: number) => {

@@ -79,8 +79,9 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-6 pt-2"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-2">
           <form.Field name="firstName">
             {(field) => (
@@ -271,7 +272,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
           </form.Field>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <Typography variant="body2" weight="bold" className="mb-4">
             Present Address
           </Typography>
@@ -437,7 +438,7 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm relative">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm relative">
           <Typography variant="body2" weight="bold" className="mb-4">
             Permanent Address:
           </Typography>
