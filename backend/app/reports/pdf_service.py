@@ -32,7 +32,7 @@ def _edu_rows_html(rows: list[dict]) -> str:
               <td style="width: 20%;">{_esc(r.get("school", ""))}</td>
               <td style="width: 20%;">{_esc(r.get("board", ""))}</td>
               <td style="width: 10%;">{_esc(r.get("medium", ""))}</td>
-              <td style="width: 8%;">{_esc(r.get("year", ""))}</td>
+              <td style="width: 8%;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
               <td style="width: 7%;">{_esc(r.get("division", ""))}</td>
               <td style="width: 5%;">{_esc(r.get("percentage", ""))}</td>
             </tr>"""
@@ -159,6 +159,26 @@ def build_report_html(data: dict) -> str:
   @page {{
     size: A4 portrait;
     margin: 8mm 16mm;
+    margin-bottom: 24mm;
+    @frame footer {{
+      -pdf-frame-content: footerFirst;
+      bottom: 8mm;
+      left: 16mm;
+      right: 16mm;
+      height: 14mm;
+    }}
+  }}
+  @page inner_pages {{
+    size: A4 portrait;
+    margin: 8mm 16mm;
+    margin-bottom: 24mm;
+    @frame footer {{
+      -pdf-frame-content: footerOther;
+      bottom: 8mm;
+      left: 16mm;
+      right: 16mm;
+      height: 14mm;
+    }}
   }}
   body {{
     font-family: Arial, Helvetica, sans-serif;
@@ -178,6 +198,10 @@ def build_report_html(data: dict) -> str:
     vertical-align: middle;
     line-height: 1.08;
   }}
+  .footer-table, .footer-table td {{
+    border: none !important;
+    padding: 0 !important;
+  }}
   .section-title {{
     font-size: 7.8pt;
     font-weight: bold;
@@ -187,6 +211,51 @@ def build_report_html(data: dict) -> str:
 </style>
 </head>
 <body>
+<pdf:nexttemplate name="inner_pages" />
+
+<div id="footerFirst" style="font-size: 7.7pt; font-family: Arial, sans-serif; color: #333;">
+  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
+    <tr>
+      <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
+        {_esc(data.get("username", ""))}
+      </td>
+      <td style="border: none; text-align: right; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
+        Signature: ______________________
+      </td>
+    </tr>
+    <tr>
+      <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; color: #555;">
+        {_esc(data.get("mobile", ""))}
+      </td>
+      <td style="border: none; text-align: right; width: 50%; padding: 0; line-height: 1.3; font-weight: normal; color: #777;">
+        page <pdf:pagenumber> of <pdf:pagecount>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div id="footerOther" style="font-size: 7.7pt; font-family: Arial, sans-serif; color: #333;">
+  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
+    <tr>
+      <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
+        {_esc(data.get("username", ""))}
+      </td>
+      <td style="border: none; text-align: right; width: 50%; padding: 0; line-height: 1.3;">
+        &nbsp;
+      </td>
+    </tr>
+    <tr>
+      <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; color: #555;">
+        {_esc(data.get("mobile", ""))}
+      </td>
+      <td style="border: none; text-align: right; width: 50%; padding: 0; line-height: 1.3; font-weight: normal; color: #777;">
+        page <pdf:pagenumber> of <pdf:pagecount>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <!-- HEADER -->
 <table style="border:none; margin-bottom:3pt; width: 100%;">
