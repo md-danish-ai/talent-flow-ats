@@ -34,6 +34,8 @@ async def save_user_details(user_id: int, data: UserDetailsSchema):
         user = db_session.query(User).filter(User.id == int(user_id)).first()
         if user:
             user.username = username
+            if data.personalDetails.email:
+                user.email = data.personalDetails.email
 
         # Upsert logic using PostgreSQL dialect insert
         upsert_stmt = insert(UserDetail).values(

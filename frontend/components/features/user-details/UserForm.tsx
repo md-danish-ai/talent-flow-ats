@@ -121,13 +121,24 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
 const sanitizeEducation = (arr: unknown[]): Education[] => {
   const sanitized = (arr || []).map((e) => {
     const item = e as Record<string, unknown>;
+    let startYear = sanitizeStr(item.startYear);
+    let endYear = sanitizeStr(item.endYear);
+
+    // Fallback: parse from 'year' if missing
+    const yearStr = sanitizeStr(item.year);
+    if (!startYear && !endYear && yearStr && yearStr.includes("-")) {
+      const parts = yearStr.split("-");
+      startYear = parts[0] || "";
+      endYear = parts[1] || "";
+    }
+
     return {
       ...item,
       type: sanitizeStr(item.type),
       school: sanitizeStr(item.school),
       board: sanitizeStr(item.board),
-      startYear: sanitizeStr(item.startYear),
-      endYear: sanitizeStr(item.endYear),
+      startYear,
+      endYear,
       division: sanitizeStr(item.division),
       percentage: sanitizeStr(item.percentage),
       medium: sanitizeStr(item.medium),
@@ -560,6 +571,28 @@ export function UserForm({
     if (!isStepValid(currentStep)) {
       setIncompleteSteps([currentStep]);
       toast.error("Please fill all required fields correctly.");
+
+      // Map Zod errors manually to TanStack form fields so that nested errors display correctly
+      const result = personalDetailsSchema.safeParse(form.state.values);
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          let fieldPath = "";
+          issue.path.forEach((p, idx) => {
+            if (typeof p === "number") {
+              fieldPath += `[${p}]`;
+            } else {
+              fieldPath += idx === 0 ? p : `.${p}`;
+            }
+          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          form.setFieldMeta(fieldPath as any, (meta) => ({
+            ...meta,
+            errors: [issue.message],
+            isTouched: true,
+          }));
+        });
+      }
+
       return;
     }
 

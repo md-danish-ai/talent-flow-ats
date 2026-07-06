@@ -44,7 +44,7 @@ export const stepFields: Record<number, (keyof PersonalDetailsFormValues)[]> = {
   ],
 };
 
-export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
+export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
   firstName: "Mohammed",
   lastName: "Danish",
   gender: "Male",
@@ -146,7 +146,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   expectedSalary: "1200000",
 };
 
-export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
+export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   firstName: "",
   lastName: "",
   gender: "Male",

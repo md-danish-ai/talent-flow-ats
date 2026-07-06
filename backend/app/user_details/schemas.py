@@ -67,6 +67,7 @@ class EducationDetailSchema(BaseModel):
 class WorkExperienceDetailSchema(BaseModel):
     id: int
     company: str
+    employmentType: str
     designation: str
     joinDate: str
     relieveDate: str

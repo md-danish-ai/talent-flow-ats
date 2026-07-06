@@ -128,7 +128,19 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Employment Type
                       </label>
-                      <form.Field name={`workExp[${index}].employmentType`}>
+                      <form.Field
+                        name={`workExp[${index}].employmentType`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value)
+                              return "Employment type required";
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
                             <SelectDropdown
@@ -160,7 +172,19 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Designation
                       </label>
-                      <form.Field name={`workExp[${index}].designation`}>
+                      <form.Field
+                        name={`workExp[${index}].designation`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value)
+                              return "Designation required";
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
@@ -192,7 +216,19 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Joining Date
                       </label>
-                      <form.Field name={`workExp[${index}].joinDate`}>
+                      <form.Field
+                        name={`workExp[${index}].joinDate`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value)
+                              return "Join date required";
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
                             <DatePicker
@@ -224,7 +260,29 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Relieving Date
                       </label>
-                      <form.Field name={`workExp[${index}].relieveDate`}>
+                      <form.Field
+                        name={`workExp[${index}].relieveDate`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value)
+                              return "Relieve date required";
+                            if (hasCompany && value) {
+                              const joinDate = fieldApi.form.getFieldValue(
+                                `workExp[${index}].joinDate`,
+                              );
+                              if (
+                                joinDate &&
+                                new Date(value) < new Date(joinDate)
+                              )
+                                return "Must be >= Join Date";
+                            }
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col relative w-full text-center">
                             <DatePicker
@@ -256,7 +314,18 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Reason of Leaving
                       </label>
-                      <form.Field name={`workExp[${index}].reason`}>
+                      <form.Field
+                        name={`workExp[${index}].reason`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value) return "Reason required";
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
@@ -288,13 +357,26 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       <label className="text-xs font-medium text-muted-foreground">
                         Last Salary Drawn
                       </label>
-                      <form.Field name={`workExp[${index}].salary`}>
+                      <form.Field
+                        name={`workExp[${index}].salary`}
+                        validators={{
+                          onChange: ({ value, fieldApi }) => {
+                            const hasCompany = !!fieldApi.form.getFieldValue(
+                              `workExp[${index}].company`,
+                            );
+                            if (hasCompany && !value) return "Salary required";
+                            return undefined;
+                          },
+                        }}
+                      >
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
                               onChange={(e) =>
-                                field.handleChange(e.target.value)
+                                field.handleChange(
+                                  e.target.value.replace(/\D/g, ""),
+                                )
                               }
                               onBlur={field.handleBlur}
                               className=""

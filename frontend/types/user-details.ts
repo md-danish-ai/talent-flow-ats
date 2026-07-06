@@ -63,6 +63,7 @@ export interface EducationDetail {
 export interface WorkExperienceDetail {
   id: number;
   company: string;
+  employmentType: string;
   designation: string;
   joinDate: string;
   relieveDate: string;
@@ -87,6 +88,7 @@ export interface UserDetails {
   test_level_id?: number | string;
   test_level_name?: string;
   department_id?: number | string;
+  department_name?: string;
   personalDetails: PersonalDetails;
   additionalPersonalDetails?: AdditionalPersonalDetails;
   familyDetails: FamilyDetail[];
