@@ -48,6 +48,25 @@ export function UserDetailView({
     test_level_name,
   } = details;
 
+  const emergencyRelation = details.emergency_contact_relation;
+  const emergencyMember = familyDetails.find(
+    (f) => f.relation === emergencyRelation,
+  );
+  const emergencyContactNo = emergencyMember?.contactNo || "—";
+
+  const getRelationLabel = (relationCode?: string) => {
+    if (!relationCode) return "—";
+    if (relationCode === "FATHER") return "Father";
+    if (relationCode === "MOTHER") return "Mother";
+    const matchedMember = familyDetails.find(
+      (f) => f.relation === relationCode,
+    );
+    if (matchedMember?.relationLabel) return matchedMember.relationLabel;
+    return (
+      relationCode.charAt(0).toUpperCase() + relationCode.slice(1).toLowerCase()
+    );
+  };
+
   if (!personalDetails) return null;
 
   return (
@@ -121,9 +140,19 @@ export function UserDetailView({
                 <DetailItem label="Gender" value={personalDetails?.gender} />
                 <DetailItem label="DOB" value={personalDetails?.dob} />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <DetailItem
+                  label="Alternate Contact"
+                  value={personalDetails?.alternateMobile || "—"}
+                />
+                <DetailItem
+                  label="Emergency Relation"
+                  value={getRelationLabel(details.emergency_contact_relation)}
+                />
+              </div>
               <DetailItem
-                label="Alternate Contact"
-                value={personalDetails?.alternateMobile || "—"}
+                label="Emergency Contact Number"
+                value={emergencyContactNo}
               />
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
@@ -512,7 +541,11 @@ export function UserDetailView({
                         weight="black"
                         className="text-rose-400 uppercase tracking-tighter text-[9px]"
                       >
-                        {fam.relationLabel}
+                        {fam.relationLabel ||
+                          (fam.relation
+                            ? fam.relation.charAt(0).toUpperCase() +
+                              fam.relation.slice(1).toLowerCase()
+                            : "")}
                       </Typography>
                       <Typography variant="body3" weight="bold">
                         {fam.name}

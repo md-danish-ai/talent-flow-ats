@@ -144,6 +144,8 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
   shiftTime: "Any",
   expectedJoiningDate: "2026-07-31",
   expectedSalary: "1200000",
+  emergencyContactRelation: "",
+  assignedEmergencyRelation: "",
 };
 
 export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
@@ -246,4 +248,6 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   shiftTime: "",
   expectedJoiningDate: "",
   expectedSalary: "",
+  emergencyContactRelation: "",
+  assignedEmergencyRelation: "",
 };

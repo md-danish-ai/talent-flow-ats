@@ -15,8 +15,11 @@ import {
   religionSchema,
   categorySchema,
   maritalStatusSchema,
+  emergencyContactRelationSchema,
 } from "@lib/validations/personal-details";
 import { getErrorMessage } from "@lib/utils";
+
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 
 export interface PersonalDetailsPart2StepProps {
   form: PersonalDetailsForm;
@@ -61,6 +64,31 @@ const MARITAL_STATUSES = [
 export function PersonalDetailsPart2Step({
   form,
 }: PersonalDetailsPart2StepProps) {
+  const { data: relationsRes } = useClassifications({
+    type: "family_relation",
+    is_active: true,
+  });
+
+  const emergencyOptions = React.useMemo(() => {
+    const defaults = [
+      { id: "FATHER", label: "Father" },
+      { id: "MOTHER", label: "Mother" },
+    ];
+    const assignedCode = form.state.values.assignedEmergencyRelation;
+    if (
+      assignedCode &&
+      assignedCode !== "FATHER" &&
+      assignedCode !== "MOTHER"
+    ) {
+      const matched = (relationsRes?.data || []).find(
+        (c: { code: string; name: string }) => c.code === assignedCode,
+      );
+      const label = matched ? matched.name : assignedCode;
+      defaults.push({ id: assignedCode, label: label });
+    }
+    return defaults;
+  }, [relationsRes, form.state.values.assignedEmergencyRelation]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -369,6 +397,39 @@ export function PersonalDetailsPart2Step({
                 ) : null
               }
             </form.Subscribe>
+
+            <form.Field
+              name="emergencyContactRelation"
+              validators={{
+                onChange: emergencyContactRelationSchema,
+                onBlur: emergencyContactRelationSchema,
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="text-sm font-semibold text-muted-foreground mb-1 block">
+                    Emergency Contact Relation{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <SelectDropdown
+                    options={emergencyOptions}
+                    value={field.state.value}
+                    onChange={(val) => field.handleChange(String(val))}
+                    placeholder="Select emergency contact relation"
+                    error={
+                      field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0
+                    }
+                  />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {getErrorMessage(field.state.meta.errors[0])}
+                      </p>
+                    )}
+                </div>
+              )}
+            </form.Field>
           </div>
         </div>
       </div>

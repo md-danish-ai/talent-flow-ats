@@ -100,6 +100,7 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
       name: sanitizeStr(member.name),
       occupation: sanitizeStr(member.occupation),
       dependent: sanitizeStr(member.dependent),
+      contactNo: sanitizeStr(member.contactNo),
     };
   }) as FamilyMember[];
 
@@ -259,10 +260,33 @@ export function UserForm({
           initialData.additionalPersonalDetails?.maritalStatus || "",
         anniversaryDate:
           initialData.additionalPersonalDetails?.anniversaryDate || "",
-        family:
-          initialData.familyDetails?.length > 0
-            ? sanitizeFamily(initialData.familyDetails)
-            : defaultPersonalDetailsValues.family,
+        emergencyContactRelation: initialData.emergency_contact_relation || "",
+        assignedEmergencyRelation:
+          initialData.assigned_emergency_relation || "",
+        family: (() => {
+          const defaultFamily =
+            initialData.familyDetails?.length > 0
+              ? sanitizeFamily(initialData.familyDetails)
+              : [...defaultPersonalDetailsValues.family];
+          const assignedCode = initialData.assigned_emergency_relation;
+          if (
+            assignedCode &&
+            !defaultFamily.some((f) => f.relation === assignedCode)
+          ) {
+            defaultFamily.push({
+              id: Date.now(),
+              relationLabel:
+                assignedCode.charAt(0).toUpperCase() +
+                assignedCode.slice(1).toLowerCase(),
+              relation: assignedCode,
+              name: "",
+              occupation: "",
+              dependent: "",
+              contactNo: "",
+            });
+          }
+          return defaultFamily;
+        })(),
         interviewedBefore: sanitizeStr(
           initialData.sourceOfInformation?.interviewedBefore,
           "No",
@@ -381,6 +405,7 @@ export function UserForm({
             expectedJoiningDate: value.expectedJoiningDate,
             expectedSalary: value.expectedSalary,
           },
+          emergency_contact_relation: value.emergencyContactRelation,
         };
 
         if (existingDetails) {
@@ -482,10 +507,32 @@ export function UserForm({
         maritalStatus: details.additionalPersonalDetails?.maritalStatus || "",
         anniversaryDate:
           details.additionalPersonalDetails?.anniversaryDate || "",
-        family:
-          details.familyDetails?.length > 0
-            ? sanitizeFamily(details.familyDetails)
-            : defaultPersonalDetailsValues.family,
+        emergencyContactRelation: details.emergency_contact_relation || "",
+        assignedEmergencyRelation: details.assigned_emergency_relation || "",
+        family: (() => {
+          const defaultFamily =
+            details.familyDetails?.length > 0
+              ? sanitizeFamily(details.familyDetails)
+              : [...defaultPersonalDetailsValues.family];
+          const assignedCode = details.assigned_emergency_relation;
+          if (
+            assignedCode &&
+            !defaultFamily.some((f) => f.relation === assignedCode)
+          ) {
+            defaultFamily.push({
+              id: Date.now(),
+              relationLabel:
+                assignedCode.charAt(0).toUpperCase() +
+                assignedCode.slice(1).toLowerCase(),
+              relation: assignedCode,
+              name: "",
+              occupation: "",
+              dependent: "",
+              contactNo: "",
+            });
+          }
+          return defaultFamily;
+        })(),
         interviewedBefore: sanitizeStr(
           details.sourceOfInformation?.interviewedBefore,
           "No",

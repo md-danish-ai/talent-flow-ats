@@ -260,9 +260,29 @@ def get_user_by_id(user_id):
             if details:
                 user["is_submitted"] = details.is_submitted
                 user["is_interview_submitted"] = details.is_interview_submitted
+
+                # Fetch relation mapping to dynamically populate relation labels if empty
+                relations = (
+                    db_session.query(Cls).filter(Cls.type == "family_relation").all()
+                )
+                relation_map = {r.code: r.name for r in relations}
+
+                family_details_copy = []
+                if details.family_details:
+                    for member in details.family_details:
+                        member_copy = dict(member)
+                        if not member_copy.get("relationLabel"):
+                            relation_code = member_copy.get("relation")
+                            member_copy["relationLabel"] = relation_map.get(
+                                relation_code, relation_code
+                            )
+                        family_details_copy.append(member_copy)
+                else:
+                    family_details_copy = details.family_details
+
                 user["recruitment_details"] = {
                     "personalDetails": details.personal_details,
-                    "familyDetails": details.family_details,
+                    "familyDetails": family_details_copy,
                     "sourceOfInformation": details.source_of_information,
                     "educationDetails": details.education_details,
                     "workExperienceDetails": details.work_experience_details,
@@ -586,7 +606,11 @@ def update_user_basic_info(user_id: int, data):
                 # Also update the user's password to match the new mobile number
                 user.password = hash_password(data.mobile)
                 # Also update UserDetail primaryMobile if it exists
-                user_detail = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+                user_detail = (
+                    db_session.query(UserDetail)
+                    .filter(UserDetail.user_id == user_id)
+                    .first()
+                )
                 if user_detail:
                     if user_detail.personal_details:
                         pd = dict(user_detail.personal_details)
@@ -598,9 +622,13 @@ def update_user_basic_info(user_id: int, data):
         if data.email is not None:
             if data.email != user.email:
                 user.email = data.email
-                
+
                 # Also update UserDetail email if it exists
-                user_detail = db_session.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+                user_detail = (
+                    db_session.query(UserDetail)
+                    .filter(UserDetail.user_id == user_id)
+                    .first()
+                )
                 if user_detail:
                     if user_detail.personal_details:
                         pd = dict(user_detail.personal_details)

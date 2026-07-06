@@ -44,6 +44,7 @@ class FamilyDetailSchema(BaseModel):
     name: str
     occupation: str
     dependent: str
+    contactNo: Optional[str] = ""
 
 
 class SourceOfInformationSchema(BaseModel):
@@ -93,3 +94,10 @@ class UserDetailsSchema(BaseModel):
     educationDetails: List[EducationDetailSchema]
     workExperienceDetails: List[WorkExperienceDetailSchema]
     otherDetails: OtherDetailsSchema
+    emergency_contact_relation: Optional[str] = None
+    assigned_emergency_relation: Optional[str] = None
+
+
+class AssignEmergencyRelationPayload(BaseModel):
+    user_id: int
+    relation_code: str

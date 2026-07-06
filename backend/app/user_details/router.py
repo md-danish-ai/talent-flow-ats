@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.user_details.schemas import UserDetailsSchema
+from app.user_details.schemas import UserDetailsSchema, AssignEmergencyRelationPayload
 from app.user_details import service
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import authenticate_user
@@ -41,3 +41,14 @@ def get_user_details_by_id(id: int):
     """
     result = service.get_user_details(id)
     return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=result)
+
+
+@router.post("/assign-emergency-relation")
+async def assign_emergency_relation(payload: AssignEmergencyRelationPayload):
+    """
+    Assign a custom emergency relation code to a specific user.
+    """
+    result = await service.assign_emergency_relation(
+        payload.user_id, payload.relation_code
+    )
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)

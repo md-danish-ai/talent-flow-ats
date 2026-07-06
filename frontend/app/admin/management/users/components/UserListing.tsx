@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { api } from "@lib/api/base";
 import {
   Table,
   TableBody,
@@ -9,14 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Users, Eye, Mail, Pencil, FileText, Plus } from "lucide-react";
+import {
+  Users,
+  Eye,
+  Mail,
+  Pencil,
+  FileText,
+  Plus,
+  PhoneCall,
+} from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
 import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
-import { UserListResponse } from "@types";
+import { UserListResponse, UserDetails } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
+import { Typography } from "@components/ui-elements/Typography";
 import { Modal } from "@components/ui-elements/Modal";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 import { UpdateAccountInfoForm } from "@features/user-details/UpdateAccountInfoForm";
@@ -26,6 +36,7 @@ import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
@@ -120,6 +131,54 @@ export function UserListing({ initialData }: UserListingProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserListResponse | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const { data: relationsRes } = useClassifications({
+    type: "family_relation",
+    is_active: true,
+  });
+
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assigningUser, setAssigningUser] = useState<UserListResponse | null>(
+    null,
+  );
+  const [selectedRelation, setSelectedRelation] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  const handleAssignEmergency = async (user: UserListResponse) => {
+    setAssigningUser(user);
+    setSelectedRelation("");
+    setIsAssigning(true);
+    setIsAssignModalOpen(true);
+    try {
+      const res = await api.get<UserDetails>(
+        `/user-details/get-user-details/${user.id}`,
+      );
+      if (res?.assigned_emergency_relation) {
+        setSelectedRelation(res.assigned_emergency_relation);
+      }
+    } catch (err) {
+      console.error("Error fetching user emergency relation:", err);
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleSaveEmergencyRelation = async () => {
+    if (!assigningUser) return;
+    setIsAssigning(true);
+    try {
+      await api.post("/user-details/assign-emergency-relation", {
+        user_id: assigningUser.id,
+        relation_code: selectedRelation,
+      });
+      setIsAssignModalOpen(false);
+      void refresh();
+    } catch (err) {
+      console.error("Error saving emergency relation:", err);
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   const handleToggleStatus = async (user: UserListResponse) => {
     setTogglingId(user.id);
@@ -446,6 +505,16 @@ export function UserListing({ initialData }: UserListingProps) {
                               <Pencil size={16} />
                             </TableIconButton>
 
+                            <TableIconButton
+                              iconColor="amber"
+                              btnSize="sm"
+                              animate="scale"
+                              title="Assign Emergency Contact"
+                              onClick={() => handleAssignEmergency(row)}
+                            >
+                              <PhoneCall size={16} />
+                            </TableIconButton>
+
                             <Link
                               href={
                                 row.is_details_submitted
@@ -557,6 +626,66 @@ export function UserListing({ initialData }: UserListingProps) {
               }}
             />
           )}
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        title={`Assign Emergency Relation`}
+        className="!max-w-md"
+      >
+        <div className="space-y-4">
+          {assigningUser?.username && (
+            <Typography
+              variant="body1"
+              className="pt-1 pb-3 font-semibold block"
+            >
+              Candidate: {assigningUser.username}
+            </Typography>
+          )}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-muted-foreground block">
+              Relation Group
+            </label>
+            <SelectDropdown
+              options={[
+                { id: "", label: "Remove Custom Relation (Use default)" },
+                ...(relationsRes?.data || [])
+                  .filter(
+                    (r: { code: string; name: string }) =>
+                      r.code !== "FATHER" && r.code !== "MOTHER",
+                  )
+                  .map((r: { code: string; name: string }) => ({
+                    id: r.code,
+                    label: r.name,
+                  })),
+              ]}
+              value={selectedRelation}
+              onChange={(val: string | number | null) =>
+                setSelectedRelation(String(val))
+              }
+              placeholder="Select Relation"
+              isLoading={relationsRes === undefined}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              color="primary"
+              onClick={() => setIsAssignModalOpen(false)}
+              disabled={isAssigning}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              onClick={handleSaveEmergencyRelation}
+              isLoading={isAssigning}
+              disabled={isAssigning}
+            >
+              Save Relation
+            </Button>
+          </div>
         </div>
       </Modal>
     </>

@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Column,
     Integer,
+    String,
     Boolean,
     Date,
     ForeignKey,
@@ -25,6 +26,8 @@ class UserDetail(Base):
     education_details = Column(JSONB, nullable=True)
     work_experience_details = Column(JSONB, nullable=True)
     other_details = Column(JSONB, nullable=True)
+    emergency_contact_relation = Column(String(50), nullable=True)
+    assigned_emergency_relation = Column(String(50), nullable=True)
 
     is_submitted = Column(Boolean, server_default="false", nullable=False)
     is_interview_submitted = Column(Boolean, server_default="false", nullable=False)

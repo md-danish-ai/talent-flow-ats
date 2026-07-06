@@ -40,6 +40,7 @@ export interface FamilyDetail {
   name: string;
   occupation: string;
   dependent: string;
+  contactNo?: string;
 }
 
 export interface SourceOfInformation {
@@ -96,4 +97,6 @@ export interface UserDetails {
   educationDetails: EducationDetail[];
   workExperienceDetails: WorkExperienceDetail[];
   otherDetails: OtherDetails;
+  emergency_contact_relation?: string;
+  assigned_emergency_relation?: string;
 }

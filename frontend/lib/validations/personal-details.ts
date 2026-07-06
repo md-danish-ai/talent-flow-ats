@@ -14,6 +14,7 @@ export interface FamilyMember {
   name: string;
   occupation: string;
   dependent: string;
+  contactNo?: string;
 }
 
 export interface Education {
@@ -87,6 +88,8 @@ export interface PersonalDetailsFormValues {
   shiftTime: string;
   expectedJoiningDate: string;
   expectedSalary: string;
+  emergencyContactRelation: string;
+  assignedEmergencyRelation: string;
 }
 
 /**
@@ -101,6 +104,7 @@ export const familyMemberSchema = z
     name: z.string().default(""),
     occupation: z.string().default(""),
     dependent: z.string().default(""),
+    contactNo: z.string().default(""),
   })
   .superRefine((data, ctx) => {
     const isMandatory =
@@ -327,6 +331,9 @@ export const categorySchema = z.string().min(1, "Category is required");
 export const maritalStatusSchema = z
   .string()
   .min(1, "Marital Status is required");
+export const emergencyContactRelationSchema = z
+  .string()
+  .min(1, "Emergency contact relation is required");
 
 const baseSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -379,6 +386,8 @@ const baseSchema = z.object({
   shiftTime: z.string().min(1, "Please select an option"),
   expectedJoiningDate: z.string().min(1, "Expected joining date is required"),
   expectedSalary: z.string().min(1, "Expected salary is required"),
+  emergencyContactRelation: emergencyContactRelationSchema,
+  assignedEmergencyRelation: z.string().default(""),
 });
 
 export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
@@ -448,6 +457,35 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
         message: "Anniversary Date is required when Married",
         path: ["anniversaryDate"],
       });
+    }
+
+    // Logic for Emergency Contact Number Validation
+    if (data.emergencyContactRelation) {
+      const emergencyMemberIndex = data.family.findIndex(
+        (m) => m.relation === data.emergencyContactRelation,
+      );
+      if (emergencyMemberIndex === -1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Please add details for your emergency contact relation`,
+          path: ["family"],
+        });
+      } else {
+        const member = data.family[emergencyMemberIndex];
+        if (!member.contactNo || member.contactNo.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Emergency contact number is required",
+            path: ["family", emergencyMemberIndex, "contactNo"],
+          });
+        } else if (!/^\d{10}$/.test(member.contactNo)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be a 10-digit number",
+            path: ["family", emergencyMemberIndex, "contactNo"],
+          });
+        }
+      }
     }
   }) as any;
 
