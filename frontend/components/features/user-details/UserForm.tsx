@@ -39,6 +39,13 @@ import { WorkExperienceStep } from "./timeline/WorkExperienceStep";
 import { OtherDetailsStep } from "./timeline/OtherDetailsStep";
 import { Timeline } from "./components/Timeline";
 import { SubmitModal } from "./components/SubmitModal";
+import {
+  useUserDetails,
+  useSaveUserDetails,
+  useUpdateUserDetails,
+} from "@hooks/api/user-details/use-user-details";
+import { useMe } from "@hooks/api/user/use-me";
+import type { UserDetails } from "@types";
 
 const STEP_CONTENT = [
   {
@@ -77,13 +84,6 @@ const STEP_CONTENT = [
     subtitle: "Provide additional employment details.",
   },
 ];
-
-import {
-  useUserDetails,
-  useSaveUserDetails,
-  useUpdateUserDetails,
-} from "@hooks/api/user-details/use-user-details";
-import type { UserDetails } from "@types";
 
 const sanitizeStr = (val: unknown, fallback = ""): string => {
   if (val === null || val === undefined) return fallback;
@@ -196,6 +196,10 @@ export function UserForm({
   // For User Portal (Self)
   const { data: selfDetails, isLoading: isLoadingSelf } = useUserDetails();
 
+  // Registered mobile from session — used as default for primaryMobile
+  const { data: currentUser } = useMe();
+  const registeredMobile = currentUser?.mobile ?? "";
+
   // Choose data source: Prop initialData -> SSR data -> Client-side fetch "me"
   const existingDetails = initialData || selfDetails;
   const isLoadingDetails = !initialData && !userId && isLoadingSelf;
@@ -216,7 +220,7 @@ export function UserForm({
         lastName: p.lastName || "",
         gender: p.gender || "Male",
         dob: p.dob || "",
-        primaryMobile: p.primaryMobile || "",
+        primaryMobile: p.primaryMobile || registeredMobile,
         alternateMobile: p.alternateMobile || "",
         email: p.email || "",
         presentAddressLine1: p.presentAddressLine1 || "",
@@ -276,8 +280,11 @@ export function UserForm({
         ...(initialData.otherDetails || {}),
       };
     }
-    return defaultPersonalDetailsValues;
-  }, [initialData]);
+    return {
+      ...defaultPersonalDetailsValues,
+      primaryMobile: registeredMobile,
+    };
+  }, [initialData, registeredMobile]);
 
   const form = useForm({
     // @ts-expect-error - validatorAdapter exists at runtime but type definition mismatch
@@ -437,7 +444,7 @@ export function UserForm({
         lastName: p.lastName || "",
         gender: p.gender || "Male",
         dob: p.dob || "",
-        primaryMobile: p.primaryMobile || "",
+        primaryMobile: p.primaryMobile || registeredMobile,
         alternateMobile: p.alternateMobile || "",
         email: p.email || "",
         presentAddressLine1: p.presentAddressLine1 || "",
@@ -703,7 +710,11 @@ export function UserForm({
             <div className="flex-1 w-full relative">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
-                  <PersonalDetailsStep key="step1" form={form} />
+                  <PersonalDetailsStep
+                    key="step1"
+                    form={form}
+                    registeredMobile={registeredMobile}
+                  />
                 )}
                 {currentStep === 2 && (
                   <PersonalDetailsPart2Step key="step2" form={form} />

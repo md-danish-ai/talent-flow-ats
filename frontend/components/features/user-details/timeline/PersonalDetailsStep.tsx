@@ -13,6 +13,7 @@ import { getErrorMessage } from "@lib/utils";
 
 export interface PersonalDetailsStepProps {
   form: PersonalDetailsForm;
+  registeredMobile?: string;
 }
 
 const StateDropdown = ({
@@ -70,7 +71,10 @@ const DistrictDropdown = ({
   );
 };
 
-export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
+export function PersonalDetailsStep({
+  form,
+  registeredMobile = "",
+}: PersonalDetailsStepProps) {
   const maxDobDate = new Date();
   maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
   maxDobDate.setDate(maxDobDate.getDate() - 1);
@@ -208,7 +212,8 @@ export function PersonalDetailsStep({ form }: PersonalDetailsStepProps) {
                   onChange={(e) =>
                     field.handleChange(e.target.value.replace(/\D/g, ""))
                   }
-                  placeholder="Enter primary mobile"
+                  placeholder={registeredMobile || "Enter primary mobile"}
+                  disabled={!!registeredMobile}
                   error={
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0

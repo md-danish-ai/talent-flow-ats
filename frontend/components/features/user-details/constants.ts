@@ -49,7 +49,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   lastName: "Danish",
   gender: "Male",
   dob: "1998-05-15",
-  primaryMobile: "9876543210",
+  primaryMobile: "",
   alternateMobile: "",
   email: "mohammed.danish@example.com",
   presentAddressLine1: "Arcgate IT Park",
