@@ -17,7 +17,7 @@ interface YearPickerProps {
   disablePast?: boolean;
   disableFuture?: boolean;
   minYear?: string | number;
-  placement?: "top" | "bottom";
+  placement?: "top" | "bottom" | "auto";
   disabled?: boolean;
 }
 
@@ -34,13 +34,16 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
       disablePast = false,
       disableFuture = true,
       minYear,
-      placement = "bottom",
+      placement = "auto",
       disabled = false,
     },
     ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [resolvedPlacement, setResolvedPlacement] = useState<
+      "top" | "bottom"
+    >("bottom");
     const [coords, setCoords] = useState({
       top: 0,
       left: 0,
@@ -51,6 +54,8 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
     const triggerRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    const DROPDOWN_HEIGHT = 280; // approx height of the year picker dropdown
+
     const updateCoords = () => {
       if (triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
@@ -60,6 +65,13 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
           width: rect.width,
           height: rect.height,
         });
+        // Auto-detect placement if not forced
+        if (placement === "auto") {
+          const spaceBelow = window.innerHeight - rect.bottom;
+          setResolvedPlacement(spaceBelow < DROPDOWN_HEIGHT ? "top" : "bottom");
+        } else {
+          setResolvedPlacement(placement);
+        }
       }
     };
 
@@ -141,7 +153,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
       );
     };
 
-    const isTop = placement === "top";
+    const isTop = resolvedPlacement === "top";
 
     const menuNode = (
       <AnimatePresence>

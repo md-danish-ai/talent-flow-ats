@@ -608,9 +608,10 @@ export function UserForm({
 
   return (
     <div className="w-full mx-auto max-w-[1400px]">
-      <div className="flex items-start gap-6">
-        {/* Left: Vertical Timeline sidebar */}
-        <div className="hidden md:block shrink-0 sticky top-8">
+      {/* Single card containing Timeline (left) + Form (right) */}
+      <div className="bg-card/90 backdrop-blur-2xl rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex relative overflow-hidden">
+        {/* ── Left: Timeline sidebar inside the card ── */}
+        <div className="hidden md:flex flex-col shrink-0 border-r border-border/40 bg-brand-primary/[0.03] px-5 py-8 sticky top-0 self-start min-h-full">
           <Timeline
             totalSteps={totalSteps}
             currentStep={currentStep}
@@ -619,8 +620,8 @@ export function UserForm({
           />
         </div>
 
-        {/* Right: Form card */}
-        <div className="flex-1 min-w-0 bg-card/90 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex flex-col relative overflow-hidden">
+        {/* ── Right: Form content ── */}
+        <div className="flex-1 min-w-0 p-8 md:p-10 flex flex-col">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -629,7 +630,7 @@ export function UserForm({
             }}
             className="flex-1 w-full flex flex-col"
           >
-            {/* Static Header with Title on Left, Buttons on Right */}
+            {/* Header: Title on Left, Buttons on Right */}
             <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
@@ -652,7 +653,7 @@ export function UserForm({
                 </div>
               </div>
 
-              {/* Next/Previous Buttons on Right */}
+              {/* Navigation Buttons */}
               <div className="flex items-center gap-3">
                 {currentStep > 1 && (
                   <Button
@@ -698,6 +699,7 @@ export function UserForm({
               </div>
             </div>
 
+            {/* Step content */}
             <div className="flex-1 w-full relative">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (

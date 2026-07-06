@@ -60,7 +60,6 @@ function StepNode({
     <div className="flex flex-col">
       {/* ── Step row: icon + label ── */}
       <div className="flex items-center gap-3">
-
         {/*
           Outer wrapper: perspective + fixed size so the 3-D transform works.
           Both faces are absolute-inset-0 — no more double-height problem.
@@ -81,15 +80,16 @@ function StepNode({
               <motion.div
                 className="absolute inset-0 rounded-xl bg-brand-primary/25 blur-md"
                 animate={{ opacity: [0.5, 0.9, 0.5] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 2.2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               />
             )}
 
             {/* Inner flip wrapper — CARD × CARD, both faces absolute */}
-            <div
-              className="relative"
-              style={{ width: CARD, height: CARD }}
-            >
+            <div className="relative" style={{ width: CARD, height: CARD }}>
               {/* FRONT */}
               <motion.div
                 style={{
@@ -104,11 +104,15 @@ function StepNode({
                     : hasError
                       ? "bg-destructive/10 border-destructive/50 text-destructive"
                       : isFuture
-                        ? "bg-white border-border/60 text-muted-foreground"
-                        : "bg-white border-brand-success/40 text-muted-foreground",
+                        ? "bg-card border-border/60 text-muted-foreground"
+                        : "bg-card border-brand-success/40 text-muted-foreground",
                 )}
               >
-                {hasError ? <X size={13} strokeWidth={3} /> : <span className="leading-none">{step}</span>}
+                {hasError ? (
+                  <X size={13} strokeWidth={3} />
+                ) : (
+                  <span className="leading-none">{step}</span>
+                )}
               </motion.div>
 
               {/* BACK — checkmark */}
@@ -147,10 +151,7 @@ function StepNode({
 
       {/* ── Connector — centred under the card column ── */}
       {!isLast && (
-        <div
-          className="flex justify-center"
-          style={{ width: CARD + 12 }}
-        >
+        <div className="flex justify-center" style={{ width: CARD + 12 }}>
           <div className="relative w-[2px] h-5 rounded-full bg-brand-primary/15 overflow-hidden">
             <motion.div
               className="absolute top-0 left-0 right-0 rounded-full bg-gradient-to-b from-brand-primary to-brand-accent"
@@ -171,13 +172,12 @@ export function Timeline({
   isStepValid,
 }: TimelineProps) {
   return (
-    <div className="rounded-2xl bg-brand-primary/5 border border-brand-primary/15 px-3 py-4 shadow-[0_4px_20px_rgba(var(--brand-primary),0.07)]">
+    <div className="w-full">
       <div className="flex flex-col">
         {Array.from({ length: totalSteps }).map((_, index) => {
           const step = index + 1;
           const isActive = step === currentStep;
-          const isAttempted =
-            touchedSteps.includes(step) || step < currentStep;
+          const isAttempted = touchedSteps.includes(step) || step < currentStep;
           const isCompleted = isAttempted && !isActive;
           const isValid = isStepValid(step);
           const hasError = !isValid && isAttempted && !isActive;
