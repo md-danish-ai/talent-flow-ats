@@ -2,8 +2,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { FileText } from "lucide-react";
-import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { DatePicker } from "@components/ui-elements/DatePicker";

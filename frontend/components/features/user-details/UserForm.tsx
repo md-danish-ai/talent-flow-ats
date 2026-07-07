@@ -16,8 +16,6 @@ import {
   Briefcase,
   FileText,
 } from "lucide-react";
-import { toast } from "@lib/toast";
-
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import {
@@ -555,7 +553,7 @@ export function UserForm({
         ...(details.otherDetails || {}),
       });
     }
-  }, [selfDetails, initialData, form]);
+  }, [selfDetails, initialData, form, registeredMobile]);
 
   const touchStepFields = React.useCallback(
     (step: number) => {

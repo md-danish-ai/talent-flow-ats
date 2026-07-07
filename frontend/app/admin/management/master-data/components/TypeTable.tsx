@@ -84,7 +84,6 @@ export function TypeTable({
   onToggleStatus,
 }: TypeTableProps) {
   const isSubject = activeTab === "subject";
-  const isLevel = activeTab === "exam_level";
   const hasDescription =
     activeTab === "subject" ||
     activeTab === "exam_level" ||

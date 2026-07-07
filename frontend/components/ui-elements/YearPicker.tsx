@@ -31,7 +31,6 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
       placeholder = "Select Year",
       label,
       error,
-      disablePast = false,
       disableFuture = true,
       minYear,
       placement = "auto",
@@ -56,7 +55,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
 
     const DROPDOWN_HEIGHT = 280; // approx height of the year picker dropdown
 
-    const updateCoords = () => {
+    const updateCoords = React.useCallback(() => {
       if (triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
         setCoords({
@@ -73,7 +72,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
           setResolvedPlacement(placement);
         }
       }
-    };
+    }, [placement]);
 
     const toggleDropdown = () => {
       if (disabled) return;
@@ -105,7 +104,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
         window.removeEventListener("scroll", updateCoords, true);
         window.removeEventListener("resize", updateCoords);
       };
-    }, [isOpen]);
+    }, [isOpen, updateCoords]);
 
     const handleYearClick = (year: number) => {
       onChange(year.toString());

@@ -31,7 +31,6 @@ import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
-import { Select } from "@components/ui-elements/Select";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
 

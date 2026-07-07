@@ -1,7 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Info } from "lucide-react";
-import { Typography } from "@components/ui-elements/Typography";
 import { Radio } from "@components/ui-elements/Radio";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 

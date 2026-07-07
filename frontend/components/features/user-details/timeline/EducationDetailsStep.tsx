@@ -1,10 +1,8 @@
 import React from "react";
 import type { DeepKeys } from "@tanstack/react-form";
 import { motion } from "framer-motion";
-import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
-import { Radio } from "@components/ui-elements/Radio";
-import { Trash2, Plus, GraduationCap } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { YearPicker } from "@components/ui-elements/YearPicker";

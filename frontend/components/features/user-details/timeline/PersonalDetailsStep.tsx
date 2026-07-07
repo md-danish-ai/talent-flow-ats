@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
@@ -152,7 +151,8 @@ export function PersonalDetailsStep({
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Enter email address"
+                  placeholder={registeredEmail || "Enter email address"}
+                  disabled={!!registeredEmail}
                   error={
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0

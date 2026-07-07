@@ -77,7 +77,7 @@ export function SelectDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const updateCoords = () => {
+  const updateCoords = React.useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
 
@@ -107,7 +107,7 @@ export function SelectDropdown({
         height: rect.height,
       });
     }
-  };
+  }, [placement]);
 
   const toggleDropdown = () => {
     if (disabled) return;
@@ -128,7 +128,7 @@ export function SelectDropdown({
       window.removeEventListener("scroll", updateCoords, true);
       window.removeEventListener("resize", updateCoords);
     };
-  }, [isOpen]);
+  }, [isOpen, updateCoords]);
 
   const selectedOption = options.find(
     (opt) => String(opt.id) === String(value),

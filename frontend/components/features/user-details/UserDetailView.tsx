@@ -17,7 +17,6 @@ import {
   Shield,
   Fingerprint,
   CreditCard,
-  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@components/ui-elements/Typography";
