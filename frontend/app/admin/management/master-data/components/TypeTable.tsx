@@ -83,10 +83,12 @@ export function TypeTable({
 
   onToggleStatus,
 }: TypeTableProps) {
-  const isSubject = activeTab === "subjects";
-  const isLevel = activeTab === "levels";
-  // Updated colSpan: 1 (Sr No) + 1 (Name) + 1 (Code) + 1 (Description) + (1 if isSubject for Exclusive) + 1 (Status) + 1 (Action)
-  const colSpan = isSubject ? 7 : 6;
+  const isSubject = activeTab === "subject";
+  const hasDescription =
+    activeTab === "subject" ||
+    activeTab === "exam_level" ||
+    activeTab === "interview_result";
+  const colSpan = 5 + (hasDescription ? 1 : 0) + (isSubject ? 1 : 0);
 
   return (
     <div className="overflow-x-auto w-full h-full flex flex-col">
@@ -97,14 +99,16 @@ export function TypeTable({
               Sr. No.
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              {isSubject ? "Subject Name" : isLevel ? "Level Name" : "Result"}
+              Name
             </TableHead>
             <TableHead className="font-bold text-slate-500 text-xs uppercase">
               Code
             </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Description
-            </TableHead>
+            {hasDescription && (
+              <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                Description
+              </TableHead>
+            )}
             {isSubject && (
               <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
                 Exclusive
@@ -144,9 +148,11 @@ export function TypeTable({
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {item.description || "-"}
-                </TableCell>
+                {hasDescription && (
+                  <TableCell className="text-muted-foreground">
+                    {item.description || "-"}
+                  </TableCell>
+                )}
                 {isSubject && (
                   <TableCell className="text-center">
                     {item.metadata?.is_exclusive ? (

@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Typography } from "@components/ui-elements/Typography";
 import { Radio } from "@components/ui-elements/Radio";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 
@@ -17,16 +16,10 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-5 pt-2"
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-6 text-gray-800"
-      >
-        3. Source of Information
-      </Typography>
-      <div className="space-y-4 mt-2 max-w-2xl mx-auto">
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+      <div className="space-y-5">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
             Have you ever been interviewed in Arcgate?{" "}
             <span className="text-red-500">*</span>
@@ -57,7 +50,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
             Have you Worked in Arcgate before?{" "}
             <span className="text-red-500">*</span>
@@ -88,7 +81,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
             What is the source of information for showing interest in ARCGATE?
             Please tick the appropriate from the given list.

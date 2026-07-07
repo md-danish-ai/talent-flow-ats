@@ -18,6 +18,7 @@ from app.departments.router import router as departments_router
 from app.papers.router import router as papers_router
 from app.paper_assignments.router import router as paper_assignments_router
 from app.dashboard.router import router as dashboard_router
+from app.locations.routers import router as locations_router
 from app.evaluations.router import router as evaluations_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
@@ -41,7 +42,7 @@ app.add_middleware(
         "http://192.168.136.5:3001",
         "http://interview.arcgate.in",
         "http://interview.arcgate.in:3000",
-        "http://interview.arcgate.in:3001"
+        "http://interview.arcgate.in:3001",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -117,6 +118,7 @@ app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
 app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
+app.include_router(locations_router, prefix="/api/v1")
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

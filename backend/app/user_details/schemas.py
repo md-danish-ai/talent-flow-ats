@@ -25,6 +25,18 @@ class PersonalDetailsSchema(BaseModel):
     sameAddress: bool
 
 
+class AdditionalPersonalDetailsSchema(BaseModel):
+    bloodGroup: Optional[str] = ""
+    aadhaarNo: str
+    nameAsPerAadhaar: str
+    panNo: str
+    nameAsPerPan: str
+    religion: str
+    category: str
+    maritalStatus: str
+    anniversaryDate: Optional[str] = ""
+
+
 class FamilyDetailSchema(BaseModel):
     id: int
     relationLabel: str
@@ -32,6 +44,7 @@ class FamilyDetailSchema(BaseModel):
     name: str
     occupation: str
     dependent: str
+    contactNo: Optional[str] = ""
 
 
 class SourceOfInformationSchema(BaseModel):
@@ -55,6 +68,7 @@ class EducationDetailSchema(BaseModel):
 class WorkExperienceDetailSchema(BaseModel):
     id: int
     company: str
+    employmentType: str
     designation: str
     joinDate: str
     relieveDate: str
@@ -74,8 +88,16 @@ class UserDetailsSchema(BaseModel):
     is_submitted: bool = False
     is_interview_submitted: bool = False
     personalDetails: PersonalDetailsSchema
+    additionalPersonalDetails: Optional[AdditionalPersonalDetailsSchema] = None
     familyDetails: List[FamilyDetailSchema]
     sourceOfInformation: SourceOfInformationSchema
     educationDetails: List[EducationDetailSchema]
     workExperienceDetails: List[WorkExperienceDetailSchema]
     otherDetails: OtherDetailsSchema
+    emergency_contact_relation: Optional[str] = None
+    assigned_emergency_relation: Optional[str] = None
+
+
+class AssignEmergencyRelationPayload(BaseModel):
+    user_id: int
+    relation_code: str

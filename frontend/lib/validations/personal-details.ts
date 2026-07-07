@@ -14,6 +14,7 @@ export interface FamilyMember {
   name: string;
   occupation: string;
   dependent: string;
+  contactNo?: string;
 }
 
 export interface Education {
@@ -21,7 +22,8 @@ export interface Education {
   type: string;
   school: string;
   board: string;
-  year: string;
+  startYear: string;
+  endYear: string;
   division: string;
   percentage: string;
   medium: string;
@@ -31,6 +33,7 @@ export interface Education {
 export interface WorkExperience {
   id: number;
   company: string;
+  employmentType: string;
   designation: string;
   joinDate: string;
   relieveDate: string;
@@ -59,6 +62,15 @@ export interface PersonalDetailsFormValues {
   permanentCity: string;
   permanentPincode: string;
   sameAddress: boolean;
+  bloodGroup: string;
+  aadhaarNo: string;
+  nameAsPerAadhaar: string;
+  panNo: string;
+  nameAsPerPan: string;
+  religion: string;
+  category: string;
+  maritalStatus: string;
+  anniversaryDate: string;
   family: FamilyMember[];
   interviewedBefore: string;
   workedBefore: string;
@@ -76,6 +88,8 @@ export interface PersonalDetailsFormValues {
   shiftTime: string;
   expectedJoiningDate: string;
   expectedSalary: string;
+  emergencyContactRelation: string;
+  assignedEmergencyRelation: string;
 }
 
 /**
@@ -90,6 +104,7 @@ export const familyMemberSchema = z
     name: z.string().default(""),
     occupation: z.string().default(""),
     dependent: z.string().default(""),
+    contactNo: z.string().default(""),
   })
   .superRefine((data, ctx) => {
     const isMandatory =
@@ -99,14 +114,10 @@ export const familyMemberSchema = z
       data.occupation.trim() !== "" ||
       data.dependent === "Yes" ||
       data.dependent === "No" ||
-      (data.relationLabel === "Brother/Sister" &&
-        (data.relation === "Brother" || data.relation === "Sister"));
+      (!isMandatory && data.relation.trim() !== "");
 
     if (isMandatory || hasDetails) {
-      if (
-        data.relationLabel === "Brother/Sister" &&
-        data.relation.trim() === ""
-      ) {
+      if (!isMandatory && data.relation.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Relation required",
@@ -143,7 +154,8 @@ export const educationSchema = z
     type: z.string(),
     school: z.string().default(""),
     board: z.string().default(""),
-    year: z.string().default(""),
+    startYear: z.string().default(""),
+    endYear: z.string().default(""),
     division: z.string().default(""),
     percentage: z.string().default(""),
     medium: z.string().default(""),
@@ -152,14 +164,29 @@ export const educationSchema = z
   .superRefine((data, ctx) => {
     const isMandatory = data.type === "10th Std" || data.type === "12th Std";
     const hasDetails =
+      data.type.trim() !== "" ||
       data.school.trim() !== "" ||
       data.board.trim() !== "" ||
-      data.year.trim() !== "" ||
+      data.startYear.trim() !== "" ||
+      data.endYear.trim() !== "" ||
       data.division.trim() !== "" ||
       data.percentage.trim() !== "" ||
-      data.medium.trim() !== "";
+      data.medium.trim() !== "" ||
+      data.details.trim() !== "";
 
     if (isMandatory || hasDetails) {
+      if (data.type.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Education required",
+          path: ["type"],
+        });
+      if (data.details.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Details required",
+          path: ["details"],
+        });
       if (data.school.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -172,11 +199,17 @@ export const educationSchema = z
           message: "Board required",
           path: ["board"],
         });
-      if (data.year.trim() === "")
+      if (data.startYear.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Year required",
-          path: ["year"],
+          message: "Start Year required",
+          path: ["startYear"],
+        });
+      if (data.endYear.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End Year required",
+          path: ["endYear"],
         });
       if (data.division.trim() === "")
         ctx.addIssue({
@@ -197,12 +230,23 @@ export const educationSchema = z
           path: ["medium"],
         });
     }
+
+    if (data.startYear.trim() !== "" && data.endYear.trim() !== "") {
+      if (parseInt(data.endYear, 10) <= parseInt(data.startYear, 10)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Must be > Start Year",
+          path: ["endYear"],
+        });
+      }
+    }
   });
 
 export const workExperienceSchema = z
   .object({
     id: z.number(),
     company: z.string().default(""),
+    employmentType: z.string().default(""),
     designation: z.string().default(""),
     joinDate: z.string().default(""),
     relieveDate: z.string().default(""),
@@ -214,6 +258,12 @@ export const workExperienceSchema = z
     const hasCompany = data.company.trim() !== "";
 
     if (hasCompany) {
+      if (data.employmentType.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Employment type required",
+          path: ["employmentType"],
+        });
       if (data.designation.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -244,31 +294,65 @@ export const workExperienceSchema = z
           message: "Salary required",
           path: ["salary"],
         });
+
+      if (data.joinDate.trim() !== "" && data.relieveDate.trim() !== "") {
+        const join = new Date(data.joinDate);
+        const relieve = new Date(data.relieveDate);
+        if (relieve < join) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be >= Join Date",
+            path: ["relieveDate"],
+          });
+        }
+      }
     }
   });
+
+export const bloodGroupSchema = z.string().min(1, "Blood Group is required");
+export const aadhaarNoSchema = z
+  .string()
+  .min(1, "Aadhaar Card Number is required")
+  .length(12, "Aadhaar number must be exactly 12 digits")
+  .regex(/^\d{12}$/, "Aadhaar number must contain only digits");
+export const nameAsPerAadhaarSchema = z
+  .string()
+  .min(1, "Name as per Aadhaar is required");
+export const panNoSchema = z
+  .string()
+  .min(1, "PAN Card Number is required")
+  .length(10, "PAN number must be exactly 10 characters")
+  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (e.g., ABCDE1234F)");
+export const nameAsPerPanSchema = z
+  .string()
+  .min(1, "Name as per PAN is required");
+export const religionSchema = z.string().min(1, "Religion is required");
+export const categorySchema = z.string().min(1, "Category is required");
+export const maritalStatusSchema = z
+  .string()
+  .min(1, "Marital Status is required");
+export const emergencyContactRelationSchema = z
+  .string()
+  .min(1, "Emergency contact relation is required");
 
 const baseSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
-  dob: z.string().min(1, "Date of birth is required"),
-  primaryMobile: z
-    .string()
-    .length(10, "Mobile number must be exactly 10 digits.")
-    .regex(/^\d+$/, "Mobile number must contain only digits."),
+  dob: z.string().min(1, "Date of Birth is required"),
+  primaryMobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
   alternateMobile: z
     .string()
-    .length(10, "Alternate mobile must be exactly 10 digits.")
-    .regex(/^\d+$/, "Alternate mobile must contain only digits.")
+    .regex(/^\d{10}$/, "Invalid alternate mobile number")
     .optional()
     .or(z.literal("")),
-  email: z.string().email("Valid email address is required"),
+  email: z.string().email("Invalid email address"),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
   presentState: z.string().min(1, "State is required"),
   presentDistrict: z.string().min(1, "District is required"),
   presentCity: z.string().min(1, "City is required"),
-  presentPincode: z.string().min(6, "Pincode must be 6 digits"),
+  presentPincode: z.string().min(1, "Pincode is required"),
   permanentAddressLine1: z.string().default(""),
   permanentAddressLine2: z.string().default(""),
   permanentState: z.string().default(""),
@@ -276,6 +360,15 @@ const baseSchema = z.object({
   permanentCity: z.string().default(""),
   permanentPincode: z.string().default(""),
   sameAddress: z.boolean(),
+  bloodGroup: bloodGroupSchema,
+  aadhaarNo: aadhaarNoSchema,
+  nameAsPerAadhaar: nameAsPerAadhaarSchema,
+  panNo: panNoSchema,
+  nameAsPerPan: nameAsPerPanSchema,
+  religion: religionSchema,
+  category: categorySchema,
+  maritalStatus: maritalStatusSchema,
+  anniversaryDate: z.string().default(""),
   family: z.array(familyMemberSchema),
   interviewedBefore: z.string().min(1, "Please select an option"),
   workedBefore: z.string().min(1, "Please select an option"),
@@ -293,6 +386,8 @@ const baseSchema = z.object({
   shiftTime: z.string().min(1, "Please select an option"),
   expectedJoiningDate: z.string().min(1, "Expected joining date is required"),
   expectedSalary: z.string().min(1, "Expected salary is required"),
+  emergencyContactRelation: emergencyContactRelationSchema,
+  assignedEmergencyRelation: z.string().default(""),
 });
 
 export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
@@ -347,6 +442,47 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
             code: z.ZodIssueCode.custom,
             message: "Pincode must be 6 digits",
             path: ["permanentPincode"],
+          });
+        }
+      }
+    }
+
+    // Logic for Anniversary Date
+    if (
+      data.maritalStatus === "Married" &&
+      data.anniversaryDate.trim() === ""
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Anniversary Date is required when Married",
+        path: ["anniversaryDate"],
+      });
+    }
+
+    // Logic for Emergency Contact Number Validation
+    if (data.emergencyContactRelation) {
+      const emergencyMemberIndex = data.family.findIndex(
+        (m) => m.relation === data.emergencyContactRelation,
+      );
+      if (emergencyMemberIndex === -1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Please add details for your emergency contact relation`,
+          path: ["family"],
+        });
+      } else {
+        const member = data.family[emergencyMemberIndex];
+        if (!member.contactNo || member.contactNo.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Emergency contact number is required",
+            path: ["family", emergencyMemberIndex, "contactNo"],
+          });
+        } else if (!/^\d{10}$/.test(member.contactNo)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be a 10-digit number",
+            path: ["family", emergencyMemberIndex, "contactNo"],
           });
         }
       }
