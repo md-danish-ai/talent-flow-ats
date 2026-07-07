@@ -618,8 +618,7 @@ export function UserForm({
     await form.validateAllFields("change");
 
     if (!isStepValid(currentStep)) {
-      setIncompleteSteps([currentStep]);
-      toast.error("Please fill all required fields correctly.");
+      // toast.error("Please fill all required fields correctly.");
 
       // Map Zod errors manually to TanStack form fields so that nested errors display correctly
       const result = personalDetailsSchema.safeParse(form.state.values);
@@ -641,8 +640,6 @@ export function UserForm({
           }));
         });
       }
-
-      return;
     }
 
     if (currentStep < totalSteps) {
