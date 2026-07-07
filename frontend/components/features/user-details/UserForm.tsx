@@ -208,9 +208,10 @@ export function UserForm({
   // For User Portal (Self)
   const { data: selfDetails, isLoading: isLoadingSelf } = useUserDetails();
 
-  // Registered mobile from session — used as default for primaryMobile
+  // Registered mobile and email from session
   const { data: currentUser } = useMe();
   const registeredMobile = currentUser?.mobile ?? "";
+  const registeredEmail = currentUser?.email ?? "";
 
   // Choose data source: Prop initialData -> SSR data -> Client-side fetch "me"
   const existingDetails = initialData || selfDetails;
@@ -234,7 +235,7 @@ export function UserForm({
         dob: p.dob || "",
         primaryMobile: p.primaryMobile || registeredMobile,
         alternateMobile: p.alternateMobile || "",
-        email: p.email || "",
+        email: p.email || registeredEmail,
         presentAddressLine1: p.presentAddressLine1 || "",
         presentAddressLine2: p.presentAddressLine2 || "",
         presentState: p.presentState || "",
@@ -318,8 +319,9 @@ export function UserForm({
     return {
       ...defaultPersonalDetailsValues,
       primaryMobile: registeredMobile,
+      email: registeredEmail,
     };
-  }, [initialData, registeredMobile]);
+  }, [initialData, registeredMobile, registeredEmail]);
 
   const form = useForm({
     // @ts-expect-error - validatorAdapter exists at runtime but type definition mismatch
@@ -794,6 +796,7 @@ export function UserForm({
                     key="step1"
                     form={form}
                     registeredMobile={registeredMobile}
+                    registeredEmail={registeredEmail}
                   />
                 )}
                 {currentStep === 2 && (

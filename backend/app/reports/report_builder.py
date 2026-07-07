@@ -213,20 +213,28 @@ def build_report_data(user_id: int, attempt_id: int) -> dict:
                 ]
 
             if ud.family_details:
-                relations = db.query(Classification).filter(Classification.type == "family_relation").all()
+                relations = (
+                    db.query(Classification)
+                    .filter(Classification.type == "family_relation")
+                    .all()
+                )
                 relation_map = {r.code: r.name for r in relations}
                 family_rows = []
                 for item in ud.family_details:
                     if not item.get("name"):
                         continue
                     relation_code = item.get("relation", "")
-                    relation_label = item.get("relationLabel") or relation_map.get(relation_code, relation_code)
-                    family_rows.append({
-                        "relation": relation_label,
-                        "name": item.get("name", ""),
-                        "occupation": item.get("occupation", ""),
-                        "dependent": item.get("dependent", ""),
-                    })
+                    relation_label = item.get("relationLabel") or relation_map.get(
+                        relation_code, relation_code
+                    )
+                    family_rows.append(
+                        {
+                            "relation": relation_label,
+                            "name": item.get("name", ""),
+                            "occupation": item.get("occupation", ""),
+                            "dependent": item.get("dependent", ""),
+                        }
+                    )
 
             if ud.work_experience_details:
                 work_exp_rows = [

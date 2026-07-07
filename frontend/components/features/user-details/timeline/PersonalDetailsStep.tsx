@@ -14,6 +14,7 @@ import { getErrorMessage } from "@lib/utils";
 export interface PersonalDetailsStepProps {
   form: PersonalDetailsForm;
   registeredMobile?: string;
+  registeredEmail?: string;
 }
 
 const StateDropdown = ({
@@ -74,6 +75,7 @@ const DistrictDropdown = ({
 export function PersonalDetailsStep({
   form,
   registeredMobile = "",
+  registeredEmail = "",
 }: PersonalDetailsStepProps) {
   const maxDobDate = new Date();
   maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);

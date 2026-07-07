@@ -25,49 +25,66 @@ export interface PersonalDetailsPart2StepProps {
   form: PersonalDetailsForm;
 }
 
-const BLOOD_GROUPS = [
-  { id: "A+", label: "A+" },
-  { id: "A-", label: "A-" },
-  { id: "B+", label: "B+" },
-  { id: "B-", label: "B-" },
-  { id: "O+", label: "O+" },
-  { id: "O-", label: "O-" },
-  { id: "AB+", label: "AB+" },
-  { id: "AB-", label: "AB-" },
-];
-
-const RELIGIONS = [
-  { id: "Hindu", label: "Hindu" },
-  { id: "Muslim", label: "Muslim" },
-  { id: "Christian", label: "Christian" },
-  { id: "Sikh", label: "Sikh" },
-  { id: "Buddhist", label: "Buddhist" },
-  { id: "Jain", label: "Jain" },
-  { id: "Parsi", label: "Parsi" },
-  { id: "Other", label: "Other" },
-];
-
-const CATEGORIES = [
-  { id: "General", label: "General" },
-  { id: "OBC", label: "OBC" },
-  { id: "SC", label: "SC" },
-  { id: "ST", label: "ST" },
-];
-
-const MARITAL_STATUSES = [
-  { id: "Single", label: "Single" },
-  { id: "Married", label: "Married" },
-  { id: "Divorcee", label: "Divorcee" },
-  { id: "Widow", label: "Widow" },
-];
-
 export function PersonalDetailsPart2Step({
   form,
 }: PersonalDetailsPart2StepProps) {
-  const { data: relationsRes } = useClassifications({
-    type: "family_relation",
-    is_active: true,
-  });
+  const { data: relationsRes, isLoading: isLoadingRelations } =
+    useClassifications({
+      type: "family_relation",
+      is_active: true,
+    });
+
+  const { data: bloodGroupRes, isLoading: isLoadingBloodGroup } =
+    useClassifications({
+      type: "blood_group",
+      is_active: true,
+    });
+
+  const { data: religionRes, isLoading: isLoadingReligion } =
+    useClassifications({
+      type: "religion",
+      is_active: true,
+    });
+
+  const { data: categoryRes, isLoading: isLoadingCategory } =
+    useClassifications({
+      type: "social_category",
+      is_active: true,
+    });
+
+  const { data: maritalStatusRes, isLoading: isLoadingMaritalStatus } =
+    useClassifications({
+      type: "marital_status",
+      is_active: true,
+    });
+
+  const bloodGroupOptions = React.useMemo(() => {
+    return (bloodGroupRes?.data || []).map((c: { name: string }) => ({
+      id: c.name,
+      label: c.name,
+    }));
+  }, [bloodGroupRes]);
+
+  const religionOptions = React.useMemo(() => {
+    return (religionRes?.data || []).map((c: { name: string }) => ({
+      id: c.name,
+      label: c.name,
+    }));
+  }, [religionRes]);
+
+  const categoryOptions = React.useMemo(() => {
+    return (categoryRes?.data || []).map((c: { name: string }) => ({
+      id: c.name,
+      label: c.name,
+    }));
+  }, [categoryRes]);
+
+  const maritalStatusOptions = React.useMemo(() => {
+    return (maritalStatusRes?.data || []).map((c: { name: string }) => ({
+      id: c.name,
+      label: c.name,
+    }));
+  }, [maritalStatusRes]);
 
   const emergencyOptions = React.useMemo(() => {
     const defaults = [
@@ -257,10 +274,11 @@ export function PersonalDetailsPart2Step({
                     Blood Group <span className="text-red-500">*</span>
                   </label>
                   <SelectDropdown
-                    options={BLOOD_GROUPS}
+                    options={bloodGroupOptions}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(String(val))}
                     placeholder="Select blood group"
+                    isLoading={isLoadingBloodGroup}
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
@@ -286,10 +304,11 @@ export function PersonalDetailsPart2Step({
                     Religion <span className="text-red-500">*</span>
                   </label>
                   <SelectDropdown
-                    options={RELIGIONS}
+                    options={religionOptions}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(String(val))}
                     placeholder="Select religion"
+                    isLoading={isLoadingReligion}
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
@@ -315,10 +334,11 @@ export function PersonalDetailsPart2Step({
                     Category <span className="text-red-500">*</span>
                   </label>
                   <SelectDropdown
-                    options={CATEGORIES}
+                    options={categoryOptions}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(String(val))}
                     placeholder="Select category"
+                    isLoading={isLoadingCategory}
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
@@ -347,7 +367,7 @@ export function PersonalDetailsPart2Step({
                     Marital Status <span className="text-red-500">*</span>
                   </label>
                   <SelectDropdown
-                    options={MARITAL_STATUSES}
+                    options={maritalStatusOptions}
                     value={field.state.value}
                     onChange={(val) => {
                       field.handleChange(String(val));
@@ -356,6 +376,7 @@ export function PersonalDetailsPart2Step({
                       }
                     }}
                     placeholder="Select marital status"
+                    isLoading={isLoadingMaritalStatus}
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
@@ -416,6 +437,7 @@ export function PersonalDetailsPart2Step({
                     value={field.state.value}
                     onChange={(val) => field.handleChange(String(val))}
                     placeholder="Select emergency contact relation"
+                    isLoading={isLoadingRelations}
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
