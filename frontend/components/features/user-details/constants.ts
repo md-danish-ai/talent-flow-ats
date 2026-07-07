@@ -336,7 +336,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
 export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   firstName: "",
   lastName: "",
-  gender: "Male",
+  gender: "",
   dob: "",
   primaryMobile: "",
   alternateMobile: "",

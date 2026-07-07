@@ -27,21 +27,21 @@ def _edu_rows_html(rows: list[dict]) -> str:
     if rows:
         return "".join(
             f"""<tr>
-              <td style="width: 15%;">{_esc(r.get("education", ""))}</td>
+              <td style="width: 13%;">{_esc(r.get("education", ""))}</td>
               <td style="width: 15%;">{_esc(r.get("details", ""))}</td>
-              <td style="width: 20%;">{_esc(r.get("school", ""))}</td>
-              <td style="width: 20%;">{_esc(r.get("board", ""))}</td>
-              <td style="width: 10%;">{_esc(r.get("medium", ""))}</td>
-              <td style="width: 8%;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
-              <td style="width: 7%;">{_esc(r.get("division", ""))}</td>
-              <td style="width: 5%;">{_esc(r.get("percentage", ""))}</td>
+              <td style="width: 18%;">{_esc(r.get("school", ""))}</td>
+              <td style="width: 15%; text-align: center;">{_esc(r.get("board", ""))}</td>
+              <td style="width: 10%; text-align: center;">{_esc(r.get("medium", ""))}</td>
+              <td style="width: 15%; text-align: center;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
+              <td style="width: 8%; text-align: center;">{_esc(r.get("division", ""))}</td>
+              <td style="width: 6%; text-align: center;">{_esc(r.get("percentage", ""))}</td>
             </tr>"""
             for r in rows
         )
     return """
-      <tr><td style="font-weight:bold; width: 15%;">10th Std</td><td style="width: 15%;"></td><td style="width: 20%;"></td><td style="width: 20%;"></td><td style="width: 10%;"></td><td style="width: 8%;"></td><td style="width: 7%;"></td><td style="width: 5%;"></td></tr>
-      <tr><td style="font-weight:bold; width: 15%;">12th Std</td><td style="width: 15%;"></td><td style="width: 20%;"></td><td style="width: 20%;"></td><td style="width: 10%;"></td><td style="width: 8%;"></td><td style="width: 7%;"></td><td style="width: 5%;"></td></tr>
-      <tr><td style="font-weight:bold; width: 15%;">Graduation</td><td style="width: 15%;"></td><td style="width: 20%;"></td><td style="width: 20%;"></td><td style="width: 10%;"></td><td style="width: 8%;"></td><td style="width: 7%;"></td><td style="width: 5%;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">10th Std</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">12th Std</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">Graduation</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
     """
 
 
@@ -193,7 +193,7 @@ def build_report_html(data: dict) -> str:
     font-size: 7.7pt;
   }}
   td, th {{
-    border: 1px solid #000;
+    border: 0.5px solid #000;
     padding: 1.6px 2.6px;
     vertical-align: middle;
     line-height: 1.08;
@@ -307,14 +307,14 @@ def build_report_html(data: dict) -> str:
 <table style="width: 100%;">
   <thead>
     <tr>
-      <th style="width: 15%; text-align: center;">Education</th>
+      <th style="width: 13%; text-align: center;">Education</th>
       <th style="width: 15%; text-align: center;">Education Details</th>
-      <th style="width: 20%; text-align: center;">School/College</th>
-      <th style="width: 20%; text-align: center;">Board/University</th>
+      <th style="width: 18%; text-align: center;">School/College</th>
+      <th style="width: 15%; text-align: center;">Board/University</th>
       <th style="width: 10%; text-align: center;">Medium</th>
-      <th style="width: 8%; text-align: center;">Passing Year</th>
-      <th style="width: 7%; text-align: center;">Division</th>
-      <th style="width: 5%; text-align: center;">%</th>
+      <th style="width: 15%; text-align: center;">Passing Year</th>
+      <th style="width: 8%; text-align: center;">Division</th>
+      <th style="width: 6%; text-align: center;">%</th>
     </tr>
   </thead>
   <tbody>
