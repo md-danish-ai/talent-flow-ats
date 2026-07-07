@@ -10,7 +10,9 @@ from app.duplicates.service import detect_duplicates
 from app.classifications.models import Classification
 
 
-async def save_user_details(user_id: int, data: UserDetailsSchema):
+async def save_user_details(
+    user_id: int, data: UserDetailsSchema, run_duplicate_check: bool = True
+):
     db_session = SessionLocal()
     try:
         # Convert Pydantic models to JSON-serializable dicts
@@ -100,10 +102,11 @@ async def save_user_details(user_id: int, data: UserDetailsSchema):
 
         db_session.commit()
 
-        try:
-            await detect_duplicates(db_session, int(user_id), data)
-        except Exception as dup_err:
-            print(f"Error detecting duplicates: {str(dup_err)}")
+        if run_duplicate_check:
+            try:
+                await detect_duplicates(db_session, int(user_id), data)
+            except Exception as dup_err:
+                print(f"Error detecting duplicates: {str(dup_err)}")
 
         return {
             "id": row["id"],
