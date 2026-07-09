@@ -20,6 +20,7 @@ from app.paper_assignments.router import router as paper_assignments_router
 from app.dashboard.router import router as dashboard_router
 from app.locations.routers import router as locations_router
 from app.evaluations.router import router as evaluations_router
+from app.reports.router import router as reports_router
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
@@ -118,6 +119,7 @@ app.include_router(papers_router)
 app.include_router(paper_assignments_router)
 app.include_router(dashboard_router)
 app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
+app.include_router(reports_router)
 app.include_router(locations_router, prefix="/api/v1")
 
 if __name__ == "__main__":
