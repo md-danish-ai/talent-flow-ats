@@ -12,7 +12,6 @@ from datetime import datetime
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import desc
 
-from app.database.db import get_db
 from app.interview_attempts import repository as attempt_repo
 from app.classifications.models import Classification
 from app.evaluations.models import InterviewEvaluation

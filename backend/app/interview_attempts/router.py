@@ -1,11 +1,7 @@
-import io
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
 
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import ResponseMessage, StatusCode, api_response
-from app.database.db import get_db
 from .schemas import (
     SaveAttemptAnswerRequest,
     StartAttemptRequest,
