@@ -18,11 +18,20 @@ from app.departments.models import Department
 from app.classifications.models import Classification as Cls
 from app.utils.pagination import create_paginated_response, PaginationParams
 from app.utils.expiration import run_auto_expiration
+from app.utils.department_helpers import is_software_department, exclude_software_users
 
 
 def signup_user(data):
     db_session = SessionLocal()
     try:
+        # Check if Software department
+        is_software = is_software_department(db_session, data.department_id)
+        if not is_software and not data.test_level_id:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Exam level is required for this department.",
+            )
+
         existing_user = (
             db_session.query(User).filter(User.mobile == data.mobile).first()
         )
@@ -51,13 +60,14 @@ def signup_user(data):
 
         # Trigger Auto-Assignment immediately after signup
         try:
-            assign_best_paper(
-                db=db_session,
-                user_id=new_user.id,
-                department_id=new_user.department_id,
-                test_level_id=new_user.test_level_id,
-                assigned_date=dt_date.today(),
-            )
+            if not is_software:
+                assign_best_paper(
+                    db=db_session,
+                    user_id=new_user.id,
+                    department_id=new_user.department_id,
+                    test_level_id=new_user.test_level_id,
+                    assigned_date=dt_date.today(),
+                )
             new_user.process_status = "ready"
             db_session.commit()
         except Exception as e:
@@ -142,13 +152,14 @@ def signin_user(data):
         # For regular users, check/trigger auto-assignment on login if not already assigned
         if user.role == "user":
             try:
-                assign_best_paper(
-                    db=db_session,
-                    user_id=user.id,
-                    department_id=user.department_id,
-                    test_level_id=user.test_level_id,
-                    assigned_date=dt_date.today(),
-                )
+                if not is_software_department(db_session, user.department_id):
+                    assign_best_paper(
+                        db=db_session,
+                        user_id=user.id,
+                        department_id=user.department_id,
+                        test_level_id=user.test_level_id,
+                        assigned_date=dt_date.today(),
+                    )
                 user.process_status = "ready"
                 db_session.commit()
             except Exception as e:
@@ -167,6 +178,7 @@ def signin_user(data):
             "access_token": token,
             "user": user_data,
         }
+
     finally:
         db_session.close()
 
@@ -312,6 +324,7 @@ def get_users_by_role(
     department_id: int = None,
     test_level_id: int = None,
     status: str = None,
+    exclude_software: bool = False,
 ):
     db_session = SessionLocal()
     try:
@@ -410,6 +423,10 @@ def get_users_by_role(
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
         )
+
+        # Exclude Software department users if requested
+        if exclude_software:
+            results_query = exclude_software_users(db_session, results_query)
 
         # Apply Filters
         if department_id:

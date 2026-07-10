@@ -5,7 +5,7 @@ export interface PersonalDetails {
   dob: string;
   primaryMobile: string;
   alternateMobile?: string;
-  email: string;
+  email?: string | null;
   presentAddressLine1: string;
   presentAddressLine2?: string;
   presentState: string;

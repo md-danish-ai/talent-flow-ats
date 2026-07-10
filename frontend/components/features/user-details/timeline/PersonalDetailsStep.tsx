@@ -144,7 +144,7 @@ export function PersonalDetailsStep({
             {(field) => (
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                  E-Mail <span className="text-red-500">*</span>
+                  E-Mail <span className="text-xs font-normal opacity-60">(Optional)</span>
                 </label>
                 <Input
                   type="email"

@@ -856,11 +856,14 @@ def get_admin_user_results(
 ) -> dict:
     db = SessionLocal()
     try:
+        from app.utils.department_helpers import exclude_software_users
+
         latest_record_ids_query = (
             db.query(func.max(InterviewRecord.id).label("latest_record_id"))
             .join(User, User.id == InterviewRecord.user_id)
             .filter(User.role == "user")
         )
+        latest_record_ids_query = exclude_software_users(db, latest_record_ids_query)
 
         if search:
             pattern = f"%{search.strip()}%"

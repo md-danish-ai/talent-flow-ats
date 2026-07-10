@@ -349,7 +349,7 @@ export function UserForm({
             dob: value.dob,
             primaryMobile: value.primaryMobile,
             alternateMobile: value.alternateMobile,
-            email: value.email,
+            email: value.email || null,
             presentAddressLine1: value.presentAddressLine1,
             presentAddressLine2: value.presentAddressLine2,
             presentState: value.presentState,

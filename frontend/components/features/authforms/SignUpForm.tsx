@@ -57,8 +57,14 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     },
     onSubmit: async ({ value }) => {
       setServerError(null);
+      
+      const submitValue = { ...value };
+      if (!submitValue.test_level_id) {
+        delete submitValue.test_level_id;
+      }
+      
       try {
-        const response = await signUpMutation.mutateAsync(value);
+        const response = await signUpMutation.mutateAsync(submitValue);
 
         if (onSuccess) {
           onSuccess();
@@ -207,73 +213,105 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
         </form.Field>
 
         {/* Row 3: Department and Test Level */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <form.Field name="department_id">
-            {(field) => (
-              <div className="group">
-                <Typography
-                  as="label"
-                  variant="h6"
-                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >
-                  Department
-                </Typography>
-                <SelectDropdown
-                  options={deptOptions}
-                  value={field.state.value}
-                  onChange={(val) => field.handleChange(String(val))}
-                  placeholder="Department"
-                  isLoading={isLoadingDepts}
-                  disabled={isLoadingDepts}
-                  placement="top"
-                  className="h-11 py-0"
-                />
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
-                    <Typography
-                      variant="body5"
-                      className="mt-1 font-semibold text-red-500"
-                    >
-                      {getErrorMessage(field.state.meta.errors[0])}
-                    </Typography>
+        <form.Subscribe selector={(state) => [state.values.department_id]}>
+          {([departmentId]) => {
+            const selectedDept = departments?.find((d) => String(d.id) === String(departmentId));
+            const isSoftwareDept = selectedDept?.name === "Software";
+            
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form.Field name="department_id">
+                  {(field) => (
+                    <div className="group">
+                      <Typography
+                        as="label"
+                        variant="h6"
+                        className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                      >
+                        Department
+                      </Typography>
+                      <SelectDropdown
+                        options={deptOptions}
+                        value={field.state.value}
+                        onChange={(val) => field.handleChange(String(val))}
+                        placeholder="Department"
+                        isLoading={isLoadingDepts}
+                        disabled={isLoadingDepts}
+                        placement="top"
+                        className="h-11 py-0"
+                      />
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors.length > 0 && (
+                          <Typography
+                            variant="body5"
+                            className="mt-1 font-semibold text-red-500"
+                          >
+                            {getErrorMessage(field.state.meta.errors[0])}
+                          </Typography>
+                        )}
+                    </div>
                   )}
-              </div>
-            )}
-          </form.Field>
+                </form.Field>
 
-          <form.Field name="test_level_id">
-            {(field) => (
-              <div className="group">
-                <Typography
-                  as="label"
-                  variant="h6"
-                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >
-                  Exam Level
-                </Typography>
-                <SelectDropdown
-                  options={levels}
-                  value={field.state.value}
-                  onChange={(val) => field.handleChange(String(val))}
-                  placeholder="Exam Level"
-                  isLoading={isLoadingLevels}
-                  disabled={isLoadingLevels}
-                  placement="top"
-                  className="h-11 py-0"
-                />
-                {field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 && (
+                {!isSoftwareDept ? (
+                  <form.Field
+                    name="test_level_id"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return "Please select an exam level";
+                        return undefined;
+                      }
+                    }}
+                  >
+                    {(field) => (
+                      <div className="group">
+                        <Typography
+                          as="label"
+                          variant="h6"
+                          className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                        >
+                          Exam Level
+                        </Typography>
+                        <SelectDropdown
+                          options={levels}
+                          value={field.state.value}
+                          onChange={(val) => field.handleChange(String(val))}
+                          placeholder="Exam Level"
+                          isLoading={isLoadingLevels}
+                          disabled={isLoadingLevels}
+                          placement="top"
+                          className="h-11 py-0"
+                        />
+                        {field.state.meta.isTouched &&
+                          field.state.meta.errors.length > 0 && (
+                            <Typography
+                              variant="body5"
+                              className="mt-1 font-semibold text-red-500"
+                            >
+                              {getErrorMessage(field.state.meta.errors[0])}
+                            </Typography>
+                          )}
+                      </div>
+                    )}
+                  </form.Field>
+                ) : (
+                  <div className="group opacity-60">
                     <Typography
-                      variant="body5"
-                      className="mt-1 font-semibold text-red-500"
+                      as="label"
+                      variant="h6"
+                      className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
                     >
-                      {getErrorMessage(field.state.meta.errors[0])}
+                      Exam Level
                     </Typography>
-                  )}
+                    <div className="h-11 flex items-center px-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-sm font-medium text-slate-500 select-none">
+                      Not required for Software department
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </form.Field>
-        </div>
+            );
+          }}
+        </form.Subscribe>
 
         <form.Subscribe
           selector={(state) => [state.isSubmitting, state.canSubmit]}

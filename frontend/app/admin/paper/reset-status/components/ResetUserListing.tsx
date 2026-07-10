@@ -102,7 +102,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
     resetFilters,
     refresh,
   } = useListing<UserListResponse, UserListingFilters>({
-    fetchFn: (params) => getUsersByRole("user", params),
+    fetchFn: (params) => getUsersByRole("user", { ...params, exclude_software: true }),
     initialFilters: {
       search: "",
       department: "all",

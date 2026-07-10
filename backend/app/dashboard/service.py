@@ -11,6 +11,7 @@ from app.user_details.models import UserDetail
 from .schemas import DashboardOverviewResponse, DashboardStats, TodayPulse, GradeCount
 from app.utils.expiration import run_auto_expiration
 from app.utils.grade_utils import GradeLabel
+from app.utils.department_helpers import exclude_software_users
 
 
 class DashboardService:
@@ -30,7 +31,10 @@ class DashboardService:
             # --- Top Stats (Overall status) ---
             # Standardizing role check to case-insensitive or common variants if needed,
             # but User model default is 'user'
-            total_candidates = db.query(User).filter(User.role == "user").count()
+            total_candidates_query = db.query(User).filter(User.role == "user")
+            total_candidates_query = exclude_software_users(db, total_candidates_query)
+            total_candidates = total_candidates_query.count()
+
             active_papers = db.query(Paper).filter(Paper.is_active).count()
             total_questions = db.query(Question).filter(Question.is_active).count()
 
@@ -52,17 +56,15 @@ class DashboardService:
             )
 
             # --- Today's Pulse (Filtered by Date Range and Role) ---
-            reg_count = (
-                db.query(User)
-                .filter(
-                    func.date(User.created_at) >= filter_start,
-                    func.date(User.created_at) <= filter_end,
-                    User.role == "user",
-                )
-                .count()
+            reg_query = db.query(User).filter(
+                func.date(User.created_at) >= filter_start,
+                func.date(User.created_at) <= filter_end,
+                User.role == "user",
             )
+            reg_query = exclude_software_users(db, reg_query)
+            reg_count = reg_query.count()
 
-            reinterviews_count = (
+            reinterviews_query = (
                 db.query(UserDetail)
                 .join(User, UserDetail.user_id == User.id)
                 .filter(
@@ -71,10 +73,11 @@ class DashboardService:
                     UserDetail.reinterview_date <= filter_end,
                     User.role == "user",
                 )
-                .count()
             )
+            reinterviews_query = exclude_software_users(db, reinterviews_query)
+            reinterviews_count = reinterviews_query.count()
 
-            assignments_count = (
+            assignments_query = (
                 db.query(PaperAssignment)
                 .join(User, PaperAssignment.user_id == User.id)
                 .filter(
@@ -82,8 +85,9 @@ class DashboardService:
                     PaperAssignment.assigned_date <= filter_end,
                     User.role == "user",
                 )
-                .count()
             )
+            assignments_query = exclude_software_users(db, assignments_query)
+            assignments_count = assignments_query.count()
 
             attempts_count = (
                 db.query(InterviewRecord)

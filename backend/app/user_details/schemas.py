@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import List, Optional, Dict
 
 
@@ -9,7 +9,14 @@ class PersonalDetailsSchema(BaseModel):
     dob: str
     primaryMobile: str
     alternateMobile: Optional[str] = ""
-    email: EmailStr
+    email: Optional[EmailStr] = None
+
+    @validator("email", pre=True)
+    def empty_email_to_none(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
+
     presentAddressLine1: str
     presentAddressLine2: Optional[str] = ""
     presentState: str
