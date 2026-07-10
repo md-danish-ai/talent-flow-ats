@@ -53,7 +53,7 @@ export const YearPicker = React.forwardRef<HTMLInputElement, YearPickerProps>(
     const triggerRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const DROPDOWN_HEIGHT = 280; // approx height of the year picker dropdown
+    const DROPDOWN_HEIGHT = 320; // approx height of the year picker dropdown
 
     const updateCoords = React.useCallback(() => {
       if (triggerRef.current) {

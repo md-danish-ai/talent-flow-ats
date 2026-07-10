@@ -82,6 +82,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       left: 0,
       width: 0,
       height: 0,
+      openUpward: false,
     });
 
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -90,11 +91,15 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
     const updateCoords = () => {
       if (triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
+        const calendarHeight = 380; // approx height of calendar popup
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const openUpward = spaceBelow < calendarHeight;
         setCoords({
           top: rect.top + window.scrollY,
           left: rect.left + window.scrollX,
           width: rect.width,
           height: rect.height,
+          openUpward,
         });
       }
     };
@@ -272,7 +277,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
                   const isFutureDay =
                     disableFuture && startOfDay(day) > startOfDay(new Date());
                   const isBeforeMinDate =
-                    minDate && startOfDay(day) <= startOfDay(new Date(minDate));
+                    minDate && startOfDay(day) < startOfDay(new Date(minDate));
                   const isAfterMaxDate =
                     maxDate && startOfDay(day) > startOfDay(new Date(maxDate));
                   const isDisabled =
@@ -426,7 +431,8 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       );
     };
 
-    const isTop = placement === "top";
+    // Auto-detect: open upward if not enough space below, else use prop
+    const isTop = coords.openUpward || placement === "top";
 
     const menuNode = (
       <AnimatePresence>

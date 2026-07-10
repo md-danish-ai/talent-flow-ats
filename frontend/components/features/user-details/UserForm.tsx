@@ -259,7 +259,10 @@ export function UserForm({
           initialData.additionalPersonalDetails?.maritalStatus || "",
         anniversaryDate:
           initialData.additionalPersonalDetails?.anniversaryDate || "",
-        emergencyContactRelation: initialData.emergency_contact_relation || "",
+        emergencyContactRelation:
+          initialData.assigned_emergency_relation ||
+          initialData.emergency_contact_relation ||
+          "",
         assignedEmergencyRelation:
           initialData.assigned_emergency_relation || "",
         family: (() => {
@@ -267,17 +270,21 @@ export function UserForm({
             initialData.familyDetails?.length > 0
               ? sanitizeFamily(initialData.familyDetails)
               : [...defaultPersonalDetailsValues.family];
-          const assignedCode = initialData.assigned_emergency_relation;
+          const emergencyCode =
+            initialData.assigned_emergency_relation ||
+            initialData.emergency_contact_relation;
           if (
-            assignedCode &&
-            !defaultFamily.some((f) => f.relation === assignedCode)
+            emergencyCode &&
+            !defaultFamily.some(
+              (f) => f.relation?.toUpperCase() === emergencyCode.toUpperCase(),
+            )
           ) {
             defaultFamily.push({
               id: Date.now(),
               relationLabel:
-                assignedCode.charAt(0).toUpperCase() +
-                assignedCode.slice(1).toLowerCase(),
-              relation: assignedCode,
+                emergencyCode.charAt(0).toUpperCase() +
+                emergencyCode.slice(1).toLowerCase(),
+              relation: emergencyCode,
               name: "",
               occupation: "",
               dependent: "",
@@ -462,7 +469,35 @@ export function UserForm({
   useEffect(() => {
     if (!initialData && selfDetails && !initializedRef.current) {
       const details = selfDetails as unknown as UserDetails;
-      if (!details.personalDetails) return;
+      if (!details.personalDetails) {
+        // User hasn't submitted form yet, but admin may have assigned emergency relation
+        if (details.assigned_emergency_relation) {
+          const assignedCode = details.assigned_emergency_relation;
+          form.setFieldValue("assignedEmergencyRelation", assignedCode);
+          form.setFieldValue("emergencyContactRelation", assignedCode);
+
+          // Dynamically add the assigned relation to family array so it shows up in Step 3
+          const currentFamily = form.getFieldValue("family") || [];
+          if (
+            !currentFamily.some(
+              (f) => f.relation?.toUpperCase() === assignedCode.toUpperCase(),
+            )
+          ) {
+            form.pushFieldValue("family", {
+              id: Date.now(),
+              relationLabel:
+                assignedCode.charAt(0).toUpperCase() +
+                assignedCode.slice(1).toLowerCase(),
+              relation: assignedCode,
+              name: "",
+              occupation: "",
+              dependent: "",
+              contactNo: "",
+            });
+          }
+        }
+        return;
+      }
       initializedRef.current = true; // Prevent future resets from background fetches
       const p = details.personalDetails;
 
@@ -507,24 +542,31 @@ export function UserForm({
         maritalStatus: details.additionalPersonalDetails?.maritalStatus || "",
         anniversaryDate:
           details.additionalPersonalDetails?.anniversaryDate || "",
-        emergencyContactRelation: details.emergency_contact_relation || "",
+        emergencyContactRelation:
+          details.assigned_emergency_relation ||
+          details.emergency_contact_relation ||
+          "",
         assignedEmergencyRelation: details.assigned_emergency_relation || "",
         family: (() => {
           const defaultFamily =
             details.familyDetails?.length > 0
               ? sanitizeFamily(details.familyDetails)
               : [...defaultPersonalDetailsValues.family];
-          const assignedCode = details.assigned_emergency_relation;
+          const emergencyCode =
+            details.assigned_emergency_relation ||
+            details.emergency_contact_relation;
           if (
-            assignedCode &&
-            !defaultFamily.some((f) => f.relation === assignedCode)
+            emergencyCode &&
+            !defaultFamily.some(
+              (f) => f.relation?.toUpperCase() === emergencyCode.toUpperCase(),
+            )
           ) {
             defaultFamily.push({
               id: Date.now(),
               relationLabel:
-                assignedCode.charAt(0).toUpperCase() +
-                assignedCode.slice(1).toLowerCase(),
-              relation: assignedCode,
+                emergencyCode.charAt(0).toUpperCase() +
+                emergencyCode.slice(1).toLowerCase(),
+              relation: emergencyCode,
               name: "",
               occupation: "",
               dependent: "",

@@ -86,24 +86,53 @@ export function PersonalDetailsPart2Step({
   }, [maritalStatusRes]);
 
   const emergencyOptions = React.useMemo(() => {
-    const defaults = [
-      { id: "FATHER", label: "Father" },
-      { id: "MOTHER", label: "Mother" },
-    ];
+    // Start with default FATHER and MOTHER
+    const optionsMap = new Map<string, string>([
+      ["FATHER", "Father"],
+      ["MOTHER", "Mother"],
+    ]);
+
+    // Add admin-assigned relation
     const assignedCode = form.state.values.assignedEmergencyRelation;
-    if (
-      assignedCode &&
-      assignedCode !== "FATHER" &&
-      assignedCode !== "MOTHER"
-    ) {
+    if (assignedCode) {
       const matched = (relationsRes?.data || []).find(
         (c: { code: string; name: string }) => c.code === assignedCode,
       );
       const label = matched ? matched.name : assignedCode;
-      defaults.push({ id: assignedCode, label: label });
+      const displayLabel =
+        label === assignedCode
+          ? assignedCode.charAt(0).toUpperCase() +
+            assignedCode.slice(1).toLowerCase()
+          : label;
+      optionsMap.set(assignedCode, displayLabel);
     }
-    return defaults;
-  }, [relationsRes, form.state.values.assignedEmergencyRelation]);
+
+    // Add any relations entered in the family details step
+    const familyMembers = form.state.values.family || [];
+    familyMembers.forEach((member) => {
+      if (member.relation) {
+        const code = member.relation;
+        const matched = (relationsRes?.data || []).find(
+          (c: { code: string; name: string }) => c.code === code,
+        );
+        const label = matched ? matched.name : member.relationLabel || code;
+        const displayLabel =
+          label === code
+            ? code.charAt(0).toUpperCase() + code.slice(1).toLowerCase()
+            : label;
+        optionsMap.set(code, displayLabel);
+      }
+    });
+
+    return Array.from(optionsMap.entries()).map(([id, label]) => ({
+      id,
+      label,
+    }));
+  }, [
+    relationsRes,
+    form.state.values.assignedEmergencyRelation,
+    form.state.values.family,
+  ]);
 
   return (
     <motion.div
@@ -434,7 +463,62 @@ export function PersonalDetailsPart2Step({
                   <SelectDropdown
                     options={emergencyOptions}
                     value={field.state.value}
-                    onChange={(val) => field.handleChange(String(val))}
+                    onChange={(val) => {
+                      const relationCode = String(val);
+                      const oldRelationCode = form.getFieldValue(
+                        "emergencyContactRelation",
+                      );
+                      field.handleChange(relationCode);
+
+                      let family = form.getFieldValue("family") || [];
+
+                      // Remove previous custom relation (not FATHER/MOTHER) from family details
+                      if (
+                        oldRelationCode &&
+                        oldRelationCode !== "FATHER" &&
+                        oldRelationCode !== "MOTHER" &&
+                        oldRelationCode !== relationCode
+                      ) {
+                        family = family.filter(
+                          (f) =>
+                            f.relation?.toUpperCase() !==
+                            oldRelationCode.toUpperCase(),
+                        );
+                      }
+
+                      // Add the new custom relation if not already present
+                      if (
+                        relationCode &&
+                        !family.some(
+                          (f) =>
+                            f.relation?.toUpperCase() ===
+                            relationCode.toUpperCase(),
+                        )
+                      ) {
+                        const matchedOpt = emergencyOptions.find(
+                          (opt) => opt.id === relationCode,
+                        );
+                        const label = matchedOpt
+                          ? matchedOpt.label
+                          : relationCode.charAt(0).toUpperCase() +
+                            relationCode.slice(1).toLowerCase();
+
+                        family = [
+                          ...family,
+                          {
+                            id: Date.now(),
+                            relationLabel: label,
+                            relation: relationCode,
+                            name: "",
+                            occupation: "",
+                            dependent: "",
+                            contactNo: "",
+                          },
+                        ];
+                      }
+
+                      form.setFieldValue("family", family);
+                    }}
                     placeholder="Select emergency contact relation"
                     isLoading={isLoadingRelations}
                     error={

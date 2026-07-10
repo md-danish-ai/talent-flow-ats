@@ -66,6 +66,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                 const isMandatory =
                   member.relation === "FATHER" ||
                   member.relation === "MOTHER" ||
+                  member.relation === emergencyRelation ||
                   (Boolean(assignedRelation) &&
                     member.relation === assignedRelation);
                 const isEmergencyContact =
