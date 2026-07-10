@@ -457,8 +457,13 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
         <button
           type="button"
           onClick={() => {
+            const education = form.getFieldValue("education") || [];
+            const nextId =
+              education.length > 0
+                ? Math.max(...education.map((e) => Number(e.id) || 0)) + 1
+                : 1;
             form.pushFieldValue("education", {
-              id: Date.now(),
+              id: nextId,
               type: "",
               school: "",
               board: "",

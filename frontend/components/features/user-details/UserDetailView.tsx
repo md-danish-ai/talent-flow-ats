@@ -47,22 +47,22 @@ export function UserDetailView({
     test_level_name,
   } = details;
 
-  const emergencyRelation = details.emergency_contact_relation;
+  // Admin-assigned relation takes priority over user-chosen relation
+  const emergencyRelationCode =
+    details.assigned_emergency_relation || details.emergency_contact_relation;
+
   const emergencyMember = familyDetails.find(
-    (f) => f.relation === emergencyRelation,
+    (f) => f.relation?.toUpperCase() === emergencyRelationCode?.toUpperCase(),
   );
   const emergencyContactNo = emergencyMember?.contactNo || "—";
 
-  const getRelationLabel = (relationCode?: string) => {
-    if (!relationCode) return "—";
-    if (relationCode === "FATHER") return "Father";
-    if (relationCode === "MOTHER") return "Mother";
-    const matchedMember = familyDetails.find(
-      (f) => f.relation === relationCode,
-    );
-    if (matchedMember?.relationLabel) return matchedMember.relationLabel;
+  const getEmergencyRelationLabel = () => {
+    if (!emergencyRelationCode) return "—";
+    if (emergencyMember?.relationLabel) return emergencyMember.relationLabel;
+    // Prettify code: "BROTHER" → "Brother"
     return (
-      relationCode.charAt(0).toUpperCase() + relationCode.slice(1).toLowerCase()
+      emergencyRelationCode.charAt(0).toUpperCase() +
+      emergencyRelationCode.slice(1).toLowerCase()
     );
   };
 
@@ -146,7 +146,7 @@ export function UserDetailView({
                 />
                 <DetailItem
                   label="Emergency Relation"
-                  value={getRelationLabel(details.emergency_contact_relation)}
+                  value={getEmergencyRelationLabel()}
                 />
               </div>
               <DetailItem

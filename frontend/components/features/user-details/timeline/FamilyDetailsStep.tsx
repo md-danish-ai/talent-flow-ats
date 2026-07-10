@@ -66,6 +66,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                 const isMandatory =
                   member.relation === "FATHER" ||
                   member.relation === "MOTHER" ||
+                  member.relation === emergencyRelation ||
                   (Boolean(assignedRelation) &&
                     member.relation === assignedRelation);
                 const isEmergencyContact =
@@ -318,8 +319,13 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
         <button
           type="button"
           onClick={() => {
+            const family = form.getFieldValue("family") || [];
+            const nextId =
+              family.length > 0
+                ? Math.max(...family.map((f) => Number(f.id) || 0)) + 1
+                : 1;
             form.pushFieldValue("family", {
-              id: Date.now(),
+              id: nextId,
               relationLabel: "",
               relation: "",
               name: "",

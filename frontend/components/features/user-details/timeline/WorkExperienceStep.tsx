@@ -406,8 +406,13 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
         <button
           type="button"
           onClick={() => {
+            const workExp = form.getFieldValue("workExp") || [];
+            const nextId =
+              workExp.length > 0
+                ? Math.max(...workExp.map((w) => Number(w.id) || 0)) + 1
+                : 1;
             form.pushFieldValue("workExp", {
-              id: Date.now(),
+              id: nextId,
               company: "",
               employmentType: "",
               designation: "",

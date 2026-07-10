@@ -367,7 +367,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
     {
       id: 1,
       relationLabel: "Father",
-      relation: "Father",
+      relation: "FATHER",
       name: "",
       occupation: "",
       dependent: "",
@@ -375,7 +375,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
     {
       id: 2,
       relationLabel: "Mother",
-      relation: "Mother",
+      relation: "MOTHER",
       name: "",
       occupation: "",
       dependent: "",
