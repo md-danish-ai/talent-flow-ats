@@ -506,7 +506,7 @@ export function PersonalDetailsPart2Step({
                         family = [
                           ...family,
                           {
-                            id: Date.now(),
+                            id: family.length + 1,
                             relationLabel: label,
                             relation: relationCode,
                             name: "",

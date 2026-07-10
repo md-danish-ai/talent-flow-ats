@@ -280,7 +280,7 @@ export function UserForm({
             )
           ) {
             defaultFamily.push({
-              id: Date.now(),
+              id: defaultFamily.length + 1,
               relationLabel:
                 emergencyCode.charAt(0).toUpperCase() +
                 emergencyCode.slice(1).toLowerCase(),
@@ -484,7 +484,7 @@ export function UserForm({
             )
           ) {
             form.pushFieldValue("family", {
-              id: Date.now(),
+              id: currentFamily.length + 1,
               relationLabel:
                 assignedCode.charAt(0).toUpperCase() +
                 assignedCode.slice(1).toLowerCase(),
@@ -562,7 +562,7 @@ export function UserForm({
             )
           ) {
             defaultFamily.push({
-              id: Date.now(),
+              id: defaultFamily.length + 1,
               relationLabel:
                 emergencyCode.charAt(0).toUpperCase() +
                 emergencyCode.slice(1).toLowerCase(),
