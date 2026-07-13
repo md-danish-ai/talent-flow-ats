@@ -288,27 +288,44 @@ For detailed instructions on setting up cloud backups (AWS S3 and Google Drive) 
 
 To run a manual or on-demand backup (reads configuration settings from the main `.env` file):
 
+**Option A: Running on the Host System (Without Docker)**
 ```bash
 ./backend/scripts/daily_backup.sh
 ```
+*(The script will automatically detect and communicate with the Docker database container to perform the backup)*
 
-- **Output**: A timestamped SQL file in `backend/backups/` named `talent_flow_ats_backup_YYYY-MM-DD.sql`.
-- **Method**: Exports only the **data** using `INSERT` statements.
-- **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
+**Option B: Running Inside the Backend Docker Container**
+```bash
+docker exec -it talent-flow-backend bash -c "/backend/scripts/daily_backup.sh"
+```
+
+*   **Output**: A timestamped SQL file in `backend/backups/` named `talent_flow_ats_backup_YYYY-MM-DD.sql`.
+*   **Method**: Exports only the **data** using `INSERT` statements.
+*   **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
 
 #### 2. Restoring the Database
 
-To restore the **most recent** backup from the `backend/backups/` directory (automatically resolves circular foreign-key constraints during insertion):
+To restore a backup file (automatically resolves circular foreign-key constraints during insertion):
 
-```bash
-./backend/scripts/restore_db.sh
-```
+**Option A: Running on the Host System (Without Docker)**
+*   Restore the **most recent** backup:
+    ```bash
+    ./backend/scripts/restore_db.sh
+    ```
+*   Restore a **specific** backup file:
+    ```bash
+    ./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
+    ```
 
-To restore a **specific** backup file:
-
-```bash
-./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
-```
+**Option B: Running Inside the Backend Docker Container**
+*   Restore the **most recent** backup:
+    ```bash
+    docker exec -it talent-flow-backend bash -c "/backend/scripts/restore_db.sh"
+    ```
+*   Restore a **specific** backup file:
+    ```bash
+    docker exec -it talent-flow-backend bash -c "/backend/scripts/restore_db.sh backend/backups/your_specific_file.sql"
+    ```
 
 > [!CAUTION]
 > The restore process will **truncate (empty)** existing tables and re-insert the data in hierarchical order. It preserves the table structure created by your migrations.
