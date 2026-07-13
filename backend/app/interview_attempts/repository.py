@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import HTTPException
+from app.utils.enums import ProcessStatus, RoleType, InterviewStatus, EvaluationStatus
 from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -456,7 +457,7 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
 
         if existing:
             # Server-side timer enforcement
-            if total_dur > 0 and existing.status == "started":
+            if total_dur > 0 and existing.status == InterviewStatus.STARTED.value:
                 started_utc = existing.started_at
                 if started_utc.tzinfo is None:
                     started_utc = started_utc.replace(tzinfo=timezone.utc)
@@ -465,13 +466,13 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
                     finalize_attempt(
                         record_id=existing.id,
                         user_id=user_id,
-                        status="auto_submitted",
+                        status=InterviewStatus.AUTO_SUBMITTED.value,
                         completion_reason="time_over",
                         is_auto_submitted=True,
                         db=db,
                     )
                     db.refresh(existing)
-                    if existing.status != "started":
+                    if existing.status != InterviewStatus.STARTED.value:
                         raise HTTPException(
                             status_code=StatusCode.BAD_REQUEST,
                             detail="Interview time has expired. Participation closed.",
@@ -507,7 +508,7 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
         # Update user status to inprogress
         user = db.query(User).filter(User.id == user_id).first()
         if user:
-            user.process_status = "inprogress"
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         db.commit()
         db.refresh(record)
@@ -545,7 +546,7 @@ def save_answer(
     try:
         record = _get_record_or_404(db, record_id, user_id)
 
-        if record.status != "started":
+        if record.status != InterviewStatus.STARTED.value:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Cannot save answer. Attempt is already submitted.",
@@ -637,7 +638,7 @@ def save_answers_batch(
     try:
         record = _get_record_or_404(db, record_id, user_id)
 
-        if record.status != "started":
+        if record.status != InterviewStatus.STARTED.value:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Cannot save answers. Attempt is already submitted.",
@@ -733,7 +734,7 @@ def finalize_attempt(
     try:
         record = _get_record_or_404(db, record_id, user_id)
 
-        if record.status != "started":
+        if record.status != InterviewStatus.STARTED.value:
             return get_attempt_summary(record_id, user_id)
 
         # 1. Materialize unanswered questions
@@ -783,7 +784,7 @@ def finalize_attempt(
         # Update physical status in User table
         user = db.query(User).filter(User.id == user_id).first()
         if user:
-            user.process_status = "submitted"
+            user.process_status = ProcessStatus.SUBMITTED.value
             # If manually resetting or something, we might want to keep it active.
             # But normally completion doesn't disable login unless expired.
 
@@ -861,7 +862,7 @@ def get_admin_user_results(
         latest_record_ids_query = (
             db.query(func.max(InterviewRecord.id).label("latest_record_id"))
             .join(User, User.id == InterviewRecord.user_id)
-            .filter(User.role == "user")
+            .filter(User.role == RoleType.USER.value)
         )
         latest_record_ids_query = exclude_software_users(db, latest_record_ids_query)
 
@@ -918,9 +919,17 @@ def get_admin_user_results(
         )
         summary_stats = {
             "total": sum(s[2] for s in stats_data),
-            "active": sum(s[2] for s in stats_data if s[0] == "started"),
+            "active": sum(
+                s[2] for s in stats_data if s[0] == InterviewStatus.STARTED.value
+            ),
             "completed": sum(
-                s[2] for s in stats_data if s[0] in ["submitted", "auto_submitted"]
+                s[2]
+                for s in stats_data
+                if s[0]
+                in [
+                    InterviewStatus.SUBMITTED.value,
+                    InterviewStatus.AUTO_SUBMITTED.value,
+                ]
             ),
             "excellent": sum(s[2] for s in stats_data if s[1] == GradeLabel.EXCELLENT),
             "good": sum(s[2] for s in stats_data if s[1] == GradeLabel.GOOD),
@@ -1036,7 +1045,11 @@ def get_admin_user_results(
                                 .filter(InterviewEvaluation.attempt_id == record.id)
                                 .order_by(
                                     case(
-                                        (InterviewEvaluation.status == "completed", 0),
+                                        (
+                                            InterviewEvaluation.status
+                                            == EvaluationStatus.COMPLETED.value,
+                                            0,
+                                        ),
                                         else_=1,
                                     ),
                                     InterviewEvaluation.updated_at.asc(),
@@ -1067,7 +1080,11 @@ def get_admin_user_results(
 def get_admin_user_attempts(user_id: int) -> dict:
     db = SessionLocal()
     try:
-        user = db.query(User).filter(User.id == user_id, User.role == "user").first()
+        user = (
+            db.query(User)
+            .filter(User.id == user_id, User.role == RoleType.USER.value)
+            .first()
+        )
         print(
             f"DEBUG BACKEND - User {user_id} is_active: {user.is_active if user else 'NOT FOUND'}"
         )
@@ -1142,7 +1159,11 @@ def get_admin_user_attempts(user_id: int) -> dict:
 def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) -> dict:
     db = SessionLocal()
     try:
-        user = db.query(User).filter(User.id == user_id, User.role == "user").first()
+        user = (
+            db.query(User)
+            .filter(User.id == user_id, User.role == RoleType.USER.value)
+            .first()
+        )
         if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND, detail=f"User {user_id} not found"
@@ -1416,7 +1437,7 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user = db.query(User).filter(User.id == user_id).first()
         if user:
             user.is_active = True
-            user.process_status = "ready"
+            user.process_status = ProcessStatus.READY.value
 
             # Immediately assign a paper for today so they are not expired again
             from app.paper_assignments.repository import assign_best_paper
@@ -1550,7 +1571,7 @@ def reset_subject_responses(
 
         # Reset attempt status
         record.started_at = datetime.now(timezone.utc)
-        record.status = "started"
+        record.status = InterviewStatus.STARTED.value
         record.submitted_at = None
         record.completion_reason = None
         record.is_auto_submitted = False
@@ -1679,7 +1700,7 @@ def get_active_attempt_status(user_id: int) -> dict:
             return {"has_attempt": False, "status": None, "is_expired": False}
 
         is_expired = False
-        if record.status == "started":
+        if record.status == InterviewStatus.STARTED.value:
             paper = _get_paper_or_404(db, record.paper_id)
             total_dur = _get_total_duration_minutes(paper)
             if total_dur > 0:

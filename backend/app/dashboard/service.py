@@ -12,6 +12,7 @@ from .schemas import DashboardOverviewResponse, DashboardStats, TodayPulse, Grad
 from app.utils.expiration import run_auto_expiration
 from app.utils.grade_utils import GradeLabel
 from app.utils.department_helpers import exclude_software_users
+from app.utils.enums import RoleType
 
 
 class DashboardService:
@@ -31,7 +32,9 @@ class DashboardService:
             # --- Top Stats (Overall status) ---
             # Standardizing role check to case-insensitive or common variants if needed,
             # but User model default is 'user'
-            total_candidates_query = db.query(User).filter(User.role == "user")
+            total_candidates_query = db.query(User).filter(
+                User.role == RoleType.USER.value
+            )
             total_candidates_query = exclude_software_users(db, total_candidates_query)
             total_candidates = total_candidates_query.count()
 
@@ -59,7 +62,7 @@ class DashboardService:
             reg_query = db.query(User).filter(
                 func.date(User.created_at) >= filter_start,
                 func.date(User.created_at) <= filter_end,
-                User.role == "user",
+                User.role == RoleType.USER.value,
             )
             reg_query = exclude_software_users(db, reg_query)
             reg_count = reg_query.count()
@@ -71,7 +74,7 @@ class DashboardService:
                     UserDetail.is_reinterview,
                     UserDetail.reinterview_date >= filter_start,
                     UserDetail.reinterview_date <= filter_end,
-                    User.role == "user",
+                    User.role == RoleType.USER.value,
                 )
             )
             reinterviews_query = exclude_software_users(db, reinterviews_query)
@@ -83,7 +86,7 @@ class DashboardService:
                 .filter(
                     PaperAssignment.assigned_date >= filter_start,
                     PaperAssignment.assigned_date <= filter_end,
-                    User.role == "user",
+                    User.role == RoleType.USER.value,
                 )
             )
             assignments_query = exclude_software_users(db, assignments_query)

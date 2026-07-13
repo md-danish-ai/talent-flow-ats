@@ -12,6 +12,7 @@ from datetime import date as dt_date, datetime, time
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm import aliased
+from app.utils.enums import ProcessStatus, RoleType, InterviewStatus
 from app.paper_assignments.models import PaperAssignment
 from app.papers.models import Paper
 from app.departments.models import Department
@@ -68,7 +69,8 @@ def signup_user(data):
                     test_level_id=new_user.test_level_id,
                     assigned_date=dt_date.today(),
                 )
-            new_user.process_status = "ready"
+            if new_user.department_id and new_user.test_level_id:
+                new_user.process_status = ProcessStatus.READY.value
             db_session.commit()
         except Exception as e:
             # Log error but don't fail signup.
@@ -130,7 +132,7 @@ def signin_user(data):
                 )
 
         # 3. Auto-expiration Check (Before checking if active)
-        if user.role == "user":
+        if user.role == RoleType.USER.value:
             run_auto_expiration(db_session)
             db_session.refresh(user)
 
@@ -150,7 +152,7 @@ def signin_user(data):
         # Role is now auto-detected from the database record
 
         # For regular users, check/trigger auto-assignment on login if not already assigned
-        if user.role == "user":
+        if user.role == RoleType.USER.value:
             try:
                 if not is_software_department(db_session, user.department_id):
                     assign_best_paper(
@@ -160,7 +162,7 @@ def signin_user(data):
                         test_level_id=user.test_level_id,
                         assigned_date=dt_date.today(),
                     )
-                user.process_status = "ready"
+                user.process_status = ProcessStatus.READY.value
                 db_session.commit()
             except Exception as e:
                 print(
@@ -263,7 +265,7 @@ def get_user_by_id(user_id):
             "created_at": user_obj.created_at,
         }
 
-        if user["role"] == "user":
+        if user["role"] == RoleType.USER.value:
             details = (
                 db_session.query(UserDetail)
                 .filter(UserDetail.user_id == user_id)
@@ -471,7 +473,8 @@ def get_users_by_role(
             if status == "pending":
                 results_query = results_query.filter(
                     or_(
-                        User.process_status == "pending", assignment_subq.c.rn.is_(None)
+                        User.process_status == ProcessStatus.PENDING.value,
+                        assignment_subq.c.rn.is_(None),
                     )
                 )
             else:
@@ -535,9 +538,13 @@ def get_users_by_role(
                     if row.asgn_date
                     else None,
                     "is_attempted": bool(row.asgn_is_attempted)
-                    or row.attempt_status in ["submitted", "auto_submitted"],
+                    or row.attempt_status
+                    in [
+                        InterviewStatus.SUBMITTED.value,
+                        InterviewStatus.AUTO_SUBMITTED.value,
+                    ],
                     "has_started": row.attempt_id is not None
-                    and row.attempt_status == "started",
+                    and row.attempt_status == InterviewStatus.STARTED.value,
                 }
                 if row.asgn_paper_id
                 else None,

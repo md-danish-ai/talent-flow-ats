@@ -9,6 +9,7 @@ from app.utils.pagination import PaginationParams, get_pagination_params
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.duplicates.service import DuplicateService
 from app.duplicates.schemas import NotificationReadRequest
+from app.utils.enums import RoleType
 from typing import Optional
 
 router = APIRouter(prefix="/notifications", tags=["Admin Notifications"])
@@ -26,7 +27,7 @@ async def get_notifications(
     is_read: Optional[bool] = Query(None, description="Filter by read/unread status"),
 ):
     user_role = getattr(request.state, "user_role", None)
-    target_user_id = None if user_role == "admin" else current_user
+    target_user_id = None if user_role == RoleType.ADMIN.value else current_user
 
     service = DuplicateService(db)
     data = await service.get_notifications(pagination, is_read, target_user_id)
@@ -43,7 +44,7 @@ async def mark_notifications_read(
     current_user: int = Depends(authenticate_user),
 ):
     user_role = getattr(request.state, "user_role", None)
-    target_user_id = None if user_role == "admin" else current_user
+    target_user_id = None if user_role == RoleType.ADMIN.value else current_user
 
     service = DuplicateService(db)
     count = await service.mark_read(payload.notification_ids, target_user_id)
@@ -64,7 +65,7 @@ async def mark_notifications_unread(
     current_user: int = Depends(authenticate_user),
 ):
     user_role = getattr(request.state, "user_role", None)
-    target_user_id = None if user_role == "admin" else current_user
+    target_user_id = None if user_role == RoleType.ADMIN.value else current_user
 
     service = DuplicateService(db)
     count = await service.mark_unread(payload.notification_ids, target_user_id)
@@ -85,7 +86,9 @@ async def stream_notifications(
     """
     user_role = getattr(request.state, "user_role", None)
     # Admin gets all global events, others get specific ones
-    target_id = "admin" if user_role == "admin" else str(current_user)
+    target_id = (
+        RoleType.ADMIN.value if user_role == RoleType.ADMIN.value else str(current_user)
+    )
 
     async def event_generator():
         print(f"SSE: User {target_id} connected")
