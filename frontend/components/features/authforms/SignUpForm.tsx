@@ -57,12 +57,12 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     },
     onSubmit: async ({ value }) => {
       setServerError(null);
-      
+
       const submitValue = { ...value };
       if (!submitValue.test_level_id) {
         delete submitValue.test_level_id;
       }
-      
+
       try {
         const response = await signUpMutation.mutateAsync(submitValue);
 
@@ -215,9 +215,11 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
         {/* Row 3: Department and Test Level */}
         <form.Subscribe selector={(state) => [state.values.department_id]}>
           {([departmentId]) => {
-            const selectedDept = departments?.find((d) => String(d.id) === String(departmentId));
+            const selectedDept = departments?.find(
+              (d) => String(d.id) === String(departmentId),
+            );
             const isSoftwareDept = selectedDept?.name === "Software";
-            
+
             return (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <form.Field name="department_id">
@@ -260,7 +262,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                       onChange: ({ value }) => {
                         if (!value) return "Please select an exam level";
                         return undefined;
-                      }
+                      },
                     }}
                   >
                     {(field) => (
