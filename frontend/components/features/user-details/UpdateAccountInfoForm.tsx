@@ -77,12 +77,12 @@ export function UpdateAccountInfoForm({
     onSubmit: async ({ value }) => {
       setServerError(null);
       setServerSuccess(null);
-      
+
       const submitValue = { ...value };
       if (!submitValue.test_level_id) {
         delete submitValue.test_level_id;
       }
-      
+
       try {
         await updateMutation.mutateAsync(submitValue);
         setServerSuccess("Account information updated successfully!");
@@ -215,7 +215,9 @@ export function UpdateAccountInfoForm({
 
         <form.Subscribe selector={(state) => [state.values.department_id]}>
           {([departmentId]) => {
-            const selectedDept = departments?.find((d) => String(d.id) === String(departmentId));
+            const selectedDept = departments?.find(
+              (d) => String(d.id) === String(departmentId),
+            );
             const isSoftwareDept = selectedDept?.name === "Software";
             return (
               <>
@@ -226,7 +228,7 @@ export function UpdateAccountInfoForm({
                       onChange: ({ value }) => {
                         if (!value) return "Please select an exam level";
                         return undefined;
-                      }
+                      },
                     }}
                   >
                     {(field) => (
@@ -249,7 +251,10 @@ export function UpdateAccountInfoForm({
                         />
                         {field.state.meta.isTouched &&
                           field.state.meta.errors.length > 0 && (
-                            <Typography variant="body5" className="mt-1 text-red-500">
+                            <Typography
+                              variant="body5"
+                              className="mt-1 text-red-500"
+                            >
                               {getErrorMessage(field.state.meta.errors[0])}
                             </Typography>
                           )}
@@ -292,7 +297,10 @@ export function UpdateAccountInfoForm({
                       />
                       {field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0 && (
-                          <Typography variant="body5" className="mt-1 text-red-500">
+                          <Typography
+                            variant="body5"
+                            className="mt-1 text-red-500"
+                          >
                             {getErrorMessage(field.state.meta.errors[0])}
                           </Typography>
                         )}
