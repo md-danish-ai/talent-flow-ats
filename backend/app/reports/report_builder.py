@@ -127,15 +127,13 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     # 4. Personal fields
     gender = _get_answer(answers, ["gender"])
     dob = _get_answer(answers, ["date of birth", "dob"])
-    address = _get_answer(
-        answers, ["address", "current address", "permanent address"])
+    address = _get_answer(answers, ["address", "current address", "permanent address"])
     arcgate = _get_answer(answers, ["worked in arcgate", "previously worked"])
     commitment = _get_answer(
         answers, ["1 year service commitment", "willing for 1 year"]
     )
     shift_time = _get_answer(answers, ["preferred shift time", "shift time"])
-    joining = _get_answer(
-        answers, ["joining date if selected", "joining date"])
+    joining = _get_answer(answers, ["joining date if selected", "joining date"])
     salary = _get_answer(answers, ["salary expected", "expected salary"])
     how_did_you_hear = _get_answer(
         answers, ["how did you hear about arcgate", "how did you hear"]
@@ -146,10 +144,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     education_rows = _parse_json_field(
         answers, ["educational qualification", "education"]
     )
-    family_rows = _parse_json_field(
-        answers, ["family detail", "family member"])
-    work_exp_rows = _parse_json_field(
-        answers, ["work experience", "experience"])
+    family_rows = _parse_json_field(answers, ["family detail", "family member"])
+    work_exp_rows = _parse_json_field(answers, ["work experience", "experience"])
 
     # Override using actual data from user_details table if present
     ud = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
@@ -325,8 +321,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     )
 
     # 9. Find first submitted evaluation
-    completed_evals = [
-        ev for ev in evaluations if ev.get("status") == "completed"]
+    completed_evals = [ev for ev in evaluations if ev.get("status") == "completed"]
     first_eval = None
     if completed_evals:
         completed_evals_sorted = sorted(

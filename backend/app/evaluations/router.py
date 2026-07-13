@@ -5,6 +5,7 @@ from . import repository, schemas
 from app.utils.response_handler import ResponseHandler
 from app.utils.status_codes import StatusCode
 from app.utils.dependencies import authenticate_user
+from app.utils.enums import RoleType, EvaluationStatus
 
 router = APIRouter()
 
@@ -193,7 +194,10 @@ def get_user_evaluation_history(
         history = []
         for eval_obj, lead_name, result_name in results:
             # Role-based visibility: Project lead only sees their own feedback
-            if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
+            if (
+                user_role == RoleType.PROJECT_LEAD.value
+                and eval_obj.project_lead_id != current_user
+            ):
                 continue
 
             history.append(
@@ -233,7 +237,10 @@ def get_evaluation_history(
         history = []
         for eval_obj, lead_name, result_name in results:
             # Role-based visibility: Project lead only sees their own feedback
-            if user_role == "project_lead" and eval_obj.project_lead_id != current_user:
+            if (
+                user_role == RoleType.PROJECT_LEAD.value
+                and eval_obj.project_lead_id != current_user
+            ):
                 continue
 
             history.append(
@@ -266,7 +273,7 @@ async def unassign_interview(evaluation_id: int, db: Session = Depends(get_db)):
                 status_code=StatusCode.NOT_FOUND, detail="Assignment not found"
             )
 
-        if eval_obj.status == "completed":
+        if eval_obj.status == EvaluationStatus.COMPLETED.value:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Cannot unassign a completed evaluation",

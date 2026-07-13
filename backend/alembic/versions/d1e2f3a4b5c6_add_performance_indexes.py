@@ -3,7 +3,7 @@
 Revision ID: d1e2f3a4b5c6
 Revises: bbebf9c48f6f
 Create Date: 2026-05-12 16:00:00.000000
-
+Created By: md-danish-ai
 Adds composite DB indexes to handle 50-100 concurrent candidates without
 full table scans. Critical for:
 - start_attempt: filters on (paper_id, user_id, status)

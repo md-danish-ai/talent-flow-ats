@@ -12,17 +12,27 @@ from datetime import date as dt_date, datetime, time
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm import aliased
+from app.utils.enums import ProcessStatus, RoleType, InterviewStatus
 from app.paper_assignments.models import PaperAssignment
 from app.papers.models import Paper
 from app.departments.models import Department
 from app.classifications.models import Classification as Cls
 from app.utils.pagination import create_paginated_response, PaginationParams
 from app.utils.expiration import run_auto_expiration
+from app.utils.department_helpers import is_software_department, exclude_software_users
 
 
 def signup_user(data):
     db_session = SessionLocal()
     try:
+        # Check if Software department
+        is_software = is_software_department(db_session, data.department_id)
+        if not is_software and not data.test_level_id:
+            raise HTTPException(
+                status_code=StatusCode.BAD_REQUEST,
+                detail="Exam level is required for this department.",
+            )
+
         existing_user = (
             db_session.query(User).filter(User.mobile == data.mobile).first()
         )
@@ -51,14 +61,16 @@ def signup_user(data):
 
         # Trigger Auto-Assignment immediately after signup
         try:
-            assign_best_paper(
-                db=db_session,
-                user_id=new_user.id,
-                department_id=new_user.department_id,
-                test_level_id=new_user.test_level_id,
-                assigned_date=dt_date.today(),
-            )
-            new_user.process_status = "ready"
+            if not is_software:
+                assign_best_paper(
+                    db=db_session,
+                    user_id=new_user.id,
+                    department_id=new_user.department_id,
+                    test_level_id=new_user.test_level_id,
+                    assigned_date=dt_date.today(),
+                )
+            if new_user.department_id and new_user.test_level_id:
+                new_user.process_status = ProcessStatus.READY.value
             db_session.commit()
         except Exception as e:
             # Log error but don't fail signup.
@@ -120,7 +132,7 @@ def signin_user(data):
                 )
 
         # 3. Auto-expiration Check (Before checking if active)
-        if user.role == "user":
+        if user.role == RoleType.USER.value:
             run_auto_expiration(db_session)
             db_session.refresh(user)
 
@@ -140,16 +152,17 @@ def signin_user(data):
         # Role is now auto-detected from the database record
 
         # For regular users, check/trigger auto-assignment on login if not already assigned
-        if user.role == "user":
+        if user.role == RoleType.USER.value:
             try:
-                assign_best_paper(
-                    db=db_session,
-                    user_id=user.id,
-                    department_id=user.department_id,
-                    test_level_id=user.test_level_id,
-                    assigned_date=dt_date.today(),
-                )
-                user.process_status = "ready"
+                if not is_software_department(db_session, user.department_id):
+                    assign_best_paper(
+                        db=db_session,
+                        user_id=user.id,
+                        department_id=user.department_id,
+                        test_level_id=user.test_level_id,
+                        assigned_date=dt_date.today(),
+                    )
+                user.process_status = ProcessStatus.READY.value
                 db_session.commit()
             except Exception as e:
                 print(
@@ -167,6 +180,7 @@ def signin_user(data):
             "access_token": token,
             "user": user_data,
         }
+
     finally:
         db_session.close()
 
@@ -251,7 +265,7 @@ def get_user_by_id(user_id):
             "created_at": user_obj.created_at,
         }
 
-        if user["role"] == "user":
+        if user["role"] == RoleType.USER.value:
             details = (
                 db_session.query(UserDetail)
                 .filter(UserDetail.user_id == user_id)
@@ -312,6 +326,7 @@ def get_users_by_role(
     department_id: int = None,
     test_level_id: int = None,
     status: str = None,
+    exclude_software: bool = False,
 ):
     db_session = SessionLocal()
     try:
@@ -411,6 +426,10 @@ def get_users_by_role(
             .filter(User.role == role)
         )
 
+        # Exclude Software department users if requested
+        if exclude_software:
+            results_query = exclude_software_users(db_session, results_query)
+
         # Apply Filters
         if department_id:
             results_query = results_query.filter(
@@ -454,7 +473,8 @@ def get_users_by_role(
             if status == "pending":
                 results_query = results_query.filter(
                     or_(
-                        User.process_status == "pending", assignment_subq.c.rn.is_(None)
+                        User.process_status == ProcessStatus.PENDING.value,
+                        assignment_subq.c.rn.is_(None),
                     )
                 )
             else:
@@ -518,9 +538,13 @@ def get_users_by_role(
                     if row.asgn_date
                     else None,
                     "is_attempted": bool(row.asgn_is_attempted)
-                    or row.attempt_status in ["submitted", "auto_submitted"],
+                    or row.attempt_status
+                    in [
+                        InterviewStatus.SUBMITTED.value,
+                        InterviewStatus.AUTO_SUBMITTED.value,
+                    ],
                     "has_started": row.attempt_id is not None
-                    and row.attempt_status == "started",
+                    and row.attempt_status == InterviewStatus.STARTED.value,
                 }
                 if row.asgn_paper_id
                 else None,

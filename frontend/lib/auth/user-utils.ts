@@ -10,6 +10,7 @@ export interface CurrentUser {
   email?: string;
   mobile?: string;
   department_id?: number | string;
+  department_name?: string | null;
   test_level_id?: number | string;
   created_at?: string;
   is_submitted: boolean;

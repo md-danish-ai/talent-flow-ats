@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Dict
+from app.utils.enums import EvaluationStatus
 
 
 class EvaluationMetricRating(BaseModel):
@@ -13,7 +14,7 @@ class InterviewEvaluationBase(BaseModel):
     project_lead_id: int
     attempt_id: int
     round_type: str = "F2F"
-    status: str = "pending"
+    status: str = EvaluationStatus.PENDING.value
     evaluation_data: Dict[str, str] = {}
     overall_grade: Optional[str] = None
     final_result_id: Optional[int] = None
@@ -39,7 +40,7 @@ class InterviewEvaluationUpdate(BaseModel):
     overall_grade: Optional[str] = None
     final_result_id: Optional[int] = None
     comments: Optional[str] = None
-    status: str = "completed"
+    status: str = EvaluationStatus.COMPLETED.value
 
 
 class InterviewEvaluationResponse(InterviewEvaluationBase):

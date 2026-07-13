@@ -344,9 +344,8 @@ const baseSchema = z.object({
   alternateMobile: z
     .string()
     .regex(/^\d{10}$/, "Invalid alternate mobile number")
-    .optional()
     .or(z.literal("")),
-  email: z.string().email("Invalid email address"),
+  email: z.union([z.string().email("Invalid email address"), z.literal("")]),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
   presentState: z.string().min(1, "State is required"),

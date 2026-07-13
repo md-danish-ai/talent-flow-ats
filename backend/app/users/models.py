@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.database.db import Base
+from app.utils.enums import RoleType
 
 
 class User(Base):
@@ -27,7 +28,9 @@ class User(Base):
 
     test_level_id = Column(Integer, ForeignKey("classifications.id"), nullable=True)
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
-    role = Column(String(50), nullable=False, server_default=text("'user'"))
+    role = Column(
+        String(50), nullable=False, server_default=text(f"'{RoleType.USER.value}'")
+    )
 
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
     process_status = Column(

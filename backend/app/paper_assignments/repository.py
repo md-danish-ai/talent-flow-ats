@@ -10,6 +10,7 @@ from app.papers.repository import get_paper
 from app.questions import repository as question_repository
 from app.users.models import User
 from app.utils.status_codes import StatusCode
+from app.utils.enums import ProcessStatus, RoleType
 from app.core.redis_client import get_cached_data, set_cached_data
 
 from sqlalchemy import func, or_
@@ -235,7 +236,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         .filter(
             User.department_id == rule.department_id,
             User.test_level_id == rule.test_level_id,
-            User.role == "user",
+            User.role == RoleType.USER.value,
             User.is_active.is_(True),
             or_(
                 func.date(User.created_at) == rule.assigned_date,
@@ -323,7 +324,9 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     assigner_id = rule.created_by
     creator_exists = db.query(User.id).filter(User.id == assigner_id).first()
     if not creator_exists:
-        fallback_admin = db.query(User.id).filter(User.role == "admin").first()
+        fallback_admin = (
+            db.query(User.id).filter(User.role == RoleType.ADMIN.value).first()
+        )
         assigner_id = fallback_admin.id if fallback_admin else rule.created_by
 
     # Sort pending users by ID for deterministic order
@@ -350,7 +353,7 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
         db.add_all(new_assignments)
         # Update status to ready
         db.query(User).filter(User.id.in_(pending_user_ids)).update(
-            {User.process_status: "ready"}, synchronize_session=False
+            {User.process_status: ProcessStatus.READY.value}, synchronize_session=False
         )
 
     db.commit()
@@ -416,7 +419,9 @@ def assign_best_paper(
     assigner_id = rule.created_by
     creator_exists = db.query(User.id).filter(User.id == assigner_id).first()
     if not creator_exists:
-        fallback_admin = db.query(User.id).filter(User.role == "admin").first()
+        fallback_admin = (
+            db.query(User.id).filter(User.role == RoleType.ADMIN.value).first()
+        )
         assigner_id = fallback_admin.id if fallback_admin else rule.created_by
 
     # Subquery to get counts for these specific papers today
@@ -469,7 +474,7 @@ def assign_best_paper(
     # Update user status to ready
     user = db.query(User).filter(User.id == user_id).first()
     if user:
-        user.process_status = "ready"
+        user.process_status = ProcessStatus.READY.value
 
     db.commit()
     db.refresh(assignment)
@@ -585,7 +590,7 @@ def assign_paper_to_user(
         db.query(User)
         .filter(
             User.id == payload.user_id,
-            User.role == "user",
+            User.role == RoleType.USER.value,
             User.is_active.is_(True),
         )
         .first()
@@ -640,7 +645,7 @@ def assign_paper_to_user(
     # Update user status to ready
     user = db.query(User).filter(User.id == payload.user_id).first()
     if user:
-        user.process_status = "ready"
+        user.process_status = ProcessStatus.READY.value
 
     db.commit()
     db.refresh(assignment)
