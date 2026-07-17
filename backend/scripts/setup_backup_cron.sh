@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# =============================================================
+# ===============================================================================================================
 # setup_backup_cron.sh - Daily Backup Scheduler Registration
-# =============================================================
+# ===============================================================================================================
 # macOS       : Registers a LaunchAgent (com.talentflow.dbbackup.plist)
 #               (Recommended over cron on macOS due to FDA/TCC permissions)
 # Linux       : Registers a crontab entry to run daily_backup.sh
@@ -10,7 +10,7 @@
 # Usage (from project root):
 #   chmod +x backend/scripts/setup_backup_cron.sh
 #   ./backend/scripts/setup_backup_cron.sh
-# =============================================================
+# ===============================================================================================================
 
 set -euo pipefail
 
@@ -43,7 +43,7 @@ TEST_INTERVAL_SECONDS=${TEST_INTERVAL_SECONDS:-}
 CRON_HOUR=${CRON_HOUR:-23}
 CRON_MIN=${CRON_MIN:-55}
 
-echo "================================================="
+echo "==================================================================================================="
 echo "Talent Flow ATS - Daily Backup Scheduler"
 echo "  Platform : $OS"
 echo "  Script   : $BACKUP_SCRIPT"
@@ -52,11 +52,11 @@ if [ -n "$TEST_INTERVAL_SECONDS" ]; then
 else
     echo "  Schedule : Daily at ${CRON_HOUR}:$(printf '%02d' $CRON_MIN)"
 fi
-echo "================================================="
+echo "==================================================================================================="
 
-# =============================================================
+# ===============================================================================================================
 # WINDOWS: Task Scheduler
-# =============================================================
+# ===============================================================================================================
 if [ "$OS" = "windows" ]; then
     echo ""
     echo "crontab is not available on Windows."
@@ -93,13 +93,13 @@ if [ "$OS" = "windows" ]; then
     echo ""
     echo "--- Remove the task:"
     echo "  Unregister-ScheduledTask -TaskName 'TalentFlowDailyBackup'"
-    echo "================================================="
+    echo "==================================================================================================="
     exit 0
 fi
 
-# =============================================================
+# ===============================================================================================================
 # macOS: LaunchAgent (plist)
-# =============================================================
+# ===============================================================================================================
 if [ "$OS" = "mac" ]; then
     PLIST_NAME="com.talentflow.dbbackup"
     PLIST_PATH="$HOME/Library/LaunchAgents/${PLIST_NAME}.plist"
@@ -123,7 +123,7 @@ if [ "$OS" = "mac" ]; then
     fi
 
     echo "Creating LaunchAgent configuration at $PLIST_PATH..."
-    
+
     # Generate LaunchAgent plist file
     if [ -n "$TEST_INTERVAL_SECONDS" ]; then
         # Using StartInterval (repeats every X seconds)
@@ -198,13 +198,13 @@ EOF
     echo ""
     echo "--- Unregister / Remove:"
     echo "  launchctl unload $PLIST_PATH && rm $PLIST_PATH"
-    echo "================================================="
+    echo "==================================================================================================="
     exit 0
 fi
 
-# =============================================================
+# ===============================================================================================================
 # LINUX: crontab
-# =============================================================
+# ===============================================================================================================
 if [ "$OS" = "linux" ]; then
     # Make the backup script executable
     chmod +x "$BACKUP_SCRIPT"
@@ -252,5 +252,5 @@ if [ "$OS" = "linux" ]; then
     echo ""
     echo "--- Remove:"
     echo "  crontab -e  (delete the Talent Flow ATS line)"
-    echo "================================================="
+    echo "==================================================================================================="
 fi

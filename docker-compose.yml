@@ -104,5 +104,13 @@ services:
       interval: 10s
       retries: 5
 
+  backup-logs:
+    container_name: talent-flow-backup-logs
+    image: busybox
+    restart: always
+    volumes:
+      - ./backend/backups:/backups:ro
+    command: tail -F /backups/backup.log /backups/cron.log
+
 volumes:
   postgres_data:

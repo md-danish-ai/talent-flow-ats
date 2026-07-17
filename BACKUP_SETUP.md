@@ -125,3 +125,27 @@ To automate the daily backups, run the scheduler configuration script from the p
 ### Platform Compatibility:
 *   **macOS & Linux**: The script automatically registers a background crontab daemon schedule to trigger `daily_backup.sh` every day at 02:00 AM local time.
 *   **Windows**: The script outputs the PowerShell command script block needed to create a task in Windows Task Scheduler. Run the printed commands inside an Administrator PowerShell terminal.
+
+---
+
+## 6. Monitoring Backup Logs
+
+Both daily automated runs and manual runs log their details to `backup.log` and `cron.log`. 
+
+### View via Docker Compose (Recommended)
+Stream the logs in real-time using Docker:
+```bash
+docker compose logs -f backup-logs
+```
+
+### View on the Host System
+```bash
+tail -f backend/backups/backup.log
+tail -f backend/backups/cron.log
+```
+
+### View inside the Backend Container
+```bash
+docker exec -it talent-flow-backend tail -f /backend/backups/backup.log
+docker exec -it talent-flow-backend tail -f /backend/backups/cron.log
+```
