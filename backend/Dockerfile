@@ -2,31 +2,36 @@ FROM python:3.11-slim
 
 WORKDIR /backend
 
-# System deps: postgres tools + build tools for pycairo (xhtml2pdf dep)
+# System deps: build tools for pycairo (xhtml2pdf dep)
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Kolkata
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        postgresql-client \
+       tzdata \
        build-essential \
        gcc \
        libcairo2-dev \
        pkg-config \
        python3-dev \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # Python deps
 COPY backend/requirements.txt /backend/requirements.txt
 RUN pip install --no-cache-dir -r /backend/requirements.txt
 
-# Copy backend code (includes scripts/run_migrations.sh)
+# Copy backend code (includes scripts/)
 COPY backend /backend
 
 # Make Python imports work
 ENV PYTHONPATH=/backend
 
-#  This is the line that makes the run_migrations.sh script executable
+# Make scripts executable
 RUN chmod +x /backend/scripts/run_migrations.sh
 
 EXPOSE 4000
 
-# Run app.main when the container launches
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "4000"]
+CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:4000", "--timeout", "60", "--graceful-timeout", "30"]

@@ -36,8 +36,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Load configurations from the main .env file if present
-ENV_FILE="$PROJECT_ROOT/.env"
-if [ -f "$ENV_FILE" ]; then
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    ENV_FILE="$PROJECT_ROOT/.env"
+elif [ -f "/env/.env" ]; then
+    ENV_FILE="/env/.env"
+elif [ -f "$SCRIPT_DIR/../.env" ]; then
+    ENV_FILE="$SCRIPT_DIR/../.env"
+else
+    ENV_FILE=""
+fi
+
+if [ -n "$ENV_FILE" ]; then
     # shellcheck disable=SC1090
     set -a
     source "$ENV_FILE"

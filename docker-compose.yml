@@ -24,8 +24,10 @@ services:
       HF_TOKEN: ${HF_TOKEN}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      TZ: Asia/Kolkata
     volumes:
       - ./backend:/backend
+      - .env:/backend/.env:ro
     command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 60 --graceful-timeout 30 --reload
 
   frontend:
@@ -110,7 +112,7 @@ services:
     restart: always
     volumes:
       - ./backend/backups:/backups:ro
-    command: tail -F /backups/backup.log /backups/cron.log
+    command: tail -F /backups/backup.log
 
 volumes:
   postgres_data:
