@@ -85,10 +85,10 @@ def insert_users():
 
             query = """
                 INSERT INTO users (
-                    username, mobile, email, password, role, is_active, 
+                    username, mobile, email, password, role, is_active,
                     created_by, created_at, updated_at, department_id, test_level_id
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (mobile) DO UPDATE SET 
+                ON CONFLICT (mobile) DO UPDATE SET
                     created_at = EXCLUDED.created_at,
                     updated_at = EXCLUDED.updated_at,
                     email = EXCLUDED.email,

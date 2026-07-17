@@ -338,7 +338,19 @@ To register the daily backup to run automatically at 12:00 AM (midnight) local t
 ./backend/scripts/setup_backup_cron.sh
 ```
 
-#### 4. Ideal Recovery Flow
+#### 4. Monitoring Backup Logs
+
+You can view the database backup creation and cloud upload logs directly via Docker Compose:
+
+```bash
+docker compose logs -f backup-logs
+```
+
+Alternatively, you can view the raw log files:
+*   **Host**: `tail -f backend/backups/backup.log` or `tail -f backend/backups/cron.log`
+*   **Docker Container**: `docker exec -it talent-flow-backend tail -f /backend/backups/backup.log`
+
+#### 5. Ideal Recovery Flow
 
 If you need to reset and recover your data (e.g., after `docker compose down -v`):
 

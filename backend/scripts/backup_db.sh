@@ -4,9 +4,9 @@ set -e
 # Add common MacOS paths for homebrew/docker/postgres
 export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 
-# =================================================
+# ===================================================================================================
 # Default local DB config (can be overridden)
-# =================================================
+# ===================================================================================================
 : "${DB_HOST:=localhost}"
 : "${DB_PORT:=5435}"
 : "${DB_NAME:=talent_flow_ats}"
@@ -20,18 +20,18 @@ mkdir -p "$BACKUP_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 OUTPUT_FILE="$BACKUP_DIR/db_backup_$TIMESTAMP.sql"
 
-echo "================================================="
+echo "==================================================================================================="
 echo "🚀 Starting database export"
 echo "📝 Target: $OUTPUT_FILE"
-echo "================================================="
+echo "==================================================================================================="
 echo "DB: $DB_USER@$DB_HOST:$DB_PORT/$DB_NAME"
-echo "================================================="
+echo "==================================================================================================="
 
 # Helper function to run database tools (prefers local, fallbacks to Docker)
-function run_db_tool() {
+run_db_tool() {
     local tool=$1
     shift
-    
+
     if command -v "$tool" &> /dev/null; then
         # Run locally
         export PGPASSWORD="$DB_PASSWORD"
@@ -52,15 +52,18 @@ function run_db_tool() {
 
 # Check if there are any tables in the database
 echo "📊 Checking table data status..."
+# Run ANALYZE to update statistics before checking row counts
+run_db_tool psql -c "ANALYZE;" &> /dev/null || true
+
 TABLE_COUNT=$(run_db_tool psql -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';")
 TABLE_COUNT=$(echo "$TABLE_COUNT" | xargs) # trim whitespace
 
 # Check status of tables and count total rows
 TABLE_DATA=$(run_db_tool psql -t -c "
-    SELECT 
-        relname as table_name, 
-        n_live_tup as row_count 
-    FROM pg_stat_user_tables 
+    SELECT
+        relname as table_name,
+        n_live_tup as row_count
+    FROM pg_stat_user_tables
     WHERE schemaname = 'public' AND relname != 'alembic_version'
     ORDER BY n_live_tup DESC;")
 
@@ -79,15 +82,15 @@ while read -r line; do
 done <<< "$TABLE_DATA"
 
 if [ "$TOTAL_ROWS" -eq 0 ]; then
-    echo "================================================="
+    echo "==================================================================================================="
     echo "⏹️  Export skipped: All tables in '$DB_NAME' are empty."
-    echo "================================================="
+    echo "==================================================================================================="
     exit 0
 fi
 
-echo "================================================="
+echo "==================================================================================================="
 echo "📈 Total rows to export: $TOTAL_ROWS"
-echo "================================================="
+echo "==================================================================================================="
 
 # Run pg_dump
 # --data-only: export only data, no schema
@@ -97,7 +100,7 @@ echo "================================================="
 # -T alembic_version: exclude the migration version table to preserve schema state
 run_db_tool pg_dump -F p --data-only --column-inserts --no-owner --no-privileges -T alembic_version > "$OUTPUT_FILE"
 
-echo "================================================="
+echo "==================================================================================================="
 echo "✅ Database export completed successfully"
 echo "📁 File: $OUTPUT_FILE"
-echo "================================================="
+echo "==================================================================================================="
