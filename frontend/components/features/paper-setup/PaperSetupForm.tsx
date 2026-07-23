@@ -478,12 +478,22 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                                 <Input
                                   placeholder="Qty"
                                   type="number"
+                                  min="0"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "-" || e.key === "e") {
+                                      e.preventDefault();
+                                    }
+                                  }}
                                   value={config.question_count || ""}
                                   onChange={(e) => {
+                                    const val = Math.max(
+                                      0,
+                                      Number(e.target.value) || 0,
+                                    );
                                     const newConfigs = [...field.state.value];
                                     newConfigs[index] = {
                                       ...newConfigs[index],
-                                      question_count: Number(e.target.value),
+                                      question_count: val,
                                     };
                                     field.handleChange(newConfigs);
                                   }}
@@ -519,12 +529,22 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                                 <Input
                                   placeholder="Marks"
                                   type="number"
+                                  min="0"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "-" || e.key === "e") {
+                                      e.preventDefault();
+                                    }
+                                  }}
                                   value={config.total_marks || ""}
                                   onChange={(e) => {
+                                    const val = Math.max(
+                                      0,
+                                      Number(e.target.value) || 0,
+                                    );
                                     const newConfigs = [...field.state.value];
                                     newConfigs[index] = {
                                       ...newConfigs[index],
-                                      total_marks: Number(e.target.value),
+                                      total_marks: val,
                                     };
                                     field.handleChange(newConfigs);
                                   }}
@@ -560,12 +580,22 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                                 <Input
                                   placeholder="Time"
                                   type="number"
+                                  min="0"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "-" || e.key === "e") {
+                                      e.preventDefault();
+                                    }
+                                  }}
                                   value={config.time_minutes || ""}
                                   onChange={(e) => {
+                                    const val = Math.max(
+                                      0,
+                                      Number(e.target.value) || 0,
+                                    );
                                     const newConfigs = [...field.state.value];
                                     newConfigs[index] = {
                                       ...newConfigs[index],
-                                      time_minutes: Number(e.target.value),
+                                      time_minutes: val,
                                     };
                                     field.handleChange(newConfigs);
                                   }}
@@ -601,12 +631,22 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                                 <Input
                                   placeholder="Order"
                                   type="number"
+                                  min="0"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "-" || e.key === "e") {
+                                      e.preventDefault();
+                                    }
+                                  }}
                                   value={config.order || ""}
                                   onChange={(e) => {
+                                    const val = Math.max(
+                                      0,
+                                      Number(e.target.value) || 0,
+                                    );
                                     const newConfigs = [...field.state.value];
                                     newConfigs[index] = {
                                       ...newConfigs[index],
-                                      order: Number(e.target.value),
+                                      order: val,
                                     };
                                     field.handleChange(newConfigs);
                                   }}
