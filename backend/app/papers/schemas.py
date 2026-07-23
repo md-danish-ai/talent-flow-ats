@@ -11,6 +11,14 @@ class SubjectConfigItem(BaseModel):
     time_minutes: int
     order: int
 
+    @field_validator("question_count", "total_marks", "time_minutes", "order")
+    @classmethod
+    def validate_non_negative(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("Value cannot be negative")
+        return v
+
+
 
 class GradeSettingItem(BaseModel):
     min: float

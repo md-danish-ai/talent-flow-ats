@@ -470,6 +470,26 @@ export function UserListing({ initialData }: UserListingProps) {
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <div className="flex items-center justify-center gap-2">
+                            <TableIconButton
+                              iconColor="amber"
+                              btnSize="sm"
+                              animate="scale"
+                              title="Assign Emergency Contact"
+                              onClick={() => handleAssignEmergency(row)}
+                            >
+                              <PhoneCall size={16} />
+                            </TableIconButton>
+
+                            <TableIconButton
+                              iconColor="blue"
+                              btnSize="sm"
+                              animate="scale"
+                              title="Edit Basic Info"
+                              onClick={() => handleEditUser(row)}
+                            >
+                              <Pencil size={16} />
+                            </TableIconButton>
+
                             <Link
                               href={
                                 row.is_details_submitted
@@ -495,25 +515,6 @@ export function UserListing({ initialData }: UserListingProps) {
                                 <Eye size={16} />
                               </TableIconButton>
                             </Link>
-                            <TableIconButton
-                              iconColor="blue"
-                              btnSize="sm"
-                              animate="scale"
-                              title="Edit Basic Info"
-                              onClick={() => handleEditUser(row)}
-                            >
-                              <Pencil size={16} />
-                            </TableIconButton>
-
-                            <TableIconButton
-                              iconColor="amber"
-                              btnSize="sm"
-                              animate="scale"
-                              title="Assign Emergency Contact"
-                              onClick={() => handleAssignEmergency(row)}
-                            >
-                              <PhoneCall size={16} />
-                            </TableIconButton>
 
                             <Link
                               href={
