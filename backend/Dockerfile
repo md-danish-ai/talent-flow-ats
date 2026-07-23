@@ -10,18 +10,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        postgresql-client \
        tzdata \
-       build-essential \
-       gcc \
-       libcairo2-dev \
-       pkg-config \
-       python3-dev \
+       libcairo2 \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # Python deps
 COPY backend/requirements.txt /backend/requirements.txt
-RUN pip install --no-cache-dir -r /backend/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /backend/requirements.txt
 
 # Copy backend code (includes scripts/)
 COPY backend /backend

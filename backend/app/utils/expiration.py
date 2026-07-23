@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, select
 from app.users.models import User
 from app.paper_assignments.models import PaperAssignment
 from app.user_details.models import UserDetail
@@ -16,10 +16,8 @@ def run_auto_expiration(db_session):
     today = date.today()
 
     # Subquery: Users who have an assignment for TODAY (don't expire them yet)
-    has_today_assignment = (
-        db_session.query(PaperAssignment.user_id)
-        .filter(PaperAssignment.assigned_date == today)
-        .subquery()
+    has_today_assignment = select(PaperAssignment.user_id).where(
+        PaperAssignment.assigned_date == today
     )
 
     # We care about users who are 'ready', 'inprogress', or 'pending' (if they already have an assignment).

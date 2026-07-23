@@ -69,7 +69,7 @@ fi
 BACKUP_DIR="$PROJECT_ROOT/backend/backups"
 
 # Output file: named by date and time
-DATE_TAG=$(date +%Y-%m-%d_%H_%M)
+DATE_TAG=$(date +%d-%m-%Y-%H-%M)
 BACKUP_FILENAME="talent_flow_ats_backup_${DATE_TAG}.sql"
 OUTPUT_FILE="$BACKUP_DIR/$BACKUP_FILENAME"
 
@@ -259,16 +259,64 @@ fi
 # ===============================================================================================================
 
 if [ "$BACKUP_RETENTION_DAYS" -gt 0 ]; then
-    DELETED_COUNT=0
-    while IFS= read -r old_file; do
-        if rm -f "$old_file"; then
-            DELETED_COUNT=$((DELETED_COUNT + 1))
-        fi
-    done < <(find "$BACKUP_DIR" -name "talent_flow_ats_backup_*.sql" -mtime +"$BACKUP_RETENTION_DAYS" 2>/dev/null)
+    PYTHON_BIN="python3"
+    if ! command -v python3 &> /dev/null; then
+        PYTHON_BIN="python"
+    fi
 
-    # Only log if files were actually deleted
-    if [ "$DELETED_COUNT" -gt 0 ]; then
-        log_cleanup "Retention cleanup: Removed $DELETED_COUNT local files (older than $BACKUP_RETENTION_DAYS days)"
+    DELETED_FILES=$("$PYTHON_BIN" -c '
+import os, glob, re, sys
+from datetime import datetime, timedelta
+
+backup_dir = sys.argv[1]
+retention_days = int(sys.argv[2])
+cutoff_date = datetime.now() - timedelta(days=retention_days)
+
+deleted = []
+for f in glob.glob(os.path.join(backup_dir, "*")):
+    filename = os.path.basename(f)
+    if filename.endswith(".log"):
+        continue
+    if " copy" in filename or "(" in filename:
+        try:
+            os.remove(f)
+            deleted.append(filename)
+            continue
+        except Exception:
+            pass
+    file_date = None
+    match_new = re.search(r"(\d{2}-\d{2}-\d{4})", filename)
+    if match_new:
+        try:
+            file_date = datetime.strptime(match_new.group(1), "%d-%m-%Y")
+        except ValueError:
+            pass
+    else:
+        match_old = re.search(r"(\d{4}-\d{2}-\d{2})", filename)
+        if match_old:
+            try:
+                file_date = datetime.strptime(match_old.group(1), "%Y-%m-%d")
+            except ValueError:
+                pass
+
+    if file_date:
+        if file_date.date() <= cutoff_date.date():
+            try:
+                os.remove(f)
+                deleted.append(filename)
+            except Exception:
+                pass
+
+if deleted:
+    print(", ".join(deleted))
+else:
+    print("")
+' "$BACKUP_DIR" "$BACKUP_RETENTION_DAYS" 2>/dev/null || echo "")
+
+    if [ -n "$DELETED_FILES" ]; then
+        log_cleanup "Retention cleanup: Removed: $DELETED_FILES"
+    else
+        log_info "Retention cleanup: No local files older than $BACKUP_RETENTION_DAYS days found."
     fi
 fi
 
