@@ -6,7 +6,6 @@ import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
-import { EmptyState } from "@components/ui-elements/EmptyState";
 import { papersApi } from "@lib/api/papers";
 import { type GradeSetting } from "@types";
 import { toast } from "@lib/toast";
