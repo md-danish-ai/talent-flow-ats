@@ -33,7 +33,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     }
   }
   body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 7.7pt;
     line-height: 1.11;
     color: #000;
@@ -65,7 +65,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
 <pdf:nexttemplate name="inner_pages" />
 
-<div id="footerFirst" style="font-size: 7.7pt; font-family: Arial, sans-serif; color: #333;">
+<div id="footerFirst" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
   <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
@@ -87,7 +87,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
   </table>
 </div>
 
-<div id="footerOther" style="font-size: 7.7pt; font-family: Arial, sans-serif; color: #333;">
+<div id="footerOther" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
   <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
@@ -110,10 +110,10 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <!-- HEADER -->
-<table style="border:none; margin-bottom:3pt; width: 100%;">
+<table style="border:none; margin-bottom:4pt; width: 100%;">
   <tr>
-    <td style="border:none; font-size:12.5pt; font-weight:bold; width: 70%; vertical-align: bottom; padding-bottom: 2px;">{{USERNAME}}</td>
-    <td style="border:none; text-align:right; width: 30%; vertical-align: bottom;">
+    <td style="border:none; font-size:15pt; font-weight:bold; width: 70%; vertical-align: bottom; padding: 0 0 2px 0;">{{USERNAME}}</td>
+    <td style="border:none; text-align:right; width: 30%; vertical-align: bottom; padding: 0;">
       <div style="display: inline-block; text-align: right;">
         {{LOGO_HTML}}<br/>
         <span style="font-size:7.6pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>

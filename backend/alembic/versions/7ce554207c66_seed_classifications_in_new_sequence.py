@@ -21,13 +21,14 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-# Classification Data in Sequence: question_type, exam_level, subject
+# Classification Data in Global Sequence (1 to 31)
 CLASSIFICATIONS = [
-    # 1. Question Types
+    # 1. Question Types (1 - 8)
     {
         "type": "question_type",
         "name": "Multiple Choice Question",
         "code": "MULTIPLE_CHOICE",
+        "sort_order": 1,
         "metadata": {
             "description": "Standard professional recruitment questions with 4 distinct options (A, B, C, D). Focus on clear, unambiguous questions with one definitively correct answer and plausible distractors."
         },
@@ -36,6 +37,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Image Multiple Choice",
         "code": "IMAGE_MULTIPLE_CHOICE",
+        "sort_order": 2,
         "metadata": {
             "description": "Visual-centric MCQ. The question MUST directly reference the visual elements (charts, diagrams, or scenarios) described in the 'image_prompt'. Focus on observational and data-reading skills."
         },
@@ -44,6 +46,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Subjective Question",
         "code": "SUBJECTIVE",
+        "sort_order": 3,
         "metadata": {
             "description": "Open-ended questions assessing critical thinking and domain expertise. Require the candidate to provide a detailed written explanation of 2-3 sentences."
         },
@@ -52,6 +55,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Image Subjective",
         "code": "IMAGE_SUBJECTIVE",
+        "sort_order": 4,
         "metadata": {
             "description": "Analytic questions based on a visual scenario. Candidate must observe the 'image_prompt' content and provide a descriptive technical or strategic answer."
         },
@@ -60,6 +64,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Passage Content",
         "code": "PASSAGE_CONTENT",
+        "sort_order": 5,
         "metadata": {
             "description": "Reading comprehension. First, provide a professional 150-200 word passage in the 'passage' field, then create a question based on it with 4 MCQ options."
         },
@@ -68,6 +73,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Typing Test",
         "code": "TYPING_TEST",
+        "sort_order": 6,
         "metadata": {
             "description": "Paragraph-based assessment. Generate a structured text block (200-300 words) with professional content to test candidate's typing speed and accuracy."
         },
@@ -76,6 +82,7 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Lead Generation",
         "code": "LEAD_GENERATION",
+        "sort_order": 7,
         "metadata": {
             "description": "Business development assessment. Focus on identifying potential leads, extracting professional contact info, and analyzing market opportunities."
         },
@@ -84,15 +91,17 @@ CLASSIFICATIONS = [
         "type": "question_type",
         "name": "Contact Details",
         "code": "CONTACT_DETAILS",
+        "sort_order": 8,
         "metadata": {
             "description": "Data entry and accuracy assessment. Questions focused on correctly capturing and formatting professional contact information like emails and addresses."
         },
     },
-    # 2. Exam Levels
+    # 2. Exam Levels (9 - 11)
     {
         "type": "exam_level",
         "name": "Fresher",
         "code": "FRESHER",
+        "sort_order": 9,
         "metadata": {
             "description": "Fundamental concepts and basic theoretical questions for entry-level candidates. Focus on clarity and core academic principles."
         },
@@ -101,6 +110,7 @@ CLASSIFICATIONS = [
         "type": "exam_level",
         "name": "Quality Assurance",
         "code": "QA",
+        "sort_order": 10,
         "metadata": {
             "description": "Questions focused on testing lifecycles, bug reporting standards, automation vs manual testing, and high-level quality metrics."
         },
@@ -109,15 +119,47 @@ CLASSIFICATIONS = [
         "type": "exam_level",
         "name": "Team Lead",
         "code": "TEAMLEAD",
+        "sort_order": 11,
         "metadata": {
             "description": "Leadership and strategy scenarios. Focus on team conflict resolution, project planning, resource optimization, and mentoring."
         },
     },
-    # 3. Subjects
+    # 3. Subjects (12 - 25)
+    {
+        "type": "subject",
+        "name": "Written",
+        "code": "WRITTEN",
+        "sort_order": 12,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Assessment of professional business writing skills. Focus on email drafting, report writing, and formal corporate communication.",
+        },
+    },
+    {
+        "type": "subject",
+        "name": "Comprehension",
+        "code": "COMPREHENSION",
+        "sort_order": 13,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Ability to understand written passages.",
+        },
+    },
+    {
+        "type": "subject",
+        "name": "Grammar",
+        "code": "GRAMMAR",
+        "sort_order": 14,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Testing of grammatical rules.",
+        },
+    },
     {
         "type": "subject",
         "name": "Aptitude",
         "code": "APTITUDE",
+        "sort_order": 15,
         "metadata": {
             "is_exclusive": False,
             "description": "Logical reasoning, quantitative aptitude, and problem-solving. Focus on number series, probability, time-speed-distance, and logical deductions.",
@@ -127,6 +169,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Brand Awareness",
         "code": "BRAND_AWARENESS",
+        "sort_order": 16,
         "metadata": {
             "is_exclusive": False,
             "description": "Knowledge about brand identity, market positioning, target audience analysis, and corporate communication values.",
@@ -136,6 +179,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
+        "sort_order": 17,
         "metadata": {
             "is_exclusive": True,
             "description": "Knowledge regarding organizational contact structures, hierarchy, and professional data handling/formatting.",
@@ -143,17 +187,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Comprehension",
-        "code": "COMPREHENSION",
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Ability to understand written passages.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Data Interpretation & Analytics",
         "code": "DATA_INTERPRETATION_ANALYTICS",
+        "sort_order": 18,
         "metadata": {
             "is_exclusive": False,
             "description": "Analyze complex data sets.",
@@ -163,6 +199,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "English",
         "code": "ENGLISH",
+        "sort_order": 19,
         "metadata": {
             "is_exclusive": False,
             "description": "Professional English proficiency assessment including grammar, vocabulary, sentence structuring, and business communication.",
@@ -172,6 +209,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Food Industry",
         "code": "FOOD_INDUSTRY",
+        "sort_order": 20,
         "metadata": {
             "is_exclusive": False,
             "description": "Food safety and culinary trends.",
@@ -179,17 +217,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Grammar",
-        "code": "GRAMMAR",
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Testing of grammatical rules.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Industry Awareness",
         "code": "INDUSTRY_AWARENESS",
+        "sort_order": 21,
         "metadata": {
             "is_exclusive": False,
             "description": "General awareness concerning current global industry trends, market shifts, and emerging business technologies.",
@@ -197,17 +227,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Lead Generation",
-        "code": "LEAD_GENERATION",
-        "metadata": {
-            "is_exclusive": True,
-            "description": "B2B prospecting and business development strategies. Focus on cold outreach and qualifying potential clients.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Real Estate",
         "code": "REAL_ESTATE",
+        "sort_order": 22,
         "metadata": {
             "is_exclusive": False,
             "description": "Knowledge of property markets.",
@@ -215,8 +237,19 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
+        "name": "Lead Generation",
+        "code": "LEAD_GENERATION",
+        "sort_order": 23,
+        "metadata": {
+            "is_exclusive": True,
+            "description": "B2B prospecting and business development strategies. Focus on cold outreach and qualifying potential clients.",
+        },
+    },
+    {
+        "type": "subject",
         "name": "Typing Test",
         "code": "TYPING_TEST",
+        "sort_order": 24,
         "metadata": {
             "is_exclusive": True,
             "description": "Assessment of typing speed, accuracy, and endurance. Provide professional paragraphs with a mix of alphanumeric characters.",
@@ -224,30 +257,24 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Written",
-        "code": "WRITTEN",
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Assessment of professional business writing skills. Focus on email drafting, report writing, and formal corporate communication.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "e-Commerce & Online Shopping",
         "code": "E_COMMERCE_ONLINE_SHOPPING",
+        "sort_order": 25,
         "metadata": {"is_exclusive": False, "description": "Online retail operations."},
     },
-    # 4. Interview Results
+    # 4. Interview Results (26 - 31)
     {
         "type": "interview_result",
         "name": "Must Hire",
         "code": "MUST_HIRE",
+        "sort_order": 26,
         "metadata": {"description": "Top tier candidate, highly recommended."},
     },
     {
         "type": "interview_result",
         "name": "Good to Go",
         "code": "GOOD_TO_GO",
+        "sort_order": 27,
         "metadata": {
             "description": "Strong candidate, meets all primary requirements."
         },
@@ -256,18 +283,21 @@ CLASSIFICATIONS = [
         "type": "interview_result",
         "name": "Fit for Process",
         "code": "FIT_FOR_PROCESS",
+        "sort_order": 28,
         "metadata": {"description": "Meets basic criteria to continue in the process."},
     },
     {
         "type": "interview_result",
         "name": "Can be Given a Chance",
         "code": "GIVEN_CHANCE",
+        "sort_order": 29,
         "metadata": {"description": "Borderline candidate with potential."},
     },
     {
         "type": "interview_result",
         "name": "Not Fit - Try Other Task",
         "code": "NOT_FIT_OTHER",
+        "sort_order": 30,
         "metadata": {
             "description": "Not suitable for this role but could fit elsewhere."
         },
@@ -276,11 +306,12 @@ CLASSIFICATIONS = [
         "type": "interview_result",
         "name": "Not at all fit",
         "code": "NOT_FIT",
+        "sort_order": 31,
         "metadata": {"description": "Does not meet requirements."},
     },
 ]
 
-# 4. Departments
+# Departments
 DEPARTMENTS = [
     {"name": "KPO"},
     {"name": "BPO"},
@@ -311,7 +342,6 @@ def upgrade() -> None:
     # 2. Seed Classifications
     allowed_keys = []
     for i, item in enumerate(CLASSIFICATIONS):
-        # Specific check for (type, code)
         res = conn.execute(
             sa.text(
                 "SELECT id FROM classifications WHERE code = :code AND type = :type"
@@ -320,6 +350,7 @@ def upgrade() -> None:
         ).fetchone()
 
         metadata_json = json.dumps(item.get("metadata", {}))
+        sort_order = item.get("sort_order", i + 1)
         allowed_keys.append((item["type"], item["code"]))
 
         if res:
@@ -331,7 +362,7 @@ def upgrade() -> None:
                 {
                     "name": item["name"],
                     "metadata": metadata_json,
-                    "sort_order": i,
+                    "sort_order": sort_order,
                     "is_active": item.get("is_active", True),
                     "code": item["code"],
                     "type": item["type"],
@@ -348,7 +379,7 @@ def upgrade() -> None:
                     "type": item["type"],
                     "name": item["name"],
                     "metadata": metadata_json,
-                    "sort_order": i,
+                    "sort_order": sort_order,
                     "is_active": item.get("is_active", True),
                 },
             )

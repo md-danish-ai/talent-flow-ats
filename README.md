@@ -414,3 +414,33 @@ docker exec talent-flow-redis redis-cli GET "paper:1:details" | jq .
 ```bash
 docker exec -it talent-flow-redis redis-cli FLUSHALL
 ```
+
+## Accessing PostgreSQL Database via Docker Exec
+
+If you want to view tables (such as `classifications`) directly inside the `talent-flow-postgres` Docker container using Docker Desktop's **Exec** tab or your terminal:
+
+### Step 1: Connect to the PostgreSQL database shell
+Run the following command in the container terminal to start the interactive `psql` shell:
+```bash
+psql -U postgres -d talent_flow_ats
+```
+*(This will change your prompt from `#` to `talent_flow_ats=#`)*
+
+### Step 2: Execute SQL queries
+Once inside the `psql` interactive prompt, run your desired SQL queries:
+
+- **View all classification records (ordered by sort_order):**
+  ```sql
+  SELECT id, type, name, code, sort_order FROM classifications ORDER BY sort_order ASC;
+  ```
+
+- **View subjects only:**
+  ```sql
+  SELECT id, name, code, sort_order FROM classifications WHERE type = 'subject' ORDER BY sort_order ASC;
+  ```
+
+- **Exit the `psql` shell:**
+  ```sql
+  \q
+  ```
+

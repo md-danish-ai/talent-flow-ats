@@ -118,6 +118,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     all_subjects = (
         db.query(Classification)
         .filter(Classification.type == "subject", Classification.is_active)
+        .order_by(Classification.sort_order.asc())
         .all()
     )
 

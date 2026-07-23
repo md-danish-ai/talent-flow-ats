@@ -83,7 +83,7 @@ export function SubjectAssignmentCard({
             </Typography>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-16 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-20 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{
@@ -93,16 +93,16 @@ export function SubjectAssignmentCard({
                   />
                 </div>
                 <Typography
-                  variant="body5"
-                  weight="bold"
-                  className={`text-[9px] uppercase tracking-widest ${isCountPerfect ? "text-brand-success" : currentTotal > subj.question_count ? "text-red-500" : "text-slate-400"}`}
+                  variant="body4"
+                  weight="black"
+                  className={`text-[12px] uppercase tracking-wider ${isCountPerfect ? "text-brand-success" : currentTotal > subj.question_count ? "text-red-500" : "text-slate-400"}`}
                 >
                   {currentTotal} / {subj.question_count} Qs
                 </Typography>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-16 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-20 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{
@@ -112,9 +112,9 @@ export function SubjectAssignmentCard({
                   />
                 </div>
                 <Typography
-                  variant="body5"
-                  weight="bold"
-                  className={`text-[9px] uppercase tracking-widest ${isMarksPerfect ? "text-blue-500" : currentMarksTotal > subj.total_marks ? "text-red-500" : "text-slate-400"}`}
+                  variant="body4"
+                  weight="black"
+                  className={`text-[12px] uppercase tracking-wider ${isMarksPerfect ? "text-blue-500" : currentMarksTotal > subj.total_marks ? "text-red-500" : "text-slate-400"}`}
                 >
                   {currentMarksTotal} / {subj.total_marks} Marks
                 </Typography>
@@ -207,7 +207,7 @@ export function SubjectAssignmentCard({
                   },
                 },
               }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 pb-6"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 pb-6"
             >
               {filterQuestionTypesForSubject(questionTypes, subjCode).map(
                 (type) => {
@@ -232,7 +232,7 @@ export function SubjectAssignmentCard({
                         visible: { y: 0, opacity: 1 },
                       }}
                       className={cn(
-                        "relative p-5 border transition-all duration-500 group overflow-hidden",
+                        "relative p-4 border transition-all duration-500 group overflow-hidden",
                         STYLE_CONFIG.innerCardRadius,
                         Object.values(markReqs).some((v) => v > 0)
                           ? "border-brand-primary/50 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.07] ring-1 ring-brand-primary/20"
@@ -243,18 +243,18 @@ export function SubjectAssignmentCard({
                           : "hover:border-brand-primary/40 hover:shadow-2xl hover:shadow-brand-primary/5",
                       )}
                     >
-                      <div className="flex flex-col gap-5 relative z-10">
+                      <div className="flex flex-col gap-3 relative z-10">
                         <div className="flex flex-col gap-1">
                           <Typography
-                            variant="body5"
+                            variant="body4"
                             weight="black"
-                            className={`uppercase tracking-[0.15em] text-[8px] transition-colors ${Object.values(markReqs).some((v) => v > 0) ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
+                            className={`uppercase tracking-[0.08em] text-[11px] leading-tight transition-colors ${Object.values(markReqs).some((v) => v > 0) ? "text-brand-primary" : "text-slate-400 dark:text-slate-500"}`}
                           >
                             {type.name}
                           </Typography>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                           {availableMarks.map((mark) => {
                             const availability = markCounts[mark] || 0;
                             const val = markReqs[mark] || 0;
@@ -262,19 +262,21 @@ export function SubjectAssignmentCard({
                             const isAvailable = availability > 0;
 
                             return (
-                              <div key={mark} className="space-y-3">
-                                <div className="flex items-center justify-between px-1">
+                              <div key={mark} className="space-y-2">
+                                <div className="flex items-center justify-between px-0.5">
                                   <div className="flex items-center gap-1.5">
                                     <div
-                                      className={`w-1 h-1 rounded-full ${isAvailable ? "bg-emerald-500" : "bg-slate-400"}`}
+                                      className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-emerald-500" : "bg-slate-400"}`}
                                     />
                                     <Typography
                                       variant="body5"
-                                      className="text-[10px] text-slate-400 font-medium"
+                                      className="text-[12px] font-semibold text-slate-500 dark:text-slate-400"
                                     >
-                                      {mark} Marks • Availability:{" "}
-                                      <span className="font-mono text-slate-600 dark:text-slate-300">
-                                        {availability}
+                                      {mark} Marks •{" "}
+                                      <span
+                                        className={`font-mono font-bold ${isAvailable ? "text-slate-700 dark:text-slate-200" : "text-slate-400"}`}
+                                      >
+                                        {availability} available
                                       </span>
                                     </Typography>
                                   </div>
@@ -282,7 +284,7 @@ export function SubjectAssignmentCard({
 
                                 <div
                                   className={cn(
-                                    "flex items-center gap-3 bg-slate-100/50 dark:bg-slate-950/40 p-1.5 border border-slate-200/50 dark:border-slate-800/50",
+                                    "flex items-center gap-2 bg-slate-100/50 dark:bg-slate-950/40 p-1 border border-slate-200/50 dark:border-slate-800/50",
                                     STYLE_CONFIG.innerCardRadius,
                                   )}
                                 >
@@ -297,14 +299,14 @@ export function SubjectAssignmentCard({
                                     }
                                     disabled={val <= 0}
                                     className={cn(
-                                      "w-10 h-10 flex items-center justify-center transition-all",
+                                      "w-8 h-8 flex items-center justify-center transition-all flex-shrink-0",
                                       STYLE_CONFIG.iconRadius,
                                       val > 0
                                         ? "bg-white dark:bg-slate-800 text-red-500 shadow-sm hover:bg-red-50 active:scale-95"
                                         : "text-slate-300 dark:text-slate-700 cursor-not-allowed",
                                     )}
                                   >
-                                    <Minus size={16} strokeWidth={3} />
+                                    <Minus size={14} strokeWidth={2.5} />
                                   </button>
 
                                   <div className="flex-1 flex flex-col items-center">
@@ -338,7 +340,7 @@ export function SubjectAssignmentCard({
                                           );
                                         }
                                       }}
-                                      className={`w-full bg-transparent border-none text-center font-mono font-black text-xl outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isUsed ? "text-brand-primary" : "text-slate-500"}`}
+                                      className={`w-full bg-transparent border-none text-center font-mono font-black text-base outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isUsed ? "text-brand-primary" : "text-slate-500"}`}
                                     />
                                   </div>
 
@@ -353,14 +355,14 @@ export function SubjectAssignmentCard({
                                     }
                                     disabled={isTargetReached}
                                     className={cn(
-                                      "w-10 h-10 flex items-center justify-center transition-all",
+                                      "w-8 h-8 flex items-center justify-center transition-all flex-shrink-0",
                                       STYLE_CONFIG.iconRadius,
                                       !isTargetReached
                                         ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20 hover:scale-105 active:scale-95"
                                         : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed",
                                     )}
                                   >
-                                    <Plus size={16} strokeWidth={3} />
+                                    <Plus size={14} strokeWidth={2.5} />
                                   </button>
                                 </div>
 
@@ -370,11 +372,11 @@ export function SubjectAssignmentCard({
                                     animate={{ y: 0, opacity: 1 }}
                                     className="flex items-center justify-center gap-1.5"
                                   >
-                                    <div className="w-1 h-1 rounded-full bg-brand-primary animate-pulse" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
                                     <Typography
                                       variant="body5"
                                       weight="black"
-                                      className="text-[8px] uppercase text-brand-primary tracking-widest"
+                                      className="text-[11px] uppercase text-brand-primary tracking-wider"
                                     >
                                       Selection Confirmed
                                     </Typography>

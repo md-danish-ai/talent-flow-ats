@@ -147,7 +147,7 @@ def build_report_html(data: dict) -> str:
     first_eval = data.get("first_evaluation") or {}
 
     replacements = {
-        "{{USERNAME}}": _esc(data.get("username", "")),
+        "{{USERNAME}}": _esc(data.get("username", "")).strip(),
         "{{MOBILE}}": _esc(data.get("mobile", "")),
         "{{EMAIL}}": _esc(data.get("email", "")),
         "{{GENDER}}": _esc(data.get("gender")) or "____",

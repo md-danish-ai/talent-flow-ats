@@ -244,7 +244,7 @@ export function ToastProvider() {
           (t) =>
             t.message === event.message &&
             t.type === event.type &&
-            Math.abs(createdAt - (t.createdAt || 0)) < 1000,
+            Math.abs(createdAt - (t.createdAt || 0)) < 300,
         );
         if (exists) return prev;
         return [...prev.slice(-4), event];
