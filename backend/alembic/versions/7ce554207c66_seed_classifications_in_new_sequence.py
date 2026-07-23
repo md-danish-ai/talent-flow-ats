@@ -127,9 +127,39 @@ CLASSIFICATIONS = [
     # 3. Subjects (12 - 25)
     {
         "type": "subject",
+        "name": "Written",
+        "code": "WRITTEN",
+        "sort_order": 12,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Assessment of professional business writing skills. Focus on email drafting, report writing, and formal corporate communication.",
+        },
+    },
+    {
+        "type": "subject",
+        "name": "Comprehension",
+        "code": "COMPREHENSION",
+        "sort_order": 13,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Ability to understand written passages.",
+        },
+    },
+    {
+        "type": "subject",
+        "name": "Grammar",
+        "code": "GRAMMAR",
+        "sort_order": 14,
+        "metadata": {
+            "is_exclusive": False,
+            "description": "Testing of grammatical rules.",
+        },
+    },
+    {
+        "type": "subject",
         "name": "Aptitude",
         "code": "APTITUDE",
-        "sort_order": 12,
+        "sort_order": 15,
         "metadata": {
             "is_exclusive": False,
             "description": "Logical reasoning, quantitative aptitude, and problem-solving. Focus on number series, probability, time-speed-distance, and logical deductions.",
@@ -139,7 +169,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Brand Awareness",
         "code": "BRAND_AWARENESS",
-        "sort_order": 13,
+        "sort_order": 16,
         "metadata": {
             "is_exclusive": False,
             "description": "Knowledge about brand identity, market positioning, target audience analysis, and corporate communication values.",
@@ -149,7 +179,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
-        "sort_order": 14,
+        "sort_order": 17,
         "metadata": {
             "is_exclusive": True,
             "description": "Knowledge regarding organizational contact structures, hierarchy, and professional data handling/formatting.",
@@ -157,19 +187,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Comprehension",
-        "code": "COMPREHENSION",
-        "sort_order": 15,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Ability to understand written passages.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Data Interpretation & Analytics",
         "code": "DATA_INTERPRETATION_ANALYTICS",
-        "sort_order": 16,
+        "sort_order": 18,
         "metadata": {
             "is_exclusive": False,
             "description": "Analyze complex data sets.",
@@ -179,7 +199,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "English",
         "code": "ENGLISH",
-        "sort_order": 17,
+        "sort_order": 19,
         "metadata": {
             "is_exclusive": False,
             "description": "Professional English proficiency assessment including grammar, vocabulary, sentence structuring, and business communication.",
@@ -189,7 +209,7 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Food Industry",
         "code": "FOOD_INDUSTRY",
-        "sort_order": 18,
+        "sort_order": 20,
         "metadata": {
             "is_exclusive": False,
             "description": "Food safety and culinary trends.",
@@ -197,32 +217,12 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Grammar",
-        "code": "GRAMMAR",
-        "sort_order": 19,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Testing of grammatical rules.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Industry Awareness",
         "code": "INDUSTRY_AWARENESS",
-        "sort_order": 20,
+        "sort_order": 21,
         "metadata": {
             "is_exclusive": False,
             "description": "General awareness concerning current global industry trends, market shifts, and emerging business technologies.",
-        },
-    },
-    {
-        "type": "subject",
-        "name": "Lead Generation",
-        "code": "LEAD_GENERATION",
-        "sort_order": 21,
-        "metadata": {
-            "is_exclusive": True,
-            "description": "B2B prospecting and business development strategies. Focus on cold outreach and qualifying potential clients.",
         },
     },
     {
@@ -237,22 +237,22 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Typing Test",
-        "code": "TYPING_TEST",
+        "name": "Lead Generation",
+        "code": "LEAD_GENERATION",
         "sort_order": 23,
         "metadata": {
             "is_exclusive": True,
-            "description": "Assessment of typing speed, accuracy, and endurance. Provide professional paragraphs with a mix of alphanumeric characters.",
+            "description": "B2B prospecting and business development strategies. Focus on cold outreach and qualifying potential clients.",
         },
     },
     {
         "type": "subject",
-        "name": "Written",
-        "code": "WRITTEN",
+        "name": "Typing Test",
+        "code": "TYPING_TEST",
         "sort_order": 24,
         "metadata": {
-            "is_exclusive": False,
-            "description": "Assessment of professional business writing skills. Focus on email drafting, report writing, and formal corporate communication.",
+            "is_exclusive": True,
+            "description": "Assessment of typing speed, accuracy, and endurance. Provide professional paragraphs with a mix of alphanumeric characters.",
         },
     },
     {
