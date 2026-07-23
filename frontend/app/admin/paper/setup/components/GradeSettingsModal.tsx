@@ -19,7 +19,7 @@ import { EmptyState } from "@components/ui-elements/EmptyState";
 import { papersApi } from "@lib/api/papers";
 import { type GradeSetting } from "@types";
 import { toast } from "@lib/toast";
-import { Trash2, Edit2, Loader2 } from "lucide-react";
+import { Trash2, Edit2, Loader2, AlertTriangle, Info } from "lucide-react";
 
 import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
 
@@ -68,6 +68,16 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
     }
   }, [isOpen, paperId]);
 
+  // Allow only valid numeric input (digits + at most one decimal point)
+  const handleNumericInput = (value: string, setter: (v: string) => void) => {
+    // Strip anything that isn't a digit or dot, and prevent multiple dots
+    const cleaned = value.replace(/[^0-9.]/g, "");
+    const parts = cleaned.split(".");
+    const normalized =
+      parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
+    setter(normalized);
+  };
+
   const handleAddOrUpdateGrade = () => {
     if (!formMin || !formMax || !formLabel) {
       toast.error("All fields are required");
@@ -78,18 +88,40 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
     const maxNum = parseFloat(formMax);
 
     if (isNaN(minNum) || isNaN(maxNum)) {
-      toast.error("Min and Max must be numbers");
+      toast.error("Min and Max must be valid numbers");
+      return;
+    }
+
+    if (minNum < 0 || maxNum < 0) {
+      toast.error("Values cannot be negative");
       return;
     }
 
     if (minNum >= maxNum) {
-      toast.error("Min should be less than Max");
+      toast.error('"From" must be less than "To"');
       return;
     }
 
+    // Check for duplicate label (ignoring the entry being edited)
     const existingIndex = grades.findIndex((g) => g.grade_label === formLabel);
     if (existingIndex !== -1 && existingIndex !== editingIndex) {
       toast.error(`Grade "${formLabel}" is already added.`);
+      return;
+    }
+
+    // Check for range overlap with other grades
+    const otherGrades = grades.filter((_, i) => i !== editingIndex);
+    const hasOverlap = otherGrades.some(
+      (g) => minNum < g.max && maxNum > g.min,
+    );
+
+    if (hasOverlap) {
+      // Find the highest "max" among all other grades so we can tell the user
+      // exactly where their next range must start
+      const highestMax = Math.max(...otherGrades.map((g) => g.max));
+      toast.error(
+        `Range overlaps with an existing grade. Your "From (%)" must start at ${highestMax.toFixed(2)} or above.`,
+      );
       return;
     }
 
@@ -163,7 +195,8 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
               <Input
                 placeholder="0.00"
                 value={formMin}
-                onChange={(e) => setFormMin(e.target.value)}
+                inputMode="decimal"
+                onChange={(e) => handleNumericInput(e.target.value, setFormMin)}
               />
             </div>
             <div>
@@ -176,7 +209,8 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
               <Input
                 placeholder="49.99"
                 value={formMax}
-                onChange={(e) => setFormMax(e.target.value)}
+                inputMode="decimal"
+                onChange={(e) => handleNumericInput(e.target.value, setFormMax)}
               />
             </div>
             <div>
@@ -203,6 +237,18 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                 Cancel
               </Button>
             )}
+          </div>
+
+          {/* Note 1 */}
+          <div className="mt-3 flex items-center gap-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl px-3.5 py-2.5">
+            <AlertTriangle size={14} className="text-amber-500 shrink-0" />
+            <Typography
+              variant="body5"
+              className="text-amber-700 dark:text-amber-400 text-[12px] leading-snug"
+            >
+              After selecting a grade, click &quot;Add Grade Rule&quot; to add
+              it to the list.
+            </Typography>
           </div>
         </div>
 
@@ -294,8 +340,20 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
           </Table>
         </div>
 
+        {/* Note 2 */}
+        <div className="flex items-center gap-2.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl px-3.5 py-2.5">
+          <Info size={14} className="text-blue-500 shrink-0" />
+          <Typography
+            variant="body5"
+            className="text-blue-700 dark:text-blue-400 text-[12px] leading-snug"
+          >
+            Once all rules are added, click &ldquo;Save Grade&rdquo; to apply
+            grades to this paper - unsaved rules will be lost.
+          </Typography>
+        </div>
+
         {/* Footer Area */}
-        <div className="flex justify-end w-full pt-4">
+        <div className="flex justify-end w-full pt-2">
           <div className="flex gap-3">
             <Button variant="outline" color="primary" onClick={onClose}>
               CLOSE

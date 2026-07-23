@@ -33,42 +33,17 @@ let listeners: ToastListener[] = [];
 let dismissListeners: ToastDismissListener[] = [];
 let queue: ToastEvent[] = [];
 
-// Creative auto-title generators when no title is provided
-const CREATIVE_TITLES: Record<ToastType, string[]> = {
-  success: [
-    "✨ Woohoo!",
-    "🚀 Success!",
-    "🎉 Awesome!",
-    "✅ Done & Dusted!",
-    "🌟 Great Job!",
-  ],
-  error: [
-    "💥 Whoops!",
-    "❌ Action Failed",
-    "⚠️ Uh-oh!",
-    "🚨 Something Went Wrong",
-    "💔 Ouch!",
-  ],
-  info: [
-    "💡 Quick Tip",
-    "ℹ️ Good to Know",
-    "🔔 Update",
-    "💬 Heads Up!",
-    "📌 Note",
-  ],
-  warning: [
-    "⚡ Attention Required",
-    "⚠️ Hold On...",
-    "🛑 Careful!",
-    "🟡 Warning",
-    "⚡ Mind the Gap",
-  ],
-  loading: ["⏳ Working Magic...", "🔄 Please Wait...", "✨ Processing..."],
+// Fixed titles per type — consistent across all toasts
+const TOAST_TITLES: Record<ToastType, string> = {
+  success: "Success",
+  error: "Error",
+  info: "Info",
+  warning: "Warning",
+  loading: "Please wait...",
 };
 
 function getRandomCreativeTitle(type: ToastType): string {
-  const titles = CREATIVE_TITLES[type];
-  return titles[Math.floor(Math.random() * titles.length)];
+  return TOAST_TITLES[type];
 }
 
 function emit(event: ToastEvent) {
