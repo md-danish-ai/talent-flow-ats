@@ -28,7 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={inputType}
           className={cn(
-            "w-full rounded-md border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 dark:placeholder:text-white/40 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary",
+            "w-full rounded-md border bg-input py-3.5 px-4 text-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/50 dark:placeholder:text-white/40 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
             "border-border dark:border-white/20",
