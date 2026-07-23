@@ -317,24 +317,6 @@ filterRegistry.register("department-filters", [
 // 9. Management -> Subjects & Levels
 filterRegistry.register("type-management-filters", [
   {
-    id: "type",
-    label: "Classification Type",
-    type: "tabs",
-    options: [
-      { id: "subject", label: "Subjects" },
-      { id: "exam_level", label: "Exam Levels" },
-      { id: "interview_result", label: "Interview Results" },
-      { id: "family_relation", label: "Family Relation" },
-      { id: "marital_status", label: "Marital Status" },
-      { id: "blood_group", label: "Blood Group" },
-      { id: "education_category", label: "Education" },
-      { id: "language", label: "Language" },
-      { id: "religion", label: "Religion" },
-      { id: "social_category", label: "Category" },
-    ],
-    props: { variant: "pills", size: "sm" },
-  },
-  {
     id: "search",
     label: "Search",
     type: "search",

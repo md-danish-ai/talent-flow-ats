@@ -312,40 +312,43 @@ export function TypesManagementClient({
         </div>
 
         {/* Right Content Area inside Card Body */}
-        <div
-          className={cn(
-            "flex-1 flex flex-col min-w-0 relative bg-background",
-            isFilterOpen && "border-r border-border/50",
-          )}
-        >
-          <ListingTransition
-            isLoading={isFetching}
-            isBackgroundLoading={isBackgroundLoading}
-          >
-            <TypeTable
-              activeTab={activeTab}
-              currentData={currentData}
-              isFetching={isFetching}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              togglingId={togglingId}
-              onEdit={handleOpenModal}
-              onToggleStatus={handleToggleStatus}
-              onReorder={handleReorder}
-            />
-
-            {!isFetching && totalItems > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(totalItems / pageSize)}
-                onPageChange={handlePageChange}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageSizeChange={handlePageSizeChange}
-                className="mt-auto shrink-0 border-t border-border"
-              />
+        <div className="flex-1 flex flex-row items-stretch min-w-0">
+          <div
+            className={cn(
+              "flex-1 flex flex-col min-w-0 relative bg-background",
+              isFilterOpen && "border-r border-border/50",
             )}
-          </ListingTransition>
+          >
+            <ListingTransition
+              isLoading={isFetching}
+              isBackgroundLoading={isBackgroundLoading}
+            >
+              <TypeTable
+                activeTab={activeTab}
+                currentData={currentData}
+                isFetching={isFetching}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                togglingId={togglingId}
+                onEdit={handleOpenModal}
+                onToggleStatus={handleToggleStatus}
+                onReorder={handleReorder}
+              />
+
+              {!isFetching && totalItems > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalItems / pageSize)}
+                  onPageChange={handlePageChange}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageSizeChange={handlePageSizeChange}
+                  className="mt-auto shrink-0 border-t border-border"
+                />
+              )}
+            </ListingTransition>
+          </div>
+
           <ListingFiltersDrawer
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
