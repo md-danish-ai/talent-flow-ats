@@ -4,7 +4,20 @@ import React, { useState, useMemo } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Button } from "@components/ui-elements/Button";
-import { Layers, Gauge, Plus, ShieldCheck } from "lucide-react";
+import {
+  Layers,
+  Gauge,
+  Plus,
+  ShieldCheck,
+  Users,
+  Heart,
+  Droplet,
+  GraduationCap,
+  Globe,
+  BookOpen,
+  Tag,
+  Briefcase,
+} from "lucide-react";
 import { cn } from "@lib/utils";
 import { ManageTypeModal } from "./components/ManageTypeModal";
 
@@ -20,6 +33,7 @@ import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
+import { toast } from "@lib/toast";
 
 type TypesListingFilters = {
   type: string;
@@ -55,19 +69,14 @@ export function TypesManagementClient({
   } = useListing<Classification, TypesListingFilters>({
     fetchFn: (params) => classificationsApi.getClassifications(params),
     initialFilters: {
-      type: "subjects",
+      type: "subject",
       search: "",
       status: "all",
     },
     initialData: initialSubjectData?.data,
     initialTotalItems: initialSubjectData?.pagination?.total_records,
     filterMapping: (f) => ({
-      type:
-        f.type === "subjects"
-          ? "subject"
-          : f.type === "levels"
-            ? "exam_level"
-            : "interview_result",
+      type: f.type,
       search: f.search || undefined,
       is_active:
         f.status === "active"
@@ -75,6 +84,8 @@ export function TypesManagementClient({
           : f.status === "inactive"
             ? false
             : undefined,
+      sort_by: "sort_order",
+      order: "asc",
     }),
     toastMessage: "Classification list refreshed successfully",
   });
@@ -89,10 +100,33 @@ export function TypesManagementClient({
         code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
+        sort_order: item.sort_order,
         metadata: item.metadata,
       })),
     [items],
   );
+
+  const handleReorder = async (reorderedItems: BaseType[]) => {
+    try {
+      const validSortOrders = items
+        .map((i) => i.sort_order)
+        .filter((so): so is number => typeof so === "number" && so > 0);
+      const minSortOrder =
+        validSortOrders.length > 0 ? Math.min(...validSortOrders) : 1;
+
+      const payload = reorderedItems.map((item, idx) => ({
+        id: item.id,
+        sort_order: minSortOrder + idx,
+      }));
+      await classificationsApi.reorderClassifications(payload);
+      toast.success(
+        `${tabs.find((t) => t.value === activeTab)?.label || "Items"} reordered successfully`,
+      );
+      void refresh();
+    } catch {
+      toast.error("Failed to reorder items");
+    }
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,20 +139,39 @@ export function TypesManagementClient({
     is_exclusive: false,
   });
 
-  const classificationType =
-    activeTab === "subjects"
-      ? "subject"
-      : activeTab === "levels"
-        ? "exam_level"
-        : "interview_result";
+  const classificationType = activeTab;
 
   const tabs: TabItem[] = [
-    { label: "Subjects", value: "subjects", icon: <Layers size={18} /> },
-    { label: "Exam Levels", value: "levels", icon: <Gauge size={18} /> },
+    { label: "Subjects", value: "subject", icon: <Layers size={18} /> },
+    { label: "Exam Levels", value: "exam_level", icon: <Gauge size={18} /> },
     {
       label: "Interview Results",
-      value: "results",
+      value: "interview_result",
       icon: <ShieldCheck size={18} />,
+    },
+    {
+      label: "Family Relation",
+      value: "family_relation",
+      icon: <Users size={18} />,
+    },
+    {
+      label: "Marital Status",
+      value: "marital_status",
+      icon: <Heart size={18} />,
+    },
+    { label: "Blood Group", value: "blood_group", icon: <Droplet size={18} /> },
+    {
+      label: "Education",
+      value: "education_category",
+      icon: <GraduationCap size={18} />,
+    },
+    { label: "Language", value: "language", icon: <Globe size={18} /> },
+    { label: "Religion", value: "religion", icon: <BookOpen size={18} /> },
+    { label: "Category", value: "social_category", icon: <Tag size={18} /> },
+    {
+      label: "Employment Type",
+      value: "employment_type",
+      icon: <Briefcase size={18} />,
     },
   ];
 
@@ -203,25 +256,15 @@ export function TypesManagementClient({
     <PageContainer animate>
       <MainCard
         title={
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-                <Layers size={18} />
-              </div>
-              Master Data Management
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <Layers size={18} />
             </div>
-            <div className="h-8 w-px bg-border/50" />
-            <Tabs
-              tabs={tabs}
-              activeTab={activeTab}
-              onChange={handleTabChange}
-              variant="pills"
-              size="md"
-            />
+            Master Data
           </div>
         }
-        className="mb-6 flex flex-col"
-        bodyClassName="p-0 flex flex-row items-stretch w-full"
+        className="mb-6 flex flex-col min-h-0"
+        bodyClassName="p-0 flex flex-col md:flex-row items-stretch w-full flex-1 min-h-[500px]"
         action={
           <div className="flex items-center gap-3">
             <ListingHeaderActions
@@ -229,11 +272,7 @@ export function TypesManagementClient({
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
               itemLabel={
-                activeTab === "subjects"
-                  ? "Subjects"
-                  : activeTab === "levels"
-                    ? "Levels"
-                    : "Interview Results"
+                tabs.find((t) => t.value === activeTab)?.label || "Records"
               }
               onRefresh={refresh}
               onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
@@ -241,13 +280,7 @@ export function TypesManagementClient({
               activeFiltersCount={activeFiltersCount}
             />
             <Tooltip
-              content={`Add ${
-                activeTab === "subjects"
-                  ? "Subject"
-                  : activeTab === "levels"
-                    ? "Level"
-                    : "Verdict"
-              }`}
+              content={`Add ${tabs.find((t) => t.value === activeTab)?.label || "Item"}`}
               side="top"
             >
               <Button
@@ -265,9 +298,23 @@ export function TypesManagementClient({
           </div>
         }
       >
+        {/* Left Sidebar inside Card Body */}
+        <div className="w-full md:w-[240px] shrink-0 border-r border-border/50 bg-muted/10 p-3">
+          <Tabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={handleTabChange}
+            variant="sidebar"
+            orientation="vertical"
+            size="md"
+            fullWidth
+          />
+        </div>
+
+        {/* Right Content Area inside Card Body */}
         <div
           className={cn(
-            "flex-1 flex flex-col min-w-0 relative",
+            "flex-1 flex flex-col min-w-0 relative bg-background",
             isFilterOpen && "border-r border-border/50",
           )}
         >
@@ -284,6 +331,7 @@ export function TypesManagementClient({
               togglingId={togglingId}
               onEdit={handleOpenModal}
               onToggleStatus={handleToggleStatus}
+              onReorder={handleReorder}
             />
 
             {!isFetching && totalItems > 0 && (
@@ -298,28 +346,22 @@ export function TypesManagementClient({
               />
             )}
           </ListingTransition>
+          <ListingFiltersDrawer
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            registryKey="type-management-filters"
+            filters={filters}
+            onFilterChange={handleSingleFilterChange}
+            onReset={resetFilters}
+            isLoading={isFetching}
+          />
         </div>
-        <ListingFiltersDrawer
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          registryKey="type-management-filters"
-          filters={filters}
-          onFilterChange={handleSingleFilterChange}
-          onReset={resetFilters}
-          isLoading={isFetching}
-        />
       </MainCard>
 
       <ManageTypeModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        type={
-          activeTab === "subjects"
-            ? "subject"
-            : activeTab === "levels"
-              ? "exam_level"
-              : "interview_result"
-        }
+        type={activeTab}
         editingType={editingType}
         formData={formData}
         setFormData={setFormData}

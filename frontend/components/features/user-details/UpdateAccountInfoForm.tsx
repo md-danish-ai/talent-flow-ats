@@ -77,8 +77,14 @@ export function UpdateAccountInfoForm({
     onSubmit: async ({ value }) => {
       setServerError(null);
       setServerSuccess(null);
+
+      const submitValue = { ...value };
+      if (!submitValue.test_level_id) {
+        delete submitValue.test_level_id;
+      }
+
       try {
-        await updateMutation.mutateAsync(value);
+        await updateMutation.mutateAsync(submitValue);
         setServerSuccess("Account information updated successfully!");
         if (onSuccess) onSuccess();
       } catch (err: unknown) {
@@ -207,63 +213,104 @@ export function UpdateAccountInfoForm({
           )}
         </form.Field>
 
-        <form.Field name="test_level_id">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
-              >
-                Test Level
-              </Typography>
-              <SelectDropdown
-                options={levels}
-                value={field.state.value}
-                onChange={(val) => field.handleChange(String(val))}
-                placeholder="Choose Level"
-                isLoading={isLoadingLevels}
-                disabled={isLoadingLevels}
-                placement="bottom"
-              />
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="mt-1 text-red-500">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
+        <form.Subscribe selector={(state) => [state.values.department_id]}>
+          {([departmentId]) => {
+            const selectedDept = departments?.find(
+              (d) => String(d.id) === String(departmentId),
+            );
+            const isSoftwareDept = selectedDept?.name === "Software";
+            return (
+              <>
+                {!isSoftwareDept ? (
+                  <form.Field
+                    name="test_level_id"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return "Please select an exam level";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div className="group">
+                        <Typography
+                          as="label"
+                          variant="h6"
+                          className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
+                        >
+                          Test Level
+                        </Typography>
+                        <SelectDropdown
+                          options={levels}
+                          value={field.state.value}
+                          onChange={(val) => field.handleChange(String(val))}
+                          placeholder="Choose Level"
+                          isLoading={isLoadingLevels}
+                          disabled={isLoadingLevels}
+                          placement="bottom"
+                        />
+                        {field.state.meta.isTouched &&
+                          field.state.meta.errors.length > 0 && (
+                            <Typography
+                              variant="body5"
+                              className="mt-1 text-red-500"
+                            >
+                              {getErrorMessage(field.state.meta.errors[0])}
+                            </Typography>
+                          )}
+                      </div>
+                    )}
+                  </form.Field>
+                ) : (
+                  <div className="group opacity-60">
+                    <Typography
+                      as="label"
+                      variant="h6"
+                      className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
+                    >
+                      Test Level
+                    </Typography>
+                    <div className="h-11 flex items-center px-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-sm font-medium text-slate-500 select-none">
+                      Not required for Software department
+                    </div>
+                  </div>
                 )}
-            </div>
-          )}
-        </form.Field>
 
-        <form.Field name="department_id">
-          {(field) => (
-            <div className="group">
-              <Typography
-                as="label"
-                variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
-              >
-                Department
-              </Typography>
-              <SelectDropdown
-                options={deptOptions}
-                value={field.state.value}
-                onChange={(val) => field.handleChange(String(val))}
-                placeholder="Choose Department"
-                isLoading={isLoadingDepts}
-                disabled={isLoadingDepts}
-                placement="bottom"
-              />
-              {field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 && (
-                  <Typography variant="body5" className="mt-1 text-red-500">
-                    {getErrorMessage(field.state.meta.errors[0])}
-                  </Typography>
-                )}
-            </div>
-          )}
-        </form.Field>
+                <form.Field name="department_id">
+                  {(field) => (
+                    <div className="group">
+                      <Typography
+                        as="label"
+                        variant="h6"
+                        className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
+                      >
+                        Department
+                      </Typography>
+                      <SelectDropdown
+                        options={deptOptions}
+                        value={field.state.value}
+                        onChange={(val) => field.handleChange(String(val))}
+                        placeholder="Choose Department"
+                        isLoading={isLoadingDepts}
+                        disabled={isLoadingDepts}
+                        placement="bottom"
+                      />
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors.length > 0 && (
+                          <Typography
+                            variant="body5"
+                            className="mt-1 text-red-500"
+                          >
+                            {getErrorMessage(field.state.meta.errors[0])}
+                          </Typography>
+                        )}
+                    </div>
+                  )}
+                </form.Field>
+              </>
+            );
+          }}
+        </form.Subscribe>
 
         <div className="col-span-full pt-4 flex justify-end">
           <form.Subscribe

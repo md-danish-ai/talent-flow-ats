@@ -1,0 +1,13 @@
+.next
+node_modules
+.git
+.gitignore
+README.md
+*.md
+.env
+.env.local
+.env*.local
+ecosystem.config.js
+start.js
+vitest.config.ts
+vitest.setup.ts

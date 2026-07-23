@@ -145,11 +145,45 @@ a {
   }
 }
 
+@keyframes toast-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92);
+    filter: blur(4px);
+  }
+  70% {
+    transform: translateY(2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes toast-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .animate-toast-progress {
   animation-name: toast-progress;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
+
+.animate-toast-pop-in {
+  animation: toast-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-toast-shimmer {
+  animation: toast-shimmer 2s infinite linear;
+}
+
 
 /* Utility classes for scrollbars */
 .custom-scrollbar::-webkit-scrollbar {

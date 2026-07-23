@@ -14,6 +14,8 @@ export const classificationsApi = {
       is_active?: boolean;
       page?: number;
       limit?: number;
+      sort_by?: string;
+      order?: string;
     },
     options?: ApiRequestOptions,
   ) => {
@@ -40,5 +42,15 @@ export const classificationsApi = {
     return api.put<Classification>(ENDPOINTS.CLASSIFICATIONS.UPDATE(id), data, {
       silentSuccess: true,
     });
+  },
+
+  reorderClassifications: async (
+    items: { id: number; sort_order: number }[],
+  ) => {
+    return api.put<{ message: string }>(
+      ENDPOINTS.CLASSIFICATIONS.REORDER,
+      { items },
+      { silentSuccess: true },
+    );
   },
 };

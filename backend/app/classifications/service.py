@@ -122,3 +122,11 @@ class ClassificationService:
             raise HTTPException(
                 status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
             )
+
+    def reorder(self, items: list):
+        try:
+            return repository.reorder(items)
+        except Exception as exception:
+            raise HTTPException(
+                status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
+            )

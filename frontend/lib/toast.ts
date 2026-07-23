@@ -1,26 +1,50 @@
 // ─── Global Toast Event Bus ────────────────────────────────────────────────
-// Usage from anywhere (client.ts, forms, etc.):
-//   import { toast } from "@lib/toast";
-//   toast.success("Question updated successfully.");
-//   toast.error("Something went wrong.");
-//
-// The <ToastProvider> component in the layout listens to these events and
-// renders the toasts. No external libraries needed.
+// Supports rich toasts with titles, badges, actions, promises, auto creative fallback,
+// hover pause, and sound effects.
 
-export type ToastType = "success" | "error" | "info" | "warning";
+export type ToastType = "success" | "error" | "info" | "warning" | "loading";
 
-export interface ToastEvent {
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+export interface ToastOptions {
+  title?: string;
+  description?: string;
+  duration?: number; // ms, default 4000 (0 for sticky)
+  action?: ToastAction;
+  badge?: string;
+  icon?: React.ReactNode;
+  playSound?: boolean;
+}
+
+export interface ToastEvent extends ToastOptions {
   id: string;
   type: ToastType;
-  title?: string;
   message: string;
-  duration?: number; // ms, default 4000
+  createdAt: number;
 }
 
 type ToastListener = (event: ToastEvent) => void;
+type ToastDismissListener = (id: string) => void;
 
 let listeners: ToastListener[] = [];
+let dismissListeners: ToastDismissListener[] = [];
 let queue: ToastEvent[] = [];
+
+// Fixed titles per type — consistent across all toasts
+const TOAST_TITLES: Record<ToastType, string> = {
+  success: "Success",
+  error: "Error",
+  info: "Info",
+  warning: "Warning",
+  loading: "Please wait...",
+};
+
+function getRandomCreativeTitle(type: ToastType): string {
+  return TOAST_TITLES[type];
+}
 
 function emit(event: ToastEvent) {
   if (typeof window === "undefined") return;
@@ -34,7 +58,6 @@ function emit(event: ToastEvent) {
 function subscribe(fn: ToastListener) {
   listeners.push(fn);
 
-  // Flush queue to new subscriber
   if (queue.length > 0) {
     queue.forEach((event) => fn(event));
     queue = [];
@@ -45,28 +68,82 @@ function subscribe(fn: ToastListener) {
   };
 }
 
+function subscribeDismiss(fn: ToastDismissListener) {
+  dismissListeners.push(fn);
+  return () => {
+    dismissListeners = dismissListeners.filter((l) => l !== fn);
+  };
+}
+
 function show(
   type: ToastType,
   message: string,
-  options?: { title?: string; duration?: number },
-) {
+  options?: ToastOptions,
+): string {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const autoTitle = options?.title || getRandomCreativeTitle(type);
+
   emit({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    id,
     type,
     message,
-    title: options?.title,
-    duration: options?.duration ?? 4000,
+    title: autoTitle,
+    description: options?.description,
+    duration: options?.duration ?? (type === "loading" ? 0 : 4500),
+    action: options?.action,
+    badge: options?.badge,
+    icon: options?.icon,
+    playSound: options?.playSound ?? false,
+    createdAt: Date.now(),
   });
+
+  return id;
+}
+
+function dismiss(id: string) {
+  dismissListeners.forEach((fn) => fn(id));
 }
 
 export const toast = {
-  success: (message: string, options?: { title?: string; duration?: number }) =>
+  success: (message: string, options?: ToastOptions) =>
     show("success", message, options),
-  error: (message: string, options?: { title?: string; duration?: number }) =>
+  error: (message: string, options?: ToastOptions) =>
     show("error", message, options),
-  info: (message: string, options?: { title?: string; duration?: number }) =>
+  info: (message: string, options?: ToastOptions) =>
     show("info", message, options),
-  warning: (message: string, options?: { title?: string; duration?: number }) =>
+  warning: (message: string, options?: ToastOptions) =>
     show("warning", message, options),
+  loading: (message: string, options?: ToastOptions) =>
+    show("loading", message, options),
+  dismiss,
+  /**
+   * Helper for handling promises automatically with loading, success, and error toasts.
+   */
+  promise: async <T>(
+    promise: Promise<T>,
+    msgs: {
+      loading: string;
+      success: string | ((data: T) => string);
+      error: string | ((err: unknown) => string);
+    },
+    options?: ToastOptions,
+  ): Promise<T> => {
+    const id = toast.loading(msgs.loading, options);
+    try {
+      const data = await promise;
+      toast.dismiss(id);
+      const successMsg =
+        typeof msgs.success === "function" ? msgs.success(data) : msgs.success;
+      toast.success(successMsg, options);
+      return data;
+    } catch (err) {
+      toast.dismiss(id);
+      const errorMsg =
+        typeof msgs.error === "function" ? msgs.error(err) : msgs.error;
+      toast.error(errorMsg, options);
+      throw err;
+    }
+  },
   subscribe,
+  subscribeDismiss,
 };

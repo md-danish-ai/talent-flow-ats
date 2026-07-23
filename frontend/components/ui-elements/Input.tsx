@@ -32,6 +32,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             startIcon && "pl-[42px]",
             (endIcon || isPassword) && "pr-[42px]",
             "border-border dark:border-white/20",
+            "disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-muted/50",
             className,
             error &&
               "!border-red-500 ring-1 !ring-red-500/20 focus:!border-red-500 focus:!ring-red-500/20 hover:!border-red-500",

@@ -37,6 +37,9 @@ async def get_users(
     department_id: int = Query(None),
     test_level_id: int = Query(None),
     status: str = Query(None, description="Filter by status (active, inactive)"),
+    exclude_software: bool = Query(
+        False, description="Exclude Software department users"
+    ),
 ):
     data = get_users_by_role(
         role,
@@ -48,6 +51,7 @@ async def get_users(
         department_id=department_id,
         test_level_id=test_level_id,
         status=status,
+        exclude_software=exclude_software,
     )
     return api_response(
         StatusCode.OK,

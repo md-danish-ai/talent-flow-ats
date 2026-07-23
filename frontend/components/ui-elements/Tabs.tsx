@@ -17,7 +17,13 @@ interface TabsProps {
   activeTab: string;
   onChange: (value: string) => void;
   className?: string;
-  variant?: "pills" | "underline" | "glass" | "bordered" | "gradient";
+  variant?:
+    | "pills"
+    | "underline"
+    | "glass"
+    | "bordered"
+    | "gradient"
+    | "sidebar";
   orientation?: "horizontal" | "vertical";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
@@ -79,6 +85,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
       variant === "underline" &&
         "bg-transparent border-none p-0 gap-8 rounded-none",
       variant === "gradient" && "bg-muted/20 rounded-xl p-1",
+      variant === "sidebar" &&
+        "bg-transparent border-none p-0 gap-1.5 rounded-none",
 
       className,
     );
@@ -107,6 +115,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                 sizeStyles[size],
                 fullWidth ? "flex-1" : "flex-none",
                 variant === "underline" && "rounded-none",
+                variant === "sidebar" &&
+                  "rounded-r-xl rounded-l-sm overflow-visible",
                 isActive
                   ? variant === "pills"
                     ? "text-brand-primary"
@@ -153,6 +163,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                       "inset-0 bg-brand-primary/5 border-2 border-brand-primary rounded-lg",
                     variant === "gradient" &&
                       "inset-0 bg-gradient-to-r from-brand-primary/20 to-brand-secondary/20 rounded-lg border-b-2 border-brand-primary",
+                    variant === "sidebar" &&
+                      "inset-0 bg-brand-primary/10 dark:bg-brand-primary/20 rounded-r-xl rounded-l-sm border-l-4 border-brand-primary",
                     variant === "underline" &&
                       (isVertical
                         ? "left-0 top-0 bottom-0 w-1 bg-brand-primary rounded-full"
@@ -168,6 +180,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
                   className={cn(
                     "absolute inset-0 bg-foreground/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200",
                     variant === "underline" && "opacity-0",
+                    variant === "sidebar" && "rounded-r-xl rounded-l-sm",
                   )}
                 />
               )}

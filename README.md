@@ -85,28 +85,105 @@ The frontend is built with Next.js and React.
 
 ### 4. Docker Setup (Recommended)
 
-You can run the application (currently backend only) using Docker Compose for a consistent environment.
+You can run the full application (backend + frontend) using Docker Compose for a consistent environment.
 
-1.  Start the services:
+#### Environment Variables
+
+Before starting, configure the following variables (you can set them in a `.env` file at the project root):
+
+```env
+# -------------------------------------------------------------
+# Frontend Build Args (baked into Next.js build)
+# -------------------------------------------------------------
+# Public URL the browser uses to reach the backend API
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+
+# App environment ('prod' or 'dev')
+NEXT_PUBLIC_APP_ENV=prod
+
+# Toggle AI question generator feature ('true' or 'false')
+NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR=false
+
+# -------------------------------------------------------------
+# AI / External Services
+# -------------------------------------------------------------
+# Hugging Face token (required for AI features)
+HF_TOKEN=your_hugging_face_token_here
+
+# -------------------------------------------------------------
+# Database Backup & Upload Settings
+# -------------------------------------------------------------
+# Local retention policy (number of days to keep backups; 0 = keep forever)
+BACKUP_RETENTION_DAYS=7
+
+# AWS S3 Settings
+UPLOAD_S3=false
+S3_BUCKET_NAME=your-s3-bucket-name-here
+S3_PREFIX=talent-flow-ats/db-backups
+AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID_HERE
+AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY_HERE
+AWS_DEFAULT_REGION=ap-south-1
+
+# Google Drive Settings (requires rclone setup)
+UPLOAD_GDRIVE=false
+GDRIVE_REMOTE_NAME=gdrive-danish
+GDRIVE_FOLDER_PATH=TalentFlow/Backups
+```
+
+> [!IMPORTANT]
+> `NEXT_PUBLIC_API_BASE_URL` is baked into the frontend **at build time**. If you change this value you must rebuild the frontend image (`docker compose build frontend`).
+
+#### Commands
+
+1.  Start all services (backend + frontend + db + redis):
     ```bash
-    docker-compose up -d --build
+    docker compose up -d --build
     ```
-2.  Check running containers:
+2.  Start only specific services:
     ```bash
-    docker-compose ps
+    # Backend only
+    docker compose up -d --build backend
+
+    # Frontend only (requires backend to be running)
+    docker compose up -d --build frontend
     ```
-3.  Run database migrations:
+3.  Check running containers:
+    ```bash
+    docker compose ps
+    ```
+4.  Run database migrations:
     ```bash
     docker compose --profile migrate run --rm migrations
     ```
-4.  View logs:
+5.  View logs:
     ```bash
-    docker-compose logs -f backend
+    # Backend logs
+    docker compose logs -f backend
+
+    # Frontend logs
+    docker compose logs -f frontend
+
+    # All services
+    docker compose logs -f
     ```
-5.  Stop services:
+6.  Rebuild frontend after code changes:
     ```bash
-    docker-compose down
+    docker compose build frontend
+    docker compose up -d frontend
     ```
+7.  Stop services:
+    ```bash
+    docker compose down
+    ```
+
+#### Service URLs (Docker)
+
+| Service | URL |
+|---|---|
+| Frontend (Next.js) | [http://localhost:3000](http://localhost:3000) |
+| Backend (FastAPI) | [http://localhost:4000](http://localhost:4000) |
+| API Docs (Swagger) | [http://localhost:4000/docs](http://localhost:4000/docs) |
+| RedisInsight GUI | [http://localhost:8001](http://localhost:8001) |
 
 ## Database Migrations
 
@@ -195,11 +272,9 @@ docker compose --profile migrate run --rm migrations
 
 ## Database Backup & Restore
 
-This project provides standalone scripts to manually back up and restore your database **data**. This is particularly useful as a safety net before running migrations or for recovering your data into a fresh schema after a database reset (`docker compose down -v`).
+This project provides standalone scripts to manually and automatically back up and restore your database **data**. This is particularly useful as a safety net before running migrations or for recovering your data into a fresh schema after a database reset (`docker compose down -v`).
 
-### Purpose
-
-The primary purpose is to ensure data persistence and provide a quick recovery path during development, especially when schema changes or environment resets are involved.
+For detailed instructions on setting up cloud backups (AWS S3 and Google Drive) or scheduling automated daily backups, refer to the [Database Backup Setup Guide](file:///Users/mohammeddanish/Project/talent-flow-ats/BACKUP_SETUP.md).
 
 ### Scenarios
 
@@ -211,34 +286,71 @@ The primary purpose is to ensure data persistence and provide a quick recovery p
 
 #### 1. Backing Up the Database
 
-Execute the backup script from the project root:
+To run a manual or on-demand backup (reads configuration settings from the main `.env` file):
 
+**Option A: Running on the Host System (Without Docker)**
 ```bash
-./backend/scripts/backup_db.sh
+./backend/scripts/daily_backup.sh
+```
+*(The script will automatically detect and communicate with the Docker database container to perform the backup)*
+
+**Option B: Running Inside the Backend Docker Container**
+```bash
+docker exec -it talent-flow-backend bash -c "/backend/scripts/daily_backup.sh"
 ```
 
-- **Output**: A timestamped SQL file in `backend/backups/`.
-- **Method**: Exports only the **data** using `INSERT` statements.
-- **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
+*   **Output**: A timestamped SQL file in `backend/backups/` named `talent_flow_ats_backup_YYYY-MM-DD.sql`.
+*   **Method**: Exports only the **data** using `INSERT` statements.
+*   **Handling Empty DB**: The script calculates total rows across all tables. If the database is entirely empty, it will NOT create a backup file and will display a status report for each table.
 
 #### 2. Restoring the Database
 
-To restore the **most recent** backup from the `backend/backups/` directory:
+To restore a backup file (automatically resolves circular foreign-key constraints during insertion):
 
-```bash
-./backend/scripts/restore_db.sh
-```
+**Option A: Running on the Host System (Without Docker)**
+*   Restore the **most recent** backup:
+    ```bash
+    ./backend/scripts/restore_db.sh
+    ```
+*   Restore a **specific** backup file:
+    ```bash
+    ./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
+    ```
 
-To restore a **specific** backup file:
-
-```bash
-./backend/scripts/restore_db.sh backend/backups/your_specific_file.sql
-```
+**Option B: Running Inside the Backend Docker Container**
+*   Restore the **most recent** backup:
+    ```bash
+    docker exec -it talent-flow-backend bash -c "/backend/scripts/restore_db.sh"
+    ```
+*   Restore a **specific** backup file:
+    ```bash
+    docker exec -it talent-flow-backend bash -c "/backend/scripts/restore_db.sh backend/backups/your_specific_file.sql"
+    ```
 
 > [!CAUTION]
 > The restore process will **truncate (empty)** existing tables and re-insert the data in hierarchical order. It preserves the table structure created by your migrations.
 
-#### 3. Ideal Recovery Flow
+#### 3. Automated Backup Scheduling
+
+To register the daily backup to run automatically at 12:00 AM (midnight) local time:
+
+```bash
+./backend/scripts/setup_backup_cron.sh
+```
+
+#### 4. Monitoring Backup Logs
+
+You can view the database backup creation and cloud upload logs directly via Docker Compose:
+
+```bash
+docker compose logs -f backup-logs
+```
+
+Alternatively, you can view the raw log files:
+*   **Host**: `tail -f backend/backups/backup.log` or `tail -f backend/backups/cron.log`
+*   **Docker Container**: `docker exec -it talent-flow-backend tail -f /backend/backups/backup.log`
+
+#### 5. Ideal Recovery Flow
 
 If you need to reset and recover your data (e.g., after `docker compose down -v`):
 
@@ -302,3 +414,33 @@ docker exec talent-flow-redis redis-cli GET "paper:1:details" | jq .
 ```bash
 docker exec -it talent-flow-redis redis-cli FLUSHALL
 ```
+
+## Accessing PostgreSQL Database via Docker Exec
+
+If you want to view tables (such as `classifications`) directly inside the `talent-flow-postgres` Docker container using Docker Desktop's **Exec** tab or your terminal:
+
+### Step 1: Connect to the PostgreSQL database shell
+Run the following command in the container terminal to start the interactive `psql` shell:
+```bash
+psql -U postgres -d talent_flow_ats
+```
+*(This will change your prompt from `#` to `talent_flow_ats=#`)*
+
+### Step 2: Execute SQL queries
+Once inside the `psql` interactive prompt, run your desired SQL queries:
+
+- **View all classification records (ordered by sort_order):**
+  ```sql
+  SELECT id, type, name, code, sort_order FROM classifications ORDER BY sort_order ASC;
+  ```
+
+- **View subjects only:**
+  ```sql
+  SELECT id, name, code, sort_order FROM classifications WHERE type = 'subject' ORDER BY sort_order ASC;
+  ```
+
+- **Exit the `psql` shell:**
+  ```sql
+  \q
+  ```
+

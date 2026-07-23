@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { DatePicker } from "@components/ui-elements/DatePicker";
@@ -20,16 +19,10 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-5 pt-2"
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-6 text-gray-800"
-      >
-        6. Other Details
-      </Typography>
-      <div className="mt-2 max-w-2xl mx-auto space-y-6">
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+      <div className="space-y-5">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold text-muted-foreground mb-3 block">
             Are you willing for 1 Year Service Commitment?{" "}
             <span className="text-red-500">*</span>
@@ -60,7 +53,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold text-muted-foreground mb-3 block">
             Do you agree for 1 month salary as security deposit?{" "}
             <span className="text-red-500">*</span>
@@ -91,7 +84,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold text-muted-foreground mb-3 block">
             What is your preferred shift time for work at Arcgate?{" "}
             <span className="text-red-500">*</span>
@@ -127,7 +120,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5 bg-card ring-1 ring-border shadow-sm">
+        <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-end">
             <div>
               <form.Field name="expectedJoiningDate">
@@ -144,6 +137,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                       onChange={(val) => field.handleChange(val)}
                       onBlur={field.handleBlur}
                       placement="top"
+                      disablePast={true}
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0

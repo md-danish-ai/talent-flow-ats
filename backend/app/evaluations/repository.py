@@ -5,6 +5,7 @@ from .schemas import InterviewEvaluationCreate, InterviewEvaluationUpdate
 from app.users.models import User
 from app.classifications.models import Classification
 from app.core.realtime import realtime_manager
+from app.utils.enums import EvaluationStatus
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ async def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
         project_lead_id=obj_in.project_lead_id,
         attempt_id=obj_in.attempt_id,
         round_type=obj_in.round_type or "F2F",
-        status="pending",
+        status=EvaluationStatus.PENDING.value,
     )
     db.add(db_obj)
     db.commit()
@@ -212,7 +213,7 @@ async def update_evaluation(
         else None
     )
     db_obj.comments = obj_in.comments
-    db_obj.status = "completed"
+    db_obj.status = EvaluationStatus.COMPLETED.value
 
     db.commit()
     db.refresh(db_obj)
@@ -260,7 +261,7 @@ async def delete_evaluation(db: Session, evaluation_id: int):
     db_obj = get_evaluation(db, evaluation_id)
     if db_obj:
         # Trigger unassigned notification if evaluation is pending
-        if db_obj.status == "pending":
+        if db_obj.status == EvaluationStatus.PENDING.value:
             try:
                 from app.duplicates.models import AdminNotification
 

@@ -1,6 +1,10 @@
 from datetime import date
+from sqlalchemy import or_, func
 from app.users.models import User
 from app.paper_assignments.models import PaperAssignment
+from app.user_details.models import UserDetail
+from app.departments.models import Department
+from app.utils.enums import ProcessStatus, RoleType
 
 
 def run_auto_expiration(db_session):
@@ -19,19 +23,26 @@ def run_auto_expiration(db_session):
     )
 
     # We care about users who are 'ready', 'inprogress', or 'pending' (if they already have an assignment).
-    from app.user_details.models import UserDetail
-    from sqlalchemy import or_, func
 
     to_expire_query = (
         db_session.query(User)
         .outerjoin(PaperAssignment, User.id == PaperAssignment.user_id)
         .outerjoin(UserDetail, User.id == UserDetail.user_id)
+        .outerjoin(Department, User.department_id == Department.id)
         .filter(
-            User.role == "user",
+            User.role == RoleType.USER.value,
             User.is_active.is_(True),
             User.process_status.in_(
-                ["pending", "ready", "inprogress", "submitted", "auto_submitted"]
+                [
+                    ProcessStatus.PENDING.value,
+                    ProcessStatus.READY.value,
+                    ProcessStatus.INPROGRESS.value,
+                    ProcessStatus.SUBMITTED.value,
+                    ProcessStatus.AUTO_SUBMITTED.value,
+                ]
             ),
+            # Exclude Software department users from auto-expiration
+            or_(Department.id.is_(None), ~Department.name.ilike("%software%")),
             # Identify candidates from past dates (by assignment or registration)
             or_(
                 PaperAssignment.assigned_date < today,
@@ -53,8 +64,11 @@ def run_auto_expiration(db_session):
 
     for user in users_to_expire:
         # Only set process_status to 'expired' if they haven't submitted
-        if user.process_status not in ["submitted", "auto_submitted"]:
-            user.process_status = "expired"
+        if user.process_status not in [
+            ProcessStatus.SUBMITTED.value,
+            ProcessStatus.AUTO_SUBMITTED.value,
+        ]:
+            user.process_status = ProcessStatus.EXPIRED.value
 
         user.is_active = False
         expired_count += 1

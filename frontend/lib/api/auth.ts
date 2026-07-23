@@ -77,6 +77,7 @@ export async function getUsersByRole(
     department_id?: number | string;
     test_level_id?: number | string;
     status?: string;
+    exclude_software?: boolean;
   },
 ): Promise<PaginatedResponse<UserListResponse>> {
   const queryParams = new URLSearchParams({ role });
@@ -90,6 +91,7 @@ export async function getUsersByRole(
   if (options?.test_level_id)
     queryParams.append("test_level_id", options.test_level_id.toString());
   if (options?.status) queryParams.append("status", options.status);
+  if (options?.exclude_software) queryParams.append("exclude_software", "true");
 
   const apiOptions = options ? { ...options } : undefined;
   if (apiOptions) {

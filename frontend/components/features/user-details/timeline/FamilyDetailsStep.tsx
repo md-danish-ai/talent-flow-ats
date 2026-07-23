@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { Radio } from "@components/ui-elements/Radio";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Eraser } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { useClassifications } from "@hooks/api/classifications/use-classifications";
 
 import {
   type PersonalDetailsForm,
@@ -17,244 +18,326 @@ export interface FamilyDetailsStepProps {
 }
 
 export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
+  const { data: relationsRes, isLoading: isLoadingRelations } =
+    useClassifications({
+      type: "family_relation",
+      is_active: true,
+    });
+
+  const relationOptions = React.useMemo(() => {
+    const apiOptions = (relationsRes?.data || []).map(
+      (c: { name: string; code: string }) => ({
+        id: c.code,
+        label: c.name,
+      }),
+    );
+    // Ensure Father and Mother exist even before loading finishes
+    if (
+      !apiOptions.some((o: { id: string; label: string }) => o.id === "FATHER")
+    ) {
+      apiOptions.unshift({ id: "FATHER", label: "Father" });
+    }
+    if (
+      !apiOptions.some((o: { id: string; label: string }) => o.id === "MOTHER")
+    ) {
+      apiOptions.unshift({ id: "MOTHER", label: "Mother" });
+    }
+    return apiOptions;
+  }, [relationsRes]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
+      className="space-y-5 pt-2"
     >
-      <Typography
-        variant="h1"
-        weight="bold"
-        className="text-center mb-6 text-gray-800"
-      >
-        2. Family Details
-      </Typography>
-      <div className="overflow-x-auto rounded-xl ring-1 ring-border mt-2 shadow-sm bg-card">
-        <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead>
-            <tr className="bg-brand-primary text-white">
-              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
-                Relation
-              </th>
-              <th className="p-3 font-semibold text-sm w-[32%] border-r border-[#ffffff40]">
-                Name
-              </th>
-              <th className="p-3 font-semibold text-sm w-[23%] border-r border-[#ffffff40]">
-                Occupation
-              </th>
-              <th className="p-3 font-semibold text-sm w-[15%] border-r border-[#ffffff40] text-center">
-                Dependent Y/N
-              </th>
-              <th className="p-3 font-semibold text-sm w-[7%] text-center">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-card divide-y divide-border">
-            <form.Subscribe selector={(state) => [state.values.family]}>
-              {([family]) =>
-                family.map((member: FamilyMember, index: number) => (
-                  <tr
+      <div className="flex flex-col gap-5">
+        <form.Subscribe
+          selector={(state) => [
+            state.values.family,
+            state.values.emergencyContactRelation,
+            state.values.assignedEmergencyRelation,
+          ]}
+        >
+          {([family, emergencyRelation, assignedRelation]) =>
+            (family as FamilyMember[]).map(
+              (member: FamilyMember, index: number) => {
+                const isMandatory =
+                  member.relation === "FATHER" ||
+                  member.relation === "MOTHER" ||
+                  member.relation === emergencyRelation ||
+                  (Boolean(assignedRelation) &&
+                    member.relation === assignedRelation);
+                const isEmergencyContact =
+                  member.relation === emergencyRelation;
+                const isRelationSelected = Boolean(
+                  member.relation &&
+                  (isLoadingRelations ||
+                    relationOptions.some(
+                      (opt: { id: string | number }) =>
+                        String(opt.id) === String(member.relation),
+                    )),
+                );
+
+                const selectedLabel =
+                  relationOptions.find(
+                    (opt: { id: string | number; label: string }) =>
+                      String(opt.id) === String(member.relation),
+                  )?.label || member.relationLabel;
+                const headerTitle = selectedLabel
+                  ? `Family Member - ${selectedLabel}`
+                  : `Family Member ${index + 1}`;
+
+                return (
+                  <div
                     key={member.id}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="p-5 border border-border rounded-xl bg-card shadow-sm relative group transition-all hover:shadow-md"
                   >
-                    <td className="p-3 border-r border-border">
-                      {member.relationLabel === "Brother/Sister" ? (
-                        <div className="flex gap-4">
-                          <form.Field name={`family[${index}].relation`}>
-                            {(field) => (
-                              <>
-                                <Radio
-                                  label="Brother"
-                                  checked={field.state.value === "Brother"}
-                                  onChange={() => field.handleChange("Brother")}
-                                />
-                                <Radio
-                                  label="Sister"
-                                  checked={field.state.value === "Sister"}
-                                  onChange={() => field.handleChange("Sister")}
-                                />
-                                {field.state.meta.isTouched &&
-                                  field.state.meta.errors.length > 0 && (
-                                    <p className="text-[10px] text-red-500 mt-1">
-                                      {getErrorMessage(
-                                        field.state.meta.errors[0],
-                                      )}
-                                    </p>
-                                  )}
-                              </>
-                            )}
-                          </form.Field>
-                        </div>
-                      ) : (
-                        <span className="text-sm font-medium">
-                          {member.relationLabel}
-                          {(member.relationLabel === "Father" ||
-                            member.relationLabel === "Mother") && (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-2 border-r border-border">
-                      <form.Field name={`family[${index}].name`}>
-                        {(field) => (
-                          <div className="flex flex-col">
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              className="h-10 border-transparent bg-transparent hover:border-border focus:bg-input"
-                              placeholder="Enter name..."
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </td>
-                    <td className="p-2 border-r border-border">
-                      <form.Field name={`family[${index}].occupation`}>
-                        {(field) => (
-                          <div className="flex flex-col">
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              className="h-10 border-transparent bg-transparent hover:border-border focus:bg-input"
-                              placeholder="Enter occupation..."
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </td>
-                    <td className="p-3 text-center border-r border-border">
-                      <div className="flex justify-center gap-4">
-                        <form.Field name={`family[${index}].dependent`}>
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                      <h4 className="text-sm font-semibold text-brand-primary uppercase tracking-wider">
+                        {headerTitle}{" "}
+                        {isMandatory && <span className="text-red-500">*</span>}
+                      </h4>
+                      <Tooltip
+                        content={isMandatory ? "Required Row" : "Delete Row"}
+                        side="top"
+                      >
+                        <button
+                          type="button"
+                          disabled={isMandatory}
+                          onClick={() => {
+                            form.removeFieldValue("family", index);
+                          }}
+                          className="p-2 hover:bg-red-50 rounded-full text-muted-foreground hover:text-red-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </Tooltip>
+                    </div>
+
+                    <div
+                      className={`grid grid-cols-1 md:grid-cols-2 ${isEmergencyContact ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-5`}
+                    >
+                      {/* Relation */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Relation
+                        </label>
+                        <form.Field name={`family[${index}].relation`}>
                           {(field) => (
-                            <>
-                              <Radio
-                                label="Yes"
-                                checked={field.state.value === "Yes"}
-                                onChange={() => field.handleChange("Yes")}
-                              />
-                              <Radio
-                                label="No"
-                                checked={field.state.value === "No"}
-                                onChange={() => field.handleChange("No")}
+                            <div className="flex flex-col relative">
+                              <SelectDropdown
+                                options={relationOptions}
+                                value={field.state.value}
+                                onChange={(val) => {
+                                  field.handleChange(val as string);
+                                  const selected = relationOptions.find(
+                                    (opt) => String(opt.id) === String(val),
+                                  );
+                                  if (selected) {
+                                    form.setFieldValue(
+                                      `family[${index}].relationLabel`,
+                                      selected.label,
+                                    );
+                                  }
+                                }}
+                                placeholder="Select Relation"
+                                isLoading={isLoadingRelations}
+                                disabled={isMandatory}
+                                error={
+                                  field.state.meta.isTouched &&
+                                  field.state.meta.errors.length > 0
+                                }
                               />
                               {field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0 && (
-                                  <p className="text-[10px] text-red-500 mt-1">
+                                  <p className="text-[10px] text-red-500 mt-1 pl-1">
                                     {getErrorMessage(
                                       field.state.meta.errors[0],
                                     )}
                                   </p>
                                 )}
-                            </>
+                            </div>
                           )}
                         </form.Field>
                       </div>
-                    </td>
-                    <td className="p-2 text-center">
-                      <Tooltip
-                        content={
-                          member.relationLabel === "Father" ||
-                          member.relationLabel === "Mother"
-                            ? "Required Row"
-                            : "Clear Row"
-                        }
-                        side="top"
-                      >
-                        <button
-                          type="button"
-                          disabled={
-                            member.relationLabel === "Father" ||
-                            member.relationLabel === "Mother"
-                          }
-                          onClick={() => {
-                            // Direct calls are 100% type-safe and preferred over iterations that generalize to 'string'
-                            form.setFieldValue(`family[${index}].name`, "");
-                            form.setFieldMeta(
-                              `family[${index}].name`,
-                              (meta) => ({
-                                ...meta,
-                                isTouched: false,
-                                errors: [],
-                              }),
-                            );
 
-                            form.setFieldValue(
-                              `family[${index}].occupation`,
-                              "",
-                            );
-                            form.setFieldMeta(
-                              `family[${index}].occupation`,
-                              (meta) => ({
-                                ...meta,
-                                isTouched: false,
-                                errors: [],
-                              }),
-                            );
+                      {/* Name */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Name
+                        </label>
+                        <form.Field name={`family[${index}].name`}>
+                          {(field) => (
+                            <div className="flex flex-col">
+                              <Input
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                onBlur={field.handleBlur}
+                                disabled={!isRelationSelected}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                                placeholder="Enter name..."
+                                error={
+                                  field.state.meta.isTouched &&
+                                  field.state.meta.errors.length > 0
+                                }
+                              />
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0 && (
+                                  <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                    {getErrorMessage(
+                                      field.state.meta.errors[0],
+                                    )}
+                                  </p>
+                                )}
+                            </div>
+                          )}
+                        </form.Field>
+                      </div>
 
-                            form.setFieldValue(
-                              `family[${index}].dependent`,
-                              "",
-                            );
-                            form.setFieldMeta(
-                              `family[${index}].dependent`,
-                              (meta) => ({
-                                ...meta,
-                                isTouched: false,
-                                errors: [],
-                              }),
-                            );
+                      {/* Occupation */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Occupation
+                        </label>
+                        <form.Field name={`family[${index}].occupation`}>
+                          {(field) => (
+                            <div className="flex flex-col">
+                              <Input
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                onBlur={field.handleBlur}
+                                disabled={!isRelationSelected}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                                placeholder="Enter occupation..."
+                                error={
+                                  field.state.meta.isTouched &&
+                                  field.state.meta.errors.length > 0
+                                }
+                              />
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0 && (
+                                  <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                    {getErrorMessage(
+                                      field.state.meta.errors[0],
+                                    )}
+                                  </p>
+                                )}
+                            </div>
+                          )}
+                        </form.Field>
+                      </div>
 
-                            form.setFieldValue(`family[${index}].relation`, "");
-                            form.setFieldMeta(
-                              `family[${index}].relation`,
-                              (meta) => ({
-                                ...meta,
-                                isTouched: false,
-                                errors: [],
-                              }),
-                            );
-                          }}
-                          className="p-2 hover:bg-red-50 rounded-full text-muted-foreground hover:text-red-500 transition-all group inline-flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                        >
-                          <Eraser className="w-4 h-4 group-hover:scale-110" />
-                        </button>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                ))
-              }
-            </form.Subscribe>
-          </tbody>
-        </table>
+                      {/* Dependent Y/N */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Dependent Y/N
+                        </label>
+                        <form.Field name={`family[${index}].dependent`}>
+                          {(field) => (
+                            <div className="flex flex-row items-center gap-4 relative">
+                              <Radio
+                                label="Yes"
+                                checked={field.state.value === "Yes"}
+                                onChange={() => field.handleChange("Yes")}
+                                disabled={!isRelationSelected}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              <Radio
+                                label="No"
+                                checked={field.state.value === "No"}
+                                onChange={() => field.handleChange("No")}
+                                disabled={!isRelationSelected}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0 && (
+                                  <p className="text-[10px] text-red-500 mt-1 absolute -bottom-4">
+                                    {getErrorMessage(
+                                      field.state.meta.errors[0],
+                                    )}
+                                  </p>
+                                )}
+                            </div>
+                          )}
+                        </form.Field>
+                      </div>
+
+                      {/* Contact Number */}
+                      {isEmergencyContact && (
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Contact Number{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <form.Field name={`family[${index}].contactNo`}>
+                            {(field) => (
+                              <div className="flex flex-col">
+                                <Input
+                                  value={field.state.value || ""}
+                                  onChange={(e) =>
+                                    field.handleChange(
+                                      e.target.value
+                                        .replace(/\D/g, "")
+                                        .slice(0, 10),
+                                    )
+                                  }
+                                  onBlur={field.handleBlur}
+                                  maxLength={10}
+                                  placeholder="Enter 10-digit number"
+                                  error={
+                                    field.state.meta.isTouched &&
+                                    field.state.meta.errors.length > 0
+                                  }
+                                />
+                                {field.state.meta.isTouched &&
+                                  field.state.meta.errors.length > 0 && (
+                                    <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                      {getErrorMessage(
+                                        field.state.meta.errors[0],
+                                      )}
+                                    </p>
+                                  )}
+                              </div>
+                            )}
+                          </form.Field>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              },
+            )
+          }
+        </form.Subscribe>
+
+        <button
+          type="button"
+          onClick={() => {
+            const family = form.getFieldValue("family") || [];
+            const nextId =
+              family.length > 0
+                ? Math.max(...family.map((f) => Number(f.id) || 0)) + 1
+                : 1;
+            form.pushFieldValue("family", {
+              id: nextId,
+              relationLabel: "",
+              relation: "",
+              name: "",
+              occupation: "",
+              dependent: "",
+            });
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 mt-2 w-fit text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Add More Family Member
+        </button>
       </div>
     </motion.div>
   );

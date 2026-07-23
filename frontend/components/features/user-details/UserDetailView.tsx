@@ -15,6 +15,8 @@ import {
   Calendar,
   Clock,
   Shield,
+  Fingerprint,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@components/ui-elements/Typography";
@@ -35,12 +37,34 @@ export function UserDetailView({
 }: UserDetailViewProps) {
   const {
     personalDetails,
+    additionalPersonalDetails,
     familyDetails = [],
     educationDetails = [],
     workExperienceDetails = [],
     otherDetails,
     sourceOfInformation,
+    department_name,
+    test_level_name,
   } = details;
+
+  // Admin-assigned relation takes priority over user-chosen relation
+  const emergencyRelationCode =
+    details.assigned_emergency_relation || details.emergency_contact_relation;
+
+  const emergencyMember = familyDetails.find(
+    (f) => f.relation?.toUpperCase() === emergencyRelationCode?.toUpperCase(),
+  );
+  const emergencyContactNo = emergencyMember?.contactNo || "—";
+
+  const getEmergencyRelationLabel = () => {
+    if (!emergencyRelationCode) return "—";
+    if (emergencyMember?.relationLabel) return emergencyMember.relationLabel;
+    // Prettify code: "BROTHER" → "Brother"
+    return (
+      emergencyRelationCode.charAt(0).toUpperCase() +
+      emergencyRelationCode.slice(1).toLowerCase()
+    );
+  };
 
   if (!personalDetails) return null;
 
@@ -70,6 +94,21 @@ export function UserDetailView({
                   <Phone size={16} className="text-brand-primary/60" />
                   {personalDetails?.primaryMobile}
                 </span>
+                {department_name && (
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    <Briefcase size={16} className="text-brand-primary/60" />
+                    {department_name}
+                  </span>
+                )}
+                {test_level_name && (
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    <GraduationCap
+                      size={16}
+                      className="text-brand-primary/60"
+                    />
+                    {test_level_name}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -100,9 +139,19 @@ export function UserDetailView({
                 <DetailItem label="Gender" value={personalDetails?.gender} />
                 <DetailItem label="DOB" value={personalDetails?.dob} />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <DetailItem
+                  label="Alternate Contact"
+                  value={personalDetails?.alternateMobile || "—"}
+                />
+                <DetailItem
+                  label="Emergency Relation"
+                  value={getEmergencyRelationLabel()}
+                />
+              </div>
               <DetailItem
-                label="Alternate Contact"
-                value={personalDetails?.alternateMobile || "—"}
+                label="Emergency Contact Number"
+                value={emergencyContactNo}
               />
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
@@ -122,52 +171,97 @@ export function UserDetailView({
                     {personalDetails?.presentPincode}
                   </p>
                 </div>
+                <div className="space-y-2">
+                  <Typography
+                    variant="body5"
+                    weight="black"
+                    className="text-slate-400 uppercase tracking-tighter text-[10px]"
+                  >
+                    Permanent Address
+                  </Typography>
+                  <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
+                    {personalDetails?.sameAddress ? (
+                      <>
+                        {personalDetails?.presentAddressLine1},{" "}
+                        {personalDetails?.presentCity},{" "}
+                        {personalDetails?.presentDistrict},{" "}
+                        {personalDetails?.presentState} —{" "}
+                        {personalDetails?.presentPincode}
+                      </>
+                    ) : (
+                      <>
+                        {personalDetails?.permanentAddressLine1},{" "}
+                        {personalDetails?.permanentCity},{" "}
+                        {personalDetails?.permanentDistrict},{" "}
+                        {personalDetails?.permanentState} —{" "}
+                        {personalDetails?.permanentPincode}
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </SectionCard>
         </div>
 
-        {/* Logistics Section */}
+        {/* Identity & Demographics Section */}
         <div className="md:col-span-1">
           <SectionCard
-            title="Logistics"
-            icon={<FileText size={20} />}
-            bgIcon={FileText}
-            accentColor="bg-indigo-500"
+            title="Identity & Demographics"
+            icon={<Fingerprint size={20} />}
+            bgIcon={Fingerprint}
+            accentColor="bg-violet-500"
           >
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <DetailItem
-                  label="Service Commitment"
-                  value={otherDetails?.serviceCommitment}
-                  icon={<Clock size={14} />}
+                  label="Blood Group"
+                  value={additionalPersonalDetails?.bloodGroup || ""}
                 />
                 <DetailItem
-                  label="Security Deposit"
-                  value={otherDetails?.securityDeposit}
-                  icon={<Shield size={14} />}
+                  label="Religion"
+                  value={additionalPersonalDetails?.religion || ""}
                 />
+                <DetailItem
+                  label="Category"
+                  value={additionalPersonalDetails?.category || ""}
+                />
+                <DetailItem
+                  label="Marital Status"
+                  value={additionalPersonalDetails?.maritalStatus || ""}
+                />
+                {additionalPersonalDetails?.maritalStatus === "Married" &&
+                  additionalPersonalDetails?.anniversaryDate && (
+                    <DetailItem
+                      label="Anniversary"
+                      value={additionalPersonalDetails.anniversaryDate}
+                    />
+                  )}
               </div>
-              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <DetailItem
-                  label="Shift Preference"
-                  value={otherDetails?.shiftTime}
-                  icon={<Calendar size={14} />}
-                />
-              </div>
-              <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <DetailItem
-                  label="Joining"
-                  value={otherDetails?.expectedJoiningDate}
-                />
-                <DetailItem
-                  label="Exp. Salary"
-                  value={
-                    otherDetails?.expectedSalary
-                      ? `₹${otherDetails.expectedSalary}`
-                      : "—"
-                  }
-                />
+
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <DetailItem
+                    label="Aadhaar No."
+                    value={additionalPersonalDetails?.aadhaarNo || ""}
+                    icon={<CreditCard size={14} />}
+                  />
+                  <DetailItem
+                    label="Name on Aadhaar"
+                    value={additionalPersonalDetails?.nameAsPerAadhaar || ""}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <DetailItem
+                    label="PAN No."
+                    value={additionalPersonalDetails?.panNo || ""}
+                    icon={<CreditCard size={14} />}
+                  />
+                  <DetailItem
+                    label="Name on PAN"
+                    value={additionalPersonalDetails?.nameAsPerPan || ""}
+                  />
+                </div>
               </div>
             </div>
           </SectionCard>
@@ -207,9 +301,14 @@ export function UserDetailView({
                           <Typography
                             variant="body3"
                             weight="bold"
-                            className="text-blue-600 dark:text-blue-400"
+                            className="text-blue-600 dark:text-blue-400 flex items-center gap-2"
                           >
                             {work.designation}
+                            {work.employmentType && (
+                              <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-zinc-700">
+                                {work.employmentType.replace("_", " ")}
+                              </span>
+                            )}
                           </Typography>
                         </div>
                         <div className="px-3 py-1 bg-slate-50 dark:bg-zinc-800 rounded-lg border border-slate-100 dark:border-zinc-700 text-[10px] font-black uppercase tracking-widest text-slate-500">
@@ -320,39 +419,48 @@ export function UserDetailView({
           </SectionCard>
         </div>
 
-        {/* Bottom Grid: Family & Source */}
+        {/* Logistics Section */}
         <div className="md:col-span-1">
           <SectionCard
-            title="Family Ties"
-            icon={<UsersIcon size={20} />}
-            bgIcon={UsersIcon}
-            accentColor="bg-rose-500"
+            title="Logistics"
+            icon={<FileText size={20} />}
+            bgIcon={FileText}
+            accentColor="bg-indigo-500"
           >
-            <div className="space-y-4">
-              {familyDetails
-                .filter((f) => f.name)
-                .map((fam, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center bg-slate-50/50 dark:bg-zinc-950/20 p-4 rounded-2xl border border-slate-100 dark:border-zinc-800/50"
-                  >
-                    <div className="flex flex-col">
-                      <Typography
-                        variant="body5"
-                        weight="black"
-                        className="text-rose-400 uppercase tracking-tighter text-[9px]"
-                      >
-                        {fam.relationLabel}
-                      </Typography>
-                      <Typography variant="body3" weight="bold">
-                        {fam.name}
-                      </Typography>
-                    </div>
-                    <div className="px-3 py-1 bg-white dark:bg-zinc-800 rounded-lg text-[10px] font-bold text-slate-400">
-                      {fam.occupation || "N/A"}
-                    </div>
-                  </div>
-                ))}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DetailItem
+                  label="Service Commitment"
+                  value={otherDetails?.serviceCommitment}
+                  icon={<Clock size={14} />}
+                />
+                <DetailItem
+                  label="Security Deposit"
+                  value={otherDetails?.securityDeposit}
+                  icon={<Shield size={14} />}
+                />
+              </div>
+              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/50">
+                <DetailItem
+                  label="Shift Preference"
+                  value={otherDetails?.shiftTime}
+                  icon={<Calendar size={14} />}
+                />
+              </div>
+              <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
+                <DetailItem
+                  label="Joining"
+                  value={otherDetails?.expectedJoiningDate}
+                />
+                <DetailItem
+                  label="Exp. Salary"
+                  value={
+                    otherDetails?.expectedSalary
+                      ? `₹${otherDetails.expectedSalary}`
+                      : "—"
+                  }
+                />
+              </div>
             </div>
           </SectionCard>
         </div>
@@ -406,6 +514,47 @@ export function UserDetailView({
                       ))}
                 </div>
               </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Bottom Grid: Family */}
+        <div className="md:col-span-2">
+          <SectionCard
+            title="Family Ties"
+            icon={<UsersIcon size={20} />}
+            bgIcon={UsersIcon}
+            accentColor="bg-rose-500"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {familyDetails
+                .filter((f) => f.name)
+                .map((fam, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-slate-50/50 dark:bg-zinc-950/20 p-4 rounded-2xl border border-slate-100 dark:border-zinc-800/50"
+                  >
+                    <div className="flex flex-col">
+                      <Typography
+                        variant="body5"
+                        weight="black"
+                        className="text-rose-400 uppercase tracking-tighter text-[9px]"
+                      >
+                        {fam.relationLabel ||
+                          (fam.relation
+                            ? fam.relation.charAt(0).toUpperCase() +
+                              fam.relation.slice(1).toLowerCase()
+                            : "")}
+                      </Typography>
+                      <Typography variant="body3" weight="bold">
+                        {fam.name}
+                      </Typography>
+                    </div>
+                    <div className="px-3 py-1 bg-white dark:bg-zinc-800 rounded-lg text-[10px] font-bold text-slate-400">
+                      {fam.occupation || "N/A"}
+                    </div>
+                  </div>
+                ))}
             </div>
           </SectionCard>
         </div>

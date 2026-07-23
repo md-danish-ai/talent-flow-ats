@@ -35,6 +35,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  output: "standalone",
+
   experimental: {
     authInterrupts: true,
     // cacheComponents: true,

@@ -4,11 +4,11 @@ set -o errexit
 ACTION=$1
 REVISION=${2:-head}
 
-echo "================================================="
+echo "==================================================================================================="
 echo "🚀 Database Migration Utility"
 echo "Action: $ACTION"
 echo "Revision: $REVISION"
-echo "================================================="
+echo "==================================================================================================="
 
 # Function to print usage
 usage() {
@@ -48,44 +48,36 @@ fi
 echo "🐍 Using Python: $ALEMBIC_PYTHON"
 
 case "$ACTION" in
-
     upgrade)
         echo "⬆️ Running upgrade..."
         "$ALEMBIC_PYTHON" -m alembic upgrade "$REVISION"
         ;;
-
     downgrade)
         echo "⬇️ Running downgrade..."
         "$ALEMBIC_PYTHON" -m alembic downgrade "$REVISION"
         ;;
-
     current)
         echo "📌 Current migration revision:"
         "$ALEMBIC_PYTHON" -m alembic current
         ;;
-
     history)
         echo "📜 Migration history:"
         "$ALEMBIC_PYTHON" -m alembic history
         ;;
-
     heads)
         echo "🔝 Current heads:"
         "$ALEMBIC_PYTHON" -m alembic heads
         ;;
-
     help)
         usage
         ;;
-
     *)
         echo "❌ Invalid command: $ACTION"
         usage
         exit 1
         ;;
-
 esac
 
-echo "================================================="
+echo "==================================================================================================="
 echo "✅ Migration command executed successfully"
-echo "================================================="
+echo "==================================================================================================="

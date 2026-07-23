@@ -5,7 +5,7 @@ export interface PersonalDetails {
   dob: string;
   primaryMobile: string;
   alternateMobile?: string;
-  email: string;
+  email?: string | null;
   presentAddressLine1: string;
   presentAddressLine2?: string;
   presentState: string;
@@ -21,6 +21,18 @@ export interface PersonalDetails {
   sameAddress: boolean;
 }
 
+export interface AdditionalPersonalDetails {
+  bloodGroup: string;
+  aadhaarNo: string;
+  nameAsPerAadhaar: string;
+  panNo: string;
+  nameAsPerPan: string;
+  religion: string;
+  category: string;
+  maritalStatus: string;
+  anniversaryDate?: string;
+}
+
 export interface FamilyDetail {
   id: number;
   relationLabel: string;
@@ -28,6 +40,7 @@ export interface FamilyDetail {
   name: string;
   occupation: string;
   dependent: string;
+  contactNo?: string;
 }
 
 export interface SourceOfInformation {
@@ -51,6 +64,7 @@ export interface EducationDetail {
 export interface WorkExperienceDetail {
   id: number;
   company: string;
+  employmentType: string;
   designation: string;
   joinDate: string;
   relieveDate: string;
@@ -75,10 +89,14 @@ export interface UserDetails {
   test_level_id?: number | string;
   test_level_name?: string;
   department_id?: number | string;
+  department_name?: string;
   personalDetails: PersonalDetails;
+  additionalPersonalDetails?: AdditionalPersonalDetails;
   familyDetails: FamilyDetail[];
   sourceOfInformation: SourceOfInformation;
   educationDetails: EducationDetail[];
   workExperienceDetails: WorkExperienceDetail[];
   otherDetails: OtherDetails;
+  emergency_contact_relation?: string;
+  assigned_emergency_relation?: string;
 }

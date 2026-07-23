@@ -142,7 +142,11 @@ class QuestionService:
             self._validate_classification_code(payload.exam_level, "exam_level")
 
             requirements = [
-                {"type_code": r.type_code, "count": r.count}
+                {
+                    "type_code": r.type_code,
+                    "count": r.count,
+                    "marks": getattr(r, "marks", None),
+                }
                 for r in payload.requirements
             ]
 

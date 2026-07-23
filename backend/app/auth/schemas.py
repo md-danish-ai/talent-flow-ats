@@ -19,7 +19,7 @@ class RoleEnum(str, Enum):
 class SignUpSchema(BaseModel):
     name: str
     mobile: str
-    test_level_id: int
+    test_level_id: Optional[int] = None
     department_id: int
     email: Optional[EmailStr] = None
 
@@ -31,6 +31,12 @@ class SignUpSchema(BaseModel):
 
     @validator("department_id", pre=True)
     def validate_dept_id(cls, value):
+        if value == "":
+            return None
+        return value
+
+    @validator("test_level_id", pre=True)
+    def validate_test_level_id(cls, value):
         if value == "":
             return None
         return value

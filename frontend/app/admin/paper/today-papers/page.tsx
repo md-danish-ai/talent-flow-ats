@@ -44,6 +44,7 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
       date_to: date_to || (!date_from ? todayDate : undefined),
       page: 1,
       limit: 10,
+      exclude_software: true,
     };
 
     initialData = await getUsersByRole("user", fetchOptions);

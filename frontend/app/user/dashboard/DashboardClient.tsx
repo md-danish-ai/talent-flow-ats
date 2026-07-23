@@ -62,6 +62,9 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
+  const isSoftwareDepartment =
+    user?.department_name?.toLowerCase() === "software";
+
   const activeStatus = activeInterviewStatus?.status;
   const isExpired = activeInterviewStatus?.is_expired;
 
@@ -168,7 +171,11 @@ export function DashboardClient({
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+          className={`grid grid-cols-1 gap-10 ${
+            isSoftwareDepartment
+              ? "md:grid-cols-2"
+              : "md:grid-cols-2 lg:grid-cols-3"
+          }`}
         >
           {/* Card 1: Candidate Identity */}
           <motion.div variants={itemVariants}>
@@ -348,120 +355,122 @@ export function DashboardClient({
             </Link>
           </motion.div>
 
-          {/* Card 3: Combat/Interview Test */}
-          <motion.div variants={itemVariants}>
-            <div
-              className={`group relative h-full rounded-[3rem] transition-all duration-700 ${!isInterviewEnabled && "opacity-80"}`}
-              onMouseEnter={() => setHoveredCard("interview")}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <Link
-                href={isInterviewEnabled ? "/user/interview-test" : "#"}
-                onClick={(event) =>
-                  !isInterviewEnabled && event.preventDefault()
-                }
-                className={`block h-full ${isInterviewEnabled ? "cursor-pointer" : "cursor-not-allowed"}`}
+          {/* Card 3: Combat/Interview Test - hidden for Software department */}
+          {!isSoftwareDepartment && (
+            <motion.div variants={itemVariants}>
+              <div
+                className={`group relative h-full rounded-[3rem] transition-all duration-700 ${!isInterviewEnabled && "opacity-80"}`}
+                onMouseEnter={() => setHoveredCard("interview")}
+                onMouseLeave={() => setHoveredCard(null)}
               >
-                <Card
-                  className={`h-full relative overflow-hidden flex flex-col p-12 border transition-all duration-700 rounded-[3rem] bg-white dark:bg-zinc-800/30 backdrop-blur-2xl ${
-                    isInterviewEnabled
-                      ? "border-slate-200 dark:border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.6)] dark:ring-1 dark:ring-white/10 hover:shadow-[0_45px_100px_rgba(37,99,235,0.12)] dark:hover:shadow-[0_45px_100px_rgba(0,0,0,0.73)] hover:border-blue-400/40 hover:-translate-y-2"
-                      : "border-slate-100 dark:border-zinc-800/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
-                  }`}
+                <Link
+                  href={isInterviewEnabled ? "/user/interview-test" : "#"}
+                  onClick={(event) =>
+                    !isInterviewEnabled && event.preventDefault()
+                  }
+                  className={`block h-full ${isInterviewEnabled ? "cursor-pointer" : "cursor-not-allowed"}`}
                 >
-                  <AnimatedBorder
-                    color="#3b82f6"
-                    active={hoveredCard === "interview"}
-                  />
+                  <Card
+                    className={`h-full relative overflow-hidden flex flex-col p-12 border transition-all duration-700 rounded-[3rem] bg-white dark:bg-zinc-800/30 backdrop-blur-2xl ${
+                      isInterviewEnabled
+                        ? "border-slate-200 dark:border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.6)] dark:ring-1 dark:ring-white/10 hover:shadow-[0_45px_100px_rgba(37,99,235,0.12)] dark:hover:shadow-[0_45px_100px_rgba(0,0,0,0.73)] hover:border-blue-400/40 hover:-translate-y-2"
+                        : "border-slate-100 dark:border-zinc-800/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
+                    }`}
+                  >
+                    <AnimatedBorder
+                      color="#3b82f6"
+                      active={hoveredCard === "interview"}
+                    />
 
-                  <div className="absolute -top-12 -right-12 p-4 opacity-[0.02] group-hover:opacity-[0.04] transition-opacity rotate-12 -z-0 pointer-events-none">
-                    <PlayCircle size={240} strokeWidth={1} />
-                  </div>
+                    <div className="absolute -top-12 -right-12 p-4 opacity-[0.02] group-hover:opacity-[0.04] transition-opacity rotate-12 -z-0 pointer-events-none">
+                      <PlayCircle size={240} strokeWidth={1} />
+                    </div>
 
-                  <div className="flex items-start justify-between mb-10 relative z-10">
-                    <div
-                      className={`h-20 w-20 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 ${
-                        isInterviewEnabled
-                          ? "bg-blue-50 dark:bg-blue-900/10 border-blue-400/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 shadow-inner"
-                          : "bg-slate-50 dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-300"
-                      }`}
-                    >
-                      {isDecommissioned ? (
-                        <CheckCircle2
-                          className={`h-10 w-10 ${isInterviewSubmitted ? "text-emerald-500" : "text-slate-400"}`}
-                        />
-                      ) : (
-                        <PlayCircle className="h-10 w-10" />
+                    <div className="flex items-start justify-between mb-10 relative z-10">
+                      <div
+                        className={`h-20 w-20 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 ${
+                          isInterviewEnabled
+                            ? "bg-blue-50 dark:bg-blue-900/10 border-blue-400/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 shadow-inner"
+                            : "bg-slate-50 dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-300"
+                        }`}
+                      >
+                        {isDecommissioned ? (
+                          <CheckCircle2
+                            className={`h-10 w-10 ${isInterviewSubmitted ? "text-emerald-500" : "text-slate-400"}`}
+                          />
+                        ) : (
+                          <PlayCircle className="h-10 w-10" />
+                        )}
+                      </div>
+                      {isInterviewSubmitted && (
+                        <div className="h-10 w-10 rounded-2xl bg-emerald-500 border-4 border-white dark:border-zinc-900 flex items-center justify-center text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] relative">
+                          <CheckCircle2 className="h-5 w-5 animate-pulse" />
+                          <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40 animate-[ping_2s_infinite]" />
+                        </div>
+                      )}
+                      {!isInterviewEnabled && !isInterviewSubmitted && (
+                        <div className="h-20 w-20 rounded-3xl bg-slate-50 dark:bg-zinc-950 border-2 border-slate-100 dark:border-zinc-800 flex items-center justify-center text-slate-300">
+                          <Lock className="h-7 w-7" />
+                        </div>
                       )}
                     </div>
-                    {isInterviewSubmitted && (
-                      <div className="h-10 w-10 rounded-2xl bg-emerald-500 border-4 border-white dark:border-zinc-900 flex items-center justify-center text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] relative">
-                        <CheckCircle2 className="h-5 w-5 animate-pulse" />
-                        <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40 animate-[ping_2s_infinite]" />
-                      </div>
-                    )}
-                    {!isInterviewEnabled && !isInterviewSubmitted && (
-                      <div className="h-20 w-20 rounded-3xl bg-slate-50 dark:bg-zinc-950 border-2 border-slate-100 dark:border-zinc-800 flex items-center justify-center text-slate-300">
-                        <Lock className="h-7 w-7" />
-                      </div>
-                    )}
-                  </div>
 
-                  <div className="mb-10 relative z-10">
-                    <Typography
-                      variant="h3"
-                      weight="black"
-                      className={`tracking-tight uppercase italic ${
-                        !isInterviewEnabled
-                          ? "text-slate-400 dark:text-zinc-600"
-                          : "text-slate-900 dark:text-zinc-100"
-                      }`}
-                    >
-                      {isDecommissioned
-                        ? "Decommissioned"
-                        : isResuming
-                          ? "Resume Phase"
-                          : "Initiate Phase"}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      className={`leading-relaxed font-medium line-clamp-4 ${
+                    <div className="mb-10 relative z-10">
+                      <Typography
+                        variant="h3"
+                        weight="black"
+                        className={`tracking-tight uppercase italic ${
+                          !isInterviewEnabled
+                            ? "text-slate-400 dark:text-zinc-600"
+                            : "text-slate-900 dark:text-zinc-100"
+                        }`}
+                      >
+                        {isDecommissioned
+                          ? "Decommissioned"
+                          : isResuming
+                            ? "Resume Phase"
+                            : "Initiate Phase"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        className={`leading-relaxed font-medium line-clamp-4 ${
+                          isInterviewEnabled
+                            ? "text-slate-500 dark:text-zinc-500"
+                            : "text-slate-300 dark:text-zinc-700"
+                        }`}
+                      >
+                        {isInterviewSubmitted
+                          ? "Interview successfully completed and processed."
+                          : isExpired
+                            ? "Interview time has expired. Participation closed."
+                            : isResuming
+                              ? "An active session exists. Resume your core assessment."
+                              : "Standard competency evaluation protocols."}
+                      </Typography>
+                    </div>
+
+                    <div
+                      className={`mt-auto h-14 flex items-center gap-3 font-black text-xs uppercase tracking-widest transition-all relative z-10 ${
                         isInterviewEnabled
-                          ? "text-slate-500 dark:text-zinc-500"
-                          : "text-slate-300 dark:text-zinc-700"
+                          ? "text-blue-600 dark:text-blue-400 group-hover:translate-x-2"
+                          : "text-slate-300 dark:text-zinc-800"
                       }`}
                     >
                       {isInterviewSubmitted
-                        ? "Interview successfully completed and processed."
-                        : isExpired
-                          ? "Interview time has expired. Participation closed."
-                          : isResuming
-                            ? "An active session exists. Resume your core assessment."
-                            : "Standard competency evaluation protocols."}
-                    </Typography>
-                  </div>
-
-                  <div
-                    className={`mt-auto h-14 flex items-center gap-3 font-black text-xs uppercase tracking-widest transition-all relative z-10 ${
-                      isInterviewEnabled
-                        ? "text-blue-600 dark:text-blue-400 group-hover:translate-x-2"
-                        : "text-slate-300 dark:text-zinc-800"
-                    }`}
-                  >
-                    {isInterviewSubmitted
-                      ? "Decommissioned"
-                      : isDetailsComplete
-                        ? "Initiate Phase"
-                        : "Awaiting Clearance"}
-                    {isInterviewEnabled && <ArrowRight className="h-4 w-4" />}
-                    {isInterviewSubmitted && (
-                      <CheckCircle2 className="h-4 w-4" />
-                    )}
-                  </div>
-                </Card>
-              </Link>
-            </div>
-          </motion.div>
+                        ? "Decommissioned"
+                        : isDetailsComplete
+                          ? "Initiate Phase"
+                          : "Awaiting Clearance"}
+                      {isInterviewEnabled && <ArrowRight className="h-4 w-4" />}
+                      {isInterviewSubmitted && (
+                        <CheckCircle2 className="h-4 w-4" />
+                      )}
+                    </div>
+                  </Card>
+                </Link>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {!isDetailsComplete && (

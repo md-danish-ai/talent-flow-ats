@@ -2,8 +2,18 @@ import { toast } from "@lib/toast";
 import { ENDPOINTS } from "./endpoints";
 import { apiLoadingState } from "./loading-state";
 
-export const BASE_URL =
+// Browser-facing URL (baked into build via NEXT_PUBLIC_* at build time)
+const BROWSER_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+
+// Server-side URL: inside Docker, Next.js SSR calls backend via Docker service name.
+// BACKEND_URL is a runtime env var (not NEXT_PUBLIC_), set in docker-compose.
+// Falls back to BROWSER_URL for local dev where both run on localhost.
+const SERVER_URL = process.env.BACKEND_URL ?? BROWSER_URL;
+
+// Dynamically pick the right base URL depending on execution context
+export const BASE_URL =
+  typeof window === "undefined" ? SERVER_URL : BROWSER_URL;
 
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

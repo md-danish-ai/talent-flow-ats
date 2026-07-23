@@ -11,6 +11,7 @@ import {
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
+import { humanizeString } from "@lib/utils";
 
 export function useAutoAssign(id: number) {
   const [paper, setPaper] = useState<PaperSetup | null>(null);
@@ -335,8 +336,20 @@ export function useAutoAssign(id: number) {
         question_id: finalQuestionIds,
       });
 
+      // Get a readable subject name for the toast
+      const subjectLabel = targetSubjectCode
+        ? (() => {
+            const subj = paper.subject_ids_data.find(
+              (s) => getSubjectCode(s.subject_id) === targetSubjectCode,
+            );
+            return subj?.subject_name
+              ? humanizeString(subj.subject_name)
+              : humanizeString(targetSubjectCode);
+          })()
+        : "selected subjects";
+
       toast.success(
-        `Successfully assigned ${newGeneratedIds.length} questions for ${targetSubjectCode || "selected subjects"}!`,
+        `${newGeneratedIds.length} questions assigned for ${subjectLabel}.`,
       );
       if (totalWarnings.length > 0) {
         totalWarnings.forEach((w) => console.warn(w));
