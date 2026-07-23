@@ -65,3 +65,12 @@ class ClassificationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ClassificationReorderItem(BaseModel):
+    id: int
+    sort_order: int
+
+
+class ClassificationReorderRequest(BaseModel):
+    items: list[ClassificationReorderItem]

@@ -25,6 +25,7 @@ export const ENDPOINTS = {
     CREATE: "/classifications/create-classification",
     UPDATE: (id: string | number) =>
       `/classifications/update-classification/${id}`,
+    REORDER: "/classifications/reorder-classifications",
   },
 
   DEPARTMENTS: {

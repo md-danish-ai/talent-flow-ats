@@ -177,38 +177,55 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
   const isEditing = editingIndex !== null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={
-      <div className="flex items-center gap-2.5">
-        <div className="p-1.5 rounded-lg bg-brand-primary/10">
-          <TrendingUp size={16} className="text-brand-primary" />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-brand-primary/10">
+            <TrendingUp size={16} className="text-brand-primary" />
+          </div>
+          <span>Grade Settings</span>
         </div>
-        <span>Grade Settings</span>
-      </div>
-    }>
+      }
+    >
       <div className="space-y-5">
-
         {/* ── Form Card ─────────────────────────────────── */}
-        <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-          isEditing
-            ? "border-blue-400/50 dark:border-blue-500/40 bg-blue-50/50 dark:bg-blue-500/5"
-            : "border-border/60 bg-slate-50/80 dark:bg-slate-900/40"
-        }`}>
-          {/* Form header strip */}
-          <div className={`px-5 py-3 border-b flex items-center gap-2 ${
+        <div
+          className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
             isEditing
-              ? "border-blue-400/30 dark:border-blue-500/20 bg-blue-100/60 dark:bg-blue-500/10"
-              : "border-border/40 bg-white/60 dark:bg-slate-800/40"
-          }`}>
-            <div className={`p-1 rounded-md ${isEditing ? "bg-blue-500/20" : "bg-brand-primary/10"}`}>
-              {isEditing
-                ? <Edit2 size={12} className="text-blue-600 dark:text-blue-400" />
-                : <Plus size={12} className="text-brand-primary" />
-              }
+              ? "border-blue-400/50 dark:border-blue-500/40 bg-blue-50/50 dark:bg-blue-500/5"
+              : "border-border/60 bg-slate-50/80 dark:bg-slate-900/40"
+          }`}
+        >
+          {/* Form header strip */}
+          <div
+            className={`px-5 py-3 border-b flex items-center gap-2 ${
+              isEditing
+                ? "border-blue-400/30 dark:border-blue-500/20 bg-blue-100/60 dark:bg-blue-500/10"
+                : "border-border/40 bg-white/60 dark:bg-slate-800/40"
+            }`}
+          >
+            <div
+              className={`p-1 rounded-md ${isEditing ? "bg-blue-500/20" : "bg-brand-primary/10"}`}
+            >
+              {isEditing ? (
+                <Edit2 size={12} className="text-blue-600 dark:text-blue-400" />
+              ) : (
+                <Plus size={12} className="text-brand-primary" />
+              )}
             </div>
-            <Typography variant="body5" className={`font-bold uppercase tracking-wider text-[11px] ${
-              isEditing ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"
-            }`}>
-              {isEditing ? `Editing Rule #${editingIndex! + 1}` : "Add New Grade Rule"}
+            <Typography
+              variant="body5"
+              className={`font-bold uppercase tracking-wider text-[11px] ${
+                isEditing
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {isEditing
+                ? `Editing Rule #${editingIndex! + 1}`
+                : "Add New Grade Rule"}
             </Typography>
           </div>
 
@@ -217,7 +234,10 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* From */}
               <div>
-                <Typography variant="body5" className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                <Typography
+                  variant="body5"
+                  className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                   From (%)
                 </Typography>
@@ -225,7 +245,9 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                   placeholder="e.g. 0.00"
                   value={formMin}
                   inputMode="decimal"
-                  onChange={(e) => handleNumericInput(e.target.value, setFormMin)}
+                  onChange={(e) =>
+                    handleNumericInput(e.target.value, setFormMin)
+                  }
                 />
               </div>
 
@@ -234,7 +256,10 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
 
               {/* To */}
               <div>
-                <Typography variant="body5" className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                <Typography
+                  variant="body5"
+                  className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
                   To (%)
                 </Typography>
@@ -242,13 +267,18 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                   placeholder="e.g. 49.99"
                   value={formMax}
                   inputMode="decimal"
-                  onChange={(e) => handleNumericInput(e.target.value, setFormMax)}
+                  onChange={(e) =>
+                    handleNumericInput(e.target.value, setFormMax)
+                  }
                 />
               </div>
 
               {/* Grade */}
               <div>
-                <Typography variant="body5" className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                <Typography
+                  variant="body5"
+                  className="mb-1.5 ml-0.5 text-muted-foreground font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block" />
                   Grade Label
                 </Typography>
@@ -266,17 +296,28 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <AlertTriangle size={13} className="shrink-0" />
                 <span className="text-[11px] font-medium">
-                  Fill all fields, then click &quot;{isEditing ? "Update Rule" : "Add Grade Rule"}&quot;
+                  Fill all fields, then click &quot;
+                  {isEditing ? "Update Rule" : "Add Grade Rule"}&quot;
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {isEditing && (
-                  <Button variant="ghost" size="sm" onClick={resetForm} className="text-muted-foreground hover:text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetForm}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     <RefreshCw size={13} className="mr-1.5" />
                     Cancel
                   </Button>
                 )}
-                <Button onClick={handleAddOrUpdateGrade} color="primary" size="md" animate="scale">
+                <Button
+                  onClick={handleAddOrUpdateGrade}
+                  color="primary"
+                  size="md"
+                  animate="scale"
+                >
                   {isEditing ? (
                     <>
                       <Edit2 size={14} className="mr-1.5" />
@@ -297,7 +338,10 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
         {/* ── Grade Rules List ───────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <Typography variant="body5" className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <Typography
+              variant="body5"
+              className="font-bold text-foreground uppercase tracking-wider text-[11px]"
+            >
               Defined Rules
               {grades.length > 0 && (
                 <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-primary text-white text-[10px] font-black">
@@ -323,8 +367,16 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                 <TrendingUp size={22} className="text-muted-foreground/50" />
               </div>
               <div className="text-center">
-                <Typography variant="body4" className="text-foreground font-semibold">No rules defined yet</Typography>
-                <Typography variant="body5" className="text-muted-foreground text-[12px] mt-0.5">
+                <Typography
+                  variant="body4"
+                  className="text-foreground font-semibold"
+                >
+                  No rules defined yet
+                </Typography>
+                <Typography
+                  variant="body5"
+                  className="text-muted-foreground text-[12px] mt-0.5"
+                >
                   Add your first grade range using the form above.
                 </Typography>
               </div>
@@ -332,7 +384,8 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
           ) : (
             <div className="space-y-1.5">
               {grades.map((grade, idx) => {
-                const cfg = GRADE_CONFIG[grade.grade_label] ?? GRADE_CONFIG["N/A"];
+                const cfg =
+                  GRADE_CONFIG[grade.grade_label] ?? GRADE_CONFIG["N/A"];
                 const isEditingThis = editingIndex === idx;
                 return (
                   <div
@@ -345,33 +398,48 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
                   >
                     {/* Sr. No. */}
                     <div className="shrink-0 w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <span className="text-[11px] font-black text-muted-foreground">{idx + 1}</span>
+                      <span className="text-[11px] font-black text-muted-foreground">
+                        {idx + 1}
+                      </span>
                     </div>
 
                     {/* Single-row: badge + range pill + bar */}
                     <div className="flex-1 min-w-0 flex items-center gap-2.5">
                       {/* Grade badge — fixed width so bar always aligns */}
                       <div className="shrink-0 w-[112px] flex items-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${cfg.bg} ${cfg.color} ${cfg.border}`}
+                        >
                           {grade.grade_label}
                         </span>
                         {isEditingThis && (
-                          <span className="ml-1.5 text-[10px] font-bold text-blue-500 uppercase tracking-wider whitespace-nowrap">• editing</span>
+                          <span className="ml-1.5 text-[10px] font-bold text-blue-500 uppercase tracking-wider whitespace-nowrap">
+                            • editing
+                          </span>
                         )}
                       </div>
                       {/* Range pill — fixed width so bar always aligns */}
                       <div className="shrink-0 w-[148px] flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-full px-2.5 py-0.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-                        <span className="text-[11px] font-bold text-foreground tabular-nums">{grade.min.toFixed(2)}%</span>
-                        <span className="text-muted-foreground/50 text-[10px]">→</span>
+                        <span className="text-[11px] font-bold text-foreground tabular-nums">
+                          {grade.min.toFixed(2)}%
+                        </span>
+                        <span className="text-muted-foreground/50 text-[10px]">
+                          →
+                        </span>
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                        <span className="text-[11px] font-bold text-foreground tabular-nums">{grade.max.toFixed(2)}%</span>
+                        <span className="text-[11px] font-bold text-foreground tabular-nums">
+                          {grade.max.toFixed(2)}%
+                        </span>
                       </div>
                       {/* Mini bar — always starts from same left edge */}
                       <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden hidden sm:block">
                         <div
                           className={`h-full rounded-full ${cfg.barBg}`}
-                          style={{ marginLeft: `${grade.min}%`, width: `${grade.max - grade.min}%` }}
+                          style={{
+                            marginLeft: `${grade.min}%`,
+                            width: `${grade.max - grade.min}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -447,7 +515,13 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
           </div>
           {/* Right: actions */}
           <div className="flex gap-2.5">
-            <Button variant="outline" color="primary" onClick={onClose} animate="scale" size="md">
+            <Button
+              variant="outline"
+              color="primary"
+              onClick={onClose}
+              animate="scale"
+              size="md"
+            >
               Close
             </Button>
             <Button
@@ -466,7 +540,6 @@ export const GradeSettingsModal: React.FC<GradeSettingsModalProps> = ({
             </Button>
           </div>
         </div>
-
       </div>
     </Modal>
   );

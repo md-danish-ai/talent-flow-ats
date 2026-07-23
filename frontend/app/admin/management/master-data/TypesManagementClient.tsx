@@ -33,6 +33,7 @@ import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Tabs, type TabItem } from "@components/ui-elements/Tabs";
 
 import { TypeTable, type BaseType } from "./components/TypeTable";
+import { toast } from "@lib/toast";
 
 type TypesListingFilters = {
   type: string;
@@ -83,6 +84,8 @@ export function TypesManagementClient({
           : f.status === "inactive"
             ? false
             : undefined,
+      sort_by: "sort_order",
+      order: "asc",
     }),
     toastMessage: "Classification list refreshed successfully",
   });
@@ -97,10 +100,33 @@ export function TypesManagementClient({
         code: item.code || "",
         description: (item.metadata?.description as string) || "",
         is_active: item.is_active,
+        sort_order: item.sort_order,
         metadata: item.metadata,
       })),
     [items],
   );
+
+  const handleReorder = async (reorderedItems: BaseType[]) => {
+    try {
+      const validSortOrders = items
+        .map((i) => i.sort_order)
+        .filter((so): so is number => typeof so === "number" && so > 0);
+      const minSortOrder =
+        validSortOrders.length > 0 ? Math.min(...validSortOrders) : 1;
+
+      const payload = reorderedItems.map((item, idx) => ({
+        id: item.id,
+        sort_order: minSortOrder + idx,
+      }));
+      await classificationsApi.reorderClassifications(payload);
+      toast.success(
+        `${tabs.find((t) => t.value === activeTab)?.label || "Items"} reordered successfully`,
+      );
+      void refresh();
+    } catch {
+      toast.error("Failed to reorder items");
+    }
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -305,6 +331,7 @@ export function TypesManagementClient({
               togglingId={togglingId}
               onEdit={handleOpenModal}
               onToggleStatus={handleToggleStatus}
+              onReorder={handleReorder}
             />
 
             {!isFetching && totalItems > 0 && (

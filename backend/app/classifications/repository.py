@@ -10,7 +10,7 @@ def get_all(
     type_filter: str = None,
     is_active: bool = None,
     search: str = None,
-    sort_by: str = "code",
+    sort_by: str = "sort_order",
     order: str = "asc",
     limit: int = 10,
     offset: int = 0,
@@ -347,6 +347,22 @@ def create(data, code: str):
             "created_at": new_classification.created_at,
             "updated_at": new_classification.updated_at,
         }
+    except Exception as exception:
+        db_session.rollback()
+        raise exception
+    finally:
+        db_session.close()
+
+
+def reorder(items: list):
+    db_session = SessionLocal()
+    try:
+        for item in items:
+            db_session.query(Classification).filter(
+                Classification.id == item["id"]
+            ).update({"sort_order": item["sort_order"]})
+        db_session.commit()
+        return True
     except Exception as exception:
         db_session.rollback()
         raise exception

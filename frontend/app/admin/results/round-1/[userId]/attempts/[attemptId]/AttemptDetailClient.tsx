@@ -316,67 +316,74 @@ export function AttemptDetailClient({
       <PerformanceGrid scoreStats={scoreStats} />
 
       {/* Grade Scale Reference */}
-      {data.grade_settings && data.grade_settings.length > 0 && (() => {
-        const sorted = [...data.grade_settings].sort((a, b) => a.min - b.min);
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className={`bg-card px-5 pt-5 pb-8 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans`}
-          >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <Star size={18} className="text-brand-primary" />
-              <Typography
-                variant="h4"
-                className="font-black uppercase tracking-widest text-muted-foreground"
-              >
-                Grade Scale Matrix
-              </Typography>
-            </div>
+      {data.grade_settings &&
+        data.grade_settings.length > 0 &&
+        (() => {
+          const sorted = [...data.grade_settings].sort((a, b) => a.min - b.min);
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className={`bg-card px-5 pt-5 pb-8 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans`}
+            >
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <Star size={18} className="text-brand-primary" />
+                <Typography
+                  variant="h4"
+                  className="font-black uppercase tracking-widest text-muted-foreground"
+                >
+                  Grade Scale Matrix
+                </Typography>
+              </div>
 
-            {/* Single segmented bar — range text inside each segment */}
-            <div className="relative w-full h-7 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              {sorted.map((g, i) => {
-                const cfg = GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
-                const width = g.max - g.min;
-                return (
-                  <div
-                    key={i}
-                    className={`absolute top-0 h-full ${cfg.barBg} flex items-center justify-center`}
-                    style={{ left: `${g.min}%`, width: `${width}%` }}
-                  >
-                    {width >= 8 && (
-                      <span className="text-[10px] font-black text-white leading-none drop-shadow-sm whitespace-nowrap tabular-nums">
-                        {g.min} – {g.max}%
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+              {/* Single segmented bar — range text inside each segment */}
+              <div className="relative w-full h-7 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                {sorted.map((g, i) => {
+                  const cfg =
+                    GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
+                  const width = g.max - g.min;
+                  return (
+                    <div
+                      key={i}
+                      className={`absolute top-0 h-full ${cfg.barBg} flex items-center justify-center`}
+                      style={{ left: `${g.min}%`, width: `${width}%` }}
+                    >
+                      {width >= 8 && (
+                        <span className="text-[10px] font-black text-white leading-none drop-shadow-sm whitespace-nowrap tabular-nums">
+                          {g.min} – {g.max}%
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
 
-            {/* Grade name labels below — only name, no range */}
-            <div className="relative w-full mt-2" style={{ height: "20px" }}>
-              {sorted.map((g, i) => {
-                const cfg = GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
-                const midPoint = g.min + (g.max - g.min) / 2;
-                const clampedLeft = Math.min(Math.max(midPoint, 0), 100);
-                return (
-                  <span
-                    key={i}
-                    className={`absolute text-[11px] font-bold ${cfg.color} whitespace-nowrap leading-tight`}
-                    style={{ left: `${clampedLeft}%`, transform: "translateX(-50%)" }}
-                  >
-                    {g.grade_label}
-                  </span>
-                );
-              })}
-            </div>
-          </motion.div>
-        );
-      })()}
+              {/* Grade name labels below — only name, no range */}
+              <div className="relative w-full mt-2" style={{ height: "20px" }}>
+                {sorted.map((g, i) => {
+                  const cfg =
+                    GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
+                  const midPoint = g.min + (g.max - g.min) / 2;
+                  const clampedLeft = Math.min(Math.max(midPoint, 0), 100);
+                  return (
+                    <span
+                      key={i}
+                      className={`absolute text-[11px] font-bold ${cfg.color} whitespace-nowrap leading-tight`}
+                      style={{
+                        left: `${clampedLeft}%`,
+                        transform: "translateX(-50%)",
+                      }}
+                    >
+                      {g.grade_label}
+                    </span>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })()}
 
       {/* Detailed Result Breakdown */}
       <motion.div
@@ -569,12 +576,12 @@ export function AttemptDetailClient({
                               index={item.index}
                               manualMarksValue={
                                 manualMarks[
-                                `${item.answer.question_id}-${item.index}`
+                                  `${item.answer.question_id}-${item.index}`
                                 ] ?? ""
                               }
                               isManualMarksApplied={
                                 manualMarksApplied[
-                                `${item.answer.question_id}-${item.index}`
+                                  `${item.answer.question_id}-${item.index}`
                                 ] !== undefined
                               }
                               onManualMarksChange={(val) =>
