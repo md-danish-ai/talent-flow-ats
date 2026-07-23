@@ -19,7 +19,6 @@ class SubjectConfigItem(BaseModel):
         return v
 
 
-
 class GradeSettingItem(BaseModel):
     min: float
     max: float

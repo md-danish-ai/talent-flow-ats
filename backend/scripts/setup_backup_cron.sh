@@ -40,8 +40,8 @@ LOG_FILE="$PROJECT_ROOT/backend/backups/cron.log"
 # Set TEST_INTERVAL_SECONDS to test at higher frequencies (e.g. 180 for every 3 minutes)
 TEST_INTERVAL_SECONDS=${TEST_INTERVAL_SECONDS:-}
 
-CRON_HOUR=${CRON_HOUR:-23}
-CRON_MIN=${CRON_MIN:-55}
+CRON_HOUR=${CRON_HOUR:-18}
+CRON_MIN=${CRON_MIN:-00}
 
 echo "==================================================================================================="
 echo "Talent Flow ATS - Daily Backup Scheduler"

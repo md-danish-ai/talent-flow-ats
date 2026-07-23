@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+.ruff_cache
+frontend
+scratch
+*.md
+.DS_Store
+postgres_data

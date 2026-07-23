@@ -3,7 +3,7 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # ─── Stage 2: Build Next.js app ───────────────────────────────────────────────
 FROM node:20-alpine AS builder
@@ -22,7 +22,7 @@ ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR=$NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build
+RUN --mount=type=cache,target=/app/.next/cache npm run build
 
 # ─── Stage 3: Production runner ───────────────────────────────────────────────
 FROM node:20-alpine AS runner

@@ -20,7 +20,7 @@ services:
       DB_NAME: talent_flow_ats
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
-      SECRET_KEY: supersecretkey1234567890123456
+      SECRET_KEY: supersecretkey1234567890123456789032
       HF_TOKEN: ${HF_TOKEN}
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -49,8 +49,6 @@ services:
     depends_on:
       - backend
 
-
-
   migrations:
     image: talent-flow-ats-backend
     profiles: ["migrate"]
@@ -66,7 +64,13 @@ services:
       DB_USER: postgres
       DB_PASSWORD: Pass2020NothingSpecial
     # Normalize CRLF -> LF at runtime, then execute the script.
-    entrypoint: ["sh", "-c", "tr -d '\\r' < /backend/scripts/run_migrations.sh > /tmp/run_migrations.sh && exec sh /tmp/run_migrations.sh \"$@\"", "--"]
+    entrypoint:
+      [
+        "sh",
+        "-c",
+        "tr -d '\\r' < /backend/scripts/run_migrations.sh > /tmp/run_migrations.sh && exec sh /tmp/run_migrations.sh \"$@\"",
+        "--",
+      ]
     command: ["upgrade", "head"]
 
   db:
