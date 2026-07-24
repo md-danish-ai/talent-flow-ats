@@ -1,18 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Upload, Loader2, FileUp, Database, Award, Target } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Upload, Loader2, FileUp, Database } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Button } from "@components/ui-elements/Button";
-import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { BulkUploadGuideCard } from "@components/ui-cards/BulkUploadGuideCard";
 import { BulkUploadErrorCard } from "@components/ui-cards/BulkUploadErrorCard";
-import { classificationsApi } from "@lib/api/classifications";
 import { questionsApi } from "@lib/api/questions";
-import { type Classification } from "@types";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
-import { filterSubjectsForQuestionType } from "@lib/utils/exclusivity";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 
 interface BulkUploadModalProps {
@@ -28,65 +24,25 @@ export function BulkUploadModal({
   onSuccess,
   questionType,
 }: BulkUploadModalProps) {
-  const [subjects, setSubjects] = useState<Classification[]>([]);
-  const [examLevels, setExamLevels] = useState<Classification[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<
     { row: number; errors: string[] }[]
   >([]);
 
   const [formData, setFormData] = useState({
-    subject: "",
-    examLevel: "",
-    marks: "",
     file: null as File | null,
     zipFile: null as File | null,
   });
 
-  const fetchClassifications = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [subjectsRes, examLevelsRes] = await Promise.all([
-        classificationsApi.getClassifications({
-          type: "subject",
-          is_active: true,
-          limit: 100,
-        }),
-        classificationsApi.getClassifications({
-          type: "exam_level",
-          is_active: true,
-          limit: 100,
-        }),
-      ]);
-      const filteredSubjects = filterSubjectsForQuestionType(
-        subjectsRes.data || [],
-        questionType,
-      );
-      setSubjects(filteredSubjects);
-      setExamLevels(examLevelsRes.data || []);
-    } catch (error) {
-      console.error("Failed to fetch classifications:", error);
-      toast.error("Failed to load classifications");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [questionType]);
-
   useEffect(() => {
-    if (isOpen) {
-      fetchClassifications();
-    } else {
+    if (!isOpen) {
       setFormData({
-        subject: "",
-        examLevel: "",
-        marks: "",
         file: null,
         zipFile: null,
       });
       setUploadErrors([]);
     }
-  }, [isOpen, fetchClassifications]);
+  }, [isOpen]);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -134,9 +90,6 @@ export function BulkUploadModal({
         formData.file,
         formData.zipFile,
         {
-          subject: formData.subject || undefined,
-          exam_level: formData.examLevel || undefined,
-          marks: formData.marks ? parseInt(formData.marks) : undefined,
           question_type: questionType || QUESTION_TYPES.MULTIPLE_CHOICE,
         },
       );
@@ -178,19 +131,6 @@ export function BulkUploadModal({
       setIsSubmitting(false);
     }
   };
-
-  const subjectOptions = subjects.map((s) => ({
-    id: s.code || s.name,
-    label: s.name,
-  }));
-  const examLevelOptions = examLevels.map((l) => ({
-    id: l.name,
-    label: l.name,
-  }));
-  const marksOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((m) => ({
-    id: m.toString(),
-    label: `${m} Marks`,
-  }));
 
   const isImageBased = questionType?.startsWith("IMAGE_");
 
@@ -238,71 +178,15 @@ export function BulkUploadModal({
       }
     >
       <div className="space-y-6">
-        {/* Dropdowns Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Database size={14} className="text-brand-primary" />
-              Subject
-            </label>
-            <SelectDropdown
-              options={subjectOptions}
-              value={formData.subject}
-              onChange={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  subject: val?.toString() || "",
-                }))
-              }
-              placeholder="Select Subject"
-              className={isLoading ? "opacity-50 pointer-events-none" : ""}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Award size={14} className="text-brand-primary" />
-              Exam Level
-            </label>
-            <SelectDropdown
-              options={examLevelOptions}
-              value={formData.examLevel}
-              onChange={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  examLevel: val?.toString() || "",
-                }))
-              }
-              placeholder="Select Level"
-              className={isLoading ? "opacity-50 pointer-events-none" : ""}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Target size={14} className="text-brand-primary" />
-              Marks
-            </label>
-            <SelectDropdown
-              options={marksOptions}
-              value={formData.marks}
-              onChange={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  marks: val?.toString() || "",
-                }))
-              }
-              placeholder="Select Marks"
-              className={isLoading ? "opacity-50 pointer-events-none" : ""}
-            />
-          </div>
-        </div>
-
-        {/* Preparation Section: Instructions + Templates */}
-        <BulkUploadGuideCard
-          questionType={questionType}
-          isImageBased={isImageBased}
-        />
+        {/* Preparation Section OR Error Display Section */}
+        {uploadErrors.length > 0 ? (
+          <BulkUploadErrorCard errors={uploadErrors} />
+        ) : (
+          <BulkUploadGuideCard
+            questionType={questionType}
+            isImageBased={isImageBased}
+          />
+        )}
 
         {/* File Upload Section */}
         <div
@@ -419,9 +303,6 @@ export function BulkUploadModal({
             </div>
           )}
         </div>
-
-        {/* Error Display Section */}
-        <BulkUploadErrorCard errors={uploadErrors} />
       </div>
     </Modal>
   );

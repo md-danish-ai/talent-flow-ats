@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   const isClearingAuth = searchParams.get("clear_auth") === "1";
@@ -74,6 +74,9 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+// Fallback alias for backward compatibility
+export const middleware = proxy;
 
 export const config = {
   matcher: [
