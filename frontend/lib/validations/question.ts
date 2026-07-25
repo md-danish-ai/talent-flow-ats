@@ -33,7 +33,7 @@ export const mcqSchema = z.object({
 export const imageMCQSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
   questionImageUrl: z.string().optional().or(z.literal("")),
   // Note: Add image fields here later if required (e.g., questionImage: z.any())
@@ -50,7 +50,7 @@ export const imageMCQSchema = z.object({
 export const subjectiveSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
   answerText: z.string().min(1, "Answer is required"),
   explanation: z.string().optional(),
@@ -60,7 +60,7 @@ export const subjectiveSchema = z.object({
 export const imageSubjectiveSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
   questionImageUrl: z.string().min(1, "Question image is required"),
   answerText: z.string().min(1, "Answer is required"),
@@ -71,7 +71,7 @@ export const imageSubjectiveSchema = z.object({
 export const passageSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   passage: z.string().min(20, "Passage must be at least 20 characters"),
   questionText: z.string().min(10, "Question must be at least 10 characters"),
   options: z
@@ -94,7 +94,7 @@ export type PassageFormValues = z.infer<typeof passageSchema>;
 export const typingTestSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().min(1, "Title is required"),
   passage: z.string().min(10, "Paragraph content is required"),
 });
@@ -103,7 +103,7 @@ export const typingTestSchema = z.object({
 export const leadGenerationSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().optional(),
   companyName: z.string().min(1, "Company Name is required"),
   website: z.string().min(1, "Website is required"),
@@ -119,7 +119,7 @@ export const leadGenerationSchema = z.object({
 export const contactDetailsSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
-  marks: z.coerce.number().min(1).max(50),
+  marks: z.coerce.number().min(1).max(10),
   questionText: z.string().optional(),
   websiteUrl: z.string().min(1, "Website URL is required"),
   companyName: z.string().min(1, "Company Name is required"),

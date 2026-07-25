@@ -1,6 +1,6 @@
 # app/questions/schemas.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 
 
@@ -35,7 +35,7 @@ class QuestionCreate(BaseModel):
     question_text: str
     image_url: Optional[str] = None
     passage: Optional[str] = None
-    marks: int
+    marks: int = Field(..., ge=1, le=10, description="Marks must be between 1 and 10")
     is_active: bool = True
     options: Optional[Any] = None
     answer: AnswerCreate
@@ -48,7 +48,9 @@ class QuestionUpdate(BaseModel):
     question_text: Optional[str] = None
     image_url: Optional[str] = None
     passage: Optional[str] = None
-    marks: Optional[int] = None
+    marks: Optional[int] = Field(
+        None, ge=1, le=10, description="Marks must be between 1 and 10"
+    )
     is_active: Optional[bool] = None
     options: Optional[Any] = None
     answer: Optional[AnswerUpdate] = None

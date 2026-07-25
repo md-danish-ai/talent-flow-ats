@@ -41,12 +41,15 @@ class BaseRowSchema(BaseModel):
     @field_validator("marks", mode="before")
     @classmethod
     def parse_marks(cls, v):
-        try:
-            if v is None or pd.isna(v):
-                return 5
-            return int(float(v))
-        except Exception:
+        if v is None or pd.isna(v) or str(v).strip() == "":
             return 5
+        try:
+            val = int(float(v))
+        except Exception:
+            raise ValueError("Marks must be a valid integer between 1 and 10.")
+        if val < 1 or val > 10:
+            raise ValueError("Marks must be between 1 and 10.")
+        return val
 
 
 class MCQRowSchema(BaseRowSchema):
