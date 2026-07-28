@@ -1,35 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, LayoutGrid, List } from "lucide-react";
+import { Users, FileText } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { Button } from "@components/ui-elements/Button";
+import { PageHeader } from "@components/ui-elements/PageHeader";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
-import { Tooltip } from "@components/ui-elements/Tooltip";
-import { EmptyState } from "@components/ui-elements/EmptyState";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import {
   ListingBadge,
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
 
-import { resultsApi, managementApi } from "@lib/api";
 import {
-  type AdminUserResultListItem,
-  type PaginatedUserResults,
+  resultsApi,
+  reportsApi,
+  managementApi,
+  departmentsApi,
+  classificationsApi,
+} from "@lib/api";
+import {
+  type ReportUserListItem,
+  type PaginatedReportUsers,
   type FilterOption,
   type UserListResponse,
 } from "@types";
 import { useListing } from "@hooks/useListing";
-
-import { ResultCardView } from "./ResultCardView";
-import { ResultTableView } from "./ResultTableView";
-import { ResultCardSkeleton } from "@components/ui-skeleton/ResultCardSkeleton";
+import { ResultTableView } from "../components/ResultTableView";
 
 type ResultsFilters = {
   search: string;
@@ -38,18 +39,19 @@ type ResultsFilters = {
   completionReason: string;
   overallGrade: string;
   project_lead_id: string;
+  department_id: string;
+  test_level_id: string;
 };
 
-import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
-
-export function UserResultsClient() {
-  const [viewMode, setViewMode] = useState<"card" | "table">("table");
+export function ReportsClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Column Visibility
   const availableColumns = useMemo(
     () => [
       { id: "candidate", label: "Candidate", pinned: true },
+      { id: "department", label: "Department" },
+      { id: "test_level", label: "Exam Level" },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
       { id: "grade", label: "Grade" },
@@ -58,13 +60,15 @@ export function UserResultsClient() {
       { id: "status", label: "Status" },
       { id: "project_lead", label: "Project Lead" },
       { id: "date", label: "Interview Date" },
-      { id: "actions", label: "Actions", pinned: true },
+      { id: "actions", label: "Action", pinned: true },
     ],
     [],
   );
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
+    "department",
+    "test_level",
     "paper",
     "grade",
     "status",
@@ -76,6 +80,8 @@ export function UserResultsClient() {
   );
 
   const [leadsOptions, setLeadsOptions] = useState<FilterOption[]>([]);
+  const [deptOptions, setDeptOptions] = useState<FilterOption[]>([]);
+  const [levelOptions, setLevelOptions] = useState<FilterOption[]>([]);
 
   useEffect(() => {
     managementApi.getProjectLeads({ limit: 100 }).then((res) => {
@@ -85,6 +91,28 @@ export function UserResultsClient() {
       }));
       setLeadsOptions([{ id: "all", label: "All Leads" }, ...options]);
     });
+
+    departmentsApi.getDepartments({ limit: 100 }).then((res) => {
+      const options = (res.data || []).map(
+        (d: { id: number; name: string }) => ({
+          id: d.id.toString(),
+          label: d.name,
+        }),
+      );
+      setDeptOptions([{ id: "all", label: "All Departments" }, ...options]);
+    });
+
+    classificationsApi
+      .getClassifications({ type: "exam_level", limit: 100 })
+      .then((res) => {
+        const options = (res.data || []).map(
+          (c: { id: number; name: string; code?: string }) => ({
+            id: c.id.toString(),
+            label: c.name || c.code || `Level ${c.id}`,
+          }),
+        );
+        setLevelOptions([{ id: "all", label: "All Levels" }, ...options]);
+      });
   }, []);
 
   const {
@@ -102,46 +130,48 @@ export function UserResultsClient() {
     handlePageSizeChange,
     resetFilters,
     refresh,
-  } = useListing<AdminUserResultListItem, ResultsFilters, PaginatedUserResults>(
-    {
-      fetchFn: resultsApi.getUserResults,
-      initialFilters: {
-        search: "",
-        date: { label: "All Time" },
-        status: "all",
-        completionReason: "all",
-        overallGrade: "all",
-        project_lead_id: "all",
-      },
-      filterMapping: (f) => {
-        let dateFrom = f.date?.range?.from;
-        let dateTo = f.date?.range?.to;
-
-        if (!dateFrom && !dateTo) {
-          if (f.date?.label === "Today") {
-            dateFrom = getTodayISODate();
-            dateTo = getTodayISODate();
-          } else if (f.date?.label === "Yesterday") {
-            dateFrom = getYesterdayISODate();
-            dateTo = getYesterdayISODate();
-          }
-        }
-
-        return {
-          search: f.search || undefined,
-          startDate: dateFrom || undefined,
-          endDate: dateTo || undefined,
-          status: f.status !== "all" ? f.status : undefined,
-          completionReason:
-            f.completionReason !== "all" ? f.completionReason : undefined,
-          overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
-          project_lead_id:
-            f.project_lead_id !== "all" ? f.project_lead_id : undefined,
-        };
-      },
-      toastMessage: "Results refreshed successfully.",
+  } = useListing<ReportUserListItem, ResultsFilters, PaginatedReportUsers>({
+    fetchFn: reportsApi.getAllReports,
+    initialFilters: {
+      search: "",
+      date: { label: "All Time" },
+      status: "all",
+      completionReason: "all",
+      overallGrade: "all",
+      project_lead_id: "all",
+      department_id: "all",
+      test_level_id: "all",
     },
-  );
+    filterMapping: (f) => {
+      let dateFrom = f.date?.range?.from;
+      let dateTo = f.date?.range?.to;
+
+      if (!dateFrom && !dateTo) {
+        if (f.date?.label === "Today") {
+          dateFrom = getTodayISODate();
+          dateTo = getTodayISODate();
+        } else if (f.date?.label === "Yesterday") {
+          dateFrom = getYesterdayISODate();
+          dateTo = getYesterdayISODate();
+        }
+      }
+
+      return {
+        search: f.search || undefined,
+        startDate: dateFrom || undefined,
+        endDate: dateTo || undefined,
+        status: f.status !== "all" ? f.status : undefined,
+        completionReason:
+          f.completionReason !== "all" ? f.completionReason : undefined,
+        overallGrade: f.overallGrade !== "all" ? f.overallGrade : undefined,
+        project_lead_id:
+          f.project_lead_id !== "all" ? f.project_lead_id : undefined,
+        department_id: f.department_id !== "all" ? f.department_id : undefined,
+        test_level_id: f.test_level_id !== "all" ? f.test_level_id : undefined,
+      };
+    },
+    toastMessage: "Reports refreshed successfully.",
+  });
 
   const toggleColumn = (id: string) => {
     setVisibleColumns((prev) =>
@@ -151,17 +181,18 @@ export function UserResultsClient() {
 
   return (
     <PageContainer className="space-y-4">
-      <ResultStatusLegend
-        title="Round 1 Results"
-        subtitle="Detailed interview results and performance metrics for all candidates."
+      <PageHeader
+        title="Candidate Reports"
+        description="View candidate results and download individual test evaluation reports."
       />
+
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+              <FileText size={18} />
             </div>
-            <span>Round 1 Results</span>
+            <span>Result Reports</span>
           </div>
         }
         className="mb-6 flex flex-col"
@@ -172,46 +203,17 @@ export function UserResultsClient() {
               isLoading={loading}
               isBackgroundLoading={isBackgroundLoading}
               totalItems={totalItems}
-              itemLabel="Results"
+              itemLabel="Reports"
             />
 
-            {viewMode === "table" && (
-              <>
-                <div className="h-6 w-px bg-border/50 mx-1" />
-                <TableColumnToggle
-                  columns={availableColumns}
-                  visibleColumns={visibleColumns}
-                  onToggle={toggleColumn}
-                  onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
-                />
-                <div className="h-6 w-px bg-border/50 mx-1" />
-              </>
-            )}
-
-            <div className="flex items-center gap-2">
-              <Tooltip content="Switch to Card View" side="bottom">
-                <Button
-                  variant="action"
-                  size="rounded-icon"
-                  isActive={viewMode === "card"}
-                  animate="scale"
-                  onClick={() => setViewMode("card")}
-                >
-                  <LayoutGrid size={18} />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Switch to Table View" side="bottom">
-                <Button
-                  variant="action"
-                  size="rounded-icon"
-                  isActive={viewMode === "table"}
-                  animate="scale"
-                  onClick={() => setViewMode("table")}
-                >
-                  <List size={18} />
-                </Button>
-              </Tooltip>
-            </div>
+            <div className="h-6 w-px bg-border/50 mx-1" />
+            <TableColumnToggle
+              columns={availableColumns}
+              visibleColumns={visibleColumns}
+              onToggle={toggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
+            />
+            <div className="h-6 w-px bg-border/50 mx-1" />
 
             <ListingIcons
               isLoading={loading}
@@ -235,27 +237,14 @@ export function UserResultsClient() {
             isBackgroundLoading={isBackgroundLoading}
           >
             <div className="flex-1 overflow-x-auto w-full min-h-0">
-              {viewMode === "card" ? (
-                loading ? (
-                  <ResultCardSkeleton rowCount={pageSize} />
-                ) : items.length === 0 ? (
-                  <EmptyState
-                    variant="search"
-                    title="No results found"
-                    description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
-                  />
-                ) : (
-                  <ResultCardView items={items} />
-                )
-              ) : (
-                <ResultTableView
-                  items={items}
-                  visibleColumns={visibleColumns}
-                  isLoading={loading}
-                  limit={pageSize}
-                  onRefresh={refresh}
-                />
-              )}
+              <ResultTableView
+                items={items}
+                visibleColumns={visibleColumns}
+                isLoading={loading}
+                limit={pageSize}
+                onRefresh={refresh}
+                onlyDownloadAction={true}
+              />
             </div>
 
             {!loading && items.length > 0 && (
@@ -275,13 +264,15 @@ export function UserResultsClient() {
         <ListingFiltersDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
-          registryKey="results-filters"
+          registryKey="reports-results-filters"
           filters={filters}
           onFilterChange={handleSingleFilterChange}
           onReset={resetFilters}
           isLoading={loading}
           dynamicOptions={{
             project_lead_id: leadsOptions,
+            department_id: deptOptions,
+            test_level_id: levelOptions,
           }}
         />
       </MainCard>

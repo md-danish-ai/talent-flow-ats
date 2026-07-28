@@ -46,6 +46,10 @@ export interface AdminUserResultListItem {
   username: string;
   mobile: string;
   email?: string | null;
+  department?: string | null;
+  test_level?: string | null;
+  department_id?: number | null;
+  test_level_id?: number | null;
   attempts_count: number;
   is_reattempt?: boolean;
   process_status?: string;
@@ -67,6 +71,14 @@ export interface SummaryStats {
 export interface PaginatedUserResults extends PaginatedResponse<AdminUserResultListItem> {
   summary_stats?: SummaryStats;
 }
+
+export type ReportUserLatestAttempt = AdminUserLatestAttempt;
+
+export type ReportUserListItem = AdminUserResultListItem;
+
+export type PaginatedReportUsers = PaginatedResponse<ReportUserListItem> & {
+  summary_stats?: SummaryStats;
+};
 
 export interface AdminUserResultAnswer {
   question_id: number;
@@ -172,4 +184,18 @@ export interface GetUserResultsParams {
   completionReason?: string;
   overallGrade?: string;
   project_lead_id?: string;
+}
+
+export interface GetReportUsersParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  completionReason?: string;
+  overallGrade?: string;
+  project_lead_id?: string;
+  department_id?: string;
+  test_level_id?: string;
 }
