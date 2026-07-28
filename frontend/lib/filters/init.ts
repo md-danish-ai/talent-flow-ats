@@ -1,4 +1,5 @@
 import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
+import type { FilterConfig } from "@types";
 
 import { filterRegistry } from "./registry";
 
@@ -142,7 +143,7 @@ filterRegistry.register("reset-status-filters", [
 ]);
 
 // 4. Assessment Results
-filterRegistry.register("results-filters", [
+const RESULTS_FILTER_CONFIG: FilterConfig[] = [
   {
     id: "date",
     label: "Date Range",
@@ -155,10 +156,25 @@ filterRegistry.register("results-filters", [
     placeholder: "Search by name, mobile...",
   },
   {
+    id: "department_id",
+    label: "Department",
+    type: "select",
+    placeholder: "All Departments",
+    options: [{ id: "all", label: "All Departments" }],
+  },
+  {
+    id: "test_level_id",
+    label: "Exam Level",
+    type: "select",
+    placeholder: "All Levels",
+    options: [{ id: "all", label: "All Levels" }],
+  },
+  {
     id: "status",
     label: "Attempt Status",
     type: "select",
     options: [
+      { id: "all", label: "All Statuses" },
       { id: "started", label: "Started" },
       { id: "submitted", label: "Submitted (Manual)" },
       { id: "auto_submitted", label: "Auto Submitted" },
@@ -169,6 +185,7 @@ filterRegistry.register("results-filters", [
     label: "Completion Reason",
     type: "select",
     options: [
+      { id: "all", label: "All Reasons" },
       { id: "manual", label: "Manual" },
       { id: "time_over", label: "Time Over" },
     ],
@@ -188,7 +205,10 @@ filterRegistry.register("results-filters", [
     options: [{ id: "all", label: "All Leads" }],
     props: { placement: "top" },
   },
-]);
+];
+
+filterRegistry.register("results-filters", RESULTS_FILTER_CONFIG);
+filterRegistry.register("reports-results-filters", RESULTS_FILTER_CONFIG);
 
 // 4.5. Face-to-Face Results
 filterRegistry.register("f2f-results-filters", [

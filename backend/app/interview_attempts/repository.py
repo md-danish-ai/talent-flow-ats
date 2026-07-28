@@ -1177,6 +1177,41 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
         record = record_query.order_by(desc(InterviewRecord.id)).first()
 
         if not record:
+            if attempt_id == 0:
+                return {
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "mobile": user.mobile,
+                        "email": user.email,
+                        "department": user.department.name
+                        if user.department
+                        else "N/A",
+                        "test_level": user.test_level.name
+                        if user.test_level
+                        else "N/A",
+                    },
+                    "attempt": {
+                        "id": 0,
+                        "paper_name": "N/A",
+                        "attempt_number": 0,
+                        "status": "NOT STARTED",
+                        "completion_reason": None,
+                        "started_at": None,
+                        "submitted_at": None,
+                        "total_questions": 0,
+                        "attempted_count": 0,
+                        "unattempted_count": 0,
+                        "total_marks": 0.0,
+                        "obtained_marks": 0.0,
+                        "overall_grade": "N/A",
+                        "is_auto_submitted": False,
+                        "active_duration_seconds": 0,
+                        "typing_stats": None,
+                    },
+                    "answers": [],
+                    "subject_results": [],
+                }
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
                 detail="No interview attempt found for this user",

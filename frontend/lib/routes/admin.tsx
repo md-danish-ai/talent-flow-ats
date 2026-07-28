@@ -47,12 +47,13 @@ export const ADMIN_ROUTES: NavSection[] = [
     ],
   },
   {
-    title: "Results",
+    title: "Result & Reports",
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
     items: [
       { label: "Round 1 Results", href: "/admin/results/round-1" },
       { label: "Round 2 (F2F) Results", href: "/admin/results/round-2" },
+      { label: "Reports", href: "/admin/results/reports" },
     ],
   },
   {

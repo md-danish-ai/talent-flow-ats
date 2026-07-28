@@ -32,6 +32,12 @@ export interface UserListResponse extends User {
   user_type?: "new" | "returning";
   process_status?: string;
   assignment?: UserAssignment | null;
+  latest_attempt?: {
+    attempt_id: number;
+    paper_name?: string;
+    status?: string;
+    interviewers?: { name: string; status: string }[];
+  } | null;
   is_details_submitted: boolean;
   is_interview_submitted: boolean;
 }
