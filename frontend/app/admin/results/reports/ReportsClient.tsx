@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -17,7 +17,6 @@ import {
 } from "@components/ui-elements/ListingHeaderActions";
 
 import {
-  resultsApi,
   reportsApi,
   managementApi,
   departmentsApi,
@@ -53,13 +52,9 @@ export function ReportsClient() {
       { id: "department", label: "Department" },
       { id: "test_level", label: "Exam Level" },
       { id: "paper", label: "Assigned Paper" },
-      { id: "attempts", label: "Attempts" },
       { id: "grade", label: "Grade" },
-      { id: "typing_wpm", label: "Typing WPM" },
-      { id: "typing_acc", label: "Accuracy" },
       { id: "status", label: "Status" },
       { id: "project_lead", label: "Project Lead" },
-      { id: "date", label: "Interview Date" },
       { id: "actions", label: "Action", pinned: true },
     ],
     [],
