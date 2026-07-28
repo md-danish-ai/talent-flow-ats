@@ -24,5 +24,7 @@ async def get_dashboard_overview(
     """
     data = await service.get_overview(start_date=start_date, end_date=end_date)
     return api_response(
-        status_code=StatusCode.OK, message=ResponseMessage.FETCHED, data=data
+        status_code=StatusCode.OK,
+        message=ResponseMessage.FETCHED("Dashboard"),
+        data=data,
     )

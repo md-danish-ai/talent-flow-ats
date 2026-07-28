@@ -6,7 +6,7 @@ class ResponseHandler:
     @staticmethod
     def success(
         data: Any = None,
-        message: str = ResponseMessage.SUCCESS,
+        message: str = ResponseMessage.SUCCESS("Util"),
         status_code: int = StatusCode.OK,
         pagination: Any = None,
     ):

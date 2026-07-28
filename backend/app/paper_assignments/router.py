@@ -71,11 +71,13 @@ def get_my_interview_paper(
         assigned_date=assigned_date,
     )
     if not data:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+        return api_response(
+            StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Paper assignment")
+        )
 
     return api_response(
         StatusCode.OK,
-        ResponseMessage.FETCHED,
+        ResponseMessage.FETCHED("Paper assignment"),
         data=schemas.AssignedInterviewPaperResponse.model_validate(data).model_dump(),
     )
 
@@ -130,7 +132,7 @@ def list_auto_rules(
     )
     return api_response(
         StatusCode.OK,
-        ResponseMessage.FETCHED,
+        ResponseMessage.FETCHED("Paper assignment"),
         data=paginated_data,
     )
 

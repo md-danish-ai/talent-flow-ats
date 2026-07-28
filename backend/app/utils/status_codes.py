@@ -44,11 +44,25 @@ class StatusCode(IntEnum):
 
 class ResponseMessage:
     # Success
-    SUCCESS = "Request processed successfully."
-    CREATED = "Record created successfully."
-    UPDATED = "Record updated successfully."
-    DELETED = "Record deleted successfully."
-    FETCHED = "Data retrieved successfully."
+    @staticmethod
+    def SUCCESS(module: str = "Request") -> str:
+        return f"{module} processed successfully."
+
+    @staticmethod
+    def CREATED(module: str = "Record") -> str:
+        return f"{module} created successfully."
+
+    @staticmethod
+    def UPDATED(module: str = "Record") -> str:
+        return f"{module} updated successfully."
+
+    @staticmethod
+    def DELETED(module: str = "Record") -> str:
+        return f"{module} deleted successfully."
+
+    @staticmethod
+    def FETCHED(module: str = "Data") -> str:
+        return f"{module} retrieved successfully."
 
     # Auth
     LOGIN_SUCCESS = "Logged in successfully."
@@ -59,9 +73,18 @@ class ResponseMessage:
     FORBIDDEN = "Access denied: You do not have permission for this request."
 
     # Errors
-    BAD_REQUEST = "The request could not be processed due to invalid input."
-    NOT_FOUND = "The requested resource could not be found."
-    CONFLICT = "The resource you are trying to create already exists."
+    @staticmethod
+    def BAD_REQUEST(module: str = "The request") -> str:
+        return f"{module} could not be processed due to invalid input."
+
+    @staticmethod
+    def NOT_FOUND(module: str = "The requested resource") -> str:
+        return f"{module} could not be found."
+
+    @staticmethod
+    def CONFLICT(module: str = "The resource you are trying to create") -> str:
+        return f"{module} already exists."
+
     VALIDATION_ERROR = "One or more validation errors occurred."
     INTERNAL_ERROR = "An unexpected error occurred on the server."
     TOO_MANY_REQUESTS = "Too many requests. Please try again later."

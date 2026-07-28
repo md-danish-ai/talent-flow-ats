@@ -43,7 +43,9 @@ async def get_questions(
     )
 
     paginated_data = create_paginated_response(data, total_records, pagination)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Question"), data=paginated_data
+    )
 
 
 @router.get("/question-details/{question_id}")
@@ -51,7 +53,7 @@ async def get_question(
     question_id: int,
 ):
     data = await question_service.get_question_by_id(question_id)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Question"), data=data)
 
 
 @router.post("/get-by-ids")
@@ -59,7 +61,7 @@ async def get_questions_by_ids(
     payload: schemas.QuestionIds,
 ):
     data = await question_service.get_questions_by_ids(payload.ids)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Question"), data=data)
 
 
 @router.post("/auto-generate")
@@ -72,7 +74,7 @@ async def auto_generate_questions(
     fewer questions were found than requested.
     """
     data = await question_service.auto_generate_questions(payload)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Question"), data=data)
 
 
 @router.get("/type-counts")
@@ -85,7 +87,7 @@ async def get_available_question_counts(
     for a given subject and exam level.
     """
     data = await question_service.get_available_question_counts(subject, exam_level)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Question"), data=data)
 
 
 @router.post("/create-question")
@@ -93,7 +95,9 @@ async def create_question(
     payload: schemas.QuestionCreate, current_user: int = Depends(authenticate_user)
 ):
     data = await question_service.create_question(payload, current_user)
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Question"), data=data
+    )
 
 
 @router.put("/update-question/{question_id}")
@@ -103,7 +107,7 @@ async def update_question(
     current_user: int = Depends(authenticate_user),
 ):
     data = await question_service.update_question(question_id, payload, current_user)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Question"), data=data)
 
 
 @router.put("/questions-status/{question_id}")
@@ -111,7 +115,7 @@ async def update_question_status(
     question_id: int,
 ):
     data = await question_service.update_question_status(question_id)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Question"), data=data)
 
 
 @router.post("/upload-image")

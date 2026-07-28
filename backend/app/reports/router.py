@@ -73,4 +73,4 @@ async def get_all_reports(
         page=page,
         limit=limit,
     )
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Report"), data=data)

@@ -47,13 +47,17 @@ def get_all(
         offset=offset,
     )
     paginated_data = create_paginated_response(data, total_records, pagination)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Classification"), data=paginated_data
+    )
 
 
 @router.post("/create-classification", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: ClassificationCreate):
     data = service.create(payload)
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Classification"), data=data
+    )
 
 
 @router.put(
@@ -65,7 +69,9 @@ def update(
     payload: ClassificationUpdate,
 ):
     data = service.update(classification_id, payload)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.UPDATED("Classification"), data=data
+    )
 
 
 @router.put(
@@ -76,6 +82,6 @@ def reorder(payload: ClassificationReorderRequest):
     service.reorder([item.dict() for item in payload.items])
     return api_response(
         StatusCode.OK,
-        ResponseMessage.UPDATED,
+        ResponseMessage.UPDATED("Classification"),
         data={"message": "Classifications reordered successfully"},
     )

@@ -24,7 +24,9 @@ async def start_attempt(
     current_user: int = Depends(authenticate_user),
 ):
     data = await service.start_attempt(paper_id=payload.paper_id, user_id=current_user)
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Interview attempt"), data=data
+    )
 
 
 @router.put("/user/interview-attempts/save-answer/{attempt_id}/{question_id}")
@@ -41,7 +43,9 @@ async def save_answer(
         answer_text=payload.answer_text,
         is_auto_saved=payload.is_auto_saved,
     )
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.UPDATED("Interview attempt"), data=data
+    )
 
 
 @router.post("/user/interview-attempts/save-answers-batch/{attempt_id}")
@@ -55,7 +59,9 @@ async def save_answers_batch(
         user_id=current_user,
         answers=[a.dict() for a in payload.answers],
     )
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.UPDATED("Interview attempt"), data=data
+    )
 
 
 @router.post("/user/interview-attempts/submit-attempt/{attempt_id}")
@@ -64,7 +70,9 @@ async def submit_attempt(
     current_user: int = Depends(authenticate_user),
 ):
     data = await service.submit_attempt(attempt_id=attempt_id, user_id=current_user)
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post("/user/interview-attempts/auto-submit-attempt/{attempt_id}")
@@ -75,7 +83,9 @@ async def auto_submit_attempt(
     data = await service.auto_submit_attempt(
         attempt_id=attempt_id, user_id=current_user
     )
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.get("/user/interview-attempts/get-attempt-summary/{attempt_id}")
@@ -84,7 +94,9 @@ async def get_attempt_summary(
     current_user: int = Depends(authenticate_user),
 ):
     data = await service.get_summary(attempt_id=attempt_id, user_id=current_user)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Interview attempt"), data=data
+    )
 
 
 @router.get(
@@ -113,7 +125,9 @@ async def get_admin_user_results(
         page=page,
         limit=limit,
     )
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Interview attempt"), data=data
+    )
 
 
 @router.get(
@@ -128,7 +142,9 @@ async def get_admin_user_result_detail(
         user_id=user_id,
         attempt_id=attempt_id,
     )
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Interview attempt"), data=data
+    )
 
 
 @router.get(
@@ -139,7 +155,9 @@ async def get_admin_user_attempts(
     user_id: int,
 ):
     data = await service.get_admin_user_attempts(user_id=user_id)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Interview attempt"), data=data
+    )
 
 
 @router.post(
@@ -150,7 +168,9 @@ async def reset_user_today_attempt(
     user_id: int,
 ):
     data = await service.reset_user_today_attempt(user_id=user_id)
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post(
@@ -161,7 +181,9 @@ async def reset_user_details(
     user_id: int,
 ):
     data = await service.reset_user_details(user_id=user_id)
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post(
@@ -172,7 +194,9 @@ async def enable_reinterview(
     user_id: int,
 ):
     data = await service.reset_user_for_reinterview(user_id=user_id)
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post(
@@ -191,7 +215,9 @@ async def assign_manual_marks(
         question_id=question_id,
         marks=payload.marks,
     )
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post(
@@ -207,7 +233,9 @@ async def reset_user_subjects(
         attempt_id=payload.attempt_id,
         section_names=payload.section_names,
     )
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.post("/user/interview-attempts/skip-section/{attempt_id}/{section_name}")
@@ -219,7 +247,9 @@ async def skip_section(
     data = await service.skip_section(
         attempt_id=attempt_id, user_id=current_user, section_name=section_name
     )
-    return api_response(StatusCode.OK, ResponseMessage.SUCCESS, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.SUCCESS("Interview attempt"), data=data
+    )
 
 
 @router.get("/user/interview-attempts/check-active-status")
@@ -227,4 +257,6 @@ async def get_active_status(
     current_user: int = Depends(authenticate_user),
 ):
     data = await service.get_active_attempt_status(user_id=current_user)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Interview attempt"), data=data
+    )

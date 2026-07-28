@@ -32,7 +32,9 @@ async def add_user_details(
     result = await service.save_user_details(
         user_id, data, run_duplicate_check=run_check
     )
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("User detail"), data=result
+    )
 
 
 @router.put("/edit-user-details")
@@ -45,7 +47,9 @@ async def update_user_details(
     """
     # Always disable duplicate check for updates/edits
     result = await service.save_user_details(user_id, data, run_duplicate_check=False)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+    return api_response(
+        StatusCode.OK, ResponseMessage.UPDATED("User detail"), data=result
+    )
 
 
 @router.get("/get-user-details/{id}")
@@ -54,7 +58,9 @@ def get_user_details_by_id(id: int):
     Get user details by ID.
     """
     result = service.get_user_details(id)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=result)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("User detail"), data=result
+    )
 
 
 @router.post("/assign-emergency-relation")
@@ -65,4 +71,6 @@ async def assign_emergency_relation(payload: AssignEmergencyRelationPayload):
     result = await service.assign_emergency_relation(
         payload.user_id, payload.relation_code
     )
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+    return api_response(
+        StatusCode.OK, ResponseMessage.UPDATED("User detail"), data=result
+    )
