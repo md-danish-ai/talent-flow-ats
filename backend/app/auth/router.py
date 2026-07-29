@@ -55,7 +55,7 @@ async def get_users(
     )
     return api_response(
         StatusCode.OK,
-        ResponseMessage.FETCHED,
+        ResponseMessage.FETCHED("Auth"),
         data=data["data"],
         pagination=data.get("pagination"),
     )
@@ -65,8 +65,8 @@ async def get_users(
 async def get_me(user_id: int = Depends(authenticate_user)):
     user = get_user_by_id(user_id)
     if not user:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=user)
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Auth"))
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Auth"), data=user)
 
 
 @router.post("/sign-up-user")
@@ -75,10 +75,14 @@ async def signup(data: SignUpSchema):
 
     if "error" in result:
         return api_response(
-            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+            StatusCode.BAD_REQUEST,
+            ResponseMessage.BAD_REQUEST("Auth"),
+            errors=result["error"],
         )
 
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Auth"), data=result
+    )
 
 
 @router.post("/sign-in-user")
@@ -101,10 +105,14 @@ async def create_admin_user(data: CreateAdminSchema):
 
     if "error" in result:
         return api_response(
-            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+            StatusCode.BAD_REQUEST,
+            ResponseMessage.BAD_REQUEST("Auth"),
+            errors=result["error"],
         )
 
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Auth"), data=result
+    )
 
 
 @router.post(
@@ -115,10 +123,14 @@ async def create_project_lead_user(data: CreateAdminSchema):
 
     if "error" in result:
         return api_response(
-            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+            StatusCode.BAD_REQUEST,
+            ResponseMessage.BAD_REQUEST("Auth"),
+            errors=result["error"],
         )
 
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=result)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Auth"), data=result
+    )
 
 
 @router.put(
@@ -129,7 +141,7 @@ async def toggle_status(user_id: int, payload: dict):
     # payload should be {"is_active": true/false}
     is_active = payload.get("is_active")
     data = toggle_user_status(user_id, is_active)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Auth"), data=data)
 
 
 @router.put(
@@ -141,7 +153,7 @@ async def update_basic_info(user_id: int, data: SignUpSchema):
     We reuse SignUpSchema fields for this.
     """
     result = update_user_basic_info(user_id, data)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Auth"), data=result)
 
 
 @router.put(
@@ -156,6 +168,8 @@ async def change_pwd(
     result = change_password(user_id, data)
     if "error" in result:
         return api_response(
-            StatusCode.BAD_REQUEST, ResponseMessage.BAD_REQUEST, errors=result["error"]
+            StatusCode.BAD_REQUEST,
+            ResponseMessage.BAD_REQUEST("Auth"),
+            errors=result["error"],
         )
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=result)
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Auth"), data=result)

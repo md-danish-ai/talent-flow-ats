@@ -31,7 +31,7 @@ async def get_notifications(
 
     service = DuplicateService(db)
     data = await service.get_notifications(pagination, is_read, target_user_id)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=data)
+    return api_response(StatusCode.OK, ResponseMessage.FETCHED("Duplicate"), data=data)
 
 
 @router.post(
@@ -50,7 +50,7 @@ async def mark_notifications_read(
     count = await service.mark_read(payload.notification_ids, target_user_id)
     return api_response(
         StatusCode.OK,
-        ResponseMessage.UPDATED,
+        ResponseMessage.UPDATED("Duplicate"),
         data={"message": f"{count} notifications marked as read"},
     )
 
@@ -71,7 +71,7 @@ async def mark_notifications_unread(
     count = await service.mark_unread(payload.notification_ids, target_user_id)
     return api_response(
         StatusCode.OK,
-        ResponseMessage.UPDATED,
+        ResponseMessage.UPDATED("Duplicate"),
         data={"message": f"{count} notifications marked as unread"},
     )
 

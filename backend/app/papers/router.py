@@ -49,17 +49,19 @@ def read_papers(
     ]
 
     paginated_data = create_paginated_response(paper_list, total_records, pagination)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Paper"), data=paginated_data
+    )
 
 
 @router.get("/paper-details/{paper_id}")
 def read_paper(paper_id: int, db: Session = Depends(get_db)):
     db_paper = repository.get_paper(db, paper_id=paper_id)
     if db_paper is None:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Paper"))
     return api_response(
         StatusCode.OK,
-        ResponseMessage.FETCHED,
+        ResponseMessage.FETCHED("Paper"),
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
@@ -73,7 +75,7 @@ def create_paper(
     db_paper = repository.create_paper(db=db, paper=paper, user_id=user_id)
     return api_response(
         StatusCode.CREATED,
-        ResponseMessage.CREATED,
+        ResponseMessage.CREATED("Paper"),
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
@@ -84,10 +86,10 @@ def update_paper(
 ):
     db_paper = repository.update_paper(db=db, paper_id=paper_id, paper_update=paper)
     if db_paper is None:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Paper"))
     return api_response(
         StatusCode.OK,
-        ResponseMessage.UPDATED,
+        ResponseMessage.UPDATED("Paper"),
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
 
@@ -103,9 +105,9 @@ def update_grade_settings(
         db=db, paper_id=paper_id, grade_settings=grade_data
     )
     if db_paper is None:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
+        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Paper"))
     return api_response(
         StatusCode.OK,
-        ResponseMessage.UPDATED,
+        ResponseMessage.UPDATED("Paper"),
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )

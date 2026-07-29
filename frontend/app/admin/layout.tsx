@@ -3,6 +3,7 @@ import { Sidebar, SidebarProvider } from "@components/ui-layout/sidebar";
 import { Navbar } from "@components/ui-layout/Navbar";
 import { getCurrentUser } from "@lib/auth/get-current-user";
 import { GlobalProgressBar } from "@components/ui-elements/GlobalProgressBar";
+import { TitleManager } from "@components/ui-elements/TitleManager";
 
 export default async function AdminLayout({
   children,
@@ -13,6 +14,7 @@ export default async function AdminLayout({
 
   return (
     <SidebarProvider>
+      <TitleManager baseTitle="Admin" baseRoutePrefix="/admin" />
       <GlobalProgressBar />
       <div className="fixed inset-0 flex flex-col bg-background overflow-hidden transition-colors">
         <Navbar user={user} />

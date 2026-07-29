@@ -30,13 +30,17 @@ def get_all(
         offset=offset,
     )
     paginated_data = create_paginated_response(data, total_records, pagination)
-    return api_response(StatusCode.OK, ResponseMessage.FETCHED, data=paginated_data)
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Department"), data=paginated_data
+    )
 
 
 @router.post("/create-department", dependencies=[Depends(require_roles(["admin"]))])
 def create(payload: DepartmentCreate):
     data = service.create(payload)
-    return api_response(StatusCode.CREATED, ResponseMessage.CREATED, data=data)
+    return api_response(
+        StatusCode.CREATED, ResponseMessage.CREATED("Department"), data=data
+    )
 
 
 @router.put(
@@ -46,5 +50,7 @@ def create(payload: DepartmentCreate):
 def update(department_id: int, payload: DepartmentUpdate):
     data = service.update(department_id, payload)
     if not data:
-        return api_response(StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND)
-    return api_response(StatusCode.OK, ResponseMessage.UPDATED, data=data)
+        return api_response(
+            StatusCode.NOT_FOUND, ResponseMessage.NOT_FOUND("Department")
+        )
+    return api_response(StatusCode.OK, ResponseMessage.UPDATED("Department"), data=data)

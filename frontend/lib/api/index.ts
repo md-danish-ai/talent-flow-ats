@@ -8,6 +8,7 @@ export * from "./classifications";
 export * from "./interview-attempts";
 export * from "./paper-assignments";
 export * from "./results";
+export * from "./reports";
 export * from "./notifications";
 export * from "./auth";
 export * from "./user-details";

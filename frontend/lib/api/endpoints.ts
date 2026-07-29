@@ -76,6 +76,7 @@ export const ENDPOINTS = {
 
   RESULTS: {
     GET_ALL: "/admin/results/get-all-results",
+    GET_ALL_REPORTS: "/admin/results/get-all-reports",
     USER_DETAIL: (userId: string | number) =>
       `/admin/results/user-result-details/${userId}`,
     USER_ATTEMPTS: (userId: string | number) =>

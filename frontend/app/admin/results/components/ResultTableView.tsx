@@ -125,6 +125,7 @@ interface ResultTableViewProps {
   visibleColumns: string[];
   isLoading?: boolean;
   limit?: number;
+  onlyDownloadAction?: boolean;
 }
 
 export function ResultTableView({
@@ -132,6 +133,7 @@ export function ResultTableView({
   visibleColumns,
   isLoading,
   limit = 10,
+  onlyDownloadAction = false,
   onRefresh,
 }: ResultTableViewProps & { onRefresh?: (silent?: boolean) => void }) {
   const [assignModal, setAssignModal] = useState<{
@@ -226,20 +228,36 @@ export function ResultTableView({
       <Table className="w-full border-collapse">
         <TableHeader>
           <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
-            <TableHead className="w-[100px]">
-              <div className="flex items-center gap-2">
-                <span className="w-[40px] shrink-0"></span>
-                <Checkbox
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                  disabled={selectableItems.length === 0}
-                  className="w-4 h-4"
-                />
-              </div>
-            </TableHead>
+            {onlyDownloadAction ? (
+              <TableHead className="w-[50px] text-center font-bold text-foreground/80">
+                #
+              </TableHead>
+            ) : (
+              <TableHead className="w-[100px]">
+                <div className="flex items-center gap-2">
+                  <span className="w-[40px] shrink-0"></span>
+                  <Checkbox
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    disabled={selectableItems.length === 0}
+                    className="w-4 h-4"
+                  />
+                </div>
+              </TableHead>
+            )}
             {visibleColumns.includes("candidate") && (
               <TableHead className="min-w-[200px] whitespace-nowrap font-bold text-foreground/80">
                 Candidate
+              </TableHead>
+            )}
+            {visibleColumns.includes("department") && (
+              <TableHead className="min-w-[130px] whitespace-nowrap text-left font-bold text-foreground/80">
+                Department
+              </TableHead>
+            )}
+            {visibleColumns.includes("test_level") && (
+              <TableHead className="min-w-[110px] whitespace-nowrap text-left font-bold text-foreground/80">
+                Exam Level
               </TableHead>
             )}
             {visibleColumns.includes("paper") && (
@@ -289,7 +307,7 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
-              <TableHead className="text-right min-w-[80px] whitespace-nowrap sticky z-10 font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[80px] whitespace-nowrap sticky z-10 font-bold text-foreground/80">
                 Actions
               </TableHead>
             )}
@@ -309,7 +327,7 @@ export function ResultTableView({
               description="No results found matching your criteria. Try adjusting your search or filters."
             />
           ) : (
-            items.map((item) => {
+            items.map((item, idx) => {
               const latest = item.latest_attempt;
               const interviewDate = latest?.submitted_at || latest?.started_at;
               const detailHref = `/admin/results/round-1/${item.user_id}`;
@@ -318,45 +336,55 @@ export function ResultTableView({
                 latest?.status === "completed";
               return (
                 <TableCollapsibleRow
-                  key={latest?.attempt_id ?? item.user_id}
+                  key={`user-${item.user_id}-attempt-${latest?.attempt_id || "none"}`}
                   isOpen={
+                    !onlyDownloadAction &&
                     expandedRowId === (latest?.attempt_id ?? item.user_id)
                   }
                   onOpenChange={(expanded) =>
+                    !onlyDownloadAction &&
                     setExpandedRowId(
                       expanded ? (latest?.attempt_id ?? item.user_id) : null,
                     )
                   }
                   colSpan={visibleColumns.length + 1}
                   expandedContent={
-                    <CollapsibleResultDetail
-                      latest={latest}
-                      attempts_count={item.attempts_count}
-                    />
+                    !onlyDownloadAction ? (
+                      <CollapsibleResultDetail
+                        latest={latest}
+                        attempts_count={item.attempts_count}
+                      />
+                    ) : undefined
                   }
                   showToggleCell={false}
                 >
-                  <TableCell className="w-[100px]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-[40px] shrink-0 flex justify-center">
-                        <TableCollapsibleRow.Toggle />
+                  {onlyDownloadAction ? (
+                    <TableCell className="w-[50px] text-center font-medium text-slate-500">
+                      {idx + 1}
+                    </TableCell>
+                  ) : (
+                    <TableCell className="w-[100px]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-[40px] shrink-0 flex justify-center">
+                          <TableCollapsibleRow.Toggle />
+                        </div>
+                        <Checkbox
+                          checked={
+                            !!selectedItems.find(
+                              (i) => i.attempt_id === latest?.attempt_id,
+                            )
+                          }
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleSelectItem(item);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={!isSelectable}
+                          className="w-4 h-4"
+                        />
                       </div>
-                      <Checkbox
-                        checked={
-                          !!selectedItems.find(
-                            (i) => i.attempt_id === latest?.attempt_id,
-                          )
-                        }
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          toggleSelectItem(item);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        disabled={!isSelectable}
-                        className="w-4 h-4"
-                      />
-                    </div>
-                  </TableCell>
+                    </TableCell>
+                  )}
                   {visibleColumns.includes("candidate") && (
                     <TableCell className="align-middle py-3">
                       <div className="flex items-center gap-3">
@@ -420,6 +448,36 @@ export function ResultTableView({
                           </CopyableText>
                         </div>
                       </div>
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("department") && (
+                    <TableCell className="text-muted-foreground font-medium text-left">
+                      {item.department ? (
+                        <Badge
+                          variant="outline"
+                          color="secondary"
+                          shape="square"
+                        >
+                          {item.department}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.includes("test_level") && (
+                    <TableCell className="text-muted-foreground font-medium text-left">
+                      {item.test_level ? (
+                        <Badge variant="outline" color="violet" shape="square">
+                          {item.test_level}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground/60 font-medium">
+                          N/A
+                        </span>
+                      )}
                     </TableCell>
                   )}
                   {visibleColumns.includes("paper") && (
@@ -652,42 +710,45 @@ export function ResultTableView({
                     </TableCell>
                   )}
                   {visibleColumns.includes("actions") && (
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {latest?.status === "submitted" && (
-                          <TableIconButton
-                            iconColor="green"
-                            animate="scale"
-                            title="Assign to Project Lead"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAssignModal({
-                                isOpen: true,
-                                userId: item.user_id,
-                                attemptId: latest.attempt_id,
-                                name: item.username,
-                              });
-                            }}
-                          >
-                            <UserPlus size={16} />
-                          </TableIconButton>
-                        )}
-                        {latest?.attempt_id && (
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {!onlyDownloadAction &&
+                          latest?.status === "submitted" && (
+                            <TableIconButton
+                              iconColor="green"
+                              animate="scale"
+                              title="Assign to Project Lead"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAssignModal({
+                                  isOpen: true,
+                                  userId: item.user_id,
+                                  attemptId: latest.attempt_id,
+                                  name: item.username,
+                                });
+                              }}
+                            >
+                              <UserPlus size={16} />
+                            </TableIconButton>
+                          )}
+                        {onlyDownloadAction && (
                           <DownloadButton
                             userId={item.user_id}
-                            attemptId={latest.attempt_id}
+                            attemptId={latest?.attempt_id || 0}
                             username={item.username}
                           />
                         )}
-                        <Link href={detailHref}>
-                          <TableIconButton
-                            iconColor="orange"
-                            animate="scale"
-                            title="View Result"
-                          >
-                            <Eye size={16} />
-                          </TableIconButton>
-                        </Link>
+                        {!onlyDownloadAction && (
+                          <Link href={detailHref}>
+                            <TableIconButton
+                              iconColor="orange"
+                              animate="scale"
+                              title="View Result"
+                            >
+                              <Eye size={16} />
+                            </TableIconButton>
+                          </Link>
+                        )}
                       </div>
                     </TableCell>
                   )}
@@ -698,7 +759,7 @@ export function ResultTableView({
         </TableBody>
       </Table>
 
-      {selectedItems.length > 0 && (
+      {!onlyDownloadAction && selectedItems.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div
             className={cn(

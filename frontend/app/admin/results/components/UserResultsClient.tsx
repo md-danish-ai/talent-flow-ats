@@ -52,7 +52,6 @@ export function UserResultsClient() {
       { id: "candidate", label: "Candidate", pinned: true },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
-      { id: "marks", label: "Score" },
       { id: "grade", label: "Grade" },
       { id: "typing_wpm", label: "Typing WPM" },
       { id: "typing_acc", label: "Accuracy" },
@@ -67,7 +66,6 @@ export function UserResultsClient() {
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
     "paper",
-    "marks",
     "grade",
     "status",
     "project_lead",
