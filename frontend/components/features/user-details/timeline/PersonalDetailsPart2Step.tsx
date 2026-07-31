@@ -4,18 +4,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Input } from "@components/ui-elements/Input";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { DatePicker } from "@components/ui-elements/DatePicker";
-import {
-  type PersonalDetailsForm,
-  bloodGroupSchema,
-  aadhaarNoSchema,
-  nameAsPerAadhaarSchema,
-  panNoSchema,
-  nameAsPerPanSchema,
-  religionSchema,
-  categorySchema,
-  maritalStatusSchema,
-  emergencyContactRelationSchema,
-} from "@lib/validations/personal-details";
+import { type PersonalDetailsForm } from "@lib/validations/personal-details";
 import { getErrorMessage } from "@lib/utils";
 
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
@@ -148,13 +137,7 @@ export function PersonalDetailsPart2Step({
             Identity Details
           </Typography>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <form.Field
-              name="aadhaarNo"
-              validators={{
-                onChange: aadhaarNoSchema,
-                onBlur: aadhaarNoSchema,
-              }}
-            >
+            <form.Field name="aadhaarNo">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -185,13 +168,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="nameAsPerAadhaar"
-              validators={{
-                onChange: nameAsPerAadhaarSchema,
-                onBlur: nameAsPerAadhaarSchema,
-              }}
-            >
+            <form.Field name="nameAsPerAadhaar">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -217,10 +194,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="panNo"
-              validators={{ onChange: panNoSchema, onBlur: panNoSchema }}
-            >
+            <form.Field name="panNo">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -249,13 +223,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="nameAsPerPan"
-              validators={{
-                onChange: nameAsPerPanSchema,
-                onBlur: nameAsPerPanSchema,
-              }}
-            >
+            <form.Field name="nameAsPerPan">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -289,13 +257,7 @@ export function PersonalDetailsPart2Step({
             Demographic Details
           </Typography>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <form.Field
-              name="bloodGroup"
-              validators={{
-                onChange: bloodGroupSchema,
-                onBlur: bloodGroupSchema,
-              }}
-            >
+            <form.Field name="bloodGroup">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -322,10 +284,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="religion"
-              validators={{ onChange: religionSchema, onBlur: religionSchema }}
-            >
+            <form.Field name="religion">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -352,10 +311,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="category"
-              validators={{ onChange: categorySchema, onBlur: categorySchema }}
-            >
+            <form.Field name="category">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -382,13 +338,7 @@ export function PersonalDetailsPart2Step({
               )}
             </form.Field>
 
-            <form.Field
-              name="maritalStatus"
-              validators={{
-                onChange: maritalStatusSchema,
-                onBlur: maritalStatusSchema,
-              }}
-            >
+            <form.Field name="maritalStatus">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
@@ -455,13 +405,7 @@ export function PersonalDetailsPart2Step({
             Emergency Contact Details
           </Typography>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <form.Field
-              name="emergencyContactRelation"
-              validators={{
-                onChange: emergencyContactRelationSchema,
-                onBlur: emergencyContactRelationSchema,
-              }}
-            >
+            <form.Field name="emergencyContactRelation">
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">

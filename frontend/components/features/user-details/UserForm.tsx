@@ -982,14 +982,20 @@ function RealtimeFormValidator({ form, values }: { form: any; values: any }) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           form.setFieldMeta(fieldPath as any, (meta: any) => ({
             ...meta,
+            errorMap: { ...meta?.errorMap, realtime: newError },
             errors: [newError],
           }));
         }
       } else {
-        if (currentMeta?.errors && currentMeta.errors.length > 0) {
+        if (
+          (currentMeta?.errors && currentMeta.errors.length > 0) ||
+          (currentMeta?.errorMap &&
+            Object.keys(currentMeta.errorMap).length > 0)
+        ) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           form.setFieldMeta(fieldPath as any, (meta: any) => ({
             ...meta,
+            errorMap: {},
             errors: [],
           }));
         }
@@ -1002,6 +1008,7 @@ function RealtimeFormValidator({ form, values }: { form: any; values: any }) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         form.setFieldMeta(fieldPath as any, (meta: any) => ({
           ...meta,
+          errorMap: { realtime: msg },
           errors: [msg],
         }));
       }
