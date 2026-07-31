@@ -147,8 +147,8 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Grammar",
-        "code": "GRAMMAR",
+        "name": "English Grammar",
+        "code": "ENGLISH_GRAMMAR",
         "sort_order": 14,
         "metadata": {
             "is_exclusive": False,
@@ -167,19 +167,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Brand Awareness",
-        "code": "BRAND_AWARENESS",
-        "sort_order": 16,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Knowledge about brand identity, market positioning, target audience analysis, and corporate communication values.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
-        "sort_order": 17,
+        "sort_order": 16,
         "metadata": {
             "is_exclusive": True,
             "description": "Knowledge regarding organizational contact structures, hierarchy, and professional data handling/formatting.",
@@ -187,39 +177,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Data Interpretation & Analytics",
-        "code": "DATA_INTERPRETATION_ANALYTICS",
-        "sort_order": 18,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Analyze complex data sets.",
-        },
-    },
-    {
-        "type": "subject",
-        "name": "English",
-        "code": "ENGLISH",
-        "sort_order": 19,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Professional English proficiency assessment including grammar, vocabulary, sentence structuring, and business communication.",
-        },
-    },
-    {
-        "type": "subject",
-        "name": "Food Industry",
-        "code": "FOOD_INDUSTRY",
-        "sort_order": 20,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Food safety and culinary trends.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Industry Awareness",
         "code": "INDUSTRY_AWARENESS",
-        "sort_order": 21,
+        "sort_order": 17,
         "metadata": {
             "is_exclusive": False,
             "description": "General awareness concerning current global industry trends, market shifts, and emerging business technologies.",
@@ -227,19 +187,9 @@ CLASSIFICATIONS = [
     },
     {
         "type": "subject",
-        "name": "Real Estate",
-        "code": "REAL_ESTATE",
-        "sort_order": 22,
-        "metadata": {
-            "is_exclusive": False,
-            "description": "Knowledge of property markets.",
-        },
-    },
-    {
-        "type": "subject",
         "name": "Lead Generation",
         "code": "LEAD_GENERATION",
-        "sort_order": 23,
+        "sort_order": 18,
         "metadata": {
             "is_exclusive": True,
             "description": "B2B prospecting and business development strategies. Focus on cold outreach and qualifying potential clients.",
@@ -249,32 +199,25 @@ CLASSIFICATIONS = [
         "type": "subject",
         "name": "Typing Test",
         "code": "TYPING_TEST",
-        "sort_order": 24,
+        "sort_order": 19,
         "metadata": {
             "is_exclusive": True,
             "description": "Assessment of typing speed, accuracy, and endurance. Provide professional paragraphs with a mix of alphanumeric characters.",
         },
-    },
-    {
-        "type": "subject",
-        "name": "e-Commerce & Online Shopping",
-        "code": "E_COMMERCE_ONLINE_SHOPPING",
-        "sort_order": 25,
-        "metadata": {"is_exclusive": False, "description": "Online retail operations."},
     },
     # 4. Interview Results (26 - 31)
     {
         "type": "interview_result",
         "name": "Must Hire",
         "code": "MUST_HIRE",
-        "sort_order": 26,
+        "sort_order": 20,
         "metadata": {"description": "Top tier candidate, highly recommended."},
     },
     {
         "type": "interview_result",
         "name": "Good to Go",
         "code": "GOOD_TO_GO",
-        "sort_order": 27,
+        "sort_order": 21,
         "metadata": {
             "description": "Strong candidate, meets all primary requirements."
         },
@@ -283,21 +226,21 @@ CLASSIFICATIONS = [
         "type": "interview_result",
         "name": "Fit for Process",
         "code": "FIT_FOR_PROCESS",
-        "sort_order": 28,
+        "sort_order": 22,
         "metadata": {"description": "Meets basic criteria to continue in the process."},
     },
     {
         "type": "interview_result",
         "name": "Can be Given a Chance",
         "code": "GIVEN_CHANCE",
-        "sort_order": 29,
+        "sort_order": 23,
         "metadata": {"description": "Borderline candidate with potential."},
     },
     {
         "type": "interview_result",
         "name": "Not Fit - Try Other Task",
         "code": "NOT_FIT_OTHER",
-        "sort_order": 30,
+        "sort_order": 24,
         "metadata": {
             "description": "Not suitable for this role but could fit elsewhere."
         },
@@ -306,7 +249,7 @@ CLASSIFICATIONS = [
         "type": "interview_result",
         "name": "Not at all fit",
         "code": "NOT_FIT",
-        "sort_order": 31,
+        "sort_order": 25,
         "metadata": {"description": "Does not meet requirements."},
     },
 ]

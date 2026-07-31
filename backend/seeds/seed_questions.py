@@ -44,16 +44,10 @@ def seed_data():
         # General subjects only (special subjects handled separately below)
         subjects = [
             "APTITUDE",
-            "BRAND_AWARENESS",
             "COMPREHENSION",
-            "DATA_INTERPRETATION_ANALYTICS",
-            "ENGLISH",
-            "FOOD_INDUSTRY",
-            "GRAMMAR",
+            "ENGLISH_GRAMMAR",
             "INDUSTRY_AWARENESS",
-            "REAL_ESTATE",
             "WRITTEN",
-            "E_COMMERCE_ONLINE_SHOPPING",
         ]
         
         # All questions set to FRESHER as requested
