@@ -62,8 +62,7 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  const isSoftwareDepartment =
-    user?.department_name?.toLowerCase() === "software";
+  const requiresInterview = user?.requires_interview !== false;
 
   const activeStatus = activeInterviewStatus?.status;
   const isExpired = activeInterviewStatus?.is_expired;
@@ -128,7 +127,7 @@ export function DashboardClient({
         </div>
 
         {/* Interview Status Alert */}
-        {isInterviewSubmitted && (
+        {requiresInterview && isInterviewSubmitted && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -172,7 +171,7 @@ export function DashboardClient({
           initial="hidden"
           animate="visible"
           className={`grid grid-cols-1 gap-10 ${
-            isSoftwareDepartment
+            !requiresInterview
               ? "md:grid-cols-2"
               : "md:grid-cols-2 lg:grid-cols-3"
           }`}
@@ -355,8 +354,8 @@ export function DashboardClient({
             </Link>
           </motion.div>
 
-          {/* Card 3: Combat/Interview Test - hidden for Software department */}
-          {!isSoftwareDepartment && (
+          {/* Card 3: Combat/Interview Test - hidden for departments that don't require interview */}
+          {requiresInterview && (
             <motion.div variants={itemVariants}>
               <div
                 className={`group relative h-full rounded-[3rem] transition-all duration-700 ${!isInterviewEnabled && "opacity-80"}`}

@@ -167,7 +167,9 @@ def get_user_details(user_id: int):
             is not None
         )
 
-        soi = dict(details.source_of_information) if details.source_of_information else {}
+        soi = (
+            dict(details.source_of_information) if details.source_of_information else {}
+        )
         if "interviewedBefore" not in soi or soi["interviewedBefore"] is None:
             soi["interviewedBefore"] = has_past_attempt
         elif has_past_attempt:

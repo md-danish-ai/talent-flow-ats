@@ -134,7 +134,11 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
     const fetchClassifications = async () => {
       try {
         const [deptRes, levelRes, subRes] = await Promise.all([
-          departmentsApi.getDepartments({ is_active: true, limit: 100 }),
+          departmentsApi.getDepartments({
+            is_active: true,
+            requires_interview: true,
+            limit: 100,
+          }),
           classificationsApi.getClassifications({
             type: "exam_level",
             is_active: true,

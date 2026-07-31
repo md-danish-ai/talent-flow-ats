@@ -39,8 +39,8 @@ def run_auto_expiration(db_session):
                     ProcessStatus.AUTO_SUBMITTED.value,
                 ]
             ),
-            # Exclude Software department users from auto-expiration
-            or_(Department.id.is_(None), ~Department.name.ilike("%software%")),
+            # Exclude departments where requires_interview = False (e.g. "Other")
+            or_(Department.id.is_(None), Department.requires_interview.is_(True)),
             # Identify candidates from past dates (by assignment or registration)
             or_(
                 PaperAssignment.assigned_date < today,

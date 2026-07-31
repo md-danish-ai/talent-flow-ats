@@ -47,6 +47,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
     try {
       const response = await departmentsApi.getDepartments({
         is_active: true,
+        requires_interview: true,
         limit: 100,
       });
       const deptList = response.data || [];

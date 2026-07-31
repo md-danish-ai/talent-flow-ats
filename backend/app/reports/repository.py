@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from sqlalchemy import case, desc, or_
+from sqlalchemy import case, desc
 
 from app.database.db import SessionLocal
 from app.users.models import User
@@ -46,18 +46,6 @@ def get_report_user_list(
             .outerjoin(TestLevel, TestLevel.id == User.test_level_id)
             .filter(User.role == RoleType.USER.value)
         )
-
-        # Exclude software department users
-        software_dept = (
-            db.query(Department).filter(Department.name == "Software").first()
-        )
-        if software_dept:
-            users_query = users_query.filter(
-                or_(
-                    User.department_id != software_dept.id,
-                    User.department_id.is_(None),
-                )
-            )
 
         # Search by name / mobile / email
         if search:

@@ -101,7 +101,8 @@ export const ManageDepartmentModal: React.FC<ManageDepartmentModalProps> = ({
               Requires Interview
             </Typography>
             <Typography variant="body5" className="text-muted-foreground">
-              Enable if candidates from this department go through an interview process
+              Enable if candidates from this department go through an interview
+              process
             </Typography>
           </div>
           <Switch

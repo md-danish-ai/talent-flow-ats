@@ -20,11 +20,13 @@ service = DepartmentService()
 @router.get("/get-departments")
 def get_all(
     is_active: Optional[bool] = None,
+    requires_interview: Optional[bool] = None,
     pagination: PaginationParams = Depends(get_pagination_params),
 ):
     offset = (pagination.page - 1) * pagination.limit
     data, total_records = service.get_all(
         is_active=is_active,
+        requires_interview=requires_interview,
         search=pagination.search,
         limit=pagination.limit,
         offset=offset,

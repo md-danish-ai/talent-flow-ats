@@ -53,7 +53,22 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       role: "user",
     } as SignUpFormValues,
     validators: {
-      onChange: signUpSchema,
+      onChange: signUpSchema.refine(
+        (data) => {
+          const dept = departments?.find(
+            (d) => String(d.id) === String(data.department_id),
+          );
+          const needsInterview = dept?.requires_interview ?? true;
+          if (needsInterview && !data.test_level_id) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: "Please select an exam level",
+          path: ["test_level_id"],
+        },
+      ),
     },
     onSubmit: async ({ value }) => {
       setServerError(null);
@@ -218,10 +233,12 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
             const selectedDept = departments?.find(
               (d) => String(d.id) === String(departmentId),
             );
-            const isSoftwareDept = selectedDept?.name === "Software";
+            const needsInterview = selectedDept?.requires_interview ?? true;
 
             return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                className={`grid gap-4 ${needsInterview ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
+              >
                 <form.Field name="department_id">
                   {(field) => (
                     <div className="group">
@@ -235,7 +252,16 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                       <SelectDropdown
                         options={deptOptions}
                         value={field.state.value}
-                        onChange={(val) => field.handleChange(String(val))}
+                        onChange={(val) => {
+                          field.handleChange(String(val));
+                          // Clear test_level_id when dept doesn't require interview
+                          const dept = departments?.find(
+                            (d) => String(d.id) === String(val),
+                          );
+                          if (!dept?.requires_interview) {
+                            form.setFieldValue("test_level_id", "");
+                          }
+                        }}
                         placeholder="Department"
                         isLoading={isLoadingDepts}
                         disabled={isLoadingDepts}
@@ -255,17 +281,9 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                   )}
                 </form.Field>
 
-                {!isSoftwareDept ? (
-                  <form.Field
-                    name="test_level_id"
-                    validators={{
-                      onChange: ({ value }) => {
-                        if (!value) return "Please select an exam level";
-                        return undefined;
-                      },
-                    }}
-                  >
-                    {(field) => (
+                <form.Field name="test_level_id">
+                  {(field) =>
+                    needsInterview ? (
                       <div className="group">
                         <Typography
                           as="label"
@@ -294,37 +312,22 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                             </Typography>
                           )}
                       </div>
-                    )}
-                  </form.Field>
-                ) : (
-                  <div className="group opacity-60">
-                    <Typography
-                      as="label"
-                      variant="h6"
-                      className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                    >
-                      Exam Level
-                    </Typography>
-                    <div className="h-11 flex items-center px-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-sm font-medium text-slate-500 select-none">
-                      Not required for Software department
-                    </div>
-                  </div>
-                )}
+                    ) : null
+                  }
+                </form.Field>
               </div>
             );
           }}
         </form.Subscribe>
 
-        <form.Subscribe
-          selector={(state) => [state.isSubmitting, state.canSubmit]}
-        >
-          {([isSubmitting, canSubmit]) => (
+        <form.Subscribe selector={(state) => [state.isSubmitting]}>
+          {([isSubmitting]) => (
             <Button
               type="submit"
               variant="primary"
               color="primary"
               shadow
-              disabled={isSubmitting || !canSubmit}
+              disabled={isSubmitting}
               animate="scale"
               className="w-full py-3.5 text-medium font-bold mt-2 shadow-lg shadow-brand-primary/20"
             >

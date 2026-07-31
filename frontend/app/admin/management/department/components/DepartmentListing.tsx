@@ -60,9 +60,13 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null,
+  );
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [togglingInterviewId, setTogglingInterviewId] = useState<number | null>(null);
+  const [togglingInterviewId, setTogglingInterviewId] = useState<number | null>(
+    null,
+  );
 
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
@@ -76,7 +80,9 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
         is_active: !dept.is_active,
       });
       void refresh();
-      toast.success(`Department ${!dept.is_active ? "activated" : "deactivated"}`);
+      toast.success(
+        `Department ${!dept.is_active ? "activated" : "deactivated"}`,
+      );
     } catch (error) {
       console.error("Toggle failed:", error);
     } finally {
@@ -239,14 +245,18 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                           <div className="flex flex-col items-center justify-center gap-1">
                             <Switch
                               checked={dept.requires_interview ?? true}
-                              onChange={() => handleToggleRequiresInterview(dept)}
+                              onChange={() =>
+                                handleToggleRequiresInterview(dept)
+                              }
                               size="sm"
                               disabled={togglingInterviewId === dept.id}
                             />
                             <Badge
                               variant="outline"
                               shape="square"
-                              color={dept.requires_interview ? "violet" : "warning"}
+                              color={
+                                dept.requires_interview ? "violet" : "warning"
+                              }
                             >
                               {dept.requires_interview ? "Yes" : "No"}
                             </Badge>
@@ -255,24 +265,30 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
 
                         <TableCell className="text-muted-foreground text-sm">
                           {dept.created_at
-                            ? new Date(dept.created_at).toLocaleString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                            ? new Date(dept.created_at).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {dept.updated_at
-                            ? new Date(dept.updated_at).toLocaleString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                            ? new Date(dept.updated_at).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell>
