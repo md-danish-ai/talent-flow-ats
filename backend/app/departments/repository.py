@@ -9,6 +9,7 @@ def _to_dict(department):
         "id": department.id,
         "name": department.name,
         "is_active": department.is_active,
+        "requires_interview": department.requires_interview,
         "created_at": department.created_at,
         "updated_at": department.updated_at,
     }
@@ -54,7 +55,9 @@ def create(data):
     db_session = SessionLocal()
     try:
         new_department = Department(
-            name=data.name, is_active=getattr(data, "is_active", True)
+            name=data.name,
+            is_active=getattr(data, "is_active", True),
+            requires_interview=getattr(data, "requires_interview", True),
         )
         db_session.add(new_department)
         db_session.commit()

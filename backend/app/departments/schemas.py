@@ -6,6 +6,7 @@ from datetime import datetime
 class DepartmentBase(BaseModel):
     name: str
     is_active: Optional[bool] = True
+    requires_interview: Optional[bool] = True
 
 
 class DepartmentCreate(DepartmentBase):
@@ -15,6 +16,7 @@ class DepartmentCreate(DepartmentBase):
 class DepartmentUpdate(BaseModel):
     name: Optional[str] = None
     is_active: Optional[bool] = None
+    requires_interview: Optional[bool] = None
 
 
 class DepartmentResponse(DepartmentBase):

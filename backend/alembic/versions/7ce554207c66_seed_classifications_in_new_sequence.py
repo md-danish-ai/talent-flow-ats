@@ -256,9 +256,8 @@ CLASSIFICATIONS = [
 
 # Departments
 DEPARTMENTS = [
-    {"name": "KPO"},
-    {"name": "BPO"},
-    {"name": "QA"},
+    {"name": "KPO & BPO"},
+    {"name": "Other"},
 ]
 
 

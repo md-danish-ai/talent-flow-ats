@@ -8,9 +8,8 @@ from app.database.db import SessionLocal
 from app.departments.models import Department
 
 DEPARTMENTS = [
-    {"name": "BPO", "is_active": True},
-    {"name": "KPO", "is_active": True},
-    {"name": "QA", "is_active": True},
+    {"name": "KPO & BPO", "is_active": True, "requires_interview": True},
+    {"name": "Other", "is_active": True, "requires_interview": False},
 ]
 
 def seed_departments():
@@ -25,7 +24,9 @@ def seed_departments():
                 db.add(dept)
                 print(f"✅ Added department: {dept_data['name']}")
             else:
-                print(f"⏭️  Department already exists: {dept_data['name']}")
+                exists.is_active = dept_data.get("is_active", True)
+                exists.requires_interview = dept_data.get("requires_interview", True)
+                print(f"✅ Updated department: {dept_data['name']}")
         db.commit()
         print("✨ Seeding completed successfully!")
     except Exception as e:

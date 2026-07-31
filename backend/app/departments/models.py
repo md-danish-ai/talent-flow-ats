@@ -15,6 +15,7 @@ class Department(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(255), nullable=False, unique=True)
     is_active = Column(Boolean, server_default="true", nullable=False)
+    requires_interview = Column(Boolean, server_default="true", nullable=False)
 
     created_at = Column(
         TIMESTAMP, server_default=func.current_timestamp(), nullable=False

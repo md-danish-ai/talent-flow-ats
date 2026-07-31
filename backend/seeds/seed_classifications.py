@@ -316,10 +316,8 @@ CLASSIFICATIONS = [
 
 # Departments
 DEPARTMENTS = [
-    {"name": "KPO"},
-    {"name": "BPO"},
-    {"name": "QA"},
-    {"name": "Software"},
+    {"name": "KPO & BPO", "requires_interview": True},
+    {"name": "Other", "requires_interview": False},
 ]
 
 
@@ -380,12 +378,18 @@ def seed():
     allowed_departments = [d["name"] for d in DEPARTMENTS]
     for dept_data in DEPARTMENTS:
         name = dept_data["name"]
+        req_interview = dept_data.get("requires_interview", True)
         existing = db.query(Department).filter(Department.name == name).first()
         if existing:
             existing.is_active = True
+            existing.requires_interview = req_interview
             print(f"✅ Updated [Department]: {name}")
         else:
-            new_dept = Department(name=name, is_active=True)
+            new_dept = Department(
+                name=name,
+                is_active=True,
+                requires_interview=req_interview,
+            )
             db.add(new_dept)
             print(f"➕ Added [Department]: {name}")
 
