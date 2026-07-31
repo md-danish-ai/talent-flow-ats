@@ -44,9 +44,9 @@ export interface FamilyDetail {
 }
 
 export interface SourceOfInformation {
-  interviewedBefore: string;
-  workedBefore: string;
-  source: Record<string, boolean>;
+  interviewedBefore: boolean | string;
+  workedBefore: boolean | string;
+  source: Record<string, boolean | string>;
 }
 
 export interface EducationDetail {

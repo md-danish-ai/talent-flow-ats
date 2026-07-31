@@ -135,7 +135,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* Education Type */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Education
+                        Education <span className="text-red-500">*</span>
                       </label>
                       <form.Field name={`education[${index}].type`}>
                         {(field) => (
@@ -186,7 +186,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* Education Details */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Education Details
+                        Education Details{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].details`}>
                         {(field) => (
@@ -219,7 +222,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* School/College */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        School/College
+                        School/College{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].school`}>
                         {(field) => (
@@ -252,7 +258,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* Board/University */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Board/University
+                        Board/University{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].board`}>
                         {(field) => (
@@ -285,7 +294,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* Start Year */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Start Year
+                        Start Year{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].startYear`}>
                         {(field) => (
@@ -316,7 +328,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* End Year */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        End Year
+                        End Year{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].endYear`}>
                         {(field) => (
@@ -348,56 +363,60 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                       </form.Field>
                     </div>
 
-                    {/* Division */}
+                    {/* Percentage (%) / CGPA */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        Division
-                      </label>
-                      <form.Field name={`education[${index}].division`}>
-                        {(field) => (
-                          <div className="flex flex-col">
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              onBlur={field.handleBlur}
-                              disabled={!isEducationSelected}
-                              className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              placeholder="e.g. 1st, 2nd"
-                              error={
-                                field.state.meta.isTouched &&
-                                field.state.meta.errors.length > 0
-                              }
-                            />
-                            {field.state.meta.isTouched &&
-                              field.state.meta.errors.length > 0 && (
-                                <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                  {getErrorMessage(field.state.meta.errors[0])}
-                                </p>
-                              )}
-                          </div>
-                        )}
-                      </form.Field>
-                    </div>
-
-                    {/* Percentage */}
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        Percentage (%)
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {item.gradingType || "Percentage"}{" "}
+                          {item.gradingType === "CGPA" ? "(Out of 10)" : "(%)"}{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <form.Field name={`education[${index}].gradingType`}>
+                          {(typeField) => (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextType =
+                                  typeField.state.value === "CGPA"
+                                    ? "Percentage"
+                                    : "CGPA";
+                                typeField.handleChange(nextType);
+                              }}
+                              className="text-xs font-semibold text-brand-primary underline hover:text-brand-primary/80 transition-colors cursor-pointer"
+                            >
+                              Switch to{" "}
+                              {typeField.state.value === "CGPA"
+                                ? "Percentage"
+                                : "CGPA"}
+                            </button>
+                          )}
+                        </form.Field>
+                      </div>
                       <form.Field name={`education[${index}].percentage`}>
                         {(field) => (
                           <div className="flex flex-col">
                             <Input
                               value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
+                              onChange={(e) => {
+                                let val = e.target.value.replace(
+                                  /[^0-9.]/g,
+                                  "",
+                                );
+                                const parts = val.split(".");
+                                if (parts.length > 2) {
+                                  val =
+                                    parts[0] + "." + parts.slice(1).join("");
+                                }
+                                field.handleChange(val);
+                              }}
                               onBlur={field.handleBlur}
                               disabled={!isEducationSelected}
                               className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              placeholder="e.g. 85%"
+                              placeholder={
+                                item.gradingType === "CGPA"
+                                  ? "e.g. 8.5"
+                                  : "e.g. 85"
+                              }
                               error={
                                 field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0
@@ -417,7 +436,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     {/* Medium */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Medium
+                        Medium{" "}
+                        {(isMandatory || isEducationSelected) && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
                       <form.Field name={`education[${index}].medium`}>
                         {(field) => (

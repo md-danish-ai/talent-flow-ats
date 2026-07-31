@@ -89,15 +89,26 @@ const sanitizeStr = (val: unknown, fallback = ""): string => {
   return s || fallback;
 };
 
+const sanitizeBool = (val: unknown, fallback = false): boolean => {
+  if (typeof val === "boolean") return val;
+  if (typeof val === "string") {
+    const s = val.trim().toLowerCase();
+    if (s === "yes" || s === "true" || s === "1") return true;
+    if (s === "no" || s === "false" || s === "0") return false;
+  }
+  return fallback;
+};
+
 const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
   const sanitized = (familyArr || []).map((m) => {
     const member = m as Record<string, unknown>;
+    const depStr = sanitizeStr(member.dependent);
     return {
       ...member,
       relation: sanitizeStr(member.relation),
       name: sanitizeStr(member.name),
       occupation: sanitizeStr(member.occupation),
-      dependent: sanitizeStr(member.dependent),
+      dependent: depStr || "No",
       contactNo: sanitizeStr(member.contactNo),
     };
   }) as FamilyMember[];
@@ -167,11 +178,27 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
 };
 
 const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
-  return (arr || []).map((i) => {
+  if (!arr || arr.length === 0) {
+    return [
+      {
+        id: 1,
+        company: "Fresher",
+        employmentType: "",
+        designation: "",
+        joinDate: "",
+        relieveDate: "",
+        reason: "",
+        salary: "",
+      },
+    ];
+  }
+  return arr.map((i, index) => {
     const item = i as Record<string, unknown>;
+    const companyStr = sanitizeStr(item.company);
     return {
       ...item,
-      company: sanitizeStr(item.company),
+      id: Number(item.id) || index + 1,
+      company: companyStr || (index === 0 ? "Fresher" : ""),
       employmentType: sanitizeStr(item.employmentType),
       designation: sanitizeStr(item.designation),
       joinDate: sanitizeStr(item.joinDate),
@@ -293,13 +320,11 @@ export function UserForm({
           }
           return defaultFamily;
         })(),
-        interviewedBefore: sanitizeStr(
+        interviewedBefore: sanitizeBool(
           initialData.sourceOfInformation?.interviewedBefore,
-          "No",
         ),
-        workedBefore: sanitizeStr(
+        workedBefore: sanitizeBool(
           initialData.sourceOfInformation?.workedBefore,
-          "No",
         ),
         source: {
           campus: Boolean(initialData.sourceOfInformation?.source?.campus),
@@ -309,6 +334,12 @@ export function UserForm({
           newspaper: Boolean(
             initialData.sourceOfInformation?.source?.newspaper,
           ),
+          others: Boolean(initialData.sourceOfInformation?.source?.others),
+          otherDetails:
+            typeof initialData.sourceOfInformation?.source?.otherDetails ===
+            "string"
+              ? initialData.sourceOfInformation.source.otherDetails
+              : "",
         },
         education:
           initialData.educationDetails?.length > 0
@@ -318,7 +349,12 @@ export function UserForm({
           initialData.workExperienceDetails?.length > 0
             ? sanitizeWorkExp(initialData.workExperienceDetails)
             : defaultPersonalDetailsValues.workExp,
-        ...(initialData.otherDetails || {}),
+        serviceCommitment: initialData.otherDetails?.serviceCommitment || "",
+        securityDeposit: initialData.otherDetails?.securityDeposit || "",
+        shiftTime: initialData.otherDetails?.shiftTime || "",
+        expectedJoiningDate:
+          initialData.otherDetails?.expectedJoiningDate || "",
+        expectedSalary: initialData.otherDetails?.expectedSalary || "",
       };
     }
     return {
@@ -328,6 +364,134 @@ export function UserForm({
     };
   }, [initialData, registeredMobile, registeredEmail]);
 
+  const handleFinalSubmit = React.useCallback(async () => {
+    const value = form.state.values;
+    try {
+      const formattedData: UserDetails = {
+        is_submitted: true,
+        is_interview_submitted:
+          existingDetails?.is_interview_submitted ?? false,
+        personalDetails: {
+          firstName: value.firstName,
+          lastName: value.lastName,
+          gender: value.gender,
+          dob: value.dob,
+          primaryMobile: value.primaryMobile,
+          alternateMobile: value.alternateMobile,
+          email: value.email || null,
+          presentAddressLine1: value.presentAddressLine1,
+          presentAddressLine2: value.presentAddressLine2,
+          presentState: value.presentState,
+          presentDistrict: value.presentDistrict,
+          presentCity: value.presentCity,
+          presentPincode: value.presentPincode,
+          permanentAddressLine1: value.sameAddress
+            ? value.presentAddressLine1
+            : value.permanentAddressLine1,
+          permanentAddressLine2: value.sameAddress
+            ? value.presentAddressLine2
+            : value.permanentAddressLine2,
+          permanentState: value.sameAddress
+            ? value.presentState
+            : value.permanentState,
+          permanentDistrict: value.sameAddress
+            ? value.presentDistrict
+            : value.permanentDistrict,
+          permanentCity: value.sameAddress
+            ? value.presentCity
+            : value.permanentCity,
+          permanentPincode: value.sameAddress
+            ? value.presentPincode
+            : value.permanentPincode,
+          sameAddress: value.sameAddress,
+        },
+        additionalPersonalDetails: {
+          bloodGroup: value.bloodGroup,
+          aadhaarNo: value.aadhaarNo,
+          nameAsPerAadhaar: value.nameAsPerAadhaar,
+          panNo: value.panNo,
+          nameAsPerPan: value.nameAsPerPan,
+          religion: value.religion,
+          category: value.category,
+          maritalStatus: value.maritalStatus,
+          anniversaryDate: value.anniversaryDate,
+        },
+        familyDetails: value.family,
+        sourceOfInformation: {
+          interviewedBefore: value.interviewedBefore,
+          workedBefore: value.workedBefore,
+          source: value.source,
+        },
+        educationDetails: value.education.map((edu, index) => ({
+          id: edu.id ?? index + 1,
+          type: edu.type,
+          school: edu.school,
+          board: edu.board,
+          year: `${edu.startYear}-${edu.endYear}`,
+          division: edu.division,
+          percentage: edu.percentage,
+          medium: edu.medium,
+          details: edu.details,
+        })),
+        workExperienceDetails: value.workExp,
+        otherDetails: {
+          serviceCommitment: value.serviceCommitment,
+          securityDeposit: value.securityDeposit,
+          shiftTime: value.shiftTime,
+          expectedJoiningDate: value.expectedJoiningDate,
+          expectedSalary: value.expectedSalary,
+        },
+        emergency_contact_relation: value.emergencyContactRelation,
+      };
+
+      if (existingDetails) {
+        await updateDetails(formattedData);
+      } else {
+        await saveDetails(formattedData);
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.refresh();
+        router.push(isAdmin ? "/admin/management/users" : "/user/dashboard");
+      }
+    } catch (error: unknown) {
+      console.error("Submission error:", error);
+      interface BackendValidationError {
+        loc: (string | number)[];
+        msg: string;
+        type: string;
+      }
+
+      const axiosError = error as {
+        response?: {
+          status: number;
+          data?: {
+            errors?: BackendValidationError[];
+          };
+        };
+      };
+
+      if (
+        axiosError?.response?.status === 422 &&
+        axiosError?.response?.data?.errors
+      ) {
+        axiosError.response.data.errors.forEach((err) => {
+          const path = err.loc[err.loc.length - 1] as string;
+          form.setFieldMeta(
+            path as keyof PersonalDetailsFormValues,
+            (meta) => ({
+              ...meta,
+              errors: [err.msg],
+              isTouched: true,
+            }),
+          );
+        });
+      }
+    }
+  }, [existingDetails, updateDetails, saveDetails, onSuccess, router, isAdmin]);
+
   const form = useForm({
     // @ts-expect-error - validatorAdapter exists at runtime but type definition mismatch
     validatorAdapter: zodValidator(),
@@ -336,133 +500,7 @@ export function UserForm({
       onChange: personalDetailsSchema,
       onBlur: personalDetailsSchema,
     },
-    onSubmit: async ({ value }) => {
-      try {
-        const formattedData: UserDetails = {
-          is_submitted: true,
-          is_interview_submitted:
-            existingDetails?.is_interview_submitted ?? false,
-          personalDetails: {
-            firstName: value.firstName,
-            lastName: value.lastName,
-            gender: value.gender,
-            dob: value.dob,
-            primaryMobile: value.primaryMobile,
-            alternateMobile: value.alternateMobile,
-            email: value.email || null,
-            presentAddressLine1: value.presentAddressLine1,
-            presentAddressLine2: value.presentAddressLine2,
-            presentState: value.presentState,
-            presentDistrict: value.presentDistrict,
-            presentCity: value.presentCity,
-            presentPincode: value.presentPincode,
-            permanentAddressLine1: value.sameAddress
-              ? value.presentAddressLine1
-              : value.permanentAddressLine1,
-            permanentAddressLine2: value.sameAddress
-              ? value.presentAddressLine2
-              : value.permanentAddressLine2,
-            permanentState: value.sameAddress
-              ? value.presentState
-              : value.permanentState,
-            permanentDistrict: value.sameAddress
-              ? value.presentDistrict
-              : value.permanentDistrict,
-            permanentCity: value.sameAddress
-              ? value.presentCity
-              : value.permanentCity,
-            permanentPincode: value.sameAddress
-              ? value.presentPincode
-              : value.permanentPincode,
-            sameAddress: value.sameAddress,
-          },
-          additionalPersonalDetails: {
-            bloodGroup: value.bloodGroup,
-            aadhaarNo: value.aadhaarNo,
-            nameAsPerAadhaar: value.nameAsPerAadhaar,
-            panNo: value.panNo,
-            nameAsPerPan: value.nameAsPerPan,
-            religion: value.religion,
-            category: value.category,
-            maritalStatus: value.maritalStatus,
-            anniversaryDate: value.anniversaryDate,
-          },
-          familyDetails: value.family,
-          sourceOfInformation: {
-            interviewedBefore: value.interviewedBefore,
-            workedBefore: value.workedBefore,
-            source: value.source,
-          },
-          educationDetails: value.education.map((edu, index) => ({
-            id: edu.id ?? index + 1,
-            type: edu.type,
-            school: edu.school,
-            board: edu.board,
-            year: `${edu.startYear}-${edu.endYear}`,
-            division: edu.division,
-            percentage: edu.percentage,
-            medium: edu.medium,
-            details: edu.details,
-          })),
-          workExperienceDetails: value.workExp,
-          otherDetails: {
-            serviceCommitment: value.serviceCommitment,
-            securityDeposit: value.securityDeposit,
-            shiftTime: value.shiftTime,
-            expectedJoiningDate: value.expectedJoiningDate,
-            expectedSalary: value.expectedSalary,
-          },
-          emergency_contact_relation: value.emergencyContactRelation,
-        };
-
-        if (existingDetails) {
-          await updateDetails(formattedData);
-        } else {
-          await saveDetails(formattedData);
-        }
-
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.refresh();
-          router.push(isAdmin ? "/admin/management/users" : "/user/dashboard");
-        }
-      } catch (error: unknown) {
-        console.error("Submission error:", error);
-        // Define interface for backend validation errors to avoid 'any' lint errors
-        interface BackendValidationError {
-          loc: (string | number)[];
-          msg: string;
-          type: string;
-        }
-
-        const axiosError = error as {
-          response?: {
-            status: number;
-            data?: {
-              errors?: BackendValidationError[];
-            };
-          };
-        };
-
-        if (
-          axiosError?.response?.status === 422 &&
-          axiosError?.response?.data?.errors
-        ) {
-          axiosError.response.data.errors.forEach((err) => {
-            const path = err.loc[err.loc.length - 1] as string;
-            form.setFieldMeta(
-              path as keyof PersonalDetailsFormValues,
-              (meta) => ({
-                ...meta,
-                errors: [err.msg],
-                isTouched: true,
-              }),
-            );
-          });
-        }
-      }
-    },
+    onSubmit: handleFinalSubmit,
   });
 
   // Pre-populate form when existing details are loaded (primarily for self-portal via React Query)
@@ -507,6 +545,11 @@ export function UserForm({
         employee: Boolean(details.sourceOfInformation?.source?.employee),
         friends: Boolean(details.sourceOfInformation?.source?.friends),
         newspaper: Boolean(details.sourceOfInformation?.source?.newspaper),
+        others: Boolean(details.sourceOfInformation?.source?.others),
+        otherDetails:
+          typeof details.sourceOfInformation?.source?.otherDetails === "string"
+            ? details.sourceOfInformation.source.otherDetails
+            : "",
       };
 
       form.reset({
@@ -575,14 +618,10 @@ export function UserForm({
           }
           return defaultFamily;
         })(),
-        interviewedBefore: sanitizeStr(
+        interviewedBefore: sanitizeBool(
           details.sourceOfInformation?.interviewedBefore,
-          "No",
         ),
-        workedBefore: sanitizeStr(
-          details.sourceOfInformation?.workedBefore,
-          "No",
-        ),
+        workedBefore: sanitizeBool(details.sourceOfInformation?.workedBefore),
         source: mappedSource,
         education:
           details.educationDetails?.length > 0
@@ -592,10 +631,34 @@ export function UserForm({
           details.workExperienceDetails?.length > 0
             ? sanitizeWorkExp(details.workExperienceDetails)
             : defaultPersonalDetailsValues.workExp,
-        ...(details.otherDetails || {}),
+        serviceCommitment: details.otherDetails?.serviceCommitment || "",
+        securityDeposit: details.otherDetails?.securityDeposit || "",
+        shiftTime: details.otherDetails?.shiftTime || "",
+        expectedJoiningDate: details.otherDetails?.expectedJoiningDate || "",
+        expectedSalary: details.otherDetails?.expectedSalary || "",
       });
     }
   }, [selfDetails, initialData, form, registeredMobile]);
+
+  // Sync registered mobile & email from currentUser into form state if empty
+  useEffect(() => {
+    if (registeredMobile) {
+      const cleanMobile = registeredMobile.replace(/\D/g, "").slice(-10);
+      const currentPrimary = form.getFieldValue("primaryMobile");
+      if (!currentPrimary || currentPrimary !== cleanMobile) {
+        form.setFieldValue("primaryMobile", cleanMobile);
+      }
+    }
+  }, [registeredMobile, form]);
+
+  useEffect(() => {
+    if (registeredEmail) {
+      const currentEmail = form.getFieldValue("email");
+      if (!currentEmail) {
+        form.setFieldValue("email", registeredEmail);
+      }
+    }
+  }, [registeredEmail, form]);
 
   const touchStepFields = React.useCallback(
     (step: number) => {
@@ -743,6 +806,12 @@ export function UserForm({
             currentStep={currentStep}
             touchedSteps={touchedSteps}
             isStepValid={isStepValid}
+            onStepClick={(targetStep) => {
+              setTouchedSteps((prev) => [
+                ...new Set([...prev, currentStep, targetStep]),
+              ]);
+              setCurrentStep(targetStep);
+            }}
           />
         </div>
 
@@ -756,6 +825,11 @@ export function UserForm({
             }}
             className="flex-1 w-full flex flex-col"
           >
+            <form.Subscribe selector={(state) => [state.values]}>
+              {([values]) => (
+                <RealtimeFormValidator form={form} values={values} />
+              )}
+            </form.Subscribe>
             {/* Header: Title on Left, Buttons on Right */}
             <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
               <div className="flex items-center gap-4">
@@ -863,9 +937,74 @@ export function UserForm({
       <SubmitModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        onSubmit={form.handleSubmit}
+        onSubmit={handleFinalSubmit}
+        isSubmitting={isSaving}
         incompleteSteps={incompleteSteps}
       />
     </div>
   );
+}
+
+// Helper component to run real-time Zod validation on value changes cleanly without violating Rules of Hooks
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RealtimeFormValidator({ form, values }: { form: any; values: any }) {
+  React.useEffect(() => {
+    const result = personalDetailsSchema.safeParse(values);
+    const issueMap = new Map<string, string>();
+
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        let fieldPath = "";
+        issue.path.forEach((p, idx) => {
+          if (typeof p === "number") {
+            fieldPath += `[${p}]`;
+          } else {
+            fieldPath += idx === 0 ? p : `.${p}`;
+          }
+        });
+        if (!issueMap.has(fieldPath)) {
+          issueMap.set(fieldPath, issue.message);
+        }
+      });
+    }
+
+    const fieldMeta = form.state.fieldMeta || {};
+
+    // 1. Clear or update errors for all existing registered fields
+    Object.keys(fieldMeta).forEach((fieldPath) => {
+      const currentMeta = fieldMeta[fieldPath];
+      const newError = issueMap.get(fieldPath);
+
+      if (newError) {
+        if (currentMeta?.errors?.[0] !== newError) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          form.setFieldMeta(fieldPath as any, (meta: any) => ({
+            ...meta,
+            errors: [newError],
+          }));
+        }
+      } else {
+        if (currentMeta?.errors && currentMeta.errors.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          form.setFieldMeta(fieldPath as any, (meta: any) => ({
+            ...meta,
+            errors: [],
+          }));
+        }
+      }
+    });
+
+    // 2. Add errors for issue paths that aren't yet in fieldMeta
+    issueMap.forEach((msg, fieldPath) => {
+      if (!fieldMeta[fieldPath]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        form.setFieldMeta(fieldPath as any, (meta: any) => ({
+          ...meta,
+          errors: [msg],
+        }));
+      }
+    });
+  }, [form, values]);
+
+  return null;
 }

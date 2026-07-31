@@ -28,6 +28,7 @@ export interface Education {
   percentage: string;
   medium: string;
   details: string;
+  gradingType?: string;
 }
 
 export interface WorkExperience {
@@ -72,14 +73,16 @@ export interface PersonalDetailsFormValues {
   maritalStatus: string;
   anniversaryDate: string;
   family: FamilyMember[];
-  interviewedBefore: string;
-  workedBefore: string;
+  interviewedBefore: boolean;
+  workedBefore: boolean;
   source: {
     campus: boolean;
     website: boolean;
     employee: boolean;
     friends: boolean;
     newspaper: boolean;
+    others: boolean;
+    otherDetails: string;
   };
   education: Education[];
   workExp: WorkExperience[];
@@ -130,19 +133,41 @@ export const familyMemberSchema = z
           message: "Name required",
           path: ["name"],
         });
+      } else if (/\d/.test(data.name)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Numbers are not allowed",
+          path: ["name"],
+        });
       }
+
       if (data.occupation.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Occupation required",
           path: ["occupation"],
         });
-      }
-      if (data.dependent.trim() === "") {
+      } else if (/\d/.test(data.occupation)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Dependency required",
-          path: ["dependent"],
+          message: "Numbers are not allowed",
+          path: ["occupation"],
+        });
+      }
+      // Note: Dependent is non-mandatory per feedback point 18
+    } else {
+      if (/\d/.test(data.name)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Numbers are not allowed",
+          path: ["name"],
+        });
+      }
+      if (/\d/.test(data.occupation)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Numbers are not allowed",
+          path: ["occupation"],
         });
       }
     }
@@ -160,6 +185,7 @@ export const educationSchema = z
     percentage: z.string().default(""),
     medium: z.string().default(""),
     details: z.string().default(""),
+    gradingType: z.string().default("Percentage"),
   })
   .superRefine((data, ctx) => {
     const isMandatory = data.type === "10th Std" || data.type === "12th Std";
@@ -211,18 +237,35 @@ export const educationSchema = z
           message: "End Year required",
           path: ["endYear"],
         });
-      if (data.division.trim() === "")
+      // Division field is optional (Point 13)
+      if (data.percentage.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Division required",
-          path: ["division"],
-        });
-      if (data.percentage.trim() === "")
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Percentage required",
+          message: `${data.gradingType || "Percentage"} required`,
           path: ["percentage"],
         });
+      } else {
+        const num = parseFloat(data.percentage.replace("%", "").trim());
+        if (isNaN(num)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be a valid number",
+            path: ["percentage"],
+          });
+        } else if (data.gradingType === "CGPA" && num > 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "CGPA cannot exceed 10",
+            path: ["percentage"],
+          });
+        } else if (data.gradingType !== "CGPA" && num > 100) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Percentage cannot exceed 100%",
+            path: ["percentage"],
+          });
+        }
+      }
       if (data.medium.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -254,10 +297,15 @@ export const workExperienceSchema = z
     salary: z.string().default(""),
   })
   .superRefine((data, ctx) => {
-    // We only force validation if a company name is entered.
-    const hasCompany = data.company.trim() !== "";
+    const isFresher = data.company.trim().toLowerCase() === "fresher";
 
-    if (hasCompany) {
+    if (!isFresher) {
+      if (data.company.trim() === "")
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Company name required",
+          path: ["company"],
+        });
       if (data.employmentType.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -309,42 +357,50 @@ export const workExperienceSchema = z
     }
   });
 
-export const bloodGroupSchema = z.string().min(1, "Blood Group is required");
+export const bloodGroupSchema = z.string();
 export const aadhaarNoSchema = z
   .string()
-  .min(1, "Aadhaar Card Number is required")
-  .length(12, "Aadhaar number must be exactly 12 digits")
-  .regex(/^\d{12}$/, "Aadhaar number must contain only digits");
-export const nameAsPerAadhaarSchema = z
-  .string()
-  .min(1, "Name as per Aadhaar is required");
+  .refine(
+    (val) => !val || (val.length === 12 && /^\d{12}$/.test(val)),
+    "Aadhaar number must be exactly 12 digits",
+  );
+export const nameAsPerAadhaarSchema = z.string();
 export const panNoSchema = z
   .string()
-  .min(1, "PAN Card Number is required")
-  .length(10, "PAN number must be exactly 10 characters")
-  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (e.g., ABCDE1234F)");
-export const nameAsPerPanSchema = z
-  .string()
-  .min(1, "Name as per PAN is required");
-export const religionSchema = z.string().min(1, "Religion is required");
-export const categorySchema = z.string().min(1, "Category is required");
-export const maritalStatusSchema = z
-  .string()
-  .min(1, "Marital Status is required");
+  .refine(
+    (val) => !val || /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(val),
+    "Invalid PAN format (e.g., ABCDE1234F)",
+  );
+export const nameAsPerPanSchema = z.string();
+export const religionSchema = z.string();
+export const categorySchema = z.string();
+export const maritalStatusSchema = z.string();
 export const emergencyContactRelationSchema = z
   .string()
   .min(1, "Emergency contact relation is required");
 
 const baseSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .refine((val) => !/\d/.test(val), "Numbers are not allowed"),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .refine((val) => !/\d/.test(val), "Numbers are not allowed"),
   gender: z.string().min(1, "Gender is required"),
   dob: z.string().min(1, "Date of Birth is required"),
-  primaryMobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
+  primaryMobile: z
+    .string()
+    .transform((val) => (val || "").replace(/\D/g, "").slice(-10))
+    .refine((val) => /^\d{10}$/.test(val), "Invalid mobile number"),
   alternateMobile: z
     .string()
-    .regex(/^\d{10}$/, "Invalid alternate mobile number")
-    .or(z.literal("")),
+    .transform((val) => (val || "").replace(/\D/g, "").slice(-10))
+    .refine(
+      (val) => !val || /^\d{10}$/.test(val),
+      "Invalid alternate mobile number",
+    ),
   email: z.union([z.string().email("Invalid email address"), z.literal("")]),
   presentAddressLine1: z.string().min(1, "Address Line 1 is required"),
   presentAddressLine2: z.string().default(""),
@@ -369,14 +425,16 @@ const baseSchema = z.object({
   maritalStatus: maritalStatusSchema,
   anniversaryDate: z.string().default(""),
   family: z.array(familyMemberSchema),
-  interviewedBefore: z.string().min(1, "Please select an option"),
-  workedBefore: z.string().min(1, "Please select an option"),
+  interviewedBefore: z.boolean().default(false),
+  workedBefore: z.boolean().default(false),
   source: z.object({
-    campus: z.boolean(),
-    website: z.boolean(),
-    employee: z.boolean(),
-    friends: z.boolean(),
-    newspaper: z.boolean(),
+    campus: z.boolean().default(false),
+    website: z.boolean().default(false),
+    employee: z.boolean().default(false),
+    friends: z.boolean().default(false),
+    newspaper: z.boolean().default(false),
+    others: z.boolean().default(false),
+    otherDetails: z.string().default(""),
   }),
   education: z.array(educationSchema),
   workExp: z.array(workExperienceSchema),
@@ -391,6 +449,31 @@ const baseSchema = z.object({
 
 export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
   baseSchema.superRefine((data, ctx) => {
+    // Source of Information Validation
+    const hasAnySource =
+      data.source.campus ||
+      data.source.website ||
+      data.source.employee ||
+      data.source.friends ||
+      data.source.newspaper ||
+      data.source.others;
+
+    if (!hasAnySource) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select at least one source of information",
+        path: ["source"],
+      });
+    }
+
+    if (data.source.others && data.source.otherDetails.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please specify details for Others",
+        path: ["source", "otherDetails"],
+      });
+    }
+
     // Logic for Permanent Address Validation
     if (!data.sameAddress) {
       const hasAnyPermanentDetail =
@@ -458,6 +541,19 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
       });
     }
 
+    // Contact Number Uniqueness Validation across Primary, Alternate & Family Contact Numbers
+    const primary = data.primaryMobile?.trim() || "";
+    const alternate = data.alternateMobile?.trim() || "";
+
+    if (alternate && primary && alternate === primary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Alternate mobile number should be unique (cannot be same as primary contact)",
+        path: ["alternateMobile"],
+      });
+    }
+
     // Logic for Emergency Contact Number Validation
     if (data.emergencyContactRelation) {
       const emergencyMemberIndex = data.family.findIndex(
@@ -471,21 +567,66 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
         });
       } else {
         const member = data.family[emergencyMemberIndex];
-        if (!member.contactNo || member.contactNo.trim() === "") {
+        const contactNo = member.contactNo ? member.contactNo.trim() : "";
+
+        if (!contactNo) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Emergency contact number is required",
             path: ["family", emergencyMemberIndex, "contactNo"],
           });
-        } else if (!/^\d{10}$/.test(member.contactNo)) {
+        } else if (!/^\d{10}$/.test(contactNo)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Must be a 10-digit number",
             path: ["family", emergencyMemberIndex, "contactNo"],
           });
+        } else {
+          // Uniqueness check for emergency contact number
+          if (primary && contactNo === primary) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Emergency contact number should be unique (cannot be same as primary contact)",
+              path: ["family", emergencyMemberIndex, "contactNo"],
+            });
+          } else if (alternate && contactNo === alternate) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Emergency contact number should be unique (cannot be same as alternate contact)",
+              path: ["family", emergencyMemberIndex, "contactNo"],
+            });
+          }
         }
       }
     }
+
+    // Check all other family member contact numbers if present for uniqueness
+    data.family.forEach((m, idx) => {
+      const no = m.contactNo ? m.contactNo.trim() : "";
+      if (
+        no &&
+        no.length === 10 &&
+        m.relation !== data.emergencyContactRelation
+      ) {
+        if (primary && no === primary) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Contact number should be unique (cannot be same as primary contact)",
+            path: ["family", idx, "contactNo"],
+          });
+        } else if (alternate && no === alternate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Contact number should be unique (cannot be same as alternate contact)",
+            path: ["family", idx, "contactNo"],
+          });
+        }
+      }
+    });
   }) as any;
 
 /**

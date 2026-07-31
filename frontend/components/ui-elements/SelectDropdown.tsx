@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check, Loader2, X } from "lucide-react";
+import { ChevronDown, Check, Loader2, X, Search } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -44,6 +44,7 @@ export function SelectDropdown({
 }: SelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [actualPlacement, setActualPlacement] = useState<"top" | "bottom">(
     placement,
   );
@@ -54,10 +55,18 @@ export function SelectDropdown({
     height: 0,
   });
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // We initialize mounting lazily to avoid cascading renders on initial page load.
-  // This satisfies the "Calling setState synchronously within an effect" warning.
+  const filteredOptions = React.useMemo(() => {
+    if (!searchTerm.trim()) return options;
+    const term = searchTerm.toLowerCase();
+    return options.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(term) ||
+        String(opt.id).toLowerCase().includes(term),
+    );
+  }, [options, searchTerm]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -69,6 +78,7 @@ export function SelectDropdown({
         !triggerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        setSearchTerm("");
       }
     }
     if (isOpen) {
@@ -83,7 +93,6 @@ export function SelectDropdown({
 
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
-      // We assume max dropdown height is around 320px
       if (
         placement === "bottom" &&
         spaceBelow < 320 &&
@@ -114,8 +123,14 @@ export function SelectDropdown({
     if (!mounted) setMounted(true);
     if (!isOpen) {
       updateCoords();
+      setIsOpen(true);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    } else {
+      setIsOpen(false);
+      setSearchTerm("");
     }
-    setIsOpen(!isOpen);
   };
 
   // Update coords on resize/scroll if open
@@ -181,17 +196,17 @@ export function SelectDropdown({
                     Fetching options...
                   </Typography>
                 </div>
-              ) : options.length === 0 ? (
+              ) : filteredOptions.length === 0 ? (
                 <div className="py-3 px-4 text-center">
                   <Typography
                     variant="body4"
                     className="italic text-muted-foreground font-medium"
                   >
-                    {emptyMessage}
+                    {searchTerm ? "No matching options" : emptyMessage}
                   </Typography>
                 </div>
               ) : (
-                options.map((option, index) => (
+                filteredOptions.map((option, index) => (
                   <React.Fragment key={option.id}>
                     {index > 0 && (
                       <div className="mx-2 my-0.5 border-t border-slate-100 dark:border-white/5" />
@@ -202,6 +217,7 @@ export function SelectDropdown({
                       onClick={() => {
                         onChange(option.id);
                         setIsOpen(false);
+                        setSearchTerm("");
                       }}
                       className={cn(
                         "flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold transition-all mb-0.5 last:mb-0 justify-start h-auto text-left",
@@ -235,16 +251,11 @@ export function SelectDropdown({
 
   return (
     <div className={cn("relative w-full", wrapperClassName)}>
-      <Button
+      <div
         ref={triggerRef}
-        type="button"
-        variant="ghost"
-        size="auto"
-        fullWidth
         onClick={toggleDropdown}
-        disabled={disabled}
         className={cn(
-          "flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all hover:bg-input/80",
+          "flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all cursor-pointer min-h-[46px]",
           "border-border dark:border-white/20",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
@@ -254,20 +265,36 @@ export function SelectDropdown({
             "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
-        <div className="flex items-center justify-between w-full gap-2">
-          <Typography
-            variant="body4"
-            weight="medium"
-            as="span"
-            className={cn(
-              "truncate transition-colors",
-              selectedOption
-                ? "text-foreground"
-                : "text-muted-foreground/60 dark:text-white/40",
-            )}
-          >
-            {selectedOption ? selectedOption.label : placeholder}
-          </Typography>
+        <div className="flex items-center justify-between w-full gap-2 min-w-0">
+          {isOpen ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                updateCoords();
+              }}
+              onClick={(e) => e.stopPropagation()}
+              placeholder={selectedOption ? selectedOption.label : placeholder}
+              className="w-full bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground/60 outline-none p-0 border-0 focus:ring-0"
+              autoFocus
+            />
+          ) : (
+            <Typography
+              variant="body4"
+              weight="medium"
+              as="span"
+              className={cn(
+                "truncate transition-colors w-full select-none",
+                selectedOption
+                  ? "text-foreground"
+                  : "text-muted-foreground/60 dark:text-white/40",
+              )}
+            >
+              {selectedOption ? selectedOption.label : placeholder}
+            </Typography>
+          )}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {isClearable && selectedOption && !disabled && (
               <span
@@ -276,11 +303,13 @@ export function SelectDropdown({
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange("");
+                  setSearchTerm("");
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.stopPropagation();
                     onChange("");
+                    setSearchTerm("");
                   }
                 }}
                 className="p-1 rounded-full hover:bg-muted dark:hover:bg-white/10 text-muted-foreground/60 hover:text-foreground transition-colors z-10 cursor-pointer"
@@ -296,7 +325,7 @@ export function SelectDropdown({
             />
           </div>
         </div>
-      </Button>
+      </div>
 
       {mounted && typeof document !== "undefined"
         ? createPortal(menuNode, document.body)

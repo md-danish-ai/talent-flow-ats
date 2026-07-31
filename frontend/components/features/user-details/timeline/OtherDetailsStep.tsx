@@ -155,7 +155,11 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
             </div>
             <div>
               <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                Expected Salary <span className="text-red-500">*</span>
+                Expected Salary{" "}
+                <span className="text-xs font-normal opacity-75">
+                  (Monthly)
+                </span>{" "}
+                <span className="text-red-500">*</span>
               </label>
               <form.Field name="expectedSalary">
                 {(field) => (
@@ -166,7 +170,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                         field.handleChange(e.target.value.replace(/\D/g, ""))
                       }
                       onBlur={field.handleBlur}
-                      placeholder="Enter expected salary..."
+                      placeholder="Enter expected salary (Monthly)..."
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0

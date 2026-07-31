@@ -10,6 +10,7 @@ export interface TimelineProps {
   currentStep: number;
   touchedSteps: number[];
   isStepValid: (step: number) => boolean;
+  onStepClick?: (step: number) => void;
 }
 
 const STEP_META = [
@@ -32,6 +33,7 @@ function StepNode({
   isFuture,
   label,
   isLast,
+  onClick,
 }: {
   step: number;
   isActive: boolean;
@@ -40,6 +42,7 @@ function StepNode({
   isFuture: boolean;
   label: string;
   isLast: boolean;
+  onClick?: () => void;
 }) {
   const rotateY = useMotionValue(0);
 
@@ -59,7 +62,20 @@ function StepNode({
   return (
     <div className="flex flex-col">
       {/* ── Step row: icon + label ── */}
-      <div className="flex items-center gap-3">
+      <div
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onClick={onClick}
+        onKeyDown={(e) => {
+          if (onClick && (e.key === "Enter" || e.key === " ")) {
+            onClick();
+          }
+        }}
+        className={cn(
+          "flex items-center gap-3 rounded-lg p-1 transition-all select-none",
+          onClick ? "cursor-pointer hover:bg-muted/40" : "",
+        )}
+      >
         {/*
           Outer wrapper: perspective + fixed size so the 3-D transform works.
           Both faces are absolute-inset-0 — no more double-height problem.
@@ -130,9 +146,8 @@ function StepNode({
           </motion.div>
         </div>
 
-        {/* Label — flex-centred with the card row */}
         <motion.span
-          animate={{ opacity: isFuture ? 0.4 : 1 }}
+          animate={{ opacity: isFuture ? 0.75 : 1 }}
           transition={{ duration: 0.35 }}
           className={cn(
             "text-[13px] font-medium leading-none",
@@ -170,6 +185,7 @@ export function Timeline({
   currentStep,
   touchedSteps,
   isStepValid,
+  onStepClick,
 }: TimelineProps) {
   return (
     <div className="w-full">
@@ -195,6 +211,7 @@ export function Timeline({
               isFuture={isFuture}
               label={meta.label}
               isLast={index === totalSteps - 1}
+              onClick={onStepClick ? () => onStepClick(step) : undefined}
             />
           );
         })}

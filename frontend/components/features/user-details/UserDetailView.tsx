@@ -477,7 +477,9 @@ export function UserDetailView({
                 <DetailItem
                   label="Previous Interview"
                   value={
-                    sourceOfInformation?.interviewedBefore === "yes"
+                    sourceOfInformation?.interviewedBefore === true ||
+                    sourceOfInformation?.interviewedBefore === "yes" ||
+                    sourceOfInformation?.interviewedBefore === "Yes"
                       ? "Yes, Previously"
                       : "No"
                   }
@@ -485,7 +487,9 @@ export function UserDetailView({
                 <DetailItem
                   label="Past Employment"
                   value={
-                    sourceOfInformation?.workedBefore === "yes"
+                    sourceOfInformation?.workedBefore === true ||
+                    sourceOfInformation?.workedBefore === "yes" ||
+                    sourceOfInformation?.workedBefore === "Yes"
                       ? "Yes, Previously"
                       : "No"
                   }

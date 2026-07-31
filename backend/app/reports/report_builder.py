@@ -181,7 +181,13 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
 
         # Source of information
         soi_info = ud.source_of_information or {}
-        arcgate = soi_info.get("workedBefore") or arcgate
+        wb = soi_info.get("workedBefore")
+        if wb is True:
+            arcgate = "Yes"
+        elif wb is False:
+            arcgate = "No"
+        elif wb:
+            arcgate = str(wb)
 
         sources = []
         src_dict = soi_info.get("source") or {}

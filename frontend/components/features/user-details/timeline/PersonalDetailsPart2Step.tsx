@@ -145,7 +145,7 @@ export function PersonalDetailsPart2Step({
         {/* Identity Details */}
         <div className="space-y-4 md:col-span-2">
           <Typography variant="h4" className="mb-2">
-            Identity Proofs
+            Identity Details
           </Typography>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <form.Field
@@ -158,7 +158,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Aadhaar Card Number <span className="text-red-500">*</span>
+                    Aadhaar Card Number
                   </label>
                   <Input
                     value={field.state.value}
@@ -195,7 +195,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Name as per Aadhaar <span className="text-red-500">*</span>
+                    Name as per Aadhaar
                   </label>
                   <Input
                     value={field.state.value}
@@ -224,7 +224,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    PAN Card Number <span className="text-red-500">*</span>
+                    PAN Card Number
                   </label>
                   <Input
                     value={field.state.value}
@@ -259,7 +259,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Name as per PAN <span className="text-red-500">*</span>
+                    Name as per PAN
                   </label>
                   <Input
                     value={field.state.value}
@@ -299,7 +299,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Blood Group <span className="text-red-500">*</span>
+                    Blood Group
                   </label>
                   <SelectDropdown
                     options={bloodGroupOptions}
@@ -329,7 +329,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Religion <span className="text-red-500">*</span>
+                    Religion
                   </label>
                   <SelectDropdown
                     options={religionOptions}
@@ -359,7 +359,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Category <span className="text-red-500">*</span>
+                    Category
                   </label>
                   <SelectDropdown
                     options={categoryOptions}
@@ -392,7 +392,7 @@ export function PersonalDetailsPart2Step({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Marital Status <span className="text-red-500">*</span>
+                    Marital Status
                   </label>
                   <SelectDropdown
                     options={maritalStatusOptions}
@@ -446,7 +446,15 @@ export function PersonalDetailsPart2Step({
                 ) : null
               }
             </form.Subscribe>
+          </div>
+        </div>
 
+        {/* Emergency Contact Details */}
+        <div className="space-y-4 md:col-span-2 mt-4">
+          <Typography variant="h4" className="mb-2">
+            Emergency Contact Details
+          </Typography>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <form.Field
               name="emergencyContactRelation"
               validators={{

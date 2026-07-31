@@ -116,13 +116,11 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       </Tooltip>
                     </div>
 
-                    <div
-                      className={`grid grid-cols-1 md:grid-cols-2 ${isEmergencyContact ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-5`}
-                    >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                       {/* Relation */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Relation
+                          Relation <span className="text-red-500">*</span>
                         </label>
                         <form.Field name={`family[${index}].relation`}>
                           {(field) => (
@@ -166,7 +164,10 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       {/* Name */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Name
+                          Name{" "}
+                          {(isMandatory || isRelationSelected) && (
+                            <span className="text-red-500">*</span>
+                          )}
                         </label>
                         <form.Field name={`family[${index}].name`}>
                           {(field) => (
@@ -174,7 +175,9 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                               <Input
                                 value={field.state.value}
                                 onChange={(e) =>
-                                  field.handleChange(e.target.value)
+                                  field.handleChange(
+                                    e.target.value.replace(/[0-9]/g, ""),
+                                  )
                                 }
                                 onBlur={field.handleBlur}
                                 disabled={!isRelationSelected}
@@ -201,7 +204,10 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       {/* Occupation */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Occupation
+                          Occupation{" "}
+                          {(isMandatory || isRelationSelected) && (
+                            <span className="text-red-500">*</span>
+                          )}
                         </label>
                         <form.Field name={`family[${index}].occupation`}>
                           {(field) => (
@@ -209,7 +215,9 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                               <Input
                                 value={field.state.value}
                                 onChange={(e) =>
-                                  field.handleChange(e.target.value)
+                                  field.handleChange(
+                                    e.target.value.replace(/[0-9]/g, ""),
+                                  )
                                 }
                                 onBlur={field.handleBlur}
                                 disabled={!isRelationSelected}
@@ -236,28 +244,30 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       {/* Dependent Y/N */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-muted-foreground">
-                          Dependent Y/N
+                          Dependent (Yes/No)
                         </label>
                         <form.Field name={`family[${index}].dependent`}>
                           {(field) => (
-                            <div className="flex flex-row items-center gap-4 relative">
-                              <Radio
-                                label="Yes"
-                                checked={field.state.value === "Yes"}
-                                onChange={() => field.handleChange("Yes")}
-                                disabled={!isRelationSelected}
-                                className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              />
-                              <Radio
-                                label="No"
-                                checked={field.state.value === "No"}
-                                onChange={() => field.handleChange("No")}
-                                disabled={!isRelationSelected}
-                                className="disabled:opacity-50 disabled:cursor-not-allowed"
-                              />
+                            <div className="flex flex-col">
+                              <div className="flex flex-row items-center gap-6 h-[42px] px-1">
+                                <Radio
+                                  label="Yes"
+                                  checked={field.state.value === "Yes"}
+                                  onChange={() => field.handleChange("Yes")}
+                                  disabled={!isRelationSelected}
+                                  className="disabled:opacity-50 disabled:cursor-not-allowed"
+                                />
+                                <Radio
+                                  label="No"
+                                  checked={field.state.value === "No"}
+                                  onChange={() => field.handleChange("No")}
+                                  disabled={!isRelationSelected}
+                                  className="disabled:opacity-50 disabled:cursor-not-allowed"
+                                />
+                              </div>
                               {field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0 && (
-                                  <p className="text-[10px] text-red-500 mt-1 absolute -bottom-4">
+                                  <p className="text-[10px] text-red-500 mt-1 pl-1">
                                     {getErrorMessage(
                                       field.state.meta.errors[0],
                                     )}
@@ -267,12 +277,16 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                           )}
                         </form.Field>
                       </div>
+                    </div>
 
-                      {/* Contact Number */}
-                      {isEmergencyContact && (
+                    {/* Dedicated Next-Line Section for Emergency Contact Number */}
+                    {isEmergencyContact && (
+                      <div className="mt-4 pt-4 border-t border-border/50 max-w-xs">
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Contact Number{" "}
+                            {selectedLabel
+                              ? `${selectedLabel} Contact Number`
+                              : "Contact Number"}{" "}
                             <span className="text-red-500">*</span>
                           </label>
                           <form.Field name={`family[${index}].contactNo`}>
@@ -280,13 +294,17 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                               <div className="flex flex-col">
                                 <Input
                                   value={field.state.value || ""}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
                                     field.handleChange(
                                       e.target.value
                                         .replace(/\D/g, "")
                                         .slice(0, 10),
-                                    )
-                                  }
+                                    );
+                                    field.setMeta((prev) => ({
+                                      ...prev,
+                                      isTouched: true,
+                                    }));
+                                  }}
                                   onBlur={field.handleBlur}
                                   maxLength={10}
                                   placeholder="Enter 10-digit number"
@@ -307,8 +325,8 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                             )}
                           </form.Field>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
               },
@@ -330,7 +348,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
               relation: "",
               name: "",
               occupation: "",
-              dependent: "",
+              dependent: "No",
             });
           }}
           className="flex items-center gap-1.5 px-4 py-2 mt-2 w-fit text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors shadow-sm"
