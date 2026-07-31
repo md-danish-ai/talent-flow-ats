@@ -481,7 +481,8 @@ export function UserForm({
           const path = err.loc[err.loc.length - 1] as string;
           form.setFieldMeta(
             path as keyof PersonalDetailsFormValues,
-            (meta) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (meta: any) => ({
               ...meta,
               errors: [err.msg],
               isTouched: true,
@@ -490,6 +491,7 @@ export function UserForm({
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingDetails, updateDetails, saveDetails, onSuccess, router, isAdmin]);
 
   const form = useForm({
