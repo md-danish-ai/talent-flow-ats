@@ -385,9 +385,11 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                     Question Type
                   </TableHead>
                   <TableHead className="text-center w-24">Marks</TableHead>
-                  <TableHead className="pr-6">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-[10px] opacity-70">ALL</span>
+                  <TableHead className="text-center w-20 pr-6">
+                    <div className="flex flex-col items-center justify-center gap-1">
+                      <span className="text-[10px] font-bold tracking-wider opacity-70">
+                        ALL
+                      </span>
                       <Checkbox
                         checked={
                           questions.length > 0 &&
@@ -435,11 +437,13 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                         {q.marks}
                       </Typography>
                     </TableCell>
-                    <TableCell className="text-center pr-6">
-                      <Checkbox
-                        checked={selectedQuestions.includes(q.id)}
-                        onChange={() => handleToggleQuestion(q.id, q.marks)}
-                      />
+                    <TableCell className="text-center w-20 pr-6">
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          checked={selectedQuestions.includes(q.id)}
+                          onChange={() => handleToggleQuestion(q.id, q.marks)}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
