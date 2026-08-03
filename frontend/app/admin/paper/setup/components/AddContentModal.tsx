@@ -18,6 +18,7 @@ import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { classificationsApi } from "@lib/api/classifications";
+import { MARKS_OPTIONS } from "@lib/constants/questions";
 
 interface AddContentModalProps {
   subjectName: string;
@@ -335,13 +336,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
               value={selectedMarks}
               onChange={(val) => handleMarksChange(String(val))}
               placeholder="All Marks"
-              options={[
-                { id: "", label: "All Marks" },
-                ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((m) => ({
-                  id: String(m),
-                  label: `${m} Mark${m > 1 ? "s" : ""}`,
-                })),
-              ]}
+              options={[{ id: "", label: "All Marks" }, ...MARKS_OPTIONS]}
               className="h-10 border-slate-200 dark:border-slate-800 rounded-md"
             />
           </div>
