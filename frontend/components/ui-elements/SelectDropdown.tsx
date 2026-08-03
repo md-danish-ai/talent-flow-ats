@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Check, Loader2, X, Search } from "lucide-react";
+import { ChevronDown, Check, Loader2, X } from "lucide-react";
 import { cn } from "@lib/utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
@@ -278,9 +278,9 @@ export function SelectDropdown({
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
-            "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
+          "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
           disabled &&
-            "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
+          "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
         <div className="flex items-center justify-between w-full gap-2 min-w-0">

@@ -1,6 +1,7 @@
 import os
 import uvicorn
 import traceback
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,10 +22,23 @@ from app.dashboard.router import router as dashboard_router
 from app.locations.routers import router as locations_router
 from app.evaluations.router import router as evaluations_router
 from app.reports.router import router as reports_router
+from app.sync.router import router as sync_router
+from app.sync.cron import start_scheduler, stop_scheduler
 from app.core.config import settings
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 
-app = FastAPI(title="Talent Flow ATS")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown lifecycle events."""
+    # Startup: start cron scheduler
+    start_scheduler()
+    yield
+    # Shutdown: stop cron scheduler gracefully
+    stop_scheduler()
+
+
+app = FastAPI(title="Talent Flow ATS", lifespan=lifespan)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 1. CORS CONFIGURATION (Should be added early)
@@ -121,6 +135,7 @@ app.include_router(dashboard_router)
 app.include_router(evaluations_router, prefix="/evaluations", tags=["Evaluations"])
 app.include_router(reports_router)
 app.include_router(locations_router, prefix="/api/v1")
+app.include_router(sync_router)
 
 if __name__ == "__main__":
     PORT = int(os.getenv("APP_PORT", 4000))

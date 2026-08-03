@@ -25,6 +25,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       TZ: Asia/Kolkata
+      ARCCRM_SYNC_URL: ${ARCCRM_SYNC_URL:-}
     volumes:
       - ./backend:/backend
       - .env:/backend/.env:ro
