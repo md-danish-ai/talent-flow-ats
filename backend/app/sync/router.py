@@ -8,7 +8,7 @@ from app.sync.service import (
     get_unsynced_count,
 )
 from app.sync.models import SyncJob, UserSyncLog
-from app.database.db import SessionLocal, get_db
+from app.database.db import get_db
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles
 from sqlalchemy.orm import Session

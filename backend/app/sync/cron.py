@@ -7,7 +7,6 @@ for all candidates where user_details.is_synced == False.
 This scheduler is started when FastAPI app starts up.
 """
 
-import asyncio
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
