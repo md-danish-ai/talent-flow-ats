@@ -133,10 +133,10 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Email:</span> {{EMAIL}}</td>
     </tr>
     <tr>
-      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Present Address:</span> {{ADDRESS}}</td>
+      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Present Address:</span> {{PRESENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{ADDRESS}}</td>
+      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{PERMANENT_ADDRESS}}</td>
     </tr>
     <tr>
       <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Applied Arcgate before?:</span> No</td>

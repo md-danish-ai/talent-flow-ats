@@ -18,7 +18,7 @@
  */
 export function computeDivisionAndGrade(
   percentageStr?: string | null,
-  defaultDivision: string = ""
+  defaultDivision: string = "",
 ): string {
   if (!percentageStr) return defaultDivision || "";
 
@@ -49,4 +49,21 @@ export function computeDivisionAndGrade(
     if (pct >= 36.0) return "Third";
     return "Fail";
   }
+}
+
+export function formatPercentageOrCgpa(percentageStr?: string | null): string {
+  if (!percentageStr) return "";
+  const rawStr = String(percentageStr).trim();
+  if (rawStr.includes("%") || rawStr.toUpperCase().includes("CGPA")) {
+    return rawStr;
+  }
+
+  const match = rawStr.match(/[-+]?\d*\.\d+|\d+/);
+  if (!match) return rawStr;
+
+  const val = parseFloat(match[0]);
+  if (!isNaN(val) && val > 10.0) {
+    return `${rawStr}%`;
+  }
+  return rawStr;
 }

@@ -28,7 +28,9 @@ async def add_user_details(
         run_check = False
 
     target_user_id = (
-        data.user_id if (data.user_id and user_role in ["admin", "project_lead"]) else user_id
+        data.user_id
+        if (data.user_id and user_role in ["admin", "project_lead"])
+        else user_id
     )
 
     result = await service.save_user_details(
@@ -50,11 +52,15 @@ async def update_user_details(
     """
     user_role = getattr(request.state, "user_role", None) if request else None
     target_user_id = (
-        data.user_id if (data.user_id and user_role in ["admin", "project_lead"]) else user_id
+        data.user_id
+        if (data.user_id and user_role in ["admin", "project_lead"])
+        else user_id
     )
 
     # Always disable duplicate check for updates/edits
-    result = await service.save_user_details(target_user_id, data, run_duplicate_check=False)
+    result = await service.save_user_details(
+        target_user_id, data, run_duplicate_check=False
+    )
     return api_response(
         StatusCode.OK, ResponseMessage.UPDATED("User detail"), data=result
     )

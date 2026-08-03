@@ -153,6 +153,14 @@ def build_report_html(data: dict) -> str:
         "{{GENDER}}": _esc(data.get("gender")) or "____",
         "{{DOB}}": _esc(data.get("dob")) or "____",
         "{{ADDRESS}}": _esc(data.get("address")) or "__________________________",
+        "{{PRESENT_ADDRESS}}": _esc(data.get("present_address") or data.get("address"))
+        or "__________________________",
+        "{{PERMANENT_ADDRESS}}": _esc(
+            data.get("permanent_address")
+            or data.get("present_address")
+            or data.get("address")
+        )
+        or "__________________________",
         "{{ARCGATE}}": _esc(data.get("arcgate")) or "No",
         "{{HOW_DID_YOU_HEAR}}": _esc(data.get("how_did_you_hear", "")),
         "{{COMMITMENT}}": _esc(data.get("commitment")) or "Yes",

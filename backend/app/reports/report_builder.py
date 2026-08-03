@@ -20,7 +20,10 @@ from app.users.models import User
 from app.user_details.models import UserDetail
 
 
-from app.utils.education_utils import compute_division_and_grade
+from app.utils.education_utils import (
+    compute_division_and_grade,
+    format_percentage_or_cgpa,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +162,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     gender = _get_answer(answers, ["gender"])
     dob = _get_answer(answers, ["date of birth", "dob"])
     address = _get_answer(answers, ["address", "current address", "permanent address"])
+    present_address = address
+    permanent_address = address
     arcgate = _get_answer(answers, ["worked in arcgate", "previously worked"])
     commitment = _get_answer(
         answers, ["1 year service commitment", "willing for 1 year"]
@@ -185,21 +190,36 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         gender = pd_info.get("gender") or gender
         dob = pd_info.get("dob") or dob
 
-        # Combine present address
-        pres_addr = ", ".join(
-            filter(
-                None,
-                [
-                    pd_info.get("presentAddressLine1"),
-                    pd_info.get("presentAddressLine2"),
-                    pd_info.get("presentCity"),
-                    pd_info.get("presentState"),
-                    pd_info.get("presentPincode"),
-                ],
+        def _build_addr(l1, l2, c, d, s, p):
+            parts = [l1, l2, c, d, s, p]
+            return ", ".join(
+                filter(None, [str(x).strip() for x in parts if x and str(x).strip()])
             )
+
+        pres_addr = _build_addr(
+            pd_info.get("presentAddressLine1"),
+            pd_info.get("presentAddressLine2"),
+            pd_info.get("presentCity"),
+            pd_info.get("presentDistrict"),
+            pd_info.get("presentState"),
+            pd_info.get("presentPincode"),
         )
         if pres_addr:
+            present_address = pres_addr
             address = pres_addr
+
+        if pd_info.get("sameAddress"):
+            permanent_address = pres_addr
+        else:
+            perm_addr = _build_addr(
+                pd_info.get("permanentAddressLine1"),
+                pd_info.get("permanentAddressLine2"),
+                pd_info.get("permanentCity"),
+                pd_info.get("permanentDistrict"),
+                pd_info.get("permanentState"),
+                pd_info.get("permanentPincode"),
+            )
+            permanent_address = perm_addr or pres_addr
 
         # Other details
         od_info = _ensure_dict(ud.other_details)
@@ -259,19 +279,26 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             education_rows = [
                 {
                     "education": item.get("type", "") if isinstance(item, dict) else "",
-                    "details": item.get("details", "") if isinstance(item, dict) else "",
+                    "details": item.get("details", "")
+                    if isinstance(item, dict)
+                    else "",
                     "school": item.get("school", "") if isinstance(item, dict) else "",
                     "board": item.get("board", "") if isinstance(item, dict) else "",
                     "medium": item.get("medium", "") if isinstance(item, dict) else "",
-                    "year": str(item.get("year", "") if isinstance(item, dict) else "").replace("-", " - "),
+                    "year": str(
+                        item.get("year", "") if isinstance(item, dict) else ""
+                    ).replace("-", " - "),
                     "division": compute_division_and_grade(
                         item.get("percentage", "") if isinstance(item, dict) else "",
-                        item.get("division", "") if isinstance(item, dict) else ""
+                        item.get("division", "") if isinstance(item, dict) else "",
                     ),
-                    "percentage": item.get("percentage", "") if isinstance(item, dict) else "",
+                    "percentage": format_percentage_or_cgpa(
+                        item.get("percentage", "") if isinstance(item, dict) else ""
+                    ),
                 }
                 for item in edu_list
-                if isinstance(item, dict) and (item.get("school") or item.get("year") or item.get("percentage"))
+                if isinstance(item, dict)
+                and (item.get("school") or item.get("year") or item.get("percentage"))
             ]
 
         fam_list = _ensure_list(ud.family_details)
@@ -303,10 +330,20 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         if work_list:
             work_exp_rows = [
                 {
-                    "company": item.get("company", "") if isinstance(item, dict) else "",
-                    "designation": item.get("designation", "") if isinstance(item, dict) else "",
-                    "joinDate": item.get("joinDate", "") if isinstance(item, dict) else "",
-                    "leaveDate": (item.get("leaveDate", "") or item.get("relieveDate", "")) if isinstance(item, dict) else "",
+                    "company": item.get("company", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "designation": item.get("designation", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "joinDate": item.get("joinDate", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "leaveDate": (
+                        item.get("leaveDate", "") or item.get("relieveDate", "")
+                    )
+                    if isinstance(item, dict)
+                    else "",
                     "reason": item.get("reason", "") if isinstance(item, dict) else "",
                     "salary": item.get("salary", "") if isinstance(item, dict) else "",
                 }
@@ -439,6 +476,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         "gender": gender,
         "dob": dob,
         "address": address,
+        "present_address": present_address,
+        "permanent_address": permanent_address,
         "arcgate": arcgate,
         "commitment": commitment,
         "shift_time": shift_time,
