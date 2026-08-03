@@ -46,9 +46,9 @@ class BaseRowSchema(BaseModel):
         try:
             val = int(float(v))
         except Exception:
-            raise ValueError("Marks must be a valid integer between 1 and 10.")
-        if val < 1 or val > 10:
-            raise ValueError("Marks must be between 1 and 10.")
+            raise ValueError("Marks must be a valid integer between 1 and 20.")
+        if val < 1 or val > 20:
+            raise ValueError("Marks must be between 1 and 20.")
         return val
 
 

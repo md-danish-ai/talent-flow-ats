@@ -35,7 +35,7 @@ class QuestionCreate(BaseModel):
     question_text: str
     image_url: Optional[str] = None
     passage: Optional[str] = None
-    marks: int = Field(..., ge=1, le=10, description="Marks must be between 1 and 10")
+    marks: int = Field(..., ge=1, le=20, description="Marks must be between 1 and 20")
     is_active: bool = True
     options: Optional[Any] = None
     answer: AnswerCreate
@@ -49,7 +49,7 @@ class QuestionUpdate(BaseModel):
     image_url: Optional[str] = None
     passage: Optional[str] = None
     marks: Optional[int] = Field(
-        None, ge=1, le=10, description="Marks must be between 1 and 10"
+        None, ge=1, le=20, description="Marks must be between 1 and 20"
     )
     is_active: Optional[bool] = None
     options: Optional[Any] = None
