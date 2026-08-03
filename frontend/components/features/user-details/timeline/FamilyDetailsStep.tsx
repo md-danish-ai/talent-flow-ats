@@ -60,9 +60,10 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
             state.values.assignedEmergencyRelation,
           ]}
         >
-          {([family, emergencyRelation, assignedRelation]) =>
-            (family as FamilyMember[]).map(
-              (member: FamilyMember, index: number) => {
+          {([family, emergencyRelation, assignedRelation]) => (
+            <React.Fragment>
+              {(family as FamilyMember[]).map(
+                (member: FamilyMember, index: number) => {
                 const isMandatory =
                   member.relation === "FATHER" ||
                   member.relation === "MOTHER" ||
@@ -330,8 +331,9 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                   </div>
                 );
               },
-            )
-          }
+            )}
+            </React.Fragment>
+          )}
         </form.Subscribe>
 
         <button

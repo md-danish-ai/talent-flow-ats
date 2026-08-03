@@ -143,8 +143,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       ) : (
         <div className="flex flex-col gap-5">
           <form.Subscribe selector={(state) => [state.values.workExp]}>
-            {([workExp]) =>
-              workExp.map((exp: WorkExperience, index: number) => {
+            {([workExp]) => (
+              <React.Fragment>
+                {workExp.map((exp: WorkExperience, index: number) => {
                 const headerTitle = exp.company
                   ? `Company - ${exp.company}`
                   : `Company ${index + 1}`;
@@ -431,9 +432,10 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                       </div>
                     </div>
                   </div>
-                );
-              })
-            }
+                  );
+                })}
+              </React.Fragment>
+            )}
           </form.Subscribe>
 
           <button

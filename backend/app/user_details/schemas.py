@@ -92,6 +92,7 @@ class OtherDetailsSchema(BaseModel):
 
 
 class UserDetailsSchema(BaseModel):
+    user_id: Optional[int] = None
     is_submitted: bool = False
     is_interview_submitted: bool = False
     personalDetails: PersonalDetailsSchema

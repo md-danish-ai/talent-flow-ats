@@ -83,8 +83,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
     >
       <div className="flex flex-col gap-5">
         <form.Subscribe selector={(state) => [state.values.education]}>
-          {([education]) =>
-            education.map((item: Education, index: number) => {
+          {([education]) => (
+            <React.Fragment>
+              {education.map((item: Education, index: number) => {
               const isMandatory = index < 2;
               const isEducationSelected = Boolean(
                 item.type &&
@@ -473,8 +474,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   </div>
                 </div>
               );
-            })
-          }
+            })}
+            </React.Fragment>
+          )}
         </form.Subscribe>
         <button
           type="button"

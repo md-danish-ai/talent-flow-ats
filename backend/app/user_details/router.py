@@ -23,14 +23,16 @@ async def add_user_details(
     """
     # Only run duplicate check if the user is a regular candidate (not admin/project_lead)
     run_check = True
-    if request and getattr(request.state, "user_role", None) in [
-        "admin",
-        "project_lead",
-    ]:
+    user_role = getattr(request.state, "user_role", None) if request else None
+    if user_role in ["admin", "project_lead"]:
         run_check = False
 
+    target_user_id = (
+        data.user_id if (data.user_id and user_role in ["admin", "project_lead"]) else user_id
+    )
+
     result = await service.save_user_details(
-        user_id, data, run_duplicate_check=run_check
+        target_user_id, data, run_duplicate_check=run_check
     )
     return api_response(
         StatusCode.CREATED, ResponseMessage.CREATED("User detail"), data=result
@@ -41,12 +43,18 @@ async def add_user_details(
 async def update_user_details(
     data: UserDetailsSchema,
     user_id: int = Depends(authenticate_user),
+    request: Request = None,
 ):
     """
     Update existing user recruitment details.
     """
+    user_role = getattr(request.state, "user_role", None) if request else None
+    target_user_id = (
+        data.user_id if (data.user_id and user_role in ["admin", "project_lead"]) else user_id
+    )
+
     # Always disable duplicate check for updates/edits
-    result = await service.save_user_details(user_id, data, run_duplicate_check=False)
+    result = await service.save_user_details(target_user_id, data, run_duplicate_check=False)
     return api_response(
         StatusCode.OK, ResponseMessage.UPDATED("User detail"), data=result
     )

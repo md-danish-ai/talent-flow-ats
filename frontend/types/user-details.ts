@@ -81,6 +81,7 @@ export interface OtherDetails {
 }
 
 export interface UserDetails {
+  user_id?: number | string;
   is_submitted: boolean;
   is_interview_submitted: boolean;
   username?: string;

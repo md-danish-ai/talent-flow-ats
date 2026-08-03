@@ -180,7 +180,9 @@ export const TypingTestView = memo(function TypingTestView({
         }
       } else if (index === localTypedText.length && !isFinished) {
         bgClass =
-          "bg-brand-primary/20 border-b-2 border-brand-primary animate-pulse";
+          char === " "
+            ? "bg-brand-primary/30 rounded animate-pulse"
+            : "bg-brand-primary/20 border-b-2 border-brand-primary animate-pulse";
       }
 
       return (
@@ -327,6 +329,13 @@ export const TypingTestView = memo(function TypingTestView({
           />
           <Textarea
             rows={6}
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            data-gramm={false}
+            data-gramm_editor={false}
+            data-enable-grammarly={false}
             placeholder={
               isFinished
                 ? "Test completed. Please click 'Save & Next' to continue."
