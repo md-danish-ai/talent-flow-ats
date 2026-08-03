@@ -24,7 +24,7 @@ import { Button } from "@components/ui-elements/Button";
 import type { UserDetails } from "@types";
 import { Card } from "@components/ui-cards/Card";
 
-import { computeDivisionAndGrade } from "@lib/utils";
+import { computeDivisionAndGrade, formatPercentageOrCgpa } from "@lib/utils";
 
 interface UserDetailViewProps {
   details: UserDetails;
@@ -166,11 +166,16 @@ export function UserDetailView({
                     Present Address
                   </Typography>
                   <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {personalDetails?.presentAddressLine1},{" "}
-                    {personalDetails?.presentCity},{" "}
-                    {personalDetails?.presentDistrict},{" "}
-                    {personalDetails?.presentState} —{" "}
-                    {personalDetails?.presentPincode}
+                    {[
+                      personalDetails?.presentAddressLine1,
+                      personalDetails?.presentAddressLine2,
+                      personalDetails?.presentCity,
+                      personalDetails?.presentDistrict,
+                      personalDetails?.presentState,
+                      personalDetails?.presentPincode,
+                    ]
+                      .filter((x) => x && String(x).trim() !== "")
+                      .join(", ")}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -182,23 +187,27 @@ export function UserDetailView({
                     Permanent Address
                   </Typography>
                   <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {personalDetails?.sameAddress ? (
-                      <>
-                        {personalDetails?.presentAddressLine1},{" "}
-                        {personalDetails?.presentCity},{" "}
-                        {personalDetails?.presentDistrict},{" "}
-                        {personalDetails?.presentState} —{" "}
-                        {personalDetails?.presentPincode}
-                      </>
-                    ) : (
-                      <>
-                        {personalDetails?.permanentAddressLine1},{" "}
-                        {personalDetails?.permanentCity},{" "}
-                        {personalDetails?.permanentDistrict},{" "}
-                        {personalDetails?.permanentState} —{" "}
-                        {personalDetails?.permanentPincode}
-                      </>
-                    )}
+                    {personalDetails?.sameAddress
+                      ? [
+                          personalDetails?.presentAddressLine1,
+                          personalDetails?.presentAddressLine2,
+                          personalDetails?.presentCity,
+                          personalDetails?.presentDistrict,
+                          personalDetails?.presentState,
+                          personalDetails?.presentPincode,
+                        ]
+                          .filter((x) => x && String(x).trim() !== "")
+                          .join(", ")
+                      : [
+                          personalDetails?.permanentAddressLine1,
+                          personalDetails?.permanentAddressLine2,
+                          personalDetails?.permanentCity,
+                          personalDetails?.permanentDistrict,
+                          personalDetails?.permanentState,
+                          personalDetails?.permanentPincode,
+                        ]
+                          .filter((x) => x && String(x).trim() !== "")
+                          .join(", ")}
                   </p>
                 </div>
               </div>
@@ -407,11 +416,12 @@ export function UserDetailView({
                         </td>
                         <td className="px-6 py-5 text-right">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {edu.percentage?.includes("%") || edu.percentage?.toUpperCase().includes("CGPA")
-                              ? edu.percentage
-                              : `${edu.percentage}%`}{" "}
+                            {formatPercentageOrCgpa(edu.percentage)}{" "}
                             <span className="opacity-70 font-bold text-brand-primary">
-                              {computeDivisionAndGrade(edu.percentage, edu.division)}
+                              {computeDivisionAndGrade(
+                                edu.percentage,
+                                edu.division,
+                              )}
                             </span>
                           </span>
                         </td>
@@ -511,12 +521,21 @@ export function UserDetailView({
                 <div className="flex flex-wrap gap-2">
                   {sourceOfInformation?.source &&
                     Object.entries(sourceOfInformation.source)
-                      .filter(([key, value]) => key !== "otherDetails" && Boolean(value))
+                      .filter(
+                        ([key, value]) =>
+                          key !== "otherDetails" && Boolean(value),
+                      )
                       .map(([key]) => {
                         let label = key.replace(/([A-Z])/g, " $1");
-                        if (key.toLowerCase() === "others" || key.toLowerCase() === "other") {
-                          const otherText = sourceOfInformation?.source?.otherDetails;
-                          label = otherText ? `Others - ${otherText}` : "Others";
+                        if (
+                          key.toLowerCase() === "others" ||
+                          key.toLowerCase() === "other"
+                        ) {
+                          const otherText =
+                            sourceOfInformation?.source?.otherDetails;
+                          label = otherText
+                            ? `Others - ${otherText}`
+                            : "Others";
                         }
                         return (
                           <span

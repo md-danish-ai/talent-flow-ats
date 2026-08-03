@@ -250,8 +250,9 @@ export function UserForm({
   const isSaving = isAdding || isUpdating;
 
   const initialValues = React.useMemo(() => {
-    if (initialData && initialData.personalDetails) {
-      const p = initialData.personalDetails;
+    const details = initialData || (selfDetails as unknown as UserDetails);
+    if (details && details.personalDetails) {
+      const p = details.personalDetails;
       return {
         ...defaultPersonalDetailsValues,
         firstName: p.firstName || "",
@@ -274,32 +275,30 @@ export function UserForm({
         permanentCity: p.permanentCity || "",
         permanentPincode: p.permanentPincode || "",
         sameAddress: Boolean(p.sameAddress),
-        bloodGroup: initialData.additionalPersonalDetails?.bloodGroup || "",
-        aadhaarNo: initialData.additionalPersonalDetails?.aadhaarNo || "",
+        bloodGroup: details.additionalPersonalDetails?.bloodGroup || "",
+        aadhaarNo: details.additionalPersonalDetails?.aadhaarNo || "",
         nameAsPerAadhaar:
-          initialData.additionalPersonalDetails?.nameAsPerAadhaar || "",
-        panNo: initialData.additionalPersonalDetails?.panNo || "",
-        nameAsPerPan: initialData.additionalPersonalDetails?.nameAsPerPan || "",
-        religion: initialData.additionalPersonalDetails?.religion || "",
-        category: initialData.additionalPersonalDetails?.category || "",
-        maritalStatus:
-          initialData.additionalPersonalDetails?.maritalStatus || "",
+          details.additionalPersonalDetails?.nameAsPerAadhaar || "",
+        panNo: details.additionalPersonalDetails?.panNo || "",
+        nameAsPerPan: details.additionalPersonalDetails?.nameAsPerPan || "",
+        religion: details.additionalPersonalDetails?.religion || "",
+        category: details.additionalPersonalDetails?.category || "",
+        maritalStatus: details.additionalPersonalDetails?.maritalStatus || "",
         anniversaryDate:
-          initialData.additionalPersonalDetails?.anniversaryDate || "",
+          details.additionalPersonalDetails?.anniversaryDate || "",
         emergencyContactRelation:
-          initialData.assigned_emergency_relation ||
-          initialData.emergency_contact_relation ||
+          details.assigned_emergency_relation ||
+          details.emergency_contact_relation ||
           "",
-        assignedEmergencyRelation:
-          initialData.assigned_emergency_relation || "",
+        assignedEmergencyRelation: details.assigned_emergency_relation || "",
         family: (() => {
           const defaultFamily =
-            initialData.familyDetails?.length > 0
-              ? sanitizeFamily(initialData.familyDetails)
+            details.familyDetails?.length > 0
+              ? sanitizeFamily(details.familyDetails)
               : [...defaultPersonalDetailsValues.family];
           const emergencyCode =
-            initialData.assigned_emergency_relation ||
-            initialData.emergency_contact_relation;
+            details.assigned_emergency_relation ||
+            details.emergency_contact_relation;
           if (
             emergencyCode &&
             !defaultFamily.some(
@@ -321,40 +320,35 @@ export function UserForm({
           return defaultFamily;
         })(),
         interviewedBefore: sanitizeBool(
-          initialData.sourceOfInformation?.interviewedBefore,
+          details.sourceOfInformation?.interviewedBefore,
         ),
-        workedBefore: sanitizeBool(
-          initialData.sourceOfInformation?.workedBefore,
-        ),
+        workedBefore: sanitizeBool(details.sourceOfInformation?.workedBefore),
         source: {
-          campus: Boolean(initialData.sourceOfInformation?.source?.campus),
-          website: Boolean(initialData.sourceOfInformation?.source?.website),
-          employee: Boolean(initialData.sourceOfInformation?.source?.employee),
-          friends: Boolean(initialData.sourceOfInformation?.source?.friends),
-          newspaper: Boolean(
-            initialData.sourceOfInformation?.source?.newspaper,
-          ),
-          others: Boolean(initialData.sourceOfInformation?.source?.others),
+          campus: Boolean(details.sourceOfInformation?.source?.campus),
+          website: Boolean(details.sourceOfInformation?.source?.website),
+          employee: Boolean(details.sourceOfInformation?.source?.employee),
+          friends: Boolean(details.sourceOfInformation?.source?.friends),
+          newspaper: Boolean(details.sourceOfInformation?.source?.newspaper),
+          others: Boolean(details.sourceOfInformation?.source?.others),
           otherDetails:
-            typeof initialData.sourceOfInformation?.source?.otherDetails ===
+            typeof details.sourceOfInformation?.source?.otherDetails ===
             "string"
-              ? initialData.sourceOfInformation.source.otherDetails
+              ? details.sourceOfInformation.source.otherDetails
               : "",
         },
         education:
-          initialData.educationDetails?.length > 0
-            ? sanitizeEducation(initialData.educationDetails)
+          details.educationDetails?.length > 0
+            ? sanitizeEducation(details.educationDetails)
             : defaultPersonalDetailsValues.education,
         workExp:
-          initialData.workExperienceDetails?.length > 0
-            ? sanitizeWorkExp(initialData.workExperienceDetails)
+          details.workExperienceDetails?.length > 0
+            ? sanitizeWorkExp(details.workExperienceDetails)
             : defaultPersonalDetailsValues.workExp,
-        serviceCommitment: initialData.otherDetails?.serviceCommitment || "",
-        securityDeposit: initialData.otherDetails?.securityDeposit || "",
-        shiftTime: initialData.otherDetails?.shiftTime || "",
-        expectedJoiningDate:
-          initialData.otherDetails?.expectedJoiningDate || "",
-        expectedSalary: initialData.otherDetails?.expectedSalary || "",
+        serviceCommitment: details.otherDetails?.serviceCommitment || "",
+        securityDeposit: details.otherDetails?.securityDeposit || "",
+        shiftTime: details.otherDetails?.shiftTime || "",
+        expectedJoiningDate: details.otherDetails?.expectedJoiningDate || "",
+        expectedSalary: details.otherDetails?.expectedSalary || "",
       };
     }
     return {
@@ -362,7 +356,7 @@ export function UserForm({
       primaryMobile: registeredMobile,
       email: registeredEmail,
     };
-  }, [initialData, registeredMobile, registeredEmail]);
+  }, [initialData, selfDetails, registeredMobile, registeredEmail]);
 
   const handleFinalSubmit = React.useCallback(async () => {
     const value = form.state.values;
@@ -1000,18 +994,6 @@ function RealtimeFormValidator({ form, values }: { form: any; values: any }) {
             errors: [],
           }));
         }
-      }
-    });
-
-    // 2. Add errors for issue paths that aren't yet in fieldMeta
-    issueMap.forEach((msg, fieldPath) => {
-      if (!fieldMeta[fieldPath]) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        form.setFieldMeta(fieldPath as any, (meta: any) => ({
-          ...meta,
-          errorMap: { realtime: msg },
-          errors: [msg],
-        }));
       }
     });
   }, [form, values]);

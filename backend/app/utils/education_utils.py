@@ -1,5 +1,6 @@
 import re
 
+
 def compute_division_and_grade(percentage_str: str, default_division: str = "") -> str:
     """
     Computes Division / Grade label based on Percentage or CGPA string according to Govt standards.
@@ -65,3 +66,33 @@ def compute_division_and_grade(percentage_str: str, default_division: str = "") 
             return "Third"
         else:
             return "Fail"
+
+
+def format_percentage_or_cgpa(percentage_str: str) -> str:
+    """
+    Appends '%' if value is a percentage (e.g. 87 -> 87%),
+    or returns as-is if it's CGPA (e.g. 9 -> 9) or already has '%'.
+    """
+    if not percentage_str:
+        return ""
+
+    raw_str = str(percentage_str).strip()
+    if "%" in raw_str:
+        return raw_str
+
+    upper_str = raw_str.upper()
+    if "CGPA" in upper_str:
+        return raw_str
+
+    match = re.search(r"[-+]?\d*\.\d+|\d+", raw_str)
+    if not match:
+        return raw_str
+
+    try:
+        val = float(match.group())
+        if val > 10.0:
+            return f"{raw_str}%"
+    except ValueError:
+        pass
+
+    return raw_str
