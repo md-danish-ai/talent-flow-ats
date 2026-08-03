@@ -368,6 +368,7 @@ export function UserForm({
     const value = form.state.values;
     try {
       const formattedData: UserDetails = {
+        user_id: userId ? Number(userId) : undefined,
         is_submitted: true,
         is_interview_submitted:
           existingDetails?.is_interview_submitted ?? false,

@@ -20,3 +20,4 @@ export * from "./attemptUtils";
 export * from "./interviewUtils";
 export * from "./stringUtils";
 export * from "./image";
+export * from "./educationUtils";

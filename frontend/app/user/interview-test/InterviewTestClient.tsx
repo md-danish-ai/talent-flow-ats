@@ -209,6 +209,114 @@ export function InterviewTestClient() {
     void loadAssignedPaper();
   }, []);
 
+  // Disable Right Click & Inspect Element Shortcuts during interview test
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key;
+      const ctrlOrCmd = e.ctrlKey || e.metaKey;
+      const altOrOpt = e.altKey;
+      const shiftKey = e.shiftKey;
+
+      // F12 key
+      if (key === "F12" || e.keyCode === 123) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl+Shift+I / Cmd+Option+I (Inspect)
+      if (
+        (ctrlOrCmd && shiftKey && (key === "I" || key === "i")) ||
+        (ctrlOrCmd && altOrOpt && (key === "I" || key === "i"))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl+Shift+J / Cmd+Option+J (Console)
+      if (
+        (ctrlOrCmd && shiftKey && (key === "J" || key === "j")) ||
+        (ctrlOrCmd && altOrOpt && (key === "J" || key === "j"))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl+Shift+C / Cmd+Option+C (Inspect Element selector)
+      if (
+        (ctrlOrCmd && shiftKey && (key === "C" || key === "c")) ||
+        (ctrlOrCmd && altOrOpt && (key === "C" || key === "c"))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl+U / Cmd+Option+U (View Source)
+      if (
+        (ctrlOrCmd && (key === "U" || key === "u")) ||
+        (ctrlOrCmd && altOrOpt && (key === "U" || key === "u"))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl+S / Cmd+S (Save Page)
+      if (ctrlOrCmd && (key === "S" || key === "s")) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    // Prevent Text Selection, Copy, Cut
+    const handleSelectStart = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+      ) {
+        return true;
+      }
+      e.preventDefault();
+      return false;
+    };
+
+    const handleCopyCut = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+      ) {
+        return true;
+      }
+      e.preventDefault();
+      return false;
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("selectstart", handleSelectStart);
+    document.addEventListener("copy", handleCopyCut);
+    document.addEventListener("cut", handleCopyCut);
+    window.addEventListener("keydown", handleKeyDown, true);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("selectstart", handleSelectStart);
+      document.removeEventListener("copy", handleCopyCut);
+      document.removeEventListener("cut", handleCopyCut);
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, []);
+
   const finalizeInterview = useCallback(async () => {
     if (!attemptId) return;
     try {
@@ -590,7 +698,7 @@ export function InterviewTestClient() {
   }
 
   return (
-    <PageContainer className="py-2 sm:py-3">
+    <PageContainer className="py-2 sm:py-3 select-none">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0">
         <div className="xl:col-span-8 2xl:col-span-9 space-y-4 sm:space-y-5 min-w-0">
           <QuestionWorkspace

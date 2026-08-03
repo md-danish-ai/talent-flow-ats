@@ -160,13 +160,13 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
   <thead>
     <tr>
       <th style="width: 13%; text-align: center;">Education</th>
-      <th style="width: 15%; text-align: center;">Education Details</th>
+      <th style="width: 13%; text-align: center;">Education Details</th>
       <th style="width: 18%; text-align: center;">School/College</th>
       <th style="width: 15%; text-align: center;">Board/University</th>
-      <th style="width: 10%; text-align: center;">Medium</th>
-      <th style="width: 15%; text-align: center;">Passing Year</th>
-      <th style="width: 8%; text-align: center;">Division</th>
-      <th style="width: 6%; text-align: center;">%</th>
+      <th style="width: 8%; text-align: center;">Medium</th>
+      <th style="width: 13%; text-align: center;">Passing Year</th>
+      <th style="width: 10%; text-align: center;">Division</th>
+      <th style="width: 10%; text-align: center;">% / CGPA</th>
     </tr>
   </thead>
   <tbody>

@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import math
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import desc
@@ -17,6 +18,9 @@ from app.classifications.models import Classification
 from app.evaluations.models import InterviewEvaluation
 from app.users.models import User
 from app.user_details.models import UserDetail
+
+
+from app.utils.education_utils import compute_division_and_grade
 
 
 # ---------------------------------------------------------------------------
@@ -31,6 +35,32 @@ def _get_answer(answers: list[dict], keywords: list[str]) -> str:
         if any(kw.lower() in qt for kw in keywords):
             return ans.get("user_answer") or ""
     return ""
+
+
+def _ensure_dict(val: Any) -> dict:
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, str):
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
+def _ensure_list(val: Any) -> list:
+    if isinstance(val, list):
+        return val
+    if isinstance(val, str):
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, list):
+                return parsed
+        except Exception:
+            pass
+    return []
 
 
 def _parse_json_field(answers: list[dict], keywords: list[str]) -> list[dict]:
@@ -151,7 +181,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     # Override using actual data from user_details table if present
     ud = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
     if ud:
-        pd_info = ud.personal_details or {}
+        pd_info = _ensure_dict(ud.personal_details)
         gender = pd_info.get("gender") or gender
         dob = pd_info.get("dob") or dob
 
@@ -172,7 +202,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             address = pres_addr
 
         # Other details
-        od_info = ud.other_details or {}
+        od_info = _ensure_dict(ud.other_details)
         commitment = od_info.get("serviceCommitment") or commitment
         shift_time = od_info.get("shiftTime") or shift_time
         joining = od_info.get("expectedJoiningDate") or joining
@@ -180,7 +210,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         deposit = od_info.get("securityDeposit") or deposit
 
         # Source of information
-        soi_info = ud.source_of_information or {}
+        soi_info = _ensure_dict(ud.source_of_information)
         wb = soi_info.get("workedBefore")
         if wb is True:
             arcgate = "Yes"
@@ -190,31 +220,62 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             arcgate = str(wb)
 
         sources = []
-        src_dict = soi_info.get("source") or {}
-        for src, val in src_dict.items():
-            if val:
-                sources.append(src.capitalize())
+        src_val = soi_info.get("source")
+        if isinstance(src_val, str):
+            try:
+                src_val = json.loads(src_val)
+            except Exception:
+                pass
+
+        if isinstance(src_val, dict):
+            other_text = str(
+                src_val.get("otherDetails")
+                or src_val.get("other_details")
+                or soi_info.get("otherDetails")
+                or ""
+            ).strip()
+
+            for src, val in src_val.items():
+                if src in ["otherDetails", "other_details"]:
+                    continue
+                if val:
+                    key_str = str(src)
+                    if key_str.lower() in ["others", "other"]:
+                        if other_text:
+                            sources.append(f"Others - {other_text}")
+                        else:
+                            sources.append("Others")
+                    else:
+                        sources.append(key_str.capitalize())
+        elif isinstance(src_val, str) and src_val:
+            sources.append(src_val)
+
         if sources:
             how_did_you_hear = ", ".join(sources)
 
         # Tables
-        if ud.education_details:
+        edu_list = _ensure_list(ud.education_details)
+        if edu_list:
             education_rows = [
                 {
-                    "education": item.get("type", ""),
-                    "details": item.get("details", ""),
-                    "school": item.get("school", ""),
-                    "board": item.get("board", ""),
-                    "medium": item.get("medium", ""),
-                    "year": item.get("year", "").replace("-", " - "),
-                    "division": item.get("division", ""),
-                    "percentage": item.get("percentage", ""),
+                    "education": item.get("type", "") if isinstance(item, dict) else "",
+                    "details": item.get("details", "") if isinstance(item, dict) else "",
+                    "school": item.get("school", "") if isinstance(item, dict) else "",
+                    "board": item.get("board", "") if isinstance(item, dict) else "",
+                    "medium": item.get("medium", "") if isinstance(item, dict) else "",
+                    "year": str(item.get("year", "") if isinstance(item, dict) else "").replace("-", " - "),
+                    "division": compute_division_and_grade(
+                        item.get("percentage", "") if isinstance(item, dict) else "",
+                        item.get("division", "") if isinstance(item, dict) else ""
+                    ),
+                    "percentage": item.get("percentage", "") if isinstance(item, dict) else "",
                 }
-                for item in ud.education_details
-                if item.get("school") or item.get("year") or item.get("percentage")
+                for item in edu_list
+                if isinstance(item, dict) and (item.get("school") or item.get("year") or item.get("percentage"))
             ]
 
-        if ud.family_details:
+        fam_list = _ensure_list(ud.family_details)
+        if fam_list:
             relations = (
                 db.query(Classification)
                 .filter(Classification.type == "family_relation")
@@ -222,8 +283,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             )
             relation_map = {r.code: r.name for r in relations}
             family_rows = []
-            for item in ud.family_details:
-                if not item.get("name"):
+            for item in fam_list:
+                if not isinstance(item, dict) or not item.get("name"):
                     continue
                 relation_code = item.get("relation", "")
                 relation_label = item.get("relationLabel") or relation_map.get(
@@ -238,19 +299,19 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                     }
                 )
 
-        if ud.work_experience_details:
+        work_list = _ensure_list(ud.work_experience_details)
+        if work_list:
             work_exp_rows = [
                 {
-                    "company": item.get("company", ""),
-                    "designation": item.get("designation", ""),
-                    "joinDate": item.get("joinDate", ""),
-                    "leaveDate": item.get("leaveDate", "")
-                    or item.get("relieveDate", ""),
-                    "reason": item.get("reason", ""),
-                    "salary": item.get("salary", ""),
+                    "company": item.get("company", "") if isinstance(item, dict) else "",
+                    "designation": item.get("designation", "") if isinstance(item, dict) else "",
+                    "joinDate": item.get("joinDate", "") if isinstance(item, dict) else "",
+                    "leaveDate": (item.get("leaveDate", "") or item.get("relieveDate", "")) if isinstance(item, dict) else "",
+                    "reason": item.get("reason", "") if isinstance(item, dict) else "",
+                    "salary": item.get("salary", "") if isinstance(item, dict) else "",
                 }
-                for item in ud.work_experience_details
-                if item.get("company")
+                for item in work_list
+                if isinstance(item, dict) and item.get("company")
             ]
 
     # 6. Typing stats

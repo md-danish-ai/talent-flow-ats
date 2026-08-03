@@ -25,6 +25,13 @@ export const SubjectiveView = memo(function SubjectiveView({
       </div>
       <Textarea
         rows={8}
+        spellCheck={false}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        data-gramm={false}
+        data-gramm_editor={false}
+        data-enable-grammarly={false}
         placeholder="Write your answer here..."
         value={currentAnswer}
         onChange={(event) => onChangeAnswer(event.target.value)}
