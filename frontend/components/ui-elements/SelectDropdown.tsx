@@ -253,10 +253,28 @@ export function SelectDropdown({
     <div className={cn("relative w-full", wrapperClassName)}>
       <div
         ref={triggerRef}
+        tabIndex={disabled ? -1 : 0}
         onClick={toggleDropdown}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+            if (!isOpen) {
+              e.preventDefault();
+              toggleDropdown();
+            }
+          } else if (e.key === "Escape") {
+            if (isOpen) {
+              e.preventDefault();
+              setIsOpen(false);
+              setSearchTerm("");
+              triggerRef.current?.focus();
+            }
+          }
+        }}
         className={cn(
           "flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all cursor-pointer min-h-[46px]",
           "border-border dark:border-white/20",
+          "focus-visible:border-brand-primary focus-visible:ring-1 focus-visible:ring-brand-primary",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
@@ -276,6 +294,14 @@ export function SelectDropdown({
                 updateCoords();
               }}
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  setSearchTerm("");
+                  triggerRef.current?.focus();
+                }
+              }}
               placeholder={selectedOption ? selectedOption.label : placeholder}
               className="w-full bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground/60 outline-none p-0 border-0 focus:ring-0"
               autoFocus

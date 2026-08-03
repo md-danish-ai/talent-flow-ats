@@ -162,7 +162,10 @@ export function SubjectAssignmentCard({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
             className={cn(
               "w-10 h-10 transition-all duration-300",
               STYLE_CONFIG.iconRadius,
