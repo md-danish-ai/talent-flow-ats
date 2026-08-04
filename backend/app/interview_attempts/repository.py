@@ -1457,35 +1457,69 @@ def reset_user_details(user_id: int) -> dict:
 def reset_user_for_reinterview(user_id: int) -> dict:
     db = SessionLocal()
     try:
-        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
-        if not user_detail:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
             raise HTTPException(
                 status_code=StatusCode.NOT_FOUND,
-                detail="User details not found. Cannot enable re-interview.",
+                detail="User not found.",
             )
+
+        user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
+
+        # Check if the user previously had a completed interview attempt
+        had_previous_interview = False
+        if user_detail and user_detail.is_interview_submitted:
+            had_previous_interview = True
+        else:
+            record = (
+                db.query(InterviewRecord)
+                .filter(
+                    InterviewRecord.user_id == user_id,
+                    InterviewRecord.status.in_(
+                        [
+                            InterviewStatus.SUBMITTED.value,
+                            InterviewStatus.AUTO_SUBMITTED.value,
+                        ]
+                    ),
+                )
+                .first()
+            )
+            if record:
+                had_previous_interview = True
+
+        if not user_detail:
+            user_detail = UserDetail(user_id=user_id)
+            db.add(user_detail)
+
         user_detail.is_submitted = False
         user_detail.is_interview_submitted = False
-        user_detail.is_reinterview = True
+        user_detail.is_reinterview = had_previous_interview
         user_detail.reinterview_date = dt_date.today()
 
         # Also reactivate the user and update status
-        user = db.query(User).filter(User.id == user_id).first()
-        if user:
-            user.is_active = True
-            user.process_status = ProcessStatus.READY.value
+        user.is_active = True
+        user.process_status = ProcessStatus.READY.value
 
-            # Immediately assign a paper for today so they are not expired again
-            from app.paper_assignments.repository import assign_best_paper
+        # Immediately assign a paper for today so they are not expired again
+        from app.paper_assignments.repository import assign_best_paper
 
-            if user.department_id and user.test_level_id:
-                assign_best_paper(
-                    db, user.id, user.department_id, user.test_level_id, dt_date.today()
-                )
+        if user.department_id and user.test_level_id:
+            assign_best_paper(
+                db, user.id, user.department_id, user.test_level_id, dt_date.today()
+            )
 
         db.commit()
+
+        message = (
+            "Re-interview enabled. User will appear in Today's Papers as RETURNING."
+            if had_previous_interview
+            else "Candidate reactivated for today's paper."
+        )
+
         return {
-            "message": "Re-interview enabled. User will appear in Today's Papers as RETURNING.",
+            "message": message,
             "reinterview_date": str(dt_date.today()),
+            "is_reinterview": had_previous_interview,
         }
     except HTTPException:
         raise

@@ -128,7 +128,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
   <tbody>
     <tr>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Gender:</span> {{GENDER}}</td>
-      <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Date of Birth:</span> {{DOB}}</td>
+      <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Date Of Birth:</span> {{DOB}}</td>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Mobile:</span> {{MOBILE}}</td>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Email:</span> {{EMAIL}}</td>
     </tr>
@@ -139,8 +139,8 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
       <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{PERMANENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you ever been interviewed by Arcgate in past?:</span> No</td>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Worked in Arcgate before?:</span> {{ARCGATE}}</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have You Ever Been Interviewed By Arcgate In Past?:</span> No</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have You Worked In Arcgate Before?:</span> {{ARCGATE}}</td>
     </tr>
   </tbody>
 </table>
@@ -148,7 +148,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <table style="width: 100%; border-collapse: collapse; margin-bottom: 2pt;">
   <tbody>
     <tr>
-      <td class="bold" style="width: 40%;">How did you hear about Arcgate?:</td>
+      <td class="bold" style="width: 40%;">How Did You Hear About Arcgate?:</td>
       <td style="width: 60%;">{{HOW_DID_YOU_HEAR}}</td>
     </tr>
   </tbody>
@@ -209,13 +209,13 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 </table>
 
 <!-- Q5–Q9 -->
-<p style="margin:0.8pt 0;" class="bold">5. Are you willing for 1 Year Service Commitment?
+<p style="margin:0.8pt 0;" class="bold">5. Are You Willing For 1 Year Service Commitment?
   <span style="font-weight:normal;">&nbsp;{{COMMITMENT}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">6. Do you agree for 1 month salary as security deposit?
+<p style="margin:0.8pt 0;" class="bold">6. Do You Agree For 1 Month Salary As Security deposit?
   <span style="font-weight:normal;">&nbsp;{{DEPOSIT}}</span></p>
 <p style="margin:0.8pt 0;" class="bold">7. Preferred Shift:
   <span style="font-weight:normal;">&nbsp;{{SHIFT_TIME}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">8. Availability for Joining:
+<p style="margin:0.8pt 0;" class="bold">8. Joining Availability:
   <span style="font-weight:normal;">&nbsp;{{JOINING}}</span></p>
 <p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Expected Monthly Salary:
   <span style="font-weight:normal;">&nbsp;{{SALARY}}</span></p>

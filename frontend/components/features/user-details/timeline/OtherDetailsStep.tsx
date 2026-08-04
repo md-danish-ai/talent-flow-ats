@@ -129,8 +129,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                     <DatePicker
                       label={
                         <span>
-                          On selection, please mention the expected joining
-                          date. <span className="text-red-500">*</span>
+                          Joining Availability <span className="text-red-500">*</span>
                         </span>
                       }
                       value={field.state.value}
