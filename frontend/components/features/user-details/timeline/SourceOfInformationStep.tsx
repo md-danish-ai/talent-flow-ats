@@ -22,7 +22,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
       <div className="space-y-5">
         <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
-            Have you ever been interviewed in Arcgate?{" "}
+            Have You Ever Been Interviewed By Arcgate In Past?{" "}
             <span className="text-red-500">*</span>
           </label>
           <div className="flex gap-6">
@@ -53,7 +53,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
 
         <div className="rounded-2xl p-6 bg-card ring-1 ring-border shadow-sm">
           <label className="text-sm font-semibold block mb-4">
-            Have you Worked in Arcgate before?{" "}
+            Have You Worked In Arcgate Before?{" "}
             <span className="text-red-500">*</span>
           </label>
           <div className="flex gap-6">
@@ -177,7 +177,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
             <form.Field name="source">
               {(field) =>
                 field.state.meta.isTouched &&
-                field.state.meta.errors.length > 0 ? (
+                  field.state.meta.errors.length > 0 ? (
                   <p className="text-xs text-red-500 mt-1">
                     {getErrorMessage(field.state.meta.errors[0])}
                   </p>
