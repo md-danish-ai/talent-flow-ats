@@ -20,131 +20,1931 @@ from app.classifications.models import Classification
 from app.departments.models import Department
 from app.database.db import SessionLocal
 
+QUESTIONS_DATA = [
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Q is as much younger than R as he is older than T. If the sum of the ages of R and T is 60 years, what is definitely the difference between R and Q's age?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "1 year",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "2 years",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "30 years",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Data inadequate",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Ravi wants to buy 400 notebooks for his store. He gets the first 250 notebooks for $2,000. The next 150 notebooks cost $5 each. If a 10% discount is applied to the total cost, what is the total cost of the notebooks?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "$2,475",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "$2,500",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "$2,600",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "$2,700",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A is three years older than B, who is twice as old as C. If the total of the ages of A, B and C is 48, how old is B?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "16",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "18",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "20",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "22",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Sam purchased 8 dozens of pens at the rate of Rs. 480 per dozen. He sold each one of them at the rate of Rs. 45. What was his percentage profit?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "0.1",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "0.125",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "0.15",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "0.08",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Rahul walks 9 km to the north, then turns and walks 12 km to the east. How far is he from his starting point?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "15 km",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "18 km",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "20 km",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "21 km",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "P told Q, 'The boy I met yesterday was the only son of the father-in-law of my sister's husband.' How is the boy related to P?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Brother",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Nephew",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Cousin",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Son",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Compute",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Compute",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Reliable",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Reliable",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Ahead",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Ahead",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A museum has an average of 480 visitors on Wednesdays and 210 on other days. The average number of visitors per day in a month of 30 days beginning with a Wednesday is:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "230", "option_label": "A"},
+            {"is_correct": False, "option_text": "245", "option_label": "B"},
+            {"is_correct": True, "option_text": "255", "option_label": "C"},
+            {"is_correct": False, "option_text": "260", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A trader buys a bicycle for Rs. 1,800 in cash and sells it for Rs. 2,090 at a credit of 1 year. If the rate of interest is 10% per annum, the trader gains:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Rs. 80", "option_label": "A"},
+            {"is_correct": True, "option_text": "Rs. 100", "option_label": "B"},
+            {"is_correct": False, "option_text": "Rs. 120", "option_label": "C"},
+            {"is_correct": False, "option_text": "Rs. 150", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "The average weight of 10 persons increases by 3 kg when a new person replaces one of them weighing 60 kg. What is the weight of the new person?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "85 kg", "option_label": "A"},
+            {"is_correct": False, "option_text": "88 kg", "option_label": "B"},
+            {"is_correct": True, "option_text": "90 kg", "option_label": "C"},
+            {"is_correct": False, "option_text": "95 kg", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Pick the odd one out:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Sparrow", "option_label": "A"},
+            {"is_correct": False, "option_text": "Eagle", "option_label": "B"},
+            {"is_correct": True, "option_text": "Ostrich", "option_label": "C"},
+            {"is_correct": False, "option_text": "Pigeon", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Pick the odd one out:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "BDFH", "option_label": "A"},
+            {"is_correct": False, "option_text": "CEGI", "option_label": "B"},
+            {"is_correct": True, "option_text": "ILNP", "option_label": "C"},
+            {"is_correct": False, "option_text": "MOQS", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Look at this series: 15, 16, 31, 47, 78, ... What number should come next?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "115", "option_label": "A"},
+            {"is_correct": False, "option_text": "120", "option_label": "B"},
+            {"is_correct": True, "option_text": "125", "option_label": "C"},
+            {"is_correct": False, "option_text": "130", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "The sum of the digits of a 2-digit number is 11. If we add 45 to the number, the new number obtained is formed by interchanging the digits. What is the number?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "x = 3 and y = 8",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "x = 4 and y = 7",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "x = 5 and y = 6",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "x = 2 and y = 9",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "essential / is / health / for / exercise / good",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Exercise is essential for good health.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "delayed / why / been / the flight / has?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Why has the flight been delayed?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "In the first 15 overs of a cricket match, the run rate was only 3.2. What should be the run rate in the remaining 35 overs to reach a target of 272 runs?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "6",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "6.2",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "6.4",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "6.6",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A mother is three times as old as her son. If 15 years ago the age of the mother was six times the age of the son, what is the present age of the mother?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "70 years",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "72 years",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "75 years",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "78 years",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "A credit card is used for:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Withdrawing money directly from a savings account",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Borrowing money from the bank up to a set limit",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Transferring money instantly between two banks free of cost",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of the above",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Which of the following is not an online food delivery platform?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Zomato",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Swiggy",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "DoorDash",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "None of these",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Pick the odd one out:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Croissant",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Bagel",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Baguette",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Risotto",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "A discounted meal deal specially targeted at families is called:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Kid's Meal",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Family Combo",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Solo Meal",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Executive Meal",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "An Italian sparkling wine is called:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Prosecco",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Sake",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Whisky",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Vodka",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "The tagline 'I'm Lovin' It' is associated with which brand?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Burger King",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "KFC",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "McDonald's",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Subway",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "The buying and selling of goods over the internet is called:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "E-governance",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "E-commerce",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "E-marketing",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "E-procurement",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "The most cost-effective method of delivering digital goods (like e-books) is:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Postal delivery",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Electronic/digital delivery",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Courier service",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of the above",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Retailers can never earn any margin on shipping and handling charges.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "True",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "False",
+                "option_label": "B",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Which among the following is not an example of e-commerce?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Amazon",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Nykaa",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "BigBasket",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "A railway station ticket counter",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "'Early bird' offers in a restaurant typically mean:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "A discounted price offered before peak hours",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A time when the restaurant is closed",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A special menu only for breakfast",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of the above",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Hollandaise, Béchamel and Marinara are types of:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Sauces",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Breads",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Desserts",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Beverages",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "team? / who / the / led / winning",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Who led the winning team?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "Which country is most associated with Sushi?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "China",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Japan",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Thailand",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Korea",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "What is a 'fortified wine'?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "A wine with added distilled spirit, increasing its alcohol content",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A wine stored in a fortified cellar",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A wine made only from fortified grapes",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of the above",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "What does 'Cashback' typically mean in retail/e-commerce transactions?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "A percentage of the purchase amount returned to the buyer after the transaction",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "An additional fee charged for using cash",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A loan given at the time of purchase",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of these",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "INDUSTRY_AWARENESS",
+        "exam_level": "FRESHER",
+        "question_text": "The term 'table d'hôte' refers to:",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "A fixed-price meal with limited choices offered at a set price",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A meal that must be custom ordered",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "A free meal offered by the host",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "None of the above",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "By the time she arrives, we ______ dinner.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "will finish",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "will have finished",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "finish",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "are finishing",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "He ______ hardly speak when he arrived, he was so exhausted.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "could",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "can",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "would",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "should",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "A",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "Synonym of 'abundant' is ______.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Scarce",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Plentiful",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Meager",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Sparse",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "I think my proposal ______ by the committee already.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "rejecting",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "is rejected",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "has been rejected",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Either B or C",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "I ______ Sarah last week and she told me she was moving abroad.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "have met",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "had meet",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "met",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "meet",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "She ______ coffee in the morning these days.",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "had never drink",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "has never drink",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "never drinks",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Never she drinks",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "______ to travel abroad one day?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Have you wish to",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Would you like to",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Do you wish to",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Will you wish to",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Sincerity",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Sincerity",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Fortunate",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Fortunate",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Beyond",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Beyond",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Incidence",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Incidence",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Argument",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Argument",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Historic",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Historic",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Essential",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Essential",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Milestone",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Milestone",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Preferred",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Preferred",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Empower",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Empower",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Optimistic",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Optimistic",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Benchmark",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Benchmark",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "finish? / you / when / will / project / the",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "When will you finish the project?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "doing / what / are / you / here?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "What are you doing here?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "to / need / do / we / how / long / wait / here?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "How long do we need to wait here?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "week. / launch / was / to / next / set / The product",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "The product was set to launch next week.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "success, / if / up / you / want to / give / don't / achieve",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "If you want to achieve success, don't give up.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "blue sky / and admired / the stars / the boy / looked up at / the vast",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "The boy looked up at the vast blue sky and admired the stars.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "quickly. / So / he / treated / his / sprained / ankle",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "So he treated his sprained ankle quickly.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "on. / see / to / what / was / rushed / Everyone / going",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Everyone rushed to see what was going on.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Edison's approach to invention can be best described as one of ______.",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {
+                "is_correct": False,
+                "option_text": "Relying purely on natural talent",
+                "option_label": "A",
+            },
+            {
+                "is_correct": False,
+                "option_text": "Learning solely from his teachers",
+                "option_label": "B",
+            },
+            {
+                "is_correct": True,
+                "option_text": "Persistent experimentation despite setbacks",
+                "option_label": "C",
+            },
+            {
+                "is_correct": False,
+                "option_text": "Following instructions from mentors",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Which of the following helped Edison succeed in inventing the light bulb?",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {
+                "is_correct": False,
+                "option_text": "His formal schooling",
+                "option_label": "A",
+            },
+            {
+                "is_correct": False,
+                "option_text": "His work as a telegraph operator",
+                "option_label": "B",
+            },
+            {
+                "is_correct": True,
+                "option_text": "His persistence despite repeated failures",
+                "option_label": "C",
+            },
+            {
+                "is_correct": False,
+                "option_text": "Support from the government",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "According to the passage, what was the chief contribution of Edison's invention?",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {
+                "is_correct": False,
+                "option_text": "It allowed telegraph operators to work at night",
+                "option_label": "A",
+            },
+            {
+                "is_correct": True,
+                "option_text": "It enabled daily life to continue after sunset",
+                "option_label": "B",
+            },
+            {
+                "is_correct": False,
+                "option_text": "It made Edison a wealthy businessman",
+                "option_label": "C",
+            },
+            {
+                "is_correct": False,
+                "option_text": "It helped factories reduce production costs",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is MOST OPPOSITE in meaning of the word printed in bold: 'Shrewd'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 5,
+        "is_active": True,
+        "options": [
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Cunning",
+                "option_label": "A",
+            },
+            {
+                "image_url": None,
+                "is_correct": True,
+                "option_text": "Naive",
+                "option_label": "B",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Sharp",
+                "option_label": "C",
+            },
+            {
+                "image_url": None,
+                "is_correct": False,
+                "option_text": "Clever",
+                "option_label": "D",
+            },
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is MOST NEARLY THE SAME in meaning as the word printed in bold: 'Transform'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {
+                "is_correct": False,
+                "option_text": "Damage severely",
+                "option_label": "A",
+            },
+            {
+                "is_correct": True,
+                "option_text": "Change completely",
+                "option_label": "B",
+            },
+            {
+                "is_correct": False,
+                "option_text": "Remain constant",
+                "option_label": "C",
+            },
+            {"is_correct": False, "option_text": "Slow down", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is MOST OPPOSITE in meaning of the word printed in bold: 'Curious'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Inquisitive", "option_label": "A"},
+            {"is_correct": True, "option_text": "Indifferent", "option_label": "B"},
+            {"is_correct": False, "option_text": "Eager", "option_label": "C"},
+            {"is_correct": False, "option_text": "Attentive", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "The tribute paid by American cities upon Edison's death suggests that he was held in:",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Contempt", "option_label": "A"},
+            {"is_correct": False, "option_text": "Suspicion", "option_label": "B"},
+            {"is_correct": True, "option_text": "High regard", "option_label": "C"},
+            {"is_correct": False, "option_text": "Fear", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is NOT NEARLY THE SAME in meaning as the word printed in bold: 'Persistent'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Determined", "option_label": "A"},
+            {"is_correct": False, "option_text": "Tenacious", "option_label": "B"},
+            {"is_correct": False, "option_text": "Unwavering", "option_label": "C"},
+            {"is_correct": True, "option_text": "Fickle", "option_label": "D"},
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "The sum of the ages of a mother and her daughter is 50 years. Five years ago, the mother's age was four times the daughter's age. What will be the daughter's age after 5 years?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "15 years", "option_label": "A"},
+            {"is_correct": True, "option_text": "18 years", "option_label": "B"},
+            {"is_correct": False, "option_text": "20 years", "option_label": "C"},
+            {"is_correct": False, "option_text": "23 years", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+]
+
+
 def seed_data():
     db = SessionLocal()
     try:
-        # Check if user 1 exists, if not use None or find a user
         admin_user = db.query(User).first()
         user_id = admin_user.id if admin_user else 1
 
         print(f"Using User ID: {user_id} for 'created_by'")
 
-        # ─────────────────────────────────────────────────────────────────
-        # REGULAR question types (MCQ, Subjective, etc.)
-        # These are seeded across ALL general subjects
-        # ─────────────────────────────────────────────────────────────────
-        question_types = [
-            "MULTIPLE_CHOICE",
-            "IMAGE_MULTIPLE_CHOICE",
-            "SUBJECTIVE",
-            "IMAGE_SUBJECTIVE",
-            "PASSAGE_CONTENT",
-        ]
-
-        # General subjects only (special subjects handled separately below)
-        subjects = [
-            "APTITUDE",
-            "COMPREHENSION",
-            "ENGLISH_GRAMMAR",
-            "INDUSTRY_AWARENESS",
-            "WRITTEN",
-        ]
-        
-        # All questions set to FRESHER as requested
-        level = "FRESHER"
-
         total_seeded = 0
-        total_skipped = 0
-        
-        # Process regular question types across general subjects
-        for q_type in question_types:
-            print(f"\nSeeding questions for type: {q_type}")
-            for subject in subjects:
-                for i in range(1, 6):
-                    q_text = f"Sample {q_type} Question #{i} for Subject {subject.replace('_', ' ').capitalize()}: What is a key concept in {subject.lower().replace('_', ' ')}?"
-                    
-                    existing = db.query(Question).filter(
-                        Question.question_type == q_type,
-                        Question.subject_type == subject,
-                        Question.question_text == q_text
-                    ).first()
+        total_updated = 0
+        processed_question_ids = set()
 
-                    if existing:
-                        total_skipped += 1
-                        continue
+        for q_data in QUESTIONS_DATA:
+            q_type = q_data["question_type"]
+            subject = q_data["subject_type"]
+            q_text = q_data["question_text"]
+            passage = q_data.get("passage")
+            options = q_data.get("options") or []
+            marks = q_data.get("marks", 5)
+            exam_level = q_data.get("exam_level", "FRESHER")
+            is_active = q_data.get("is_active", True)
+            ans_text = q_data.get("answer_text", "")
+            explanation = q_data.get("explanation", "")
 
-                    passage = None
-                    options = []
-                    ans_text = ""
-                    explanation = f"This is a detailed explanation for {subject} question #{i} of type {q_type}."
+            query = db.query(Question).filter(
+                Question.question_type == q_type,
+                Question.subject_type == subject,
+                Question.question_text == q_text,
+            )
+            if passage:
+                query = query.filter(Question.passage == passage)
 
-                    if q_type in ("MULTIPLE_CHOICE", "IMAGE_MULTIPLE_CHOICE"):
-                        options = [
-                            {"option_label": "A", "option_text": f"Option A for {subject} {i}", "is_correct": i % 4 == 1},
-                            {"option_label": "B", "option_text": f"Option B for {subject} {i}", "is_correct": i % 4 == 2},
-                            {"option_label": "C", "option_text": f"Option C for {subject} {i}", "is_correct": i % 4 == 3},
-                            {"option_label": "D", "option_text": f"Option D for {subject} {i}", "is_correct": i % 4 == 0},
-                        ]
-                        ans_text = next((opt["option_label"] for opt in options if opt["is_correct"]), "A")
-                    elif q_type == "SUBJECTIVE":
-                        ans_text = f"This is the model subjective answer for {subject} question {i}. It provides a comprehensive analysis of the topic."
-                    elif q_type == "IMAGE_SUBJECTIVE":
-                        ans_text = f"Analytical breakdown of the visual data provided in the {subject} image question {i}."
-                    elif q_type == "PASSAGE_CONTENT":
-                        passage = f"This is a sample passage for {subject} regarding concept {i}. It describes the fundamental principles and their applications in a {level} level environment."
-                        q_text = f"Based on the provided passage, what is the best strategy for handling {subject} scenario {i}?"
-                        correct_ans = f"The best strategy involves identifying the {subject} variables mentioned in the passage and addressing them sequentially."
-                        
-                        options = [
-                            {"option_label": "A", "option_text": correct_ans, "is_correct": True},
-                            {"option_label": "B", "option_text": f"Distractor Option B for {subject} {i}", "is_correct": False},
-                            {"option_label": "C", "option_text": f"Distractor Option C for {subject} {i}", "is_correct": False},
-                            {"option_label": "D", "option_text": f"Distractor Option D for {subject} {i}", "is_correct": False},
-                        ]
-                        ans_text = "A"
+            candidates = query.all()
+            existing = next(
+                (q for q in candidates if q.id not in processed_question_ids),
+                None,
+            )
 
-                        existing_passage_q = db.query(Question).filter(
-                            Question.question_type == q_type,
-                            Question.subject_type == subject,
-                            Question.question_text == q_text
-                        ).first()
-                        if existing_passage_q:
-                            total_skipped += 1
-                            continue
+            if existing:
+                processed_question_ids.add(existing.id)
+                existing.exam_level = exam_level
+                existing.marks = marks
+                existing.is_active = is_active
+                existing.options = options
+                if passage is not None:
+                    existing.passage = passage
 
-                    new_q = Question(
-                        question_type=q_type,
-                        subject_type=subject,
-                        exam_level=level,
-                        question_text=q_text,
-                        passage=passage,
-                        marks=5,
-                        is_active=True,
-                        options=options,
-                        created_by=user_id,
+                ans_record = (
+                    db.query(QuestionAnswer)
+                    .filter(QuestionAnswer.question_id == existing.id)
+                    .first()
+                )
+                if ans_record:
+                    ans_record.answer_text = ans_text
+                    ans_record.explanation = explanation
+                else:
+                    db.add(
+                        QuestionAnswer(
+                            question_id=existing.id,
+                            answer_text=ans_text,
+                            explanation=explanation,
+                            created_by=user_id,
+                        )
                     )
-                    db.add(new_q)
-                    db.flush()
+                total_updated += 1
+            else:
+                new_q = Question(
+                    question_type=q_type,
+                    subject_type=subject,
+                    exam_level=exam_level,
+                    question_text=q_text,
+                    passage=passage,
+                    marks=marks,
+                    is_active=is_active,
+                    options=options,
+                    created_by=user_id,
+                )
+                db.add(new_q)
+                db.flush()
+                processed_question_ids.add(new_q.id)
 
-                    db.add(QuestionAnswer(
+                db.add(
+                    QuestionAnswer(
                         question_id=new_q.id,
                         answer_text=ans_text,
                         explanation=explanation,
                         created_by=user_id,
-                    ))
-                    total_seeded += 1
+                    )
+                )
+                total_seeded += 1
 
-            db.commit()
-            print(f"  ✅ Processed type: {q_type}")
-
-        print(f"\nSeeding completed successfully!")
+        db.commit()
+        print("\nSeeding completed successfully!")
         print(f"Questions added: {total_seeded}")
-        print(f"Questions skipped (already exist): {total_skipped}")
+        print(f"Questions updated/verified: {total_updated}")
+
     except Exception as e:
         print(f"Error during seeding: {e}")
         db.rollback()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     seed_data()
