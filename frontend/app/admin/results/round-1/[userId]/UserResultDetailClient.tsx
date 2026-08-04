@@ -232,10 +232,14 @@ export function UserResultDetailClient({
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
 
-                const contentDisposition = res.headers.get("content-disposition");
+                const contentDisposition = res.headers.get(
+                  "content-disposition",
+                );
                 let filename = "";
                 if (contentDisposition) {
-                  const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+                  const match = contentDisposition.match(
+                    /filename=["']?([^"';]+)["']?/i,
+                  );
                   if (match && match[1]) {
                     filename = match[1];
                   }
@@ -245,7 +249,9 @@ export function UserResultDetailClient({
                   const username = attemptData?.user?.username || "Candidate";
                   const mobile = attemptData?.user?.mobile || "";
                   const safeName = username.replace(/\s+/g, "_");
-                  filename = mobile ? `${safeName}_${mobile}.pdf` : `${safeName}.pdf`;
+                  filename = mobile
+                    ? `${safeName}_${mobile}.pdf`
+                    : `${safeName}.pdf`;
                 }
 
                 const a = document.createElement("a");

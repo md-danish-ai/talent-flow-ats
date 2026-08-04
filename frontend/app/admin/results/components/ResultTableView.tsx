@@ -73,8 +73,12 @@ async function downloadReportPdf(
 
   if (!filename) {
     const safeName = username ? username.replace(/\s+/g, "_") : "Candidate";
-    const cleanMobile = mobile ? String(mobile).replace(/\D/g, "").slice(-10) : "";
-    filename = cleanMobile ? `${safeName}_${cleanMobile}.pdf` : `${safeName}.pdf`;
+    const cleanMobile = mobile
+      ? String(mobile).replace(/\D/g, "").slice(-10)
+      : "";
+    filename = cleanMobile
+      ? `${safeName}_${cleanMobile}.pdf`
+      : `${safeName}.pdf`;
   }
 
   const a = document.createElement("a");
