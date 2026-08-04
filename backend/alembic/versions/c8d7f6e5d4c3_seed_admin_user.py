@@ -19,37 +19,44 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Seed the master admin user."""
-    # Use a direct bcrypt hash for '8829059600'
-
+    """Seed the master admin users."""
     conn = op.get_bind()
 
-    # Check if admin already exists
-    res = conn.execute(
-        sa.text("SELECT id FROM users WHERE mobile = '8829059600'")
-    ).fetchone()
+    admins = [
+        {
+            "name": "Mohammed Danish",
+            "mobile": "8829059600",
+            "email": "mohammed.danish@arcgate.com",
+            "pass": "$2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u",
+            "role": "admin",
+        },
+        {
+            "name": "Manish Joshi",
+            "mobile": "6378297257",
+            "email": "mmjoshi@arcgate.com",
+            "pass": "$2b$12$zyPmizFvEMcHXB4pcxoQ7u5aWrGK8AlRS6qwywfUeAILhtyeUs0Vu",
+            "role": "admin",
+        },
+    ]
 
-    if not res:
-        # We'll use a plain text password or a hardcoded hash that the app expects.
-        # Since the app uses bcrypt, I'll use a real bcrypt hash for '8829059600'
-        # $2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u (This is '8829059600')
-        admin_pass = "$2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u"
+    for admin in admins:
+        res = conn.execute(
+            sa.text("SELECT id FROM users WHERE mobile = :mobile"),
+            {"mobile": admin["mobile"]},
+        ).fetchone()
 
-        conn.execute(
-            sa.text(
-                "INSERT INTO users (username, mobile, email, password, role, is_active, test_level_id, department_id) "
-                "VALUES (:name, :mobile, :email, :pass, :role, true, null, null)"
-            ),
-            {
-                "name": "Mohammed Danish",
-                "mobile": "8829059600",
-                "email": "admin@arcgate.com",
-                "pass": admin_pass,
-                "role": "admin",
-            },
-        )
+        if not res:
+            conn.execute(
+                sa.text(
+                    "INSERT INTO users (username, mobile, email, password, role, is_active, test_level_id, department_id) "
+                    "VALUES (:name, :mobile, :email, :pass, :role, true, null, null)"
+                ),
+                admin,
+            )
 
 
 def downgrade() -> None:
-    """Remove the seeded admin user."""
-    op.execute(sa.text("DELETE FROM users WHERE mobile = '8829059600'"))
+    """Remove the seeded admin users."""
+    op.execute(
+        sa.text("DELETE FROM users WHERE mobile IN ('8829059600', '6378297257')")
+    )
