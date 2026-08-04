@@ -53,6 +53,25 @@ def _ensure_dict(val: Any) -> dict:
     return {}
 
 
+def _fmt_date(val: Any) -> str:
+    """Return val formatted as DD-MM-YYYY. Handles YYYY-MM-DD ISO strings,
+    datetime / date objects, and already-formatted DD-MM-YYYY strings.
+    Returns the original string unchanged if parsing fails."""
+    if not val:
+        return ""
+    s = str(val).strip()
+    # Already DD-MM-YYYY?
+    if len(s) == 10 and s[2] == "-" and s[5] == "-":
+        return s
+    # Try ISO YYYY-MM-DD (first 10 chars to ignore time component)
+    try:
+        dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        return dt.strftime("%d-%m-%Y")
+    except ValueError:
+        pass
+    return s
+
+
 def _ensure_list(val: Any) -> list:
     if isinstance(val, list):
         return val
@@ -160,7 +179,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
 
     # 4. Personal fields
     gender = _get_answer(answers, ["gender"])
-    dob = _get_answer(answers, ["date of birth", "dob"])
+    dob = _fmt_date(_get_answer(answers, ["date of birth", "dob"]))
     address = _get_answer(answers, ["address", "current address", "permanent address"])
     present_address = address
     permanent_address = address
@@ -169,7 +188,9 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         answers, ["1 year service commitment", "willing for 1 year"]
     )
     shift_time = _get_answer(answers, ["preferred shift time", "shift time"])
-    joining = _get_answer(answers, ["joining date if selected", "joining date"])
+    joining = _fmt_date(
+        _get_answer(answers, ["joining date if selected", "joining date"])
+    )
     salary = _get_answer(answers, ["salary expected", "expected salary"])
     how_did_you_hear = _get_answer(
         answers, ["how did you hear about arcgate", "how did you hear"]
@@ -188,7 +209,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     if ud:
         pd_info = _ensure_dict(ud.personal_details)
         gender = pd_info.get("gender") or gender
-        dob = pd_info.get("dob") or dob
+        dob = _fmt_date(pd_info.get("dob")) or dob
 
         def _build_addr(l1, l2, c, d, s, p):
             parts = [l1, l2, c, d, s, p]
@@ -225,7 +246,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         od_info = _ensure_dict(ud.other_details)
         commitment = od_info.get("serviceCommitment") or commitment
         shift_time = od_info.get("shiftTime") or shift_time
-        joining = od_info.get("expectedJoiningDate") or joining
+        joining = _fmt_date(od_info.get("expectedJoiningDate")) or joining
         salary = od_info.get("expectedSalary") or salary
         deposit = od_info.get("securityDeposit") or deposit
 

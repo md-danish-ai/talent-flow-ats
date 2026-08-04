@@ -139,7 +139,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
       <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{PERMANENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you ever been interviewed by Arcgate in past??:</span> No</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you ever been interviewed by Arcgate in past?:</span> No</td>
       <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Worked in Arcgate before?:</span> {{ARCGATE}}</td>
     </tr>
   </tbody>
