@@ -39,6 +39,7 @@ async function downloadReportPdf(
   userId: number,
   attemptId: number,
   username: string,
+  mobile?: string,
 ): Promise<void> {
   // Read auth_token from cookie (same logic as client.ts)
   const authRow = document.cookie
@@ -60,17 +61,25 @@ async function downloadReportPdf(
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
-  const formattedDate = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
-    .format(new Date())
-    .replace(/ /g, "-");
+
+  const contentDisposition = res.headers.get("content-disposition");
+  let filename = "";
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+    if (match && match[1]) {
+      filename = match[1];
+    }
+  }
+
+  if (!filename) {
+    const safeName = username ? username.replace(/\s+/g, "_") : "Candidate";
+    const cleanMobile = mobile ? String(mobile).replace(/\D/g, "").slice(-10) : "";
+    filename = cleanMobile ? `${safeName}_${cleanMobile}.pdf` : `${safeName}.pdf`;
+  }
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = `Report_${username.replace(/\s+/g, "_")}_${formattedDate}.pdf`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -81,10 +90,12 @@ function DownloadButton({
   userId,
   attemptId,
   username,
+  mobile,
 }: {
   userId: number;
   attemptId: number;
   username: string;
+  mobile?: string;
 }) {
   const [loading, setLoading] = useLocalState(false);
   return (
@@ -97,7 +108,7 @@ function DownloadButton({
         if (loading) return;
         setLoading(true);
         try {
-          await downloadReportPdf(userId, attemptId, username);
+          await downloadReportPdf(userId, attemptId, username, mobile);
         } catch {
           toast.error("Failed to download report. Please try again.");
         } finally {
@@ -736,6 +747,7 @@ export function ResultTableView({
                             userId={item.user_id}
                             attemptId={latest?.attempt_id || 0}
                             username={item.username}
+                            mobile={item.mobile}
                           />
                         )}
                         {!onlyDownloadAction && (
