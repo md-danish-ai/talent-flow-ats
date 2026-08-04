@@ -448,13 +448,13 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         internet_obt_str = "-"
 
     it_items = [
-        {"name": "Typing Speed (Words/Minute)", "value": wpm},
-        {"name": "Typing Accuracy (%)", "value": accuracy},
-        {"name": "Total Typing Errors", "value": errors},
         {
             "name": f"Internet Test Marks (Out of {internet_total})",
             "value": internet_obt_str,
         },
+        {"name": "Typing Speed (Words/Minute)", "value": wpm},
+        {"name": "Typing Accuracy (%)", "value": accuracy},
+        {"name": "Total Typing Errors", "value": errors},
     ]
     left_col, right_col = _distribute_columns(subject_items + it_items)
 
