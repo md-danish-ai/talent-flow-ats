@@ -31,21 +31,21 @@ USERS = [
     {
         "username": "Mohammed Danish",
         "mobile":   "8829059600",
-        "email":    "admin@arcgate.com",
+        "email":    "mohammed.danish@arcgate.com",
         "role":     "admin",
         "test_level_id": None,
         "department_id": None,
         "is_active": True,
     },
     {
-        "username": "Test User",
-        "mobile":   "1234567890",
-        "email":    "user@arcgate.com",
-        "role":     "user",
-        "test_level_id": 9,
-        "department_id": 2,
+        "username": "Manish Joshi",
+        "mobile":   "6378297257",
+        "email":    "mmjoshi@arcgate.com",
+        "role":     "admin",
+        "test_level_id": None,
+        "department_id": None,
         "is_active": True,
-    },
+    }
 ]
 
 
