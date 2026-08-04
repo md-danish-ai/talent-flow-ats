@@ -20,7 +20,6 @@ export default async function ResetStatusPage() {
   try {
     initialData = await getUsersByRole("user", {
       cookies: cookieString,
-      exclude_software: true,
     });
   } catch (error) {
     console.error("Failed to fetch users:", error);

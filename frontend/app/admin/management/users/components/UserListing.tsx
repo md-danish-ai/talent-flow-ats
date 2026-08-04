@@ -391,15 +391,17 @@ export function UserListing({ initialData }: UserListingProps) {
                                 row.assignment?.department_name ||
                                 "N/A"}
                             </span>
-                            <Badge
-                              color="primary"
-                              shape="square"
-                              variant="outline"
-                            >
-                              {row.assignment?.test_level_name ||
-                                row.test_level_name ||
-                                "N/A"}
-                            </Badge>
+                            {row.requires_interview !== false && (
+                              <Badge
+                                color="primary"
+                                shape="square"
+                                variant="outline"
+                              >
+                                {row.assignment?.test_level_name ||
+                                  row.test_level_name ||
+                                  "N/A"}
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="align-middle py-3 text-center">
