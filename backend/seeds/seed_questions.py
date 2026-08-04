@@ -1853,6 +1853,7 @@ def seed_data():
 
         total_seeded = 0
         total_updated = 0
+        processed_question_ids = set()
 
         for q_data in QUESTIONS_DATA:
             q_type = q_data["question_type"]
@@ -1874,9 +1875,14 @@ def seed_data():
             if passage:
                 query = query.filter(Question.passage == passage)
 
-            existing = query.first()
+            candidates = query.all()
+            existing = next(
+                (q for q in candidates if q.id not in processed_question_ids),
+                None,
+            )
 
             if existing:
+                processed_question_ids.add(existing.id)
                 existing.exam_level = exam_level
                 existing.marks = marks
                 existing.is_active = is_active
@@ -1916,6 +1922,7 @@ def seed_data():
                 )
                 db.add(new_q)
                 db.flush()
+                processed_question_ids.add(new_q.id)
 
                 db.add(
                     QuestionAnswer(
