@@ -45,7 +45,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     font-size: 7.7pt;
   }
   td, th {
-    border: 0.5px solid #000;
+    border: 0.25pt solid #a0a0a0;
     padding: 1.6px 2.6px;
     vertical-align: middle;
     line-height: 1.08;
@@ -66,7 +66,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <pdf:nexttemplate name="inner_pages" />
 
 <div id="footerFirst" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
-  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <div style="border-top: 0.25pt solid #a0a0a0; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
       <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
@@ -88,7 +88,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div id="footerOther" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
-  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <div style="border-top: 0.25pt solid #a0a0a0; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
       <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">

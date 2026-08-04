@@ -363,17 +363,20 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     subject_items = []
     for subj in all_subjects:
         name = subj.name
+        name_lower = name.lower().strip()
+        # Skip individual lead generation, company contact details, and typing grade
+        if name_lower in [
+            "lead generation",
+            "company contact details",
+            "typing",
+            "typing test",
+        ]:
+            continue
+
         value = "-"
         if name in sr_map:
             res = sr_map[name]
-            if name.lower() in ["lead generation", "company contact details"]:
-                tot = int(res.get("total_marks", 0))
-                obt = res.get("obtained_marks", 0)
-                obt_str = str(int(obt)) if obt == int(obt) else f"{obt:.2f}"
-                name = f"{name} (Out of {tot})"
-                value = obt_str
-            else:
-                value = res.get("grade") or "-"
+            value = res.get("grade") or "-"
         subject_items.append({"name": name, "value": value})
 
     # Calculate Internet Test Marks (sum of Lead Generation and Company Contact Details)

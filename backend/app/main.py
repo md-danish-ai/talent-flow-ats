@@ -62,6 +62,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition", "content-disposition", "*"],
 )
 
 # GZip compression: Reduces large JSON responses (e.g. paper with 100 questions) by ~60-70%
