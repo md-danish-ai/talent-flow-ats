@@ -230,13 +230,17 @@ export function UserForm({
   const [incompleteSteps, setIncompleteSteps] = useState<number[]>([]);
   const totalSteps = 7;
 
-  // For User Portal (Self)
-  const { data: selfDetails, isLoading: isLoadingSelf } = useUserDetails();
+  // For User Portal (Self) — disabled when admin is editing a specific user
+  // Admin always provides initialData via SSR, so no need to call /me
+  const { data: selfDetails, isLoading: isLoadingSelf } = useUserDetails({
+    enabled: !isAdmin,
+  });
 
-  // Registered mobile and email from session
+  // Registered mobile and email from session — only used for the user portal (not admin)
   const { data: currentUser } = useMe();
-  const registeredMobile = currentUser?.mobile ?? "";
-  const registeredEmail = currentUser?.email ?? "";
+  // When admin edits another user's form, do NOT pull admin's own mobile/email
+  const registeredMobile = isAdmin ? "" : (currentUser?.mobile ?? "");
+  const registeredEmail = isAdmin ? "" : (currentUser?.email ?? "");
 
   // Choose data source: Prop initialData -> SSR data -> Client-side fetch "me"
   const existingDetails = initialData || selfDetails;
@@ -638,24 +642,25 @@ export function UserForm({
   }, [selfDetails, initialData, form, registeredMobile]);
 
   // Sync registered mobile & email from currentUser into form state if empty
+  // Only applies to user portal — admin should never overwrite candidate's fields
   useEffect(() => {
-    if (registeredMobile) {
+    if (!isAdmin && registeredMobile) {
       const cleanMobile = registeredMobile.replace(/\D/g, "").slice(-10);
       const currentPrimary = form.getFieldValue("primaryMobile");
       if (!currentPrimary || currentPrimary !== cleanMobile) {
         form.setFieldValue("primaryMobile", cleanMobile);
       }
     }
-  }, [registeredMobile, form]);
+  }, [isAdmin, registeredMobile, form]);
 
   useEffect(() => {
-    if (registeredEmail) {
+    if (!isAdmin && registeredEmail) {
       const currentEmail = form.getFieldValue("email");
       if (!currentEmail) {
         form.setFieldValue("email", registeredEmail);
       }
     }
-  }, [registeredEmail, form]);
+  }, [isAdmin, registeredEmail, form]);
 
   const touchStepFields = React.useCallback(
     (step: number) => {

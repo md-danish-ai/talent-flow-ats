@@ -389,6 +389,12 @@ def get_users_by_role(
         range_from = safe_parse_date(date_from)
         range_to = safe_parse_date(date_to)
 
+        # Pre-fetch all departments to avoid N+1 queries in response loop
+        dept_requires_interview: dict[int, bool] = {
+            dept.id: bool(dept.requires_interview)
+            for dept in db_session.query(Department).all()
+        }
+
         UserDept = aliased(Department)
 
         # Latest assignment per user via row_number()
@@ -560,6 +566,9 @@ def get_users_by_role(
                 "department_id": row.User.department_id,
                 "department_name": row.user_dept_name,
                 "is_active": row.User.is_active,
+                "requires_interview": dept_requires_interview.get(
+                    row.User.department_id, False
+                ),
                 "is_details_submitted": row.is_submitted
                 if row.is_submitted is not None
                 else False,

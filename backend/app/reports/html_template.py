@@ -116,7 +116,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     <td style="border:none; text-align:right; width: 30%; vertical-align: bottom; padding: 0;">
       <div style="display: inline-block; text-align: right;">
         {{LOGO_HTML}}<br/>
-        <span style="font-size:7.6pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
+        <span style="font-size:7.7pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
       </div>
     </td>
   </tr>
@@ -139,7 +139,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
       <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{PERMANENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Applied Arcgate before?:</span> No</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you ever been interviewed by Arcgate in past?:</span> No</td>
       <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Worked in Arcgate before?:</span> {{ARCGATE}}</td>
     </tr>
   </tbody>
@@ -159,7 +159,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <table style="width: 100%;">
   <thead>
     <tr>
-      <th style="width: 13%; text-align: center;">Education</th>
+      <th style="width: 13%; text-align: center;">Education Level</th>
       <th style="width: 13%; text-align: center;">Education Details</th>
       <th style="width: 18%; text-align: center;">School/College</th>
       <th style="width: 15%; text-align: center;">Board/University</th>
@@ -211,14 +211,14 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <!-- Q5–Q9 -->
 <p style="margin:0.8pt 0;" class="bold">5. Are you willing for 1 Year Service Commitment?
   <span style="font-weight:normal;">&nbsp;{{COMMITMENT}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">6. What is your preferred shift time for work at Arcgate?
-  <span style="font-weight:normal;">&nbsp;{{SHIFT_TIME}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">7. Joining date if selected:
-  <span style="font-weight:normal;">&nbsp;{{JOINING}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">8. Salary Expected:
-  <span style="font-weight:normal;">&nbsp;{{SALARY}}</span></p>
-<p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Do you agree for 1 month salary as security deposit?
+<p style="margin:0.8pt 0;" class="bold">6. Do you agree for 1 month salary as security deposit?
   <span style="font-weight:normal;">&nbsp;{{DEPOSIT}}</span></p>
+<p style="margin:0.8pt 0;" class="bold">7. Preferred Shift:
+  <span style="font-weight:normal;">&nbsp;{{SHIFT_TIME}}</span></p>
+<p style="margin:0.8pt 0;" class="bold">8. Availability for Joining:
+  <span style="font-weight:normal;">&nbsp;{{JOINING}}</span></p>
+<p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Expected Monthly Salary:
+  <span style="font-weight:normal;">&nbsp;{{SALARY}}</span></p>
 
 <!-- ROUND ONE OF SELECTION PROCESS -->
 <p class="section-title">10. Round One of Selection Process</p>

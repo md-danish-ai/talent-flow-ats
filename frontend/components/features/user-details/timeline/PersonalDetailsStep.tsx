@@ -155,7 +155,6 @@ export function PersonalDetailsStep({
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder={registeredEmail || "Enter email address"}
-                  disabled={!!registeredEmail}
                   error={
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0

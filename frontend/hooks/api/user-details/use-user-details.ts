@@ -15,7 +15,7 @@ export const userDetailsKeys = {
   me: ["user-details", "me"] as const,
 };
 
-export function useUserDetails() {
+export function useUserDetails(options?: { enabled?: boolean }) {
   return useQuery<UserDetails, ApiError>({
     queryKey: userDetailsKeys.me,
     queryFn: async () => {
@@ -36,6 +36,7 @@ export function useUserDetails() {
         throw error;
       }
     },
+    enabled: options?.enabled !== false, // default: enabled
     retry: false,
   });
 }
