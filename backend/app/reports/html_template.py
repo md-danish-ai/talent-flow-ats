@@ -116,7 +116,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     <td style="border:none; text-align:right; width: 30%; vertical-align: bottom; padding: 0;">
       <div style="display: inline-block; text-align: right;">
         {{LOGO_HTML}}<br/>
-        <span style="font-size:7.6pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
+        <span style="font-size:7.7pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
       </div>
     </td>
   </tr>
