@@ -135,7 +135,6 @@ try:
 except Exception:
     pass
 
-
 def build_report_html(data: dict) -> str:
     """Format and interpolate the report HTML template with candidate data."""
     logo_html = ""

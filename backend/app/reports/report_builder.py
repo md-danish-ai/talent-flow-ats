@@ -205,6 +205,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     work_exp_rows = _parse_json_field(answers, ["work experience", "experience"])
 
     # Override using actual data from user_details table if present
+    source_of_info: dict = {}
     ud = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
     if ud:
         pd_info = _ensure_dict(ud.personal_details)
@@ -276,23 +277,43 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                 or ""
             ).strip()
 
-            for src, val in src_val.items():
-                if src in ["otherDetails", "other_details"]:
-                    continue
-                if val:
-                    key_str = str(src)
-                    if key_str.lower() in ["others", "other"]:
-                        if other_text:
-                            sources.append(f"Others - {other_text}")
-                        else:
-                            sources.append("Others")
-                    else:
-                        sources.append(key_str.capitalize())
+            ordered_keys = [
+                ("campus", "Arcgate Campus Drive"),
+                ("website", "Arcgate Website"),
+                ("employee", "Arcgate Employee"),
+                ("friends", "Friends"),
+                ("newspaper", "Newspaper"),
+            ]
+
+            for key, label in ordered_keys:
+                if src_val.get(key):
+                    sources.append(label)
+
+            if src_val.get("others") or src_val.get("other"):
+                if other_text:
+                    sources.append(f"Others - {other_text}")
+                else:
+                    sources.append("Others")
         elif isinstance(src_val, str) and src_val:
             sources.append(src_val)
 
         if sources:
             how_did_you_hear = ", ".join(sources)
+
+        # Build source_of_info dict for checkbox display in PDF
+        raw_src = src_val if isinstance(src_val, dict) else {}
+        other_text_for_pdf = str(
+            raw_src.get("otherDetails") or raw_src.get("other_details") or ""
+        ).strip()
+        source_of_info = {
+            "campus": bool(raw_src.get("campus")),
+            "website": bool(raw_src.get("website")),
+            "employee": bool(raw_src.get("employee")),
+            "friends": bool(raw_src.get("friends")),
+            "newspaper": bool(raw_src.get("newspaper")),
+            "others": bool(raw_src.get("others")),
+            "otherDetails": other_text_for_pdf,
+        }
 
         # Tables
         edu_list = _ensure_list(ud.education_details)
@@ -509,6 +530,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         "salary": salary,
         "deposit": deposit,
         "how_did_you_hear": how_did_you_hear,
+        "source_of_info": source_of_info if ud else {},
         # Tables
         "education_rows": education_rows,
         "family_rows": family_rows,
