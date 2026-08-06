@@ -1,10 +1,20 @@
 "use client";
+
 import { memo, useState } from "react";
-import { Building2, Globe, MapPin, Phone } from "lucide-react";
+import {
+  Building2,
+  Check,
+  Copy,
+  ExternalLink,
+  Globe,
+  MapPin,
+  Phone,
+} from "lucide-react";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
+import { toast } from "@lib/toast";
 
 interface ContactDetailsViewProps {
   questionText: string;
@@ -12,11 +22,21 @@ interface ContactDetailsViewProps {
   onChangeAnswer: (value: string) => void;
 }
 
+const getFormattedUrl = (url: string) => {
+  if (!url) return "#";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 export const ContactDetailsView = memo(function ContactDetailsView({
   questionText,
   currentAnswer,
   onChangeAnswer,
 }: ContactDetailsViewProps) {
+  const [copied, setCopied] = useState(false);
   const [fieldAnswers, setFieldAnswers] = useState<Record<string, string>>(
     () => {
       try {
@@ -26,6 +46,40 @@ export const ContactDetailsView = memo(function ContactDetailsView({
       }
     },
   );
+
+  const handleCopy = () => {
+    if (!questionText) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard
+        .writeText(questionText)
+        .then(() => {
+          setCopied(true);
+          toast.success("Target Source / URL copied to clipboard!");
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(() => {
+          toast.error("Failed to copy to clipboard");
+        });
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = questionText;
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px";
+      document.body.prepend(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+        toast.success("Target Source / URL copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        toast.error("Failed to copy to clipboard");
+      } finally {
+        textArea.remove();
+      }
+    }
+  };
 
   const handleFieldChange = (key: string, value: string) => {
     const updated = { ...fieldAnswers, [key]: value };
@@ -42,11 +96,6 @@ export const ContactDetailsView = memo(function ContactDetailsView({
           key: "companyName",
           label: "Company Name",
           placeholder: "e.g. Acme Corp",
-        },
-        {
-          key: "websiteUrl",
-          label: "Website URL",
-          placeholder: "e.g. https://acme.com",
         },
       ],
     },
@@ -138,15 +187,47 @@ export const ContactDetailsView = memo(function ContactDetailsView({
               Target Source / URL
             </Typography>
           </div>
-          <div className="p-5">
-            <Typography
-              variant="body2"
-              weight="semibold"
-              color="text-foreground"
-              className="leading-relaxed tracking-tight break-all"
-            >
-              {questionText}
-            </Typography>
+          <div className="p-5 flex items-center flex-wrap gap-3">
+            {questionText ? (
+              <a
+                href={getFormattedUrl(questionText)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-brand-primary font-semibold hover:underline leading-relaxed tracking-tight break-all text-sm transition-colors hover:text-brand-primary/80"
+              >
+                <span>{questionText}</span>
+                <ExternalLink className="w-4 h-4 flex-shrink-0" />
+              </a>
+            ) : (
+              <Typography
+                variant="body2"
+                weight="semibold"
+                color="text-foreground"
+                className="leading-relaxed tracking-tight break-all"
+              >
+                N/A
+              </Typography>
+            )}
+            {questionText && (
+              <button
+                type="button"
+                onClick={handleCopy}
+                title="Copy Target Source / URL"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border border-border bg-background hover:bg-muted/50 hover:border-brand-primary text-muted-foreground hover:text-brand-primary transition-all cursor-pointer shadow-sm"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-emerald-600 font-bold">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
