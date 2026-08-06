@@ -129,7 +129,8 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                     <DatePicker
                       label={
                         <span>
-                          Joining Availability <span className="text-red-500">*</span>
+                          Joining Availability{" "}
+                          <span className="text-red-500">*</span>
                         </span>
                       }
                       value={field.state.value}

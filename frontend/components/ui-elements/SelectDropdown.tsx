@@ -130,6 +130,7 @@ export function SelectDropdown({
     } else {
       setIsOpen(false);
       setSearchTerm("");
+      triggerRef.current?.focus();
     }
   };
 
@@ -272,9 +273,10 @@ export function SelectDropdown({
           }
         }}
         className={cn(
-          "flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all cursor-pointer min-h-[46px]",
+          "group flex items-center justify-between rounded-md border bg-input py-3.5 px-4 text-left text-medium outline-none transition-all cursor-pointer min-h-[46px]",
           "border-border dark:border-white/20",
           "focus-visible:border-brand-primary focus-visible:ring-1 focus-visible:ring-brand-primary",
+          "focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary",
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
@@ -323,32 +325,57 @@ export function SelectDropdown({
           )}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {isClearable && selectedOption && !disabled && (
-              <span
-                role="button"
+              <button
+                type="button"
                 tabIndex={0}
+                title="Clear selection"
+                aria-label="Clear selection"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange("");
                   setSearchTerm("");
+                  triggerRef.current?.focus();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.stopPropagation();
                     onChange("");
                     setSearchTerm("");
+                    triggerRef.current?.focus();
                   }
                 }}
-                className="p-1 rounded-full hover:bg-muted dark:hover:bg-white/10 text-muted-foreground/60 hover:text-foreground transition-colors z-10 cursor-pointer"
+                className="p-1 rounded-full text-muted-foreground/60 hover:bg-brand-primary/10 hover:text-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none transition-all cursor-pointer"
               >
                 <X size={14} />
-              </span>
+              </button>
             )}
-            <ChevronDown
+            <button
+              type="button"
+              tabIndex={0}
+              title="Toggle dropdown"
+              aria-label="Toggle dropdown"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleDropdown();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  toggleDropdown();
+                }
+              }}
               className={cn(
-                "h-5 w-5 text-muted-foreground/60 flex-shrink-0 transition-transform",
-                isOpen && "rotate-180 text-brand-primary",
+                "p-1 rounded-full text-muted-foreground/60 hover:bg-brand-primary/10 hover:text-brand-primary focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none transition-all cursor-pointer",
+                isOpen && "bg-brand-primary/10 text-brand-primary",
               )}
-            />
+            >
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  isOpen && "rotate-180 text-brand-primary",
+                )}
+              />
+            </button>
           </div>
         </div>
       </div>

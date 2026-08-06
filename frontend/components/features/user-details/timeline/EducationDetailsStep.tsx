@@ -355,6 +355,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                 onChange={(val) => field.handleChange(val)}
                                 placeholder="End"
                                 disabled={!isEducationSelected}
+                                disableFuture={false}
                                 minYear={
                                   item.startYear
                                     ? parseInt(item.startYear, 10) + 1
