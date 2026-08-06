@@ -23,6 +23,7 @@ from .constants import QuestionType
 
 
 class BaseRowSchema(BaseModel):
+    question_id: Optional[str] = Field(None, alias="Question Id")
     subject_code: str = Field(alias="Subject Code")
     exam_level_code: str = Field(alias="Exam Level Code")
     marks: int = Field(default=5, alias="Marks")
@@ -31,7 +32,7 @@ class BaseRowSchema(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
-    @field_validator("question_text", "question_image", mode="before")
+    @field_validator("question_id", "question_text", "question_image", mode="before")
     @classmethod
     def coerce_to_str_or_none(cls, v):
         if pd.isna(v) or v == "" or v is None:
@@ -160,19 +161,50 @@ class BulkUploadService:
 
             prepared_data = []
             errors = []
+            skipped_count = 0
 
             # 4. Modular Parsing & Validation
             for idx, row in enumerate(rows):
                 row_num = idx + 2
+
+                # Skip rows where "Question Id" is already filled (already in DB)
+                # Leave blank to insert as a new question
+                qid_val = None
+                for qid_key in [
+                    "Question Id",
+                    "Question ID",
+                    "question_id",
+                    "QuestionID",
+                ]:
+                    raw = row.get(qid_key)
+                    if raw is not None:
+                        try:
+                            is_na = pd.isna(raw)
+                        except (TypeError, ValueError):
+                            is_na = False
+                        if not is_na:
+                            s_val = str(raw).strip()
+                            if s_val:
+                                qid_val = s_val
+                                break
+
+                if qid_val is not None:
+                    skipped_count += 1
+                    continue
 
                 # Apply defaults if missing in row
                 if not row.get("Subject Code") and default_subject:
                     row["Subject Code"] = default_subject
                 if not row.get("Exam Level Code") and default_level:
                     row["Exam Level Code"] = default_level
-                if (
-                    not row.get("Marks") or pd.isna(row.get("Marks"))
-                ) and default_marks is not None:
+                marks_val = row.get("Marks")
+                marks_is_empty = marks_val is None
+                if not marks_is_empty:
+                    try:
+                        marks_is_empty = bool(pd.isna(marks_val))
+                    except (TypeError, ValueError):
+                        marks_is_empty = False
+                if (not marks_val or marks_is_empty) and default_marks is not None:
                     row["Marks"] = default_marks
 
                 try:
@@ -191,10 +223,16 @@ class BulkUploadService:
                     errors.append({"row": row_num, "errors": error_msgs})
 
             if errors:
-                return {"success": False, "errors": errors}
+                return {
+                    "success": False,
+                    "errors": errors,
+                    "skipped": skipped_count,
+                }
 
             # 5. Optimized Bulk DB Insert
-            return await self._execute_bulk_insert(db, prepared_data, user_id)
+            result = await self._execute_bulk_insert(db, prepared_data, user_id)
+            result["skipped"] = skipped_count
+            return result
 
         except Exception as e:
             db.rollback()
@@ -399,8 +437,10 @@ class BulkUploadService:
 
     @staticmethod
     def _sanitize_json_value(val):
-        if val is None or pd.isna(val):
+        if val is None:
             return None
+        # Only call pd.isna on scalar values — calling it on list/dict returns
+        # an array of booleans which causes "truth value is ambiguous" error.
         if isinstance(val, dict):
             return {
                 k: BulkUploadService._sanitize_json_value(v) for k, v in val.items()
@@ -410,6 +450,12 @@ class BulkUploadService:
         if isinstance(val, str):
             cleaned = val.strip()
             return cleaned if cleaned else None
+        # For scalars (int, float, etc.), safely check for NaN/NaT
+        try:
+            if pd.isna(val):
+                return None
+        except (TypeError, ValueError):
+            pass
         return val
 
     async def _execute_bulk_insert(
