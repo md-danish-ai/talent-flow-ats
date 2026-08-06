@@ -7,8 +7,9 @@ import { CheckCircle2, X } from "lucide-react";
 export interface SubmitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: () => void | Promise<void>;
   incompleteSteps: number[];
+  isSubmitting?: boolean;
 }
 
 export function SubmitModal({
@@ -16,6 +17,7 @@ export function SubmitModal({
   onClose,
   onSubmit,
   incompleteSteps,
+  isSubmitting = false,
 }: SubmitModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-xl">
@@ -45,11 +47,12 @@ export function SubmitModal({
                     .map((step) => {
                       const stepNames: Record<number, string> = {
                         1: "Personal Details",
-                        2: "Family Details",
-                        3: "Source of Information",
-                        4: "Education Details",
-                        5: "Work Experience",
-                        6: "Other Details",
+                        2: "Additional Personal Details",
+                        3: "Family Details",
+                        4: "Source of Information",
+                        5: "Education Details",
+                        6: "Work Experience",
+                        7: "Other Details",
                       };
                       return stepNames[step] || `Timeline ${step}`;
                     })
@@ -105,6 +108,7 @@ export function SubmitModal({
                 animate="scale"
                 shadow
                 onClick={onClose}
+                disabled={isSubmitting}
                 className="px-10 text-sm font-semibold"
               >
                 Cancel
@@ -115,9 +119,11 @@ export function SubmitModal({
                 size="md"
                 animate="scale"
                 shadow
-                onClick={() => {
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+                onClick={async () => {
                   onClose();
-                  onSubmit();
+                  await onSubmit();
                 }}
                 className="px-10 text-sm font-semibold"
               >

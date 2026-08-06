@@ -19,15 +19,18 @@ from app.departments.models import Department
 from app.classifications.models import Classification as Cls
 from app.utils.pagination import create_paginated_response, PaginationParams
 from app.utils.expiration import run_auto_expiration
-from app.utils.department_helpers import is_software_department, exclude_software_users
+from app.utils.department_helpers import (
+    requires_interview_department,
+    exclude_no_interview_users,
+)
 
 
 def signup_user(data):
     db_session = SessionLocal()
     try:
-        # Check if Software department
-        is_software = is_software_department(db_session, data.department_id)
-        if not is_software and not data.test_level_id:
+        # Check if department requires interview process
+        needs_interview = requires_interview_department(db_session, data.department_id)
+        if needs_interview and not data.test_level_id:
             raise HTTPException(
                 status_code=StatusCode.BAD_REQUEST,
                 detail="Exam level is required for this department.",
@@ -61,7 +64,7 @@ def signup_user(data):
 
         # Trigger Auto-Assignment immediately after signup
         try:
-            if not is_software:
+            if needs_interview:
                 assign_best_paper(
                     db=db_session,
                     user_id=new_user.id,
@@ -81,6 +84,7 @@ def signup_user(data):
             "username": new_user.username,
             "role": new_user.role,
             "department_id": new_user.department_id,
+            "requires_interview": needs_interview,
         }
         token = generate_jwt(user_data)
         return {"access_token": token, "user": user_data}
@@ -154,7 +158,7 @@ def signin_user(data):
         # For regular users, check/trigger auto-assignment on login if not already assigned
         if user.role == RoleType.USER.value:
             try:
-                if not is_software_department(db_session, user.department_id):
+                if requires_interview_department(db_session, user.department_id):
                     assign_best_paper(
                         db=db_session,
                         user_id=user.id,
@@ -174,6 +178,9 @@ def signin_user(data):
             "username": user.username,
             "role": user.role,
             "department_id": user.department_id,
+            "requires_interview": requires_interview_department(
+                db_session, user.department_id
+            ),
         }
         token = generate_jwt(user_data)
         return {
@@ -262,6 +269,9 @@ def get_user_by_id(user_id):
             "department_name": user_obj.department.name
             if user_obj.department
             else None,
+            "requires_interview": requires_interview_department(
+                db_session, user_obj.department_id
+            ),
             "created_at": user_obj.created_at,
         }
 
@@ -294,10 +304,31 @@ def get_user_by_id(user_id):
                 else:
                     family_details_copy = details.family_details
 
+                # Auto-detect if candidate has attempted an interview test previously
+                has_past_attempt = (
+                    db_session.query(InterviewRecord)
+                    .filter(InterviewRecord.user_id == user_id)
+                    .first()
+                    is not None
+                )
+
+                soi = (
+                    dict(details.source_of_information)
+                    if details.source_of_information
+                    else {}
+                )
+                if "interviewedBefore" not in soi or soi["interviewedBefore"] is None:
+                    soi["interviewedBefore"] = has_past_attempt
+                elif has_past_attempt:
+                    soi["interviewedBefore"] = True
+
+                if "workedBefore" not in soi or soi["workedBefore"] is None:
+                    soi["workedBefore"] = False
+
                 user["recruitment_details"] = {
                     "personalDetails": details.personal_details,
                     "familyDetails": family_details_copy,
-                    "sourceOfInformation": details.source_of_information,
+                    "sourceOfInformation": soi,
                     "educationDetails": details.education_details,
                     "workExperienceDetails": details.work_experience_details,
                     "otherDetails": details.other_details,
@@ -355,6 +386,12 @@ def get_users_by_role(
         # 2. DATA RETRIEVAL
         range_from = safe_parse_date(date_from)
         range_to = safe_parse_date(date_to)
+
+        # Pre-fetch all departments to avoid N+1 queries in response loop
+        dept_requires_interview: dict[int, bool] = {
+            dept.id: bool(dept.requires_interview)
+            for dept in db_session.query(Department).all()
+        }
 
         UserDept = aliased(Department)
 
@@ -428,7 +465,7 @@ def get_users_by_role(
 
         # Exclude Software department users if requested
         if exclude_software:
-            results_query = exclude_software_users(db_session, results_query)
+            results_query = exclude_no_interview_users(db_session, results_query)
 
         # Apply Filters
         if department_id:
@@ -506,6 +543,9 @@ def get_users_by_role(
                 "department_id": row.User.department_id,
                 "department_name": row.user_dept_name,
                 "is_active": row.User.is_active,
+                "requires_interview": dept_requires_interview.get(
+                    row.User.department_id, False
+                ),
                 "is_details_submitted": row.is_submitted
                 if row.is_submitted is not None
                 else False,

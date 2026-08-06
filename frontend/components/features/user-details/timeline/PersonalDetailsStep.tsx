@@ -155,7 +155,6 @@ export function PersonalDetailsStep({
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder={registeredEmail || "Enter email address"}
-                  disabled={!!registeredEmail}
                   error={
                     field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0
@@ -212,11 +211,20 @@ export function PersonalDetailsStep({
                   Primary Mobile <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  value={field.state.value as string}
+                  value={(
+                    (field.state.value as string) ||
+                    registeredMobile ||
+                    ""
+                  )
+                    .replace(/\D/g, "")
+                    .slice(-10)}
                   onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => {
+                    field.handleChange(
+                      e.target.value.replace(/\D/g, "").slice(-10),
+                    );
+                    field.setMeta((prev) => ({ ...prev, isTouched: true }));
+                  }}
                   placeholder={registeredMobile || "Enter primary mobile"}
                   disabled={!!registeredMobile}
                   error={
@@ -243,11 +251,22 @@ export function PersonalDetailsStep({
                 <Input
                   value={field.state.value as string}
                   onBlur={field.handleBlur}
-                  onChange={(e) =>
-                    field.handleChange(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => {
+                    field.handleChange(e.target.value.replace(/\D/g, ""));
+                    field.setMeta((prev) => ({ ...prev, isTouched: true }));
+                  }}
                   placeholder="Enter alternate mobile"
+                  error={
+                    field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0
+                  }
                 />
+                {field.state.meta.isTouched &&
+                  field.state.meta.errors.length > 0 && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {getErrorMessage(field.state.meta.errors[0])}
+                    </p>
+                  )}
               </div>
             )}
           </form.Field>
@@ -270,6 +289,7 @@ export function PersonalDetailsStep({
                   }
                   disableFuture={true}
                   maxDate={maxDobDate}
+                  initialViewMode="years"
                 />
                 {field.state.meta.isTouched &&
                   field.state.meta.errors.length > 0 && (
@@ -664,6 +684,13 @@ export function PersonalDetailsStep({
                       "permanentPincode",
                       values.presentPincode,
                     );
+                  } else {
+                    form.setFieldValue("permanentAddressLine1", "");
+                    form.setFieldValue("permanentAddressLine2", "");
+                    form.setFieldValue("permanentState", "");
+                    form.setFieldValue("permanentDistrict", "");
+                    form.setFieldValue("permanentCity", "");
+                    form.setFieldValue("permanentPincode", "");
                   }
                 }}
                 className="w-5 h-5"

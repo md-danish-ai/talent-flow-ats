@@ -29,20 +29,20 @@ def _edu_rows_html(rows: list[dict]) -> str:
         return "".join(
             f"""<tr>
               <td style="width: 13%;">{_esc(r.get("education", ""))}</td>
-              <td style="width: 15%;">{_esc(r.get("details", ""))}</td>
+              <td style="width: 13%;">{_esc(r.get("details", ""))}</td>
               <td style="width: 18%;">{_esc(r.get("school", ""))}</td>
               <td style="width: 15%; text-align: center;">{_esc(r.get("board", ""))}</td>
-              <td style="width: 10%; text-align: center;">{_esc(r.get("medium", ""))}</td>
-              <td style="width: 15%; text-align: center;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
-              <td style="width: 8%; text-align: center;">{_esc(r.get("division", ""))}</td>
-              <td style="width: 6%; text-align: center;">{_esc(r.get("percentage", ""))}</td>
+              <td style="width: 8%; text-align: center;">{_esc(r.get("medium", ""))}</td>
+              <td style="width: 13%; text-align: center;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
+              <td style="width: 10%; text-align: center;">{_esc(r.get("division", ""))}</td>
+              <td style="width: 10%; text-align: center;">{_esc(r.get("percentage", ""))}</td>
             </tr>"""
             for r in rows
         )
     return """
-      <tr><td style="font-weight:bold; width: 13%;">10th Std</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
-      <tr><td style="font-weight:bold; width: 13%;">12th Std</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
-      <tr><td style="font-weight:bold; width: 13%;">Graduation</td><td style="width: 15%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 6%; text-align: center;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">10th Std</td><td style="width: 13%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 13%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">12th Std</td><td style="width: 13%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 13%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td></tr>
+      <tr><td style="font-weight:bold; width: 13%;">Graduation</td><td style="width: 13%;"></td><td style="width: 18%;"></td><td style="width: 15%; text-align: center;"></td><td style="width: 8%; text-align: center;"></td><td style="width: 13%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td><td style="width: 10%; text-align: center;"></td></tr>
     """
 
 
@@ -153,6 +153,14 @@ def build_report_html(data: dict) -> str:
         "{{GENDER}}": _esc(data.get("gender")) or "____",
         "{{DOB}}": _esc(data.get("dob")) or "____",
         "{{ADDRESS}}": _esc(data.get("address")) or "__________________________",
+        "{{PRESENT_ADDRESS}}": _esc(data.get("present_address") or data.get("address"))
+        or "__________________________",
+        "{{PERMANENT_ADDRESS}}": _esc(
+            data.get("permanent_address")
+            or data.get("present_address")
+            or data.get("address")
+        )
+        or "__________________________",
         "{{ARCGATE}}": _esc(data.get("arcgate")) or "No",
         "{{HOW_DID_YOU_HEAR}}": _esc(data.get("how_did_you_hear", "")),
         "{{COMMITMENT}}": _esc(data.get("commitment")) or "Yes",

@@ -44,9 +44,9 @@ export interface FamilyDetail {
 }
 
 export interface SourceOfInformation {
-  interviewedBefore: string;
-  workedBefore: string;
-  source: Record<string, boolean>;
+  interviewedBefore: boolean | string;
+  workedBefore: boolean | string;
+  source: Record<string, boolean | string>;
 }
 
 export interface EducationDetail {
@@ -81,6 +81,7 @@ export interface OtherDetails {
 }
 
 export interface UserDetails {
+  user_id?: number | string;
   is_submitted: boolean;
   is_interview_submitted: boolean;
   username?: string;

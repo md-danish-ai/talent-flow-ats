@@ -129,8 +129,8 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                     <DatePicker
                       label={
                         <span>
-                          On selection, please mention the expected joining
-                          date. <span className="text-red-500">*</span>
+                          Joining Availability{" "}
+                          <span className="text-red-500">*</span>
                         </span>
                       }
                       value={field.state.value}
@@ -155,7 +155,11 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
             </div>
             <div>
               <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                Expected Salary <span className="text-red-500">*</span>
+                Expected Salary{" "}
+                <span className="text-xs font-normal opacity-75">
+                  (Monthly)
+                </span>{" "}
+                <span className="text-red-500">*</span>
               </label>
               <form.Field name="expectedSalary">
                 {(field) => (
@@ -166,7 +170,7 @@ export function OtherDetailsStep({ form }: OtherDetailsStepProps) {
                         field.handleChange(e.target.value.replace(/\D/g, ""))
                       }
                       onBlur={field.handleBlur}
-                      placeholder="Enter expected salary..."
+                      placeholder="Enter expected salary (Monthly)..."
                       error={
                         field.state.meta.isTouched &&
                         field.state.meta.errors.length > 0

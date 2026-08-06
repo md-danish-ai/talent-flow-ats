@@ -45,7 +45,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     font-size: 7.7pt;
   }
   td, th {
-    border: 0.5px solid #000;
+    border: 0.25pt solid #a0a0a0;
     padding: 1.6px 2.6px;
     vertical-align: middle;
     line-height: 1.08;
@@ -66,7 +66,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <pdf:nexttemplate name="inner_pages" />
 
 <div id="footerFirst" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
-  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <div style="border-top: 0.25pt solid #a0a0a0; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
       <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
@@ -88,7 +88,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div id="footerOther" style="font-size: 7.7pt; font-family: Helvetica, Arial, sans-serif; color: #333;">
-  <div style="border-top: 0.5px solid #bbb; padding-top: 5px; margin-bottom: 2px;"></div>
+  <div style="border-top: 0.25pt solid #a0a0a0; padding-top: 5px; margin-bottom: 2px;"></div>
   <table class="footer-table" style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 0;">
     <tr>
       <td style="border: none; text-align: left; width: 50%; padding: 0; line-height: 1.3; font-weight: bold; color: #111;">
@@ -116,7 +116,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
     <td style="border:none; text-align:right; width: 30%; vertical-align: bottom; padding: 0;">
       <div style="display: inline-block; text-align: right;">
         {{LOGO_HTML}}<br/>
-        <span style="font-size:7.6pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
+        <span style="font-size:7.7pt; font-weight:bold; line-height: 1; margin-top: 10px;">Date: {{TODAY}}</span>
       </div>
     </td>
   </tr>
@@ -128,19 +128,19 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
   <tbody>
     <tr>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Gender:</span> {{GENDER}}</td>
-      <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Date of Birth:</span> {{DOB}}</td>
+      <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Date Of Birth:</span> {{DOB}}</td>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Mobile:</span> {{MOBILE}}</td>
       <td style="border:none; width:25%; padding:1px 0;"><span class="bold">Email:</span> {{EMAIL}}</td>
     </tr>
     <tr>
-      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Present Address:</span> {{ADDRESS}}</td>
+      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Present Address:</span> {{PRESENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{ADDRESS}}</td>
+      <td colspan="4" style="border:none; padding:1px 0;"><span class="bold">Permanent Address:</span> {{PERMANENT_ADDRESS}}</td>
     </tr>
     <tr>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Applied Arcgate before?:</span> No</td>
-      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have you Worked in Arcgate before?:</span> {{ARCGATE}}</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have You Ever Been Interviewed By Arcgate In Past?:</span> No</td>
+      <td colspan="2" style="border:none; width:50%; padding:1px 0;"><span class="bold">Have You Worked In Arcgate Before?:</span> {{ARCGATE}}</td>
     </tr>
   </tbody>
 </table>
@@ -148,7 +148,7 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <table style="width: 100%; border-collapse: collapse; margin-bottom: 2pt;">
   <tbody>
     <tr>
-      <td class="bold" style="width: 40%;">How did you hear about Arcgate?:</td>
+      <td class="bold" style="width: 40%;">How Did You Hear About Arcgate?:</td>
       <td style="width: 60%;">{{HOW_DID_YOU_HEAR}}</td>
     </tr>
   </tbody>
@@ -159,14 +159,14 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 <table style="width: 100%;">
   <thead>
     <tr>
-      <th style="width: 13%; text-align: center;">Education</th>
-      <th style="width: 15%; text-align: center;">Education Details</th>
+      <th style="width: 13%; text-align: center;">Education Level</th>
+      <th style="width: 13%; text-align: center;">Education Details</th>
       <th style="width: 18%; text-align: center;">School/College</th>
       <th style="width: 15%; text-align: center;">Board/University</th>
-      <th style="width: 10%; text-align: center;">Medium</th>
-      <th style="width: 15%; text-align: center;">Passing Year</th>
-      <th style="width: 8%; text-align: center;">Division</th>
-      <th style="width: 6%; text-align: center;">%</th>
+      <th style="width: 8%; text-align: center;">Medium</th>
+      <th style="width: 13%; text-align: center;">Passing Year</th>
+      <th style="width: 10%; text-align: center;">Division</th>
+      <th style="width: 10%; text-align: center;">% / CGPA</th>
     </tr>
   </thead>
   <tbody>
@@ -209,16 +209,16 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 </table>
 
 <!-- Q5–Q9 -->
-<p style="margin:0.8pt 0;" class="bold">5. Are you willing for 1 Year Service Commitment?
+<p style="margin:0.8pt 0;" class="bold">5. Are You Willing For 1 Year Service Commitment?
   <span style="font-weight:normal;">&nbsp;{{COMMITMENT}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">6. What is your preferred shift time for work at Arcgate?
-  <span style="font-weight:normal;">&nbsp;{{SHIFT_TIME}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">7. Joining date if selected:
-  <span style="font-weight:normal;">&nbsp;{{JOINING}}</span></p>
-<p style="margin:0.8pt 0;" class="bold">8. Salary Expected:
-  <span style="font-weight:normal;">&nbsp;{{SALARY}}</span></p>
-<p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Do you agree for 1 month salary as security deposit?
+<p style="margin:0.8pt 0;" class="bold">6. Do You Agree For 1 Month Salary As Security deposit?
   <span style="font-weight:normal;">&nbsp;{{DEPOSIT}}</span></p>
+<p style="margin:0.8pt 0;" class="bold">7. Preferred Shift:
+  <span style="font-weight:normal;">&nbsp;{{SHIFT_TIME}}</span></p>
+<p style="margin:0.8pt 0;" class="bold">8. Joining Availability:
+  <span style="font-weight:normal;">&nbsp;{{JOINING}}</span></p>
+<p style="margin:0.8pt 0; margin-bottom:1.5pt;" class="bold">9. Expected Monthly Salary:
+  <span style="font-weight:normal;">&nbsp;{{SALARY}}</span></p>
 
 <!-- ROUND ONE OF SELECTION PROCESS -->
 <p class="section-title">10. Round One of Selection Process</p>

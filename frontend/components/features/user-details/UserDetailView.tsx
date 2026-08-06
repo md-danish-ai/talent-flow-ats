@@ -24,6 +24,8 @@ import { Button } from "@components/ui-elements/Button";
 import type { UserDetails } from "@types";
 import { Card } from "@components/ui-cards/Card";
 
+import { computeDivisionAndGrade, formatPercentageOrCgpa } from "@lib/utils";
+
 interface UserDetailViewProps {
   details: UserDetails;
   userId: string | number;
@@ -164,11 +166,16 @@ export function UserDetailView({
                     Present Address
                   </Typography>
                   <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {personalDetails?.presentAddressLine1},{" "}
-                    {personalDetails?.presentCity},{" "}
-                    {personalDetails?.presentDistrict},{" "}
-                    {personalDetails?.presentState} —{" "}
-                    {personalDetails?.presentPincode}
+                    {[
+                      personalDetails?.presentAddressLine1,
+                      personalDetails?.presentAddressLine2,
+                      personalDetails?.presentCity,
+                      personalDetails?.presentDistrict,
+                      personalDetails?.presentState,
+                      personalDetails?.presentPincode,
+                    ]
+                      .filter((x) => x && String(x).trim() !== "")
+                      .join(", ")}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -180,23 +187,27 @@ export function UserDetailView({
                     Permanent Address
                   </Typography>
                   <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {personalDetails?.sameAddress ? (
-                      <>
-                        {personalDetails?.presentAddressLine1},{" "}
-                        {personalDetails?.presentCity},{" "}
-                        {personalDetails?.presentDistrict},{" "}
-                        {personalDetails?.presentState} —{" "}
-                        {personalDetails?.presentPincode}
-                      </>
-                    ) : (
-                      <>
-                        {personalDetails?.permanentAddressLine1},{" "}
-                        {personalDetails?.permanentCity},{" "}
-                        {personalDetails?.permanentDistrict},{" "}
-                        {personalDetails?.permanentState} —{" "}
-                        {personalDetails?.permanentPincode}
-                      </>
-                    )}
+                    {personalDetails?.sameAddress
+                      ? [
+                          personalDetails?.presentAddressLine1,
+                          personalDetails?.presentAddressLine2,
+                          personalDetails?.presentCity,
+                          personalDetails?.presentDistrict,
+                          personalDetails?.presentState,
+                          personalDetails?.presentPincode,
+                        ]
+                          .filter((x) => x && String(x).trim() !== "")
+                          .join(", ")
+                      : [
+                          personalDetails?.permanentAddressLine1,
+                          personalDetails?.permanentAddressLine2,
+                          personalDetails?.permanentCity,
+                          personalDetails?.permanentDistrict,
+                          personalDetails?.permanentState,
+                          personalDetails?.permanentPincode,
+                        ]
+                          .filter((x) => x && String(x).trim() !== "")
+                          .join(", ")}
                   </p>
                 </div>
               </div>
@@ -381,7 +392,7 @@ export function UserDetailView({
                       Year
                     </th>
                     <th className="text-right px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      Score
+                      % / CGPA
                     </th>
                   </tr>
                 </thead>
@@ -405,9 +416,12 @@ export function UserDetailView({
                         </td>
                         <td className="px-6 py-5 text-right">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {edu.percentage}%{" "}
-                            <span className="opacity-40 font-medium">
-                              {edu.division}
+                            {formatPercentageOrCgpa(edu.percentage)}{" "}
+                            <span className="opacity-70 font-bold text-brand-primary">
+                              {computeDivisionAndGrade(
+                                edu.percentage,
+                                edu.division,
+                              )}
                             </span>
                           </span>
                         </td>
@@ -477,7 +491,9 @@ export function UserDetailView({
                 <DetailItem
                   label="Previous Interview"
                   value={
-                    sourceOfInformation?.interviewedBefore === "yes"
+                    sourceOfInformation?.interviewedBefore === true ||
+                    sourceOfInformation?.interviewedBefore === "yes" ||
+                    sourceOfInformation?.interviewedBefore === "Yes"
                       ? "Yes, Previously"
                       : "No"
                   }
@@ -485,7 +501,9 @@ export function UserDetailView({
                 <DetailItem
                   label="Past Employment"
                   value={
-                    sourceOfInformation?.workedBefore === "yes"
+                    sourceOfInformation?.workedBefore === true ||
+                    sourceOfInformation?.workedBefore === "yes" ||
+                    sourceOfInformation?.workedBefore === "Yes"
                       ? "Yes, Previously"
                       : "No"
                   }
@@ -503,15 +521,31 @@ export function UserDetailView({
                 <div className="flex flex-wrap gap-2">
                   {sourceOfInformation?.source &&
                     Object.entries(sourceOfInformation.source)
-                      .filter(([, value]) => value === true)
-                      .map(([key]) => (
-                        <span
-                          key={key}
-                          className="px-3 py-1.5 bg-teal-500/10 dark:bg-teal-500/20 rounded-xl text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20"
-                        >
-                          {key.replace(/([A-Z])/g, " $1")}
-                        </span>
-                      ))}
+                      .filter(
+                        ([key, value]) =>
+                          key !== "otherDetails" && Boolean(value),
+                      )
+                      .map(([key]) => {
+                        let label = key.replace(/([A-Z])/g, " $1");
+                        if (
+                          key.toLowerCase() === "others" ||
+                          key.toLowerCase() === "other"
+                        ) {
+                          const otherText =
+                            sourceOfInformation?.source?.otherDetails;
+                          label = otherText
+                            ? `Others - ${otherText}`
+                            : "Others";
+                        }
+                        return (
+                          <span
+                            key={key}
+                            className="px-3 py-1.5 bg-teal-500/10 dark:bg-teal-500/20 rounded-xl text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20"
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
                 </div>
               </div>
             </div>

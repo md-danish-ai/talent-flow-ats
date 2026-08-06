@@ -12,7 +12,7 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Building2 } from "lucide-react";
+import { Plus, Edit, Building2, UserCheck } from "lucide-react";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
@@ -34,7 +34,6 @@ interface DepartmentListingProps {
 }
 
 export function DepartmentListing({ initialData }: DepartmentListingProps) {
-  // Hook for standardized listing
   const {
     data: departments,
     isLoading,
@@ -59,13 +58,15 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
     toastMessage: "Department list refreshed successfully",
   });
 
-  // Modals Local State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null,
   );
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [togglingInterviewId, setTogglingInterviewId] = useState<number | null>(
+    null,
+  );
 
   const handleOpenModal = (dept?: Department) => {
     setEditingDepartment(dept || null);
@@ -86,6 +87,24 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       console.error("Toggle failed:", error);
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const handleToggleRequiresInterview = async (dept: Department) => {
+    setTogglingInterviewId(dept.id);
+    try {
+      await departmentsApi.updateDepartment(dept.id, {
+        requires_interview: !dept.requires_interview,
+      });
+      void refresh();
+      toast.success(
+        `Interview requirement ${!dept.requires_interview ? "enabled" : "disabled"} for ${dept.name}`,
+      );
+    } catch (error) {
+      console.error("Toggle failed:", error);
+      toast.error("Failed to update interview requirement");
+    } finally {
+      setTogglingInterviewId(null);
     }
   };
 
@@ -153,6 +172,12 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                     <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
                       Status
                     </TableHead>
+                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <UserCheck size={13} />
+                        Requires Interview
+                      </div>
+                    </TableHead>
                     <TableHead className="font-bold text-slate-500 text-xs uppercase">
                       Created At
                     </TableHead>
@@ -168,10 +193,11 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                   {isLoading ? (
                     <SimpleTableSkeleton
                       rowCount={pageSize}
-                      columnCount={6}
+                      columnCount={7}
                       columnWidths={[
                         "w-[80px] text-center",
                         "font-semibold text-foreground",
+                        "text-center",
                         "text-center",
                         "text-muted-foreground text-sm",
                         "text-muted-foreground text-sm",
@@ -180,7 +206,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                     />
                   ) : departments.length === 0 ? (
                     <EmptyState
-                      colSpan={6}
+                      colSpan={7}
                       variant="database"
                       title="No departments found"
                       description="You haven't added any departments yet. Click on the 'Add Department' button to get started."
@@ -194,6 +220,8 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                         <TableCell className="font-semibold text-foreground">
                           {dept.name}
                         </TableCell>
+
+                        {/* Active/Inactive Status */}
                         <TableCell>
                           <div className="flex flex-col items-center justify-center gap-1">
                             <Switch
@@ -211,14 +239,56 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                             </Badge>
                           </div>
                         </TableCell>
+
+                        {/* Requires Interview */}
+                        <TableCell>
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Switch
+                              checked={dept.requires_interview ?? true}
+                              onChange={() =>
+                                handleToggleRequiresInterview(dept)
+                              }
+                              size="sm"
+                              disabled={togglingInterviewId === dept.id}
+                            />
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={
+                                dept.requires_interview ? "violet" : "warning"
+                              }
+                            >
+                              {dept.requires_interview ? "Yes" : "No"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+
                         <TableCell className="text-muted-foreground text-sm">
                           {dept.created_at
-                            ? new Date(dept.created_at).toLocaleString()
+                            ? new Date(dept.created_at).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {dept.updated_at
-                            ? new Date(dept.updated_at).toLocaleString()
+                            ? new Date(dept.updated_at).toLocaleString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell>

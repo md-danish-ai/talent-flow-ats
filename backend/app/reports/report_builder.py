@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import math
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import desc
@@ -17,6 +18,12 @@ from app.classifications.models import Classification
 from app.evaluations.models import InterviewEvaluation
 from app.users.models import User
 from app.user_details.models import UserDetail
+
+
+from app.utils.education_utils import (
+    compute_division_and_grade,
+    format_percentage_or_cgpa,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -31,6 +38,51 @@ def _get_answer(answers: list[dict], keywords: list[str]) -> str:
         if any(kw.lower() in qt for kw in keywords):
             return ans.get("user_answer") or ""
     return ""
+
+
+def _ensure_dict(val: Any) -> dict:
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, str):
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
+def _fmt_date(val: Any) -> str:
+    """Return val formatted as DD-MM-YYYY. Handles YYYY-MM-DD ISO strings,
+    datetime / date objects, and already-formatted DD-MM-YYYY strings.
+    Returns the original string unchanged if parsing fails."""
+    if not val:
+        return ""
+    s = str(val).strip()
+    # Already DD-MM-YYYY?
+    if len(s) == 10 and s[2] == "-" and s[5] == "-":
+        return s
+    # Try ISO YYYY-MM-DD (first 10 chars to ignore time component)
+    try:
+        dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        return dt.strftime("%d-%m-%Y")
+    except ValueError:
+        pass
+    return s
+
+
+def _ensure_list(val: Any) -> list:
+    if isinstance(val, list):
+        return val
+    if isinstance(val, str):
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, list):
+                return parsed
+        except Exception:
+            pass
+    return []
 
 
 def _parse_json_field(answers: list[dict], keywords: list[str]) -> list[dict]:
@@ -127,14 +179,18 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
 
     # 4. Personal fields
     gender = _get_answer(answers, ["gender"])
-    dob = _get_answer(answers, ["date of birth", "dob"])
+    dob = _fmt_date(_get_answer(answers, ["date of birth", "dob"]))
     address = _get_answer(answers, ["address", "current address", "permanent address"])
+    present_address = address
+    permanent_address = address
     arcgate = _get_answer(answers, ["worked in arcgate", "previously worked"])
     commitment = _get_answer(
         answers, ["1 year service commitment", "willing for 1 year"]
     )
     shift_time = _get_answer(answers, ["preferred shift time", "shift time"])
-    joining = _get_answer(answers, ["joining date if selected", "joining date"])
+    joining = _fmt_date(
+        _get_answer(answers, ["joining date if selected", "joining date"])
+    )
     salary = _get_answer(answers, ["salary expected", "expected salary"])
     how_did_you_hear = _get_answer(
         answers, ["how did you hear about arcgate", "how did you hear"]
@@ -149,66 +205,146 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     work_exp_rows = _parse_json_field(answers, ["work experience", "experience"])
 
     # Override using actual data from user_details table if present
+    source_of_info: dict = {}
     ud = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
     if ud:
-        pd_info = ud.personal_details or {}
+        pd_info = _ensure_dict(ud.personal_details)
         gender = pd_info.get("gender") or gender
-        dob = pd_info.get("dob") or dob
+        dob = _fmt_date(pd_info.get("dob")) or dob
 
-        # Combine present address
-        pres_addr = ", ".join(
-            filter(
-                None,
-                [
-                    pd_info.get("presentAddressLine1"),
-                    pd_info.get("presentAddressLine2"),
-                    pd_info.get("presentCity"),
-                    pd_info.get("presentState"),
-                    pd_info.get("presentPincode"),
-                ],
+        def _build_addr(l1, l2, c, d, s, p):
+            parts = [l1, l2, c, d, s, p]
+            return ", ".join(
+                filter(None, [str(x).strip() for x in parts if x and str(x).strip()])
             )
+
+        pres_addr = _build_addr(
+            pd_info.get("presentAddressLine1"),
+            pd_info.get("presentAddressLine2"),
+            pd_info.get("presentCity"),
+            pd_info.get("presentDistrict"),
+            pd_info.get("presentState"),
+            pd_info.get("presentPincode"),
         )
         if pres_addr:
+            present_address = pres_addr
             address = pres_addr
 
+        if pd_info.get("sameAddress"):
+            permanent_address = pres_addr
+        else:
+            perm_addr = _build_addr(
+                pd_info.get("permanentAddressLine1"),
+                pd_info.get("permanentAddressLine2"),
+                pd_info.get("permanentCity"),
+                pd_info.get("permanentDistrict"),
+                pd_info.get("permanentState"),
+                pd_info.get("permanentPincode"),
+            )
+            permanent_address = perm_addr or pres_addr
+
         # Other details
-        od_info = ud.other_details or {}
+        od_info = _ensure_dict(ud.other_details)
         commitment = od_info.get("serviceCommitment") or commitment
         shift_time = od_info.get("shiftTime") or shift_time
-        joining = od_info.get("expectedJoiningDate") or joining
+        joining = _fmt_date(od_info.get("expectedJoiningDate")) or joining
         salary = od_info.get("expectedSalary") or salary
         deposit = od_info.get("securityDeposit") or deposit
 
         # Source of information
-        soi_info = ud.source_of_information or {}
-        arcgate = soi_info.get("workedBefore") or arcgate
+        soi_info = _ensure_dict(ud.source_of_information)
+        wb = soi_info.get("workedBefore")
+        if wb is True:
+            arcgate = "Yes"
+        elif wb is False:
+            arcgate = "No"
+        elif wb:
+            arcgate = str(wb)
 
         sources = []
-        src_dict = soi_info.get("source") or {}
-        for src, val in src_dict.items():
-            if val:
-                sources.append(src.capitalize())
+        src_val = soi_info.get("source")
+        if isinstance(src_val, str):
+            try:
+                src_val = json.loads(src_val)
+            except Exception:
+                pass
+
+        if isinstance(src_val, dict):
+            other_text = str(
+                src_val.get("otherDetails")
+                or src_val.get("other_details")
+                or soi_info.get("otherDetails")
+                or ""
+            ).strip()
+
+            ordered_keys = [
+                ("campus", "Arcgate Campus Drive"),
+                ("website", "Arcgate Website"),
+                ("employee", "Arcgate Employee"),
+                ("friends", "Friends"),
+                ("newspaper", "Newspaper"),
+            ]
+
+            for key, label in ordered_keys:
+                if src_val.get(key):
+                    sources.append(label)
+
+            if src_val.get("others") or src_val.get("other"):
+                if other_text:
+                    sources.append(f"Others - {other_text}")
+                else:
+                    sources.append("Others")
+        elif isinstance(src_val, str) and src_val:
+            sources.append(src_val)
+
         if sources:
             how_did_you_hear = ", ".join(sources)
 
+        # Build source_of_info dict for checkbox display in PDF
+        raw_src = src_val if isinstance(src_val, dict) else {}
+        other_text_for_pdf = str(
+            raw_src.get("otherDetails") or raw_src.get("other_details") or ""
+        ).strip()
+        source_of_info = {
+            "campus": bool(raw_src.get("campus")),
+            "website": bool(raw_src.get("website")),
+            "employee": bool(raw_src.get("employee")),
+            "friends": bool(raw_src.get("friends")),
+            "newspaper": bool(raw_src.get("newspaper")),
+            "others": bool(raw_src.get("others")),
+            "otherDetails": other_text_for_pdf,
+        }
+
         # Tables
-        if ud.education_details:
+        edu_list = _ensure_list(ud.education_details)
+        if edu_list:
             education_rows = [
                 {
-                    "education": item.get("type", ""),
-                    "details": item.get("details", ""),
-                    "school": item.get("school", ""),
-                    "board": item.get("board", ""),
-                    "medium": item.get("medium", ""),
-                    "year": item.get("year", "").replace("-", " - "),
-                    "division": item.get("division", ""),
-                    "percentage": item.get("percentage", ""),
+                    "education": item.get("type", "") if isinstance(item, dict) else "",
+                    "details": item.get("details", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "school": item.get("school", "") if isinstance(item, dict) else "",
+                    "board": item.get("board", "") if isinstance(item, dict) else "",
+                    "medium": item.get("medium", "") if isinstance(item, dict) else "",
+                    "year": str(
+                        item.get("year", "") if isinstance(item, dict) else ""
+                    ).replace("-", " - "),
+                    "division": compute_division_and_grade(
+                        item.get("percentage", "") if isinstance(item, dict) else "",
+                        item.get("division", "") if isinstance(item, dict) else "",
+                    ),
+                    "percentage": format_percentage_or_cgpa(
+                        item.get("percentage", "") if isinstance(item, dict) else ""
+                    ),
                 }
-                for item in ud.education_details
-                if item.get("school") or item.get("year") or item.get("percentage")
+                for item in edu_list
+                if isinstance(item, dict)
+                and (item.get("school") or item.get("year") or item.get("percentage"))
             ]
 
-        if ud.family_details:
+        fam_list = _ensure_list(ud.family_details)
+        if fam_list:
             relations = (
                 db.query(Classification)
                 .filter(Classification.type == "family_relation")
@@ -216,8 +352,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             )
             relation_map = {r.code: r.name for r in relations}
             family_rows = []
-            for item in ud.family_details:
-                if not item.get("name"):
+            for item in fam_list:
+                if not isinstance(item, dict) or not item.get("name"):
                     continue
                 relation_code = item.get("relation", "")
                 relation_label = item.get("relationLabel") or relation_map.get(
@@ -232,19 +368,29 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                     }
                 )
 
-        if ud.work_experience_details:
+        work_list = _ensure_list(ud.work_experience_details)
+        if work_list:
             work_exp_rows = [
                 {
-                    "company": item.get("company", ""),
-                    "designation": item.get("designation", ""),
-                    "joinDate": item.get("joinDate", ""),
-                    "leaveDate": item.get("leaveDate", "")
-                    or item.get("relieveDate", ""),
-                    "reason": item.get("reason", ""),
-                    "salary": item.get("salary", ""),
+                    "company": item.get("company", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "designation": item.get("designation", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "joinDate": item.get("joinDate", "")
+                    if isinstance(item, dict)
+                    else "",
+                    "leaveDate": (
+                        item.get("leaveDate", "") or item.get("relieveDate", "")
+                    )
+                    if isinstance(item, dict)
+                    else "",
+                    "reason": item.get("reason", "") if isinstance(item, dict) else "",
+                    "salary": item.get("salary", "") if isinstance(item, dict) else "",
                 }
-                for item in ud.work_experience_details
-                if item.get("company")
+                for item in work_list
+                if isinstance(item, dict) and item.get("company")
             ]
 
     # 6. Typing stats
@@ -259,17 +405,20 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
     subject_items = []
     for subj in all_subjects:
         name = subj.name
+        name_lower = name.lower().strip()
+        # Skip individual lead generation, company contact details, and typing grade
+        if name_lower in [
+            "lead generation",
+            "company contact details",
+            "typing",
+            "typing test",
+        ]:
+            continue
+
         value = "-"
         if name in sr_map:
             res = sr_map[name]
-            if name.lower() in ["lead generation", "company contact details"]:
-                tot = int(res.get("total_marks", 0))
-                obt = res.get("obtained_marks", 0)
-                obt_str = str(int(obt)) if obt == int(obt) else f"{obt:.2f}"
-                name = f"{name} (Out of {tot})"
-                value = obt_str
-            else:
-                value = res.get("grade") or "-"
+            value = res.get("grade") or "-"
         subject_items.append({"name": name, "value": value})
 
     # Calculate Internet Test Marks (sum of Lead Generation and Company Contact Details)
@@ -299,13 +448,13 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         internet_obt_str = "-"
 
     it_items = [
-        {"name": "Typing Speed (Words/Minute)", "value": wpm},
-        {"name": "Typing Accuracy (%)", "value": accuracy},
-        {"name": "Total Typing Errors", "value": errors},
         {
             "name": f"Internet Test Marks (Out of {internet_total})",
             "value": internet_obt_str,
         },
+        {"name": "Typing Speed (Words/Minute)", "value": wpm},
+        {"name": "Typing Accuracy (%)", "value": accuracy},
+        {"name": "Total Typing Errors", "value": errors},
     ]
     left_col, right_col = _distribute_columns(subject_items + it_items)
 
@@ -372,6 +521,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         "gender": gender,
         "dob": dob,
         "address": address,
+        "present_address": present_address,
+        "permanent_address": permanent_address,
         "arcgate": arcgate,
         "commitment": commitment,
         "shift_time": shift_time,
@@ -379,6 +530,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         "salary": salary,
         "deposit": deposit,
         "how_did_you_hear": how_did_you_hear,
+        "source_of_info": source_of_info if ud else {},
         # Tables
         "education_rows": education_rows,
         "family_rows": family_rows,

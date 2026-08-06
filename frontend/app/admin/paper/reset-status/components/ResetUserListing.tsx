@@ -102,8 +102,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
     resetFilters,
     refresh,
   } = useListing<UserListResponse, UserListingFilters>({
-    fetchFn: (params) =>
-      getUsersByRole("user", { ...params, exclude_software: true }),
+    fetchFn: (params) => getUsersByRole("user", { ...params }),
     initialFilters: {
       search: "",
       department: "all",
@@ -324,15 +323,17 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   row.assignment?.department_name ||
                                   "N/A"}
                               </span>
-                              <Badge
-                                color="primary"
-                                shape="square"
-                                variant="outline"
-                              >
-                                {row.assignment?.test_level_name ||
-                                  row.test_level_name ||
-                                  "N/A"}
-                              </Badge>
+                              {row.requires_interview !== false && (
+                                <Badge
+                                  color="primary"
+                                  shape="square"
+                                  variant="outline"
+                                >
+                                  {row.assignment?.test_level_name ||
+                                    row.test_level_name ||
+                                    "N/A"}
+                                </Badge>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center align-middle py-3">
@@ -434,42 +435,46 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   <FileEdit size={16} />
                                 </TableIconButton>
                               )}
-                              <TableIconButton
-                                iconColor="red"
-                                animate="scale"
-                                title="Delete current attempt and allow re-start"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsModalOpen(true);
-                                }}
-                              >
-                                <RefreshCw size={16} />
-                              </TableIconButton>
-                              <TableIconButton
-                                iconColor="violet"
-                                animate="scale"
-                                title="Assign a fresh session (Returning Candidate)"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsReInterviewModalOpen(true);
-                                }}
-                              >
-                                <RotateCcw size={16} />
-                              </TableIconButton>
-                              <TableIconButton
-                                iconColor="blue"
-                                animate="scale"
-                                title="Reset specific subjects data"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedUser(row);
-                                  setIsResetSubjectsModalOpen(true);
-                                }}
-                              >
-                                <BookOpenCheck size={16} />
-                              </TableIconButton>
+                              {row.requires_interview !== false && (
+                                <>
+                                  <TableIconButton
+                                    iconColor="red"
+                                    animate="scale"
+                                    title="Delete current attempt and allow re-start"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedUser(row);
+                                      setIsModalOpen(true);
+                                    }}
+                                  >
+                                    <RefreshCw size={16} />
+                                  </TableIconButton>
+                                  <TableIconButton
+                                    iconColor="violet"
+                                    animate="scale"
+                                    title="Assign a fresh session (Returning Candidate)"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedUser(row);
+                                      setIsReInterviewModalOpen(true);
+                                    }}
+                                  >
+                                    <RotateCcw size={16} />
+                                  </TableIconButton>
+                                  <TableIconButton
+                                    iconColor="blue"
+                                    animate="scale"
+                                    title="Reset specific subjects data"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedUser(row);
+                                      setIsResetSubjectsModalOpen(true);
+                                    }}
+                                  >
+                                    <BookOpenCheck size={16} />
+                                  </TableIconButton>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

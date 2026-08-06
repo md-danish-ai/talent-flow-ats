@@ -55,9 +55,8 @@ def upgrade() -> None:
     op.bulk_insert(
         departments_table,
         [
-            {"name": "BPO", "is_active": True},
-            {"name": "KPO", "is_active": True},
-            {"name": "QA", "is_active": True},
+            {"name": "KPO & BPO", "is_active": True},
+            {"name": "Other", "is_active": True},
         ],
     )
     # ### end Alembic commands ###

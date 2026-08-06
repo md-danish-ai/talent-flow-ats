@@ -8,6 +8,7 @@ from app.user_details.models import UserDetail
 from app.users.models import User
 from app.duplicates.service import detect_duplicates
 from app.classifications.models import Classification
+from app.interview_attempts.models import InterviewRecord
 
 
 async def save_user_details(
@@ -158,6 +159,22 @@ def get_user_details(user_id: int):
         else:
             family_details_copy = details.family_details
 
+        # Auto-detect if candidate has actually attempted an interview test previously
+        has_past_attempt = (
+            db_session.query(InterviewRecord)
+            .filter(InterviewRecord.user_id == user_id)
+            .first()
+            is not None
+        )
+
+        soi = (
+            dict(details.source_of_information) if details.source_of_information else {}
+        )
+        if "interviewedBefore" not in soi or soi["interviewedBefore"] is None:
+            soi["interviewedBefore"] = has_past_attempt
+        elif has_past_attempt:
+            soi["interviewedBefore"] = True
+
         return {
             "is_submitted": details.is_submitted,
             "is_interview_submitted": details.is_interview_submitted,
@@ -171,7 +188,7 @@ def get_user_details(user_id: int):
             "personalDetails": details.personal_details,
             "additionalPersonalDetails": details.additional_personal_details,
             "familyDetails": family_details_copy,
-            "sourceOfInformation": details.source_of_information,
+            "sourceOfInformation": soi,
             "educationDetails": details.education_details,
             "workExperienceDetails": details.work_experience_details,
             "otherDetails": details.other_details,

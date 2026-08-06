@@ -21,17 +21,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Insert Software department if it doesn't already exist."""
-    conn = op.get_bind()
-    result = conn.execute(
-        sa.text("SELECT id FROM departments WHERE name = 'Software' LIMIT 1")
-    )
-    if result.fetchone() is None:
-        conn.execute(
-            sa.text(
-                "INSERT INTO departments (name, is_active) VALUES ('Software', true)"
-            )
-        )
+    """No-op: Software department is deprecated and no longer seeded."""
+    pass
 
 
 def downgrade() -> None:

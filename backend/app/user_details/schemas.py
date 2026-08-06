@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, validator
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any, Union
 
 
 class PersonalDetailsSchema(BaseModel):
@@ -55,9 +55,9 @@ class FamilyDetailSchema(BaseModel):
 
 
 class SourceOfInformationSchema(BaseModel):
-    interviewedBefore: str
-    workedBefore: str
-    source: Dict[str, bool]
+    interviewedBefore: Union[bool, str]
+    workedBefore: Union[bool, str]
+    source: Dict[str, Any]
 
 
 class EducationDetailSchema(BaseModel):
@@ -92,6 +92,7 @@ class OtherDetailsSchema(BaseModel):
 
 
 class UserDetailsSchema(BaseModel):
+    user_id: Optional[int] = None
     is_submitted: bool = False
     is_interview_submitted: bool = False
     personalDetails: PersonalDetailsSchema

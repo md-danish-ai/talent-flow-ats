@@ -11,6 +11,7 @@ export const departmentsApi = {
   getDepartments: async (
     params?: {
       is_active?: boolean;
+      requires_interview?: boolean;
       page?: number;
       limit?: number;
       search?: string;

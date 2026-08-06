@@ -46,9 +46,9 @@ class BaseRowSchema(BaseModel):
         try:
             val = int(float(v))
         except Exception:
-            raise ValueError("Marks must be a valid integer between 1 and 10.")
-        if val < 1 or val > 10:
-            raise ValueError("Marks must be between 1 and 10.")
+            raise ValueError("Marks must be a valid integer between 1 and 20.")
+        if val < 1 or val > 20:
+            raise ValueError("Marks must be between 1 and 20.")
         return val
 
 
@@ -130,7 +130,7 @@ class BulkUploadService:
             contents = await file.read()
             df = pd.read_excel(io.BytesIO(contents))
             # Convert NaN to None for clean processing
-            df = df.where(pd.notnull(df), None)
+            df = df.astype(object).where(pd.notnull(df), None)
             rows = df.to_dict("records")
         except Exception as e:
             raise HTTPException(
@@ -268,8 +268,17 @@ class BulkUploadService:
         # 4. Type Specific Logic
         options = []
         ans_text = ""
-        ans_explanation = row.get(
-            "Answer Explanation", row.get("Model Answer", row.get("Explanation", ""))
+        raw_exp = (
+            row.get("Answer Explanation")
+            if row.get("Answer Explanation") is not None
+            and not pd.isna(row.get("Answer Explanation"))
+            else row.get("Model Answer")
+            if row.get("Model Answer") is not None
+            and not pd.isna(row.get("Model Answer"))
+            else row.get("Explanation")
+        )
+        ans_explanation = (
+            "" if (raw_exp is None or pd.isna(raw_exp)) else str(raw_exp).strip()
         )
         passage = None
 
@@ -309,7 +318,15 @@ class BulkUploadService:
 
         elif q_type in [QuestionType.SUBJECTIVE, QuestionType.IMAGE_SUBJECTIVE]:
             # Subjective questions use 'Model Answer' or 'Answer' column
-            ans_text = row.get("Model Answer", row.get("Answer", ""))
+            raw_ans = (
+                row.get("Model Answer")
+                if row.get("Model Answer") is not None
+                and not pd.isna(row.get("Model Answer"))
+                else row.get("Answer")
+            )
+            ans_text = (
+                "" if (raw_ans is None or pd.isna(raw_ans)) else str(raw_ans).strip()
+            )
             options = []
 
         elif q_type == QuestionType.TYPING_TEST:
@@ -351,12 +368,16 @@ class BulkUploadService:
         q_text = validated_row.question_text
         if not q_text:
             # Fallback for special types
-            q_text = (
-                row.get("Title")
-                or row.get("Instructions")
-                or row.get("Website URL")
-                or ""
-            )
+            for fb in ["Title", "Instructions", "Website URL"]:
+                val = row.get(fb)
+                if val is not None and not pd.isna(val) and str(val).strip():
+                    q_text = str(val).strip()
+                    break
+        if not q_text:
+            q_text = ""
+
+        # Sanitize options to ensure invalid JSON tokens (like NaN) are converted to None (null)
+        options = self._sanitize_json_value(options)
 
         return {
             "question": {
@@ -374,6 +395,21 @@ class BulkUploadService:
                 "explanation": str(ans_explanation or ""),
             },
         }
+
+    @staticmethod
+    def _sanitize_json_value(val):
+        if val is None or pd.isna(val):
+            return None
+        if isinstance(val, dict):
+            return {
+                k: BulkUploadService._sanitize_json_value(v) for k, v in val.items()
+            }
+        if isinstance(val, list):
+            return [BulkUploadService._sanitize_json_value(v) for v in val]
+        if isinstance(val, str):
+            cleaned = val.strip()
+            return cleaned if cleaned else None
+        return val
 
     async def _execute_bulk_insert(
         self, db: Session, data_list: List[Dict], user_id: int

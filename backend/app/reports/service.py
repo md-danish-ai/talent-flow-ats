@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -20,9 +19,13 @@ def generate_report_pdf_file(
     html = build_report_html(data)
     pdf_bytes = generate_report_pdf(html)
 
-    safe_name = data["username"].replace(" ", "_")
-    formatted_date = datetime.now().strftime("%d-%b-%Y")
-    filename = f"Report_{safe_name}_{formatted_date}.pdf"
+    username = data.get("username", "").strip()
+    mobile = str(data.get("mobile", "")).strip()
+    safe_name = username.replace(" ", "_") if username else "Candidate"
+    if mobile:
+        filename = f"{safe_name}_{mobile}.pdf"
+    else:
+        filename = f"{safe_name}.pdf"
 
     return pdf_bytes, filename
 

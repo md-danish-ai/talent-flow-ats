@@ -231,17 +231,32 @@ export function UserResultDetailClient({
                 if (!res.ok) throw new Error("PDF failed");
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
-                const formattedDate = new Intl.DateTimeFormat("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
-                  .format(new Date())
-                  .replace(/ /g, "-");
+
+                const contentDisposition = res.headers.get(
+                  "content-disposition",
+                );
+                let filename = "";
+                if (contentDisposition) {
+                  const match = contentDisposition.match(
+                    /filename=["']?([^"';]+)["']?/i,
+                  );
+                  if (match && match[1]) {
+                    filename = match[1];
+                  }
+                }
+
+                if (!filename) {
+                  const username = attemptData?.user?.username || "Candidate";
+                  const mobile = attemptData?.user?.mobile || "";
+                  const safeName = username.replace(/\s+/g, "_");
+                  filename = mobile
+                    ? `${safeName}_${mobile}.pdf`
+                    : `${safeName}.pdf`;
+                }
 
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `Report_${attemptData?.user?.username?.replace(/\s+/g, "_")}_${formattedDate}.pdf`;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

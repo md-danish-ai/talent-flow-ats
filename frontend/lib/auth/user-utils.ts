@@ -16,6 +16,7 @@ export interface CurrentUser {
   is_submitted: boolean;
   is_interview_submitted: boolean;
   recruitment_details?: Record<string, unknown> | null;
+  requires_interview?: boolean;
 }
 
 /** Returns 1–2 uppercase initials from a display name. */

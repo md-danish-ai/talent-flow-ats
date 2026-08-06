@@ -38,6 +38,7 @@ interface DatePickerProps {
   minDate?: string | Date;
   maxDate?: string | Date;
   placement?: "top" | "bottom";
+  initialViewMode?: "days" | "months" | "years";
 }
 
 export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
@@ -55,6 +56,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       minDate,
       maxDate,
       placement = "bottom",
+      initialViewMode = "days",
     },
     ref,
   ) => {
@@ -67,7 +69,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
     );
 
     const [viewMode, setViewMode] = useState<"days" | "months" | "years">(
-      "days",
+      initialViewMode,
     );
 
     if (value !== prevValue) {
@@ -108,7 +110,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       if (!mounted) setMounted(true);
       if (!isOpen) {
         updateCoords();
-        setViewMode("days");
+        setViewMode(initialViewMode);
       }
       setIsOpen(!isOpen);
     };
