@@ -337,6 +337,7 @@ class BulkUploadService:
             options = {
                 k: row.get(v)
                 for k, v in {
+                    "company_name": "Company Name",
                     "website": "Website",
                     "contact_name": "Contact Person",
                     "designation": "Designation",
@@ -364,6 +365,8 @@ class BulkUploadService:
         q_text = validated_row.question_text
         if not q_text and hasattr(validated_row, "company_name"):
             q_text = getattr(validated_row, "company_name", None)
+        if not q_text and q_type == QuestionType.LEAD_GENERATION:
+            q_text = row.get("Company Name") or options.get("company_name")
         if not q_text:
             # Fallback for special types
             for fb in ["Company Name", "Title", "Instructions", "Website URL"]:
