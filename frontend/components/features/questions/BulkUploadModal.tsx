@@ -95,7 +95,22 @@ export function BulkUploadModal({
       );
 
       if (response.success) {
-        toast.success(`Successfully uploaded ${response.count} questions`);
+        const count = response.count ?? 0;
+        const skipped = response.skipped ?? 0;
+
+        if (count > 0 && skipped > 0) {
+          toast.success(
+            `Successfully uploaded ${count} new question(s) (${skipped} skipped with Question ID)`,
+          );
+        } else if (count > 0) {
+          toast.success(`Successfully uploaded ${count} question(s)`);
+        } else if (skipped > 0) {
+          toast.info(
+            `No new questions uploaded (${skipped} existing question(s) skipped with Question ID)`,
+          );
+        } else {
+          toast.info("No questions to upload.");
+        }
         if (onSuccess) onSuccess();
         onClose();
       } else if (response.errors) {

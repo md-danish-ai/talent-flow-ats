@@ -67,6 +67,131 @@ def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
     return user_keys == correct_keys
 
 
+def calculate_levenshtein_distance(str1: str, str2: str) -> int:
+    """Calculates Levenshtein Edit Distance between two strings."""
+    m, n = len(str1), len(str2)
+    if m == 0:
+        return n
+    if n == 0:
+        return m
+
+    prev = list(range(n + 1))
+    for i in range(1, m + 1):
+        curr = [i] + [0] * n
+        char1 = str1[i - 1]
+        for j in range(1, n + 1):
+            cost = 0 if char1 == str2[j - 1] else 1
+            curr[j] = min(
+                prev[j] + 1,  # deletion
+                curr[j - 1] + 1,  # insertion
+                prev[j - 1] + cost,  # substitution
+            )
+        prev = curr
+    return prev[n]
+
+
+def calculate_levenshtein_alignment(typed: str, passage: str) -> tuple[int, int]:
+    """
+    Computes Levenshtein alignment between typed text and passage.
+    Returns (min_edit_distance, best_matched_passage_length).
+    """
+    m, n = len(typed), len(passage)
+    if m == 0:
+        return 0, 0
+    if n == 0:
+        return m, 0
+
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        dp[i][0] = i
+
+    for i in range(1, m + 1):
+        char_typed = typed[i - 1]
+        for j in range(1, n + 1):
+            cost = 0 if char_typed == passage[j - 1] else 1
+            dp[i][j] = min(
+                dp[i - 1][j] + 1,  # deletion from typed
+                dp[i][j - 1] + 1,  # insertion into typed
+                dp[i - 1][j - 1] + cost,  # substitution
+            )
+
+    best_j = m if m <= n else n
+    min_dist = dp[m][best_j]
+
+    for j in range(1, n + 1):
+        val = dp[m][j]
+        if val < min_dist:
+            min_dist = val
+            best_j = j
+        elif val == min_dist and abs(j - m) < abs(best_j - m):
+            best_j = j
+
+    return min_dist, best_j
+
+
+def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: float):
+    """
+    Evaluates typing test answer using Levenshtein Edit Distance alignment.
+    Formula: Accuracy = (1 - (EditDistance / max(MatchedPassageLength, TypedLength))) * 100
+    Marks = (Accuracy / 100) * Max Marks
+    """
+    typed_text = user_answer_raw or ""
+    typing_stats = None
+
+    if (
+        user_answer_raw
+        and isinstance(user_answer_raw, str)
+        and user_answer_raw.startswith("{")
+    ):
+        try:
+            parsed = json.loads(user_answer_raw)
+            typed_text = parsed.get("typed_text", user_answer_raw)
+            typing_stats = parsed.get("stats")
+        except Exception:
+            pass
+
+    safe_typed = typed_text or ""
+    safe_passage = passage or ""
+
+    typed_len = len(safe_typed)
+    passage_len = len(safe_passage)
+
+    if typed_len == 0 and passage_len == 0:
+        accuracy_pct = 100.0
+        edit_distance = 0
+    elif typed_len == 0:
+        accuracy_pct = 0.0
+        edit_distance = passage_len
+    else:
+        edit_distance, matched_len = calculate_levenshtein_alignment(
+            safe_typed, safe_passage
+        )
+        max_len = max(typed_len, matched_len)
+        raw_accuracy = (
+            (1.0 - edit_distance / float(max_len)) * 100.0 if max_len > 0 else 100.0
+        )
+        accuracy_pct = max(0.0, min(100.0, round(raw_accuracy, 2)))
+
+    # Calculate obtained marks proportionally to accuracy
+    obtained_marks = round((accuracy_pct / 100.0) * max_marks, 2)
+    is_correct = accuracy_pct >= 50.0
+    status_label = "correct" if is_correct else "incorrect"
+
+    if typing_stats and isinstance(typing_stats, dict):
+        typing_stats["accuracy"] = round(accuracy_pct)
+    else:
+        typing_stats = {
+            "wpm": 0,
+            "accuracy": round(accuracy_pct),
+            "errors": edit_distance,
+            "time_taken": 0,
+        }
+
+    return obtained_marks, is_correct, status_label, typing_stats, safe_typed
+
+
 # ---------------------------------------------------------------------------
 # Private paper / question helpers
 # ---------------------------------------------------------------------------
@@ -312,17 +437,28 @@ def _recompute_grades(
                 ) or ""
                 user_text = (resp.get("answer_text") or "").strip()
 
-                is_correct = (
-                    _is_answer_correct(user_text, correct_text)
-                    if correct_text.strip()
-                    else False
-                )
-
-                if is_correct:
-                    stats["correct_count"] += 1
-                    stats["obtained_marks"] += q_marks
+                if question.question_type == "TYPING_TEST":
+                    source_text = question.passage or correct_text or ""
+                    obtained, is_corr, _, _, _ = _evaluate_typing_test_answer(
+                        user_text, source_text, q_marks
+                    )
+                    stats["obtained_marks"] += obtained
+                    if is_corr:
+                        stats["correct_count"] += 1
+                    else:
+                        stats["incorrect_count"] += 1
                 else:
-                    stats["incorrect_count"] += 1
+                    is_correct = (
+                        _is_answer_correct(user_text, correct_text)
+                        if correct_text.strip()
+                        else False
+                    )
+
+                    if is_correct:
+                        stats["correct_count"] += 1
+                        stats["obtained_marks"] += q_marks
+                    else:
+                        stats["incorrect_count"] += 1
 
     total_obtained = 0.0
     total_max = 0.0
@@ -1270,39 +1406,53 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 is_correct = False
                 not_attempted_count += 1
             else:
-                if manual_marks is not None:
-                    marks_obtained = float(manual_marks)
-                    is_correct = marks_obtained > 0
-                    status_label = "correct" if is_correct else "incorrect"
+                if question.question_type == "TYPING_TEST":
+                    source_text = question.passage or correct_answer_text or ""
+                    if manual_marks is not None:
+                        marks_obtained = float(manual_marks)
+                        is_correct = marks_obtained > 0
+                        status_label = "correct" if is_correct else "incorrect"
+                        _, _, _, typing_stats, user_answer_display = (
+                            _evaluate_typing_test_answer(
+                                user_answer_text,
+                                source_text,
+                                float(question.marks or 0),
+                            )
+                        )
+                    else:
+                        (
+                            marks_obtained,
+                            is_correct,
+                            status_label,
+                            typing_stats,
+                            user_answer_display,
+                        ) = _evaluate_typing_test_answer(
+                            user_answer_text, source_text, float(question.marks or 0)
+                        )
                 else:
-                    is_correct = (
-                        _is_answer_correct(user_answer_text, correct_answer_text)
-                        if correct_answer_text.strip()
-                        else False
-                    )
-                    marks_obtained = float(question.marks or 0) if is_correct else 0.0
-                    status_label = "correct" if is_correct else "incorrect"
+                    if manual_marks is not None:
+                        marks_obtained = float(manual_marks)
+                        is_correct = marks_obtained > 0
+                        status_label = "correct" if is_correct else "incorrect"
+                    else:
+                        is_correct = (
+                            _is_answer_correct(user_answer_text, correct_answer_text)
+                            if correct_answer_text.strip()
+                            else False
+                        )
+                        marks_obtained = (
+                            float(question.marks or 0) if is_correct else 0.0
+                        )
+                        status_label = "correct" if is_correct else "incorrect"
 
                 if is_correct:
                     correct_count += 1
                 else:
                     incorrect_count += 1
 
-            # Typing test special parsing
-            user_answer_display = resp.get("answer_text")
-            typing_stats = None
-            if (
-                question.question_type == "TYPING_TEST"
-                and user_answer_text
-                and isinstance(user_answer_text, str)
-                and user_answer_text.startswith("{")
-            ):
-                try:
-                    parsed = json.loads(user_answer_text)
-                    user_answer_display = parsed.get("typed_text", user_answer_text)
-                    typing_stats = parsed.get("stats")
-                except Exception:
-                    pass
+            if question.question_type != "TYPING_TEST":
+                user_answer_display = resp.get("answer_text")
+                typing_stats = None
 
             detailed_answers.append(
                 {

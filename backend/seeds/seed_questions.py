@@ -5,22 +5,140 @@ import os
 # Add the backend directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Set default env vars for DB if not present
+# Set default env vars for DB
 os.environ.setdefault("DB_HOST", "localhost")
 os.environ.setdefault("DB_PORT", "5435")
 os.environ.setdefault("DB_NAME", "talent_flow_ats")
 os.environ.setdefault("DB_USER", "postgres")
 os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")
 
-# Import ALL models to ensure SQLAlchemy knows about them for Foreign Keys
 from app.users.models import User
-from app.questions.models import Question
 from app.answer.models import QuestionAnswer
+from app.questions.models import Question
 from app.classifications.models import Classification
 from app.departments.models import Department
 from app.database.db import SessionLocal
 
 QUESTIONS_DATA = [
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "The sum of the ages of a mother and her daughter is 50 years. Five years ago, the mother's age was four times the daughter's age. What will be the daughter's age after 5 years?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "15 years", "option_label": "A"},
+            {"is_correct": True, "option_text": "18 years", "option_label": "B"},
+            {"is_correct": False, "option_text": "20 years", "option_label": "C"},
+            {"is_correct": False, "option_text": "23 years", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A museum has an average of 480 visitors on Wednesdays and 210 on other days. The average number of visitors per day in a month of 30 days beginning with a Wednesday is:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "230", "option_label": "A"},
+            {"is_correct": False, "option_text": "245", "option_label": "B"},
+            {"is_correct": True, "option_text": "255", "option_label": "C"},
+            {"is_correct": False, "option_text": "260", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "A trader buys a bicycle for Rs. 1,800 in cash and sells it for Rs. 2,090 at a credit of 1 year. If the rate of interest is 10% per annum, the trader gains:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Rs. 80", "option_label": "A"},
+            {"is_correct": True, "option_text": "Rs. 100", "option_label": "B"},
+            {"is_correct": False, "option_text": "Rs. 120", "option_label": "C"},
+            {"is_correct": False, "option_text": "Rs. 150", "option_label": "D"},
+        ],
+        "answer_text": "B",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "The average weight of 10 persons increases by 3 kg when a new person replaces one of them weighing 60 kg. What is the weight of the new person?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "85 kg", "option_label": "A"},
+            {"is_correct": False, "option_text": "88 kg", "option_label": "B"},
+            {"is_correct": True, "option_text": "90 kg", "option_label": "C"},
+            {"is_correct": False, "option_text": "95 kg", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Pick the odd one out:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Sparrow", "option_label": "A"},
+            {"is_correct": False, "option_text": "Eagle", "option_label": "B"},
+            {"is_correct": True, "option_text": "Ostrich", "option_label": "C"},
+            {"is_correct": False, "option_text": "Pigeon", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Pick the odd one out:",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "BDFH", "option_label": "A"},
+            {"is_correct": False, "option_text": "CEGI", "option_label": "B"},
+            {"is_correct": True, "option_text": "ILNP", "option_label": "C"},
+            {"is_correct": False, "option_text": "MOQS", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "MULTIPLE_CHOICE",
+        "subject_type": "APTITUDE",
+        "exam_level": "FRESHER",
+        "question_text": "Look at this series: 15, 16, 31, 47, 78, ... What number should come next?",
+        "passage": None,
+        "marks": 1,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "115", "option_label": "A"},
+            {"is_correct": False, "option_text": "120", "option_label": "B"},
+            {"is_correct": True, "option_text": "125", "option_label": "C"},
+            {"is_correct": False, "option_text": "130", "option_label": "D"},
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
     {
         "question_type": "MULTIPLE_CHOICE",
         "subject_type": "APTITUDE",
@@ -244,144 +362,6 @@ QUESTIONS_DATA = [
         "explanation": "nan",
     },
     {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "WRITTEN",
-        "exam_level": "FRESHER",
-        "question_text": "Compute",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Compute",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "WRITTEN",
-        "exam_level": "FRESHER",
-        "question_text": "Reliable",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Reliable",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "WRITTEN",
-        "exam_level": "FRESHER",
-        "question_text": "Ahead",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Ahead",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "A museum has an average of 480 visitors on Wednesdays and 210 on other days. The average number of visitors per day in a month of 30 days beginning with a Wednesday is:",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "230", "option_label": "A"},
-            {"is_correct": False, "option_text": "245", "option_label": "B"},
-            {"is_correct": True, "option_text": "255", "option_label": "C"},
-            {"is_correct": False, "option_text": "260", "option_label": "D"},
-        ],
-        "answer_text": "C",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "A trader buys a bicycle for Rs. 1,800 in cash and sells it for Rs. 2,090 at a credit of 1 year. If the rate of interest is 10% per annum, the trader gains:",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "Rs. 80", "option_label": "A"},
-            {"is_correct": True, "option_text": "Rs. 100", "option_label": "B"},
-            {"is_correct": False, "option_text": "Rs. 120", "option_label": "C"},
-            {"is_correct": False, "option_text": "Rs. 150", "option_label": "D"},
-        ],
-        "answer_text": "B",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "The average weight of 10 persons increases by 3 kg when a new person replaces one of them weighing 60 kg. What is the weight of the new person?",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "85 kg", "option_label": "A"},
-            {"is_correct": False, "option_text": "88 kg", "option_label": "B"},
-            {"is_correct": True, "option_text": "90 kg", "option_label": "C"},
-            {"is_correct": False, "option_text": "95 kg", "option_label": "D"},
-        ],
-        "answer_text": "C",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "Pick the odd one out:",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "Sparrow", "option_label": "A"},
-            {"is_correct": False, "option_text": "Eagle", "option_label": "B"},
-            {"is_correct": True, "option_text": "Ostrich", "option_label": "C"},
-            {"is_correct": False, "option_text": "Pigeon", "option_label": "D"},
-        ],
-        "answer_text": "C",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "Pick the odd one out:",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "BDFH", "option_label": "A"},
-            {"is_correct": False, "option_text": "CEGI", "option_label": "B"},
-            {"is_correct": True, "option_text": "ILNP", "option_label": "C"},
-            {"is_correct": False, "option_text": "MOQS", "option_label": "D"},
-        ],
-        "answer_text": "C",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "Look at this series: 15, 16, 31, 47, 78, ... What number should come next?",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "115", "option_label": "A"},
-            {"is_correct": False, "option_text": "120", "option_label": "B"},
-            {"is_correct": True, "option_text": "125", "option_label": "C"},
-            {"is_correct": False, "option_text": "130", "option_label": "D"},
-        ],
-        "answer_text": "C",
-        "explanation": "nan",
-    },
-    {
         "question_type": "MULTIPLE_CHOICE",
         "subject_type": "APTITUDE",
         "exam_level": "FRESHER",
@@ -416,30 +396,6 @@ QUESTIONS_DATA = [
             },
         ],
         "answer_text": "A",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "ENGLISH_GRAMMAR",
-        "exam_level": "FRESHER",
-        "question_text": "essential / is / health / for / exercise / good",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Exercise is essential for good health.",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "ENGLISH_GRAMMAR",
-        "exam_level": "FRESHER",
-        "question_text": "delayed / why / been / the flight / has?",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Why has the flight been delayed?",
         "explanation": "nan",
     },
     {
@@ -946,18 +902,6 @@ QUESTIONS_DATA = [
             },
         ],
         "answer_text": "A",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "SUBJECTIVE",
-        "subject_type": "ENGLISH_GRAMMAR",
-        "exam_level": "FRESHER",
-        "question_text": "team? / who / the / led / winning",
-        "passage": None,
-        "marks": 5,
-        "is_active": True,
-        "options": [],
-        "answer_text": "Who led the winning team?",
         "explanation": "nan",
     },
     {
@@ -1503,6 +1447,42 @@ QUESTIONS_DATA = [
         "question_type": "SUBJECTIVE",
         "subject_type": "WRITTEN",
         "exam_level": "FRESHER",
+        "question_text": "Compute",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Compute",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Reliable",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Reliable",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
+        "question_text": "Ahead",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Ahead",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "WRITTEN",
+        "exam_level": "FRESHER",
         "question_text": "Benchmark",
         "passage": None,
         "marks": 5,
@@ -1533,6 +1513,42 @@ QUESTIONS_DATA = [
         "is_active": True,
         "options": [],
         "answer_text": "What are you doing here?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "essential / is / health / for / exercise / good",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Exercise is essential for good health.",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "delayed / why / been / the flight / has?",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Why has the flight been delayed?",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "SUBJECTIVE",
+        "subject_type": "ENGLISH_GRAMMAR",
+        "exam_level": "FRESHER",
+        "question_text": "team? / who / the / led / winning",
+        "passage": None,
+        "marks": 5,
+        "is_active": True,
+        "options": [],
+        "answer_text": "Who led the winning team?",
         "explanation": "nan",
     },
     {
@@ -1611,33 +1627,33 @@ QUESTIONS_DATA = [
         "question_type": "PASSAGE_CONTENT",
         "subject_type": "COMPREHENSION",
         "exam_level": "FRESHER",
-        "question_text": "Edison's approach to invention can be best described as one of ______.",
+        "question_text": "According to the passage, what was the chief contribution of Edison's invention?",
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
         "is_active": True,
         "options": [
             {
                 "is_correct": False,
-                "option_text": "Relying purely on natural talent",
+                "option_text": "It allowed telegraph operators to work at night",
                 "option_label": "A",
             },
             {
-                "is_correct": False,
-                "option_text": "Learning solely from his teachers",
+                "is_correct": True,
+                "option_text": "It enabled daily life to continue after sunset",
                 "option_label": "B",
             },
             {
-                "is_correct": True,
-                "option_text": "Persistent experimentation despite setbacks",
+                "is_correct": False,
+                "option_text": "It made Edison a wealthy businessman",
                 "option_label": "C",
             },
             {
                 "is_correct": False,
-                "option_text": "Following instructions from mentors",
+                "option_text": "It helped factories reduce production costs",
                 "option_label": "D",
             },
         ],
-        "answer_text": "C",
+        "answer_text": "B",
         "explanation": "nan",
     },
     {
@@ -1677,31 +1693,65 @@ QUESTIONS_DATA = [
         "question_type": "PASSAGE_CONTENT",
         "subject_type": "COMPREHENSION",
         "exam_level": "FRESHER",
-        "question_text": "According to the passage, what was the chief contribution of Edison's invention?",
+        "question_text": "Edison's approach to invention can be best described as one of ______.",
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
         "is_active": True,
         "options": [
             {
                 "is_correct": False,
-                "option_text": "It allowed telegraph operators to work at night",
+                "option_text": "Relying purely on natural talent",
                 "option_label": "A",
             },
             {
-                "is_correct": True,
-                "option_text": "It enabled daily life to continue after sunset",
+                "is_correct": False,
+                "option_text": "Learning solely from his teachers",
                 "option_label": "B",
             },
             {
-                "is_correct": False,
-                "option_text": "It made Edison a wealthy businessman",
+                "is_correct": True,
+                "option_text": "Persistent experimentation despite setbacks",
                 "option_label": "C",
             },
             {
                 "is_correct": False,
-                "option_text": "It helped factories reduce production costs",
+                "option_text": "Following instructions from mentors",
                 "option_label": "D",
             },
+        ],
+        "answer_text": "C",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is NOT NEARLY THE SAME in meaning as the word printed in bold: 'Persistent'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Determined", "option_label": "A"},
+            {"is_correct": False, "option_text": "Tenacious", "option_label": "B"},
+            {"is_correct": False, "option_text": "Unwavering", "option_label": "C"},
+            {"is_correct": True, "option_text": "Fickle", "option_label": "D"},
+        ],
+        "answer_text": "D",
+        "explanation": "nan",
+    },
+    {
+        "question_type": "PASSAGE_CONTENT",
+        "subject_type": "COMPREHENSION",
+        "exam_level": "FRESHER",
+        "question_text": "Choose the word which is MOST OPPOSITE in meaning of the word printed in bold: 'Curious'",
+        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
+        "marks": 2,
+        "is_active": True,
+        "options": [
+            {"is_correct": False, "option_text": "Inquisitive", "option_label": "A"},
+            {"is_correct": True, "option_text": "Indifferent", "option_label": "B"},
+            {"is_correct": False, "option_text": "Eager", "option_label": "C"},
+            {"is_correct": False, "option_text": "Attentive", "option_label": "D"},
         ],
         "answer_text": "B",
         "explanation": "nan",
@@ -1776,23 +1826,6 @@ QUESTIONS_DATA = [
         "question_type": "PASSAGE_CONTENT",
         "subject_type": "COMPREHENSION",
         "exam_level": "FRESHER",
-        "question_text": "Choose the word which is MOST OPPOSITE in meaning of the word printed in bold: 'Curious'",
-        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
-        "marks": 2,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "Inquisitive", "option_label": "A"},
-            {"is_correct": True, "option_text": "Indifferent", "option_label": "B"},
-            {"is_correct": False, "option_text": "Eager", "option_label": "C"},
-            {"is_correct": False, "option_text": "Attentive", "option_label": "D"},
-        ],
-        "answer_text": "B",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "PASSAGE_CONTENT",
-        "subject_type": "COMPREHENSION",
-        "exam_level": "FRESHER",
         "question_text": "The tribute paid by American cities upon Edison's death suggests that he was held in:",
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
@@ -1806,95 +1839,56 @@ QUESTIONS_DATA = [
         "answer_text": "C",
         "explanation": "nan",
     },
-    {
-        "question_type": "PASSAGE_CONTENT",
-        "subject_type": "COMPREHENSION",
-        "exam_level": "FRESHER",
-        "question_text": "Choose the word which is NOT NEARLY THE SAME in meaning as the word printed in bold: 'Persistent'",
-        "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
-        "marks": 2,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "Determined", "option_label": "A"},
-            {"is_correct": False, "option_text": "Tenacious", "option_label": "B"},
-            {"is_correct": False, "option_text": "Unwavering", "option_label": "C"},
-            {"is_correct": True, "option_text": "Fickle", "option_label": "D"},
-        ],
-        "answer_text": "D",
-        "explanation": "nan",
-    },
-    {
-        "question_type": "MULTIPLE_CHOICE",
-        "subject_type": "APTITUDE",
-        "exam_level": "FRESHER",
-        "question_text": "The sum of the ages of a mother and her daughter is 50 years. Five years ago, the mother's age was four times the daughter's age. What will be the daughter's age after 5 years?",
-        "passage": None,
-        "marks": 1,
-        "is_active": True,
-        "options": [
-            {"is_correct": False, "option_text": "15 years", "option_label": "A"},
-            {"is_correct": True, "option_text": "18 years", "option_label": "B"},
-            {"is_correct": False, "option_text": "20 years", "option_label": "C"},
-            {"is_correct": False, "option_text": "23 years", "option_label": "D"},
-        ],
-        "answer_text": "B",
-        "explanation": "nan",
-    },
 ]
 
 
 def seed_data():
     db = SessionLocal()
     try:
-        admin_user = db.query(User).first()
+        admin_user = db.query(User).filter(User.role == "ADMIN").first()
         user_id = admin_user.id if admin_user else 1
-
-        print(f"Using User ID: {user_id} for 'created_by'")
 
         total_seeded = 0
         total_updated = 0
         processed_question_ids = set()
 
-        for q_data in QUESTIONS_DATA:
-            q_type = q_data["question_type"]
-            subject = q_data["subject_type"]
-            q_text = q_data["question_text"]
-            passage = q_data.get("passage")
-            options = q_data.get("options") or []
-            marks = q_data.get("marks", 5)
-            exam_level = q_data.get("exam_level", "FRESHER")
-            is_active = q_data.get("is_active", True)
-            ans_text = q_data.get("answer_text", "")
-            explanation = q_data.get("explanation", "")
+        for item in QUESTIONS_DATA:
+            q_type = item["question_type"]
+            subject = item["subject_type"]
+            exam_level = item["exam_level"]
+            q_text = item["question_text"]
+            passage = item.get("passage")
+            marks = item.get("marks", 5)
+            is_active = item.get("is_active", True)
+            options = item.get("options", [])
+            ans_text = item.get("answer_text", "")
+            explanation = item.get("explanation", "")
 
-            query = db.query(Question).filter(
-                Question.question_type == q_type,
-                Question.subject_type == subject,
-                Question.question_text == q_text,
-            )
-            if passage:
-                query = query.filter(Question.passage == passage)
-
-            candidates = query.all()
-            existing = next(
-                (q for q in candidates if q.id not in processed_question_ids),
-                None,
+            existing = (
+                db.query(Question)
+                .filter(
+                    Question.question_type == q_type,
+                    Question.subject_type == subject,
+                    Question.exam_level == exam_level,
+                    Question.question_text == q_text,
+                )
+                .filter(Question.id.notin_(processed_question_ids))
+                .first()
             )
 
             if existing:
                 processed_question_ids.add(existing.id)
-                existing.exam_level = exam_level
+                existing.passage = passage
                 existing.marks = marks
                 existing.is_active = is_active
                 existing.options = options
-                if passage is not None:
-                    existing.passage = passage
 
                 ans_record = (
                     db.query(QuestionAnswer)
                     .filter(QuestionAnswer.question_id == existing.id)
                     .first()
                 )
+
                 if ans_record:
                     ans_record.answer_text = ans_text
                     ans_record.explanation = explanation

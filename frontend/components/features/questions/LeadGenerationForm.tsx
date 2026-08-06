@@ -38,15 +38,11 @@ export const LeadGenerationForm = ({
         subject: "",
         examLevel: "",
         marks: 1,
-        questionText: "",
         companyName: "",
         website: "",
         name: "",
         title: "",
         email: "",
-        linkedinUrl: "",
-        phone: "",
-        address: "",
       } as LeadGenerationFormValues),
     validators: {
       onChange: leadGenerationSchema,
@@ -57,17 +53,13 @@ export const LeadGenerationForm = ({
           question_type: QUESTION_TYPES.LEAD_GENERATION,
           subject: value.subject,
           exam_level: value.examLevel,
-          question_text: value.questionText || "",
+          question_text: value.companyName || "",
           marks: value.marks,
           options: {
-            company_name: value.companyName,
             website: value.website,
             contact_name: value.name,
             designation: value.title,
             email: value.email,
-            linkedin_url: value.linkedinUrl,
-            phone: value.phone,
-            address: value.address,
           },
           answer: {
             answer_text: "",
@@ -292,7 +284,7 @@ export const LeadGenerationForm = ({
                   weight="semibold"
                   className="mb-2 block text-muted-foreground uppercase tracking-wider"
                 >
-                  WebSite
+                  Website Address (URL)
                 </Typography>
                 <Input
                   value={field.state.value}
@@ -320,7 +312,7 @@ export const LeadGenerationForm = ({
                   weight="semibold"
                   className="mb-2 block text-muted-foreground uppercase tracking-wider"
                 >
-                  Name
+                  Name of the Person
                 </Typography>
                 <Input
                   value={field.state.value}
@@ -348,7 +340,7 @@ export const LeadGenerationForm = ({
                   weight="semibold"
                   className="mb-2 block text-muted-foreground uppercase tracking-wider"
                 >
-                  Title (e.g. CEO)
+                  Title of the Person (Chairman/CEO/COO/President/Founder)
                 </Typography>
                 <Input
                   value={field.state.value}
@@ -376,7 +368,7 @@ export const LeadGenerationForm = ({
                   weight="semibold"
                   className="mb-2 block text-muted-foreground uppercase tracking-wider"
                 >
-                  Email Address
+                  Person&apos;s Email Address
                 </Typography>
                 <Input
                   value={field.state.value}
@@ -394,90 +386,6 @@ export const LeadGenerationForm = ({
                   </Typography>
                 )}
               </div>
-            )}
-          </form.Field>
-          <form.Field name="linkedinUrl">
-            {(field) => (
-              <div>
-                <Typography
-                  variant="body5"
-                  weight="semibold"
-                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                >
-                  LinkedIn URL
-                </Typography>
-                <Input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20"
-                />
-              </div>
-            )}
-          </form.Field>
-          <form.Field name="phone">
-            {(field) => (
-              <div>
-                <Typography
-                  variant="body5"
-                  weight="semibold"
-                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                >
-                  Phone Number
-                </Typography>
-                <Input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20"
-                />
-              </div>
-            )}
-          </form.Field>
-          <form.Field name="address">
-            {(field) => (
-              <div>
-                <Typography
-                  variant="body5"
-                  weight="semibold"
-                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                >
-                  Address / Location
-                </Typography>
-                <Input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="bg-muted/20"
-                />
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div className="mt-4">
-          <form.Field name="questionText">
-            {(field) => (
-              <>
-                <Typography
-                  variant="body5"
-                  weight="semibold"
-                  className="mb-2 block text-muted-foreground uppercase tracking-wider"
-                >
-                  Additional Instructions / Task
-                </Typography>
-                <Textarea
-                  placeholder="Specific instructions for this lead..."
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0}
-                  className="h-20 bg-muted/20 transition-colors border-border/60 hover:border-border"
-                />
-              </>
             )}
           </form.Field>
         </div>
