@@ -1,37 +1,63 @@
-import os
+# ruff: noqa
+# Auto-generated seed file from database on 2026-08-06 18:15:07
 import sys
-
-# Add the project root to sys.path BEFORE importing app modules
+import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+true = True
+false = False
+null = None
 
 from app.database.db import SessionLocal
 from app.departments.models import Department
 
-DEPARTMENTS = [
-    {"name": "KPO & BPO", "is_active": True, "requires_interview": True},
-    {"name": "Other", "is_active": True, "requires_interview": False},
+DEPARTMENTS_DATA = [
+    {
+        "id": 1,
+        "name": "KPO & BPO",
+        "is_active": true,
+        "requires_interview": true
+    },
+    {
+        "id": 2,
+        "name": "Other",
+        "is_active": true,
+        "requires_interview": false
+    }
 ]
 
 def seed_departments():
     db = SessionLocal()
     try:
-        print("🌱 Seeding departments...")
-        for dept_data in DEPARTMENTS:
-            # Check if department already exists
-            exists = db.query(Department).filter(Department.name == dept_data["name"]).first()
-            if not exists:
-                dept = Department(**dept_data)
-                db.add(dept)
-                print(f"✅ Added department: {dept_data['name']}")
+        print("🚀 Seeding departments...")
+        total_seeded = 0
+        total_updated = 0
+
+        for item in DEPARTMENTS_DATA:
+            existing = db.query(Department).filter(
+                (Department.name == item["name"]) | (Department.id == item["id"])
+            ).first()
+
+            if existing:
+                existing.name = item["name"]
+                existing.is_active = item.get("is_active", True)
+                existing.requires_interview = item.get("requires_interview", True)
+                total_updated += 1
             else:
-                exists.is_active = dept_data.get("is_active", True)
-                exists.requires_interview = dept_data.get("requires_interview", True)
-                print(f"✅ Updated department: {dept_data['name']}")
+                dept = Department(
+                    id=item["id"],
+                    name=item["name"],
+                    is_active=item.get("is_active", True),
+                    requires_interview=item.get("requires_interview", True),
+                )
+                db.add(dept)
+                total_seeded += 1
+
         db.commit()
-        print("✨ Seeding completed successfully!")
+        print(f"✨ Departments seeding complete! Added: {total_seeded}, Updated: {total_updated}")
     except Exception as e:
         db.rollback()
-        print(f"❌ Error seeding departments: {e}")
+        print(f"❌ Error seeding departments: {str(e)}")
     finally:
         db.close()
 
