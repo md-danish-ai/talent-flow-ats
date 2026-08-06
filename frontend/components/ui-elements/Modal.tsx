@@ -12,6 +12,7 @@ interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  bodyClassName?: string;
   closeOnOutsideClick?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   footer,
   className,
+  bodyClassName = "p-5",
   closeOnOutsideClick = false,
 }) => {
   const [mounted, setMounted] = useState(false);
@@ -72,7 +74,7 @@ export const Modal: React.FC<ModalProps> = ({
             className={`relative z-[1000] w-full max-w-4xl bg-card rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden pointer-events-auto ${className}`}
           >
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0 bg-card">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-border shrink-0 bg-card">
                 <Typography
                   variant="body1"
                   weight="semibold"
@@ -91,11 +93,13 @@ export const Modal: React.FC<ModalProps> = ({
                 </Button>
               </div>
             )}
-            <div className="p-6 overflow-y-auto bg-card text-foreground flex-1 custom-scrollbar">
+            <div
+              className={`overflow-y-auto bg-card text-foreground flex-1 custom-scrollbar ${bodyClassName}`}
+            >
               {children}
             </div>
             {footer && (
-              <div className="px-6 py-4 border-t border-border bg-card shrink-0">
+              <div className="px-5 py-3.5 border-t border-border bg-card shrink-0">
                 {footer}
               </div>
             )}
