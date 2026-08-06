@@ -14,7 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Upload } from "lucide-react";
+import { Plus, ListChecks, Upload, Download } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { classificationsApi } from "@lib/api/classifications";
@@ -45,6 +45,7 @@ type SubjectiveListingFilters = {
 };
 
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { ExportQuestionsModal } from "@components/features/questions/ExportQuestionsModal";
 
 export function SubjectiveClient() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -52,6 +53,7 @@ export function SubjectiveClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
@@ -201,6 +203,18 @@ export function SubjectiveClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
+            <Tooltip content="Export Questions" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isExportOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsExportOpen(true)}
+              >
+                <Download size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
@@ -368,6 +382,12 @@ export function SubjectiveClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <ExportQuestionsModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        defaultQuestionType={QUESTION_TYPES.SUBJECTIVE}
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}

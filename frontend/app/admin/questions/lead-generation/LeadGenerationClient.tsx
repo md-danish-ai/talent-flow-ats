@@ -14,7 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Upload } from "lucide-react";
+import { Plus, ListChecks, Upload, Download } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
@@ -27,6 +27,7 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
 import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { ExportQuestionsModal } from "@components/features/questions/ExportQuestionsModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -50,6 +51,7 @@ export function LeadGenerationClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
@@ -193,6 +195,18 @@ export function LeadGenerationClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
+            <Tooltip content="Export Questions" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isExportOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsExportOpen(true)}
+              >
+                <Download size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
@@ -369,6 +383,12 @@ export function LeadGenerationClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <ExportQuestionsModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        defaultQuestionType={QUESTION_TYPES.LEAD_GENERATION}
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
