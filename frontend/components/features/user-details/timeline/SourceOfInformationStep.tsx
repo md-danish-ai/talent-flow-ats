@@ -177,7 +177,7 @@ export function SourceOfInformationStep({ form }: SourceOfInformationProps) {
             <form.Field name="source">
               {(field) =>
                 field.state.meta.isTouched &&
-                  field.state.meta.errors.length > 0 ? (
+                field.state.meta.errors.length > 0 ? (
                   <p className="text-xs text-red-500 mt-1">
                     {getErrorMessage(field.state.meta.errors[0])}
                   </p>

@@ -163,11 +163,7 @@ export function UserTable({
                         "N/A"}
                     </span>
                     {row.requires_interview !== false && (
-                      <Badge
-                        color="primary"
-                        shape="square"
-                        variant="outline"
-                      >
+                      <Badge color="primary" shape="square" variant="outline">
                         {row.assignment?.test_level_name ||
                           row.test_level_name ||
                           "N/A"}
