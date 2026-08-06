@@ -22,57 +22,42 @@ from app.database.db import SessionLocal
 LEADS = [
     {
         "email": "dconley@calgoncarbon.com",
-        "phone": "",
-        "address": "",
         "website": "calgoncarbon.com",
         "designation": "Marketing Manager- Municipal",
         "company_name": "Calgon Carbon Corporation",
         "contact_name": "Doug Conley",
-        "linkedin_url": "",
         "marks": 5,
     },
     {
         "email": "tedt@atfco.com",
-        "phone": "",
-        "address": "",
         "website": "atfco.com",
         "designation": "General Manager",
         "company_name": "American Tank & Fabricating Company",
         "contact_name": "Ted Thorbjornsen",
-        "linkedin_url": "",
         "marks": 5,
     },
     {
         "email": "tsadowski@americanexcelsior.com",
-        "phone": "",
-        "address": "",
         "website": "americanexcelsior.com",
         "designation": "President",
         "company_name": "American Excelsior Company",
         "contact_name": "Terry Sadowski",
-        "linkedin_url": "",
         "marks": 5,
     },
     {
         "email": "trent@beracahhomes.com",
-        "phone": "",
-        "address": "",
         "website": "beracahhomes.com",
         "designation": "Contractor Sales",
         "company_name": "Beracah Homes, Inc.",
         "contact_name": "Trent Collins",
-        "linkedin_url": "",
         "marks": 10,
     },
     {
         "email": "blake@blakejarrett.ca",
-        "phone": "",
-        "address": "",
         "website": "blakejarrett.ca",
         "designation": "CEO",
         "company_name": "Blake Jarrett & Co",
         "contact_name": "Blake Jarrett",
-        "linkedin_url": "",
         "marks": 10,
     },
 ]
@@ -176,7 +161,7 @@ def seed_special_questions():
         for lead in LEADS:
             c_name = lead.get("company_name", "")
             marks = lead.get("marks", 5)
-            lead_opts = {k: v for k, v in lead.items() if k != "marks"}
+            lead_opts = {k: v for k, v in lead.items() if k not in ["marks", "company_name"]}
 
             existing = None
             all_leads = (
@@ -198,6 +183,7 @@ def seed_special_questions():
                     break
 
             if existing:
+                existing.question_text = c_name
                 existing.options = lead_opts
                 existing.marks = marks
                 print(f"  🔄 Updated lead: {c_name}")
@@ -207,7 +193,7 @@ def seed_special_questions():
                     question_type="LEAD_GENERATION",
                     subject_type="LEAD_GENERATION",
                     exam_level="FRESHER",
-                    question_text="",
+                    question_text=c_name,
                     marks=marks,
                     is_active=True,
                     options=lead_opts,

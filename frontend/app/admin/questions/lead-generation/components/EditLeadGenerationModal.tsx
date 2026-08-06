@@ -23,10 +23,9 @@ export default function EditLeadGenerationModal({
     subject: question.subject?.code || "",
     examLevel: question.exam_level?.code || "",
     marks: question.marks,
-    questionText: question.question_text,
-    companyName: String(
-      (question.options as Record<string, unknown>)?.company_name || "",
-    ),
+    companyName:
+      question.question_text ||
+      String((question.options as Record<string, unknown>)?.company_name || ""),
     website: String(
       (question.options as Record<string, unknown>)?.website || "",
     ),
@@ -37,13 +36,6 @@ export default function EditLeadGenerationModal({
       (question.options as Record<string, unknown>)?.designation || "",
     ),
     email: String((question.options as Record<string, unknown>)?.email || ""),
-    linkedinUrl: String(
-      (question.options as Record<string, unknown>)?.linkedin_url || "",
-    ),
-    phone: String((question.options as Record<string, unknown>)?.phone || ""),
-    address: String(
-      (question.options as Record<string, unknown>)?.address || "",
-    ),
   };
 
   return (

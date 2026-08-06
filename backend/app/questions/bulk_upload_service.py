@@ -66,7 +66,7 @@ class TypingRowSchema(BaseRowSchema):
 
 
 class LeadGenRowSchema(BaseRowSchema):
-    instructions: str = Field(alias="Instructions")
+    company_name: str = Field(alias="Company Name")
 
 
 class ContactRowSchema(BaseRowSchema):
@@ -337,14 +337,10 @@ class BulkUploadService:
             options = {
                 k: row.get(v)
                 for k, v in {
-                    "company_name": "Company Name",
                     "website": "Website",
                     "contact_name": "Contact Person",
                     "designation": "Designation",
                     "email": "Email",
-                    "linkedin_url": "LinkedIn URL",
-                    "phone": "Phone",
-                    "address": "Location",
                 }.items()
             }
 
@@ -366,9 +362,11 @@ class BulkUploadService:
 
         # 5. Final Package
         q_text = validated_row.question_text
+        if not q_text and hasattr(validated_row, "company_name"):
+            q_text = getattr(validated_row, "company_name", None)
         if not q_text:
             # Fallback for special types
-            for fb in ["Title", "Instructions", "Website URL"]:
+            for fb in ["Company Name", "Title", "Instructions", "Website URL"]:
                 val = row.get(fb)
                 if val is not None and not pd.isna(val) and str(val).strip():
                     q_text = str(val).strip()

@@ -104,15 +104,11 @@ export const leadGenerationSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   examLevel: z.string().min(1, "Exam Level is required"),
   marks: z.coerce.number().min(1).max(20),
-  questionText: z.string().optional(),
   companyName: z.string().min(1, "Company Name is required"),
   website: z.string().min(1, "Website is required"),
   name: z.string().min(1, "Name is required"),
   title: z.string().min(1, "Title is required"),
   email: z.string().email("Invalid email").min(1, "Email is required"),
-  linkedinUrl: z.string().optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
 });
 
 // Company Contact Details Validations

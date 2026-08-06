@@ -92,13 +92,14 @@ export function LeadGenerationClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "companyName", label: "CompanyName" },
-    { id: "website", label: "WebSite" },
-    { id: "name", label: "Name" },
-    { id: "title", label: "Title" },
-    { id: "linkedInUrl", label: "LinkedIn URL" },
-    { id: "phone", label: "Phone" },
-    { id: "address", label: "Address/Location" },
+    { id: "companyName", label: "Company Name" },
+    { id: "website", label: "Website Address (URL)" },
+    { id: "name", label: "Name of the Person" },
+    {
+      id: "title",
+      label: "Title of the Person (Chairman/CEO/COO/President/Founder)",
+    },
+    { id: "email", label: "Person's Email Address" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -109,7 +110,6 @@ export function LeadGenerationClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "name",
     "companyName",
     "subject",
     "examLevel",
@@ -241,28 +241,21 @@ export function LeadGenerationClient() {
                       </TableHead>
                     )}
                     {visibleColumns.includes("companyName") && (
-                      <TableHead>CompanyName</TableHead>
+                      <TableHead>Company Name</TableHead>
                     )}
                     {visibleColumns.includes("website") && (
-                      <TableHead>WebSite</TableHead>
+                      <TableHead>Website Address (URL)</TableHead>
                     )}
                     {visibleColumns.includes("name") && (
-                      <TableHead>Name</TableHead>
+                      <TableHead>Name of the Person</TableHead>
                     )}
                     {visibleColumns.includes("title") && (
-                      <TableHead>Title</TableHead>
+                      <TableHead>
+                        Title of the Person (Chairman/CEO/COO/President/Founder)
+                      </TableHead>
                     )}
-                    {visibleColumns.includes("primaryEmail") && (
-                      <TableHead>Primary Email Address</TableHead>
-                    )}
-                    {visibleColumns.includes("linkedInUrl") && (
-                      <TableHead>LinkedIn URL</TableHead>
-                    )}
-                    {visibleColumns.includes("phone") && (
-                      <TableHead>Phone</TableHead>
-                    )}
-                    {visibleColumns.includes("address") && (
-                      <TableHead>Address/Location</TableHead>
+                    {visibleColumns.includes("email") && (
+                      <TableHead>Person&apos;s Email Address</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
