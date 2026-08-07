@@ -654,8 +654,6 @@ def toggle_user_status(user_id: int, is_active: bool = None):
         else:
             user.is_active = not user.is_active
 
-        from datetime import datetime
-
         user.updated_at = datetime.now()
 
         db_session.commit()

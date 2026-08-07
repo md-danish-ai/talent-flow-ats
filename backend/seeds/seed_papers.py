@@ -1,206 +1,158 @@
+# ruff: noqa
+# Auto-generated seed file from database on 2026-08-07 10:01:39
 import sys
 import os
-import random
-
-# Add backend to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+true = True
+false = False
+null = None
 
 from app.database.db import SessionLocal
 from app.papers.models import Paper
-from app.questions.models import Question
-from app.departments.models import Department
-from app.classifications.models import Classification
-from app.users.models import User
-from app.paper_assignments.models import PaperAssignment, AutoAssignmentRule
-from app.interview_attempts.models import InterviewRecord
-from app.utils.grade_utils import GradeLabel
+
+PAPERS_DATA = [
+    {
+        "id": 1,
+        "paper_name": "Test Paper KPO",
+        "description": "Set to be used for Testing Fresher Level",
+        "department_id": 1,
+        "test_level_id": 9,
+        "subject_ids_data": [
+            {
+                "order": 1,
+                "subject_id": 18,
+                "is_selected": true,
+                "total_marks": 5,
+                "time_minutes": 5,
+                "question_count": 1
+            },
+            {
+                "order": 2,
+                "subject_id": 19,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 5,
+                "question_count": 1
+            }
+        ],
+        "question_id": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            24,
+            25,
+            26,
+            34,
+            35,
+            36,
+            37,
+            39,
+            42,
+            47,
+            50,
+            66,
+            67,
+            68,
+            70,
+            72,
+            75,
+            77,
+            78,
+            157,
+            74
+        ],
+        "total_time": "00:10:00",
+        "total_marks": 15,
+        "is_active": true,
+        "grade": null,
+        "grade_settings": [
+            {
+                "max": 39.99,
+                "min": 0.0,
+                "grade_label": "Poor"
+            },
+            {
+                "max": 49.99,
+                "min": 40.0,
+                "grade_label": "Below Average"
+            },
+            {
+                "max": 59.99,
+                "min": 50.0,
+                "grade_label": "Average"
+            },
+            {
+                "max": 69.99,
+                "min": 60.0,
+                "grade_label": "Above Average"
+            },
+            {
+                "max": 84.99,
+                "min": 70.0,
+                "grade_label": "Good"
+            },
+            {
+                "max": 100.0,
+                "min": 85.0,
+                "grade_label": "Excellent"
+            }
+        ],
+        "created_by": 2
+    }
+]
 
 def seed_papers():
     db = SessionLocal()
     try:
-        # 2. Clean Slate: Delete records, assignments, rules, and papers
-        print("🗑️  Cleaning up existing data (InterviewRecords, Assignments, Rules, Papers)...")
-        db.query(InterviewRecord).delete()
-        db.query(PaperAssignment).delete()
-        db.query(AutoAssignmentRule).delete()
-        db.query(Paper).delete()
-        db.commit()
+        print("🚀 Seeding papers...")
+        total_seeded = 0
+        total_updated = 0
 
-        # 3. Admin ID
-        admin = db.query(User).filter(User.role == "admin").first()
-        admin_id = admin.id if admin else 1
+        for item in PAPERS_DATA:
+            existing = db.query(Paper).filter(Paper.id == item["id"]).first()
 
-        # 4. KPO और FRESHER की IDs
-        kpo_dept = db.query(Department).filter(Department.name.ilike("%KPO%")).first()
-        fresher_level = db.query(Classification).filter(
-            Classification.type == "exam_level", 
-            Classification.code == "FRESHER"
-        ).first()
-
-        if not kpo_dept or not fresher_level:
-            print("Error: Missing KPO or FRESHER in database.")
-            return
-
-        # 5. FRESHER लेवल के सवालों को सब्जेक्ट-वाइज ग्रुप करना
-        all_questions = db.query(Question).filter(
-            Question.exam_level == "FRESHER",
-            Question.is_active == True
-        ).all()
-
-        questions_by_subject = {}
-        for q in all_questions:
-            if q.subject_type not in questions_by_subject:
-                questions_by_subject[q.subject_type] = []
-            questions_by_subject[q.subject_type].append(q)
-
-        available_subject_codes = list(questions_by_subject.keys())
-        print(f"Grouping {len(all_questions)} questions into {len(available_subject_codes)} subjects.")
-
-        # 6. 4 पेपर्स बनाना (Subjects Distribution)
-        paper_data = [
-            {"name": "KPO Core Assessment - Set 1", "start": 0, "end": 4},
-            {"name": "KPO Core Assessment - Set 2", "start": 4, "end": 8},
-            {"name": "KPO Core Assessment - Set 3", "start": 8, "end": 12},
-            {"name": "KPO Core Assessment - Set 4", "start": 12, "end": 14},
-        ]
-        
-        for config in paper_data:
-            name = config["name"]
-            selected_question_ids = []
-            subject_config = []
-            
-            # Slice available subjects for this paper
-            paper_subjects = available_subject_codes[config["start"]:config["end"]]
-            
-            # हर सब्जेक्ट से 4 सवाल चुनna
-            for i, sub_code in enumerate(paper_subjects):
-                q_list = questions_by_subject[sub_code]
-                if len(q_list) < 4:
-                    picked = q_list
-                else:
-                    picked = random.sample(q_list, 4)
-                
-                selected_question_ids.extend([q.id for q in picked])
-                
-                # सब्जेक्ट ID ढूंढना
-                sub_obj = db.query(Classification).filter(
-                    Classification.type == "subject",
-                    Classification.code == sub_code
-                ).first()
- 
-                if sub_obj:
-                    subject_config.append({
-                        "subject_id": sub_obj.id,
-                        "is_selected": True,
-                        "question_count": len(picked),
-                        "total_marks": len(picked) * 5,
-                        "time_minutes": 15,
-                        "order": i + 1 # Order within this paper starts from 1
-                    })
- 
-            new_paper = Paper(
-                paper_name=name,
-                description=f"Standard 20-marks per subject paper for KPO department. Includes {len(subject_config)} subjects.",
-                department_id=kpo_dept.id,
-                test_level_id=fresher_level.id,
-                subject_ids_data=subject_config,
-                question_id=selected_question_ids,
-                total_time=str(len(subject_config) * 15), 
-                total_marks=len(selected_question_ids) * 5,
-                is_active=True,
-                created_by=admin_id,
-                grade="Percentage",
-                grade_settings=[
-                    {"min": 0.0, "max": 34.99, "grade_label": GradeLabel.POOR.value},
-                    {"min": 35.0, "max": 49.99, "grade_label": GradeLabel.BELOW_AVERAGE.value},
-                    {"min": 50.0, "max": 64.99, "grade_label": GradeLabel.AVERAGE.value},
-                    {"min": 65.0, "max": 79.99, "grade_label": GradeLabel.ABOVE_AVERAGE.value},
-                    {"min": 80.0, "max": 89.99, "grade_label": GradeLabel.GOOD.value},
-                    {"min": 90.0, "max": 100.0, "grade_label": GradeLabel.EXCELLENT.value}
-                ]
-            )
-            db.add(new_paper)
-            print(f"✅ Created {name}: {len(subject_config)} subjects | {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
-
-        # 7. Create 3 custom uniquely-named papers with exactly 2 questions of 5 marks per subject
-        custom_paper_names = [
-            "KPO Comprehensive Master Evaluation",
-            "KPO Elite Proficiency Benchmark",
-            "KPO Premium Capability Assessment"
-        ]
-
-        # Let's filter questions of exactly 5 marks grouped by subject
-        questions_by_subject_5m = {}
-        for q in all_questions:
-            if q.marks == 5:
-                if q.subject_type not in questions_by_subject_5m:
-                    questions_by_subject_5m[q.subject_type] = []
-                questions_by_subject_5m[q.subject_type].append(q)
-
-        available_subject_codes_5m = list(questions_by_subject_5m.keys())
-
-        for name in custom_paper_names:
-            selected_question_ids = []
-            subject_config = []
-
-            for i, sub_code in enumerate(available_subject_codes_5m):
-                q_list = questions_by_subject_5m[sub_code]
-                if len(q_list) < 2:
-                    picked = q_list
-                else:
-                    picked = random.sample(q_list, 2)
-
-                selected_question_ids.extend([q.id for q in picked])
-
-                # Get subject classification ID
-                sub_obj = db.query(Classification).filter(
-                    Classification.type == "subject",
-                    Classification.code == sub_code
-                ).first()
-
-                if sub_obj:
-                    subject_config.append({
-                        "subject_id": sub_obj.id,
-                        "is_selected": True,
-                        "question_count": len(picked),
-                        "total_marks": len(picked) * 5,
-                        "time_minutes": 10,
-                        "order": i + 1
-                    })
-
-            if not subject_config:
-                continue
-
-            custom_paper = Paper(
-                paper_name=name,
-                description=f"Premium unique paper featuring all available subjects under KPO. Includes {len(subject_config)} subjects with exactly 2 questions (5 marks each) per subject.",
-                department_id=kpo_dept.id,
-                test_level_id=fresher_level.id,
-                subject_ids_data=subject_config,
-                question_id=selected_question_ids,
-                total_time=str(len(subject_config) * 10),
-                total_marks=len(selected_question_ids) * 5,
-                is_active=True,
-                created_by=admin_id,
-                grade="Percentage",
-                grade_settings=[
-                    {"min": 0.0, "max": 34.99, "grade_label": GradeLabel.POOR.value},
-                    {"min": 35.0, "max": 49.99, "grade_label": GradeLabel.BELOW_AVERAGE.value},
-                    {"min": 50.0, "max": 64.99, "grade_label": GradeLabel.AVERAGE.value},
-                    {"min": 65.0, "max": 79.99, "grade_label": GradeLabel.ABOVE_AVERAGE.value},
-                    {"min": 80.0, "max": 89.99, "grade_label": GradeLabel.GOOD.value},
-                    {"min": 90.0, "max": 100.0, "grade_label": GradeLabel.EXCELLENT.value}
-                ]
-            )
-            db.add(custom_paper)
-            print(f"✅ Created {name}: {len(subject_config)} subjects | {len(selected_question_ids)} questions | Marks: {len(selected_question_ids) * 5}")
+            if existing:
+                existing.paper_name = item["paper_name"]
+                existing.description = item.get("description")
+                existing.department_id = item["department_id"]
+                existing.test_level_id = item["test_level_id"]
+                existing.subject_ids_data = item["subject_ids_data"]
+                existing.question_id = item["question_id"]
+                existing.total_time = item.get("total_time")
+                existing.total_marks = item.get("total_marks")
+                existing.is_active = item.get("is_active", True)
+                existing.grade = item.get("grade")
+                existing.grade_settings = item.get("grade_settings")
+                total_updated += 1
+            else:
+                paper = Paper(
+                    id=item["id"],
+                    paper_name=item["paper_name"],
+                    description=item.get("description"),
+                    department_id=item["department_id"],
+                    test_level_id=item["test_level_id"],
+                    subject_ids_data=item["subject_ids_data"],
+                    question_id=item["question_id"],
+                    total_time=item.get("total_time"),
+                    total_marks=item.get("total_marks"),
+                    is_active=item.get("is_active", True),
+                    grade=item.get("grade"),
+                    grade_settings=item.get("grade_settings"),
+                    created_by=item.get("created_by", 1),
+                )
+                db.add(paper)
+                total_seeded += 1
 
         db.commit()
-        print("\n✨ Standardized & Custom Paper Seeding Complete!")
-
+        print(f"✨ Papers seeding complete! Added: {total_seeded}, Updated: {total_updated}")
     except Exception as e:
         db.rollback()
-        print(f"❌ Error during paper seeding: {str(e)}")
+        print(f"❌ Error seeding papers: {str(e)}")
     finally:
         db.close()
 

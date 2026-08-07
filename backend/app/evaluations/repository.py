@@ -6,6 +6,7 @@ from app.users.models import User
 from app.classifications.models import Classification
 from app.core.realtime import realtime_manager
 from app.utils.enums import EvaluationStatus
+from app.duplicates.models import AdminNotification
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,6 @@ async def create_evaluation(db: Session, obj_in: InterviewEvaluationCreate):
 
     # Trigger evaluation_assigned notification
     try:
-        from app.duplicates.models import AdminNotification
-
         candidate = db.query(User).filter(User.id == obj_in.user_id).first()
         candidate_name = (
             candidate.username if candidate else f"Candidate #{obj_in.user_id}"
@@ -102,8 +101,6 @@ async def bulk_create_evaluations(
 
         # Trigger evaluation_assigned notifications in bulk
         try:
-            from app.duplicates.models import AdminNotification
-
             for obj in new_objs:
                 candidate = db.query(User).filter(User.id == obj.user_id).first()
                 candidate_name = (
@@ -169,6 +166,7 @@ def get_evaluations_by_lead(
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.user_id,
+            InterviewEvaluation.attempt_id,
             InterviewEvaluation.status,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
@@ -220,8 +218,6 @@ async def update_evaluation(
 
     # Trigger evaluation_submitted notification for Admin (user_id = None)
     try:
-        from app.duplicates.models import AdminNotification
-
         lead = db.query(User).filter(User.id == db_obj.project_lead_id).first()
         lead_name = lead.username if lead else f"Lead #{db_obj.project_lead_id}"
 
@@ -263,8 +259,6 @@ async def delete_evaluation(db: Session, evaluation_id: int):
         # Trigger unassigned notification if evaluation is pending
         if db_obj.status == EvaluationStatus.PENDING.value:
             try:
-                from app.duplicates.models import AdminNotification
-
                 candidate = db.query(User).filter(User.id == db_obj.user_id).first()
                 candidate_name = (
                     candidate.username if candidate else f"Candidate #{db_obj.user_id}"
@@ -320,6 +314,7 @@ def get_all_evaluations_with_details(
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.status,
+            InterviewEvaluation.attempt_id,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
             Candidate.username.label("candidate_name"),

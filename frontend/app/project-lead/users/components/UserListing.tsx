@@ -15,6 +15,7 @@ import {
 import { Badge } from "@components/ui-elements/Badge";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
+import { DownloadReportIconButton } from "@components/ui-elements/DownloadReportIconButton";
 import { Avatar } from "@components/ui-elements/Avatar";
 import {
   Table,
@@ -254,6 +255,12 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
+                              <DownloadReportIconButton
+                                userId={task.user_id}
+                                attemptId={task.attempt_id}
+                                username={task.candidate_name}
+                                mobile={task.candidate_mobile}
+                              />
                               <TableIconButton
                                 title="View Results"
                                 iconColor="amber"

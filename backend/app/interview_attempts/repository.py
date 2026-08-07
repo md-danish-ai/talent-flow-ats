@@ -25,6 +25,8 @@ from .models import InterviewRecord
 from app.evaluations.models import InterviewEvaluation
 from app.utils.grade_utils import GradeLabel
 from datetime import date as dt_date
+from app.utils.department_helpers import exclude_software_users
+from app.paper_assignments.repository import assign_best_paper
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -369,6 +371,35 @@ def _recompute_grades(
         record.subject_grades = []
         return
 
+    # Filter out responses for subjects that are NOT selected in paper_obj
+    if paper_obj and isinstance(paper_obj.subject_ids_data, list):
+        selected_subject_ids = [
+            int(item["subject_id"])
+            for item in paper_obj.subject_ids_data
+            if isinstance(item, dict)
+            and item.get("is_selected")
+            and str(item.get("subject_id") or "").isdigit()
+        ]
+        if selected_subject_ids:
+            classifications = (
+                db.query(Classification)
+                .filter(Classification.id.in_(selected_subject_ids))
+                .all()
+            )
+            selected_codes = {c.code for c in classifications}
+
+            all_qids = [r["question_id"] for r in responses]
+            questions_for_filter = (
+                db.query(Question).filter(Question.id.in_(all_qids)).all()
+            )
+            q_code_map = {q.id: q.subject_type for q in questions_for_filter}
+
+            responses = [
+                r
+                for r in responses
+                if q_code_map.get(r.get("question_id")) in selected_codes
+            ]
+
     question_ids = [r["question_id"] for r in responses]
 
     questions = db.query(Question).filter(Question.id.in_(question_ids)).all()
@@ -522,6 +553,29 @@ def _materialize_unanswered_entries(
 
     questions = db.query(Question).filter(Question.id.in_(missing_ids)).all()
     questions_map = {q.id: q for q in questions}
+
+    if isinstance(paper.subject_ids_data, list):
+        selected_subject_ids = [
+            int(item["subject_id"])
+            for item in paper.subject_ids_data
+            if isinstance(item, dict)
+            and item.get("is_selected")
+            and str(item.get("subject_id") or "").isdigit()
+        ]
+        if selected_subject_ids:
+            classifications = (
+                db.query(Classification)
+                .filter(Classification.id.in_(selected_subject_ids))
+                .all()
+            )
+            selected_codes = {c.code for c in classifications}
+            missing_ids = [
+                qid
+                for qid in missing_ids
+                if questions_map.get(qid)
+                and questions_map[qid].subject_type in selected_codes
+            ]
+
     now = datetime.utcnow().isoformat()
 
     new_entries: list[dict] = []
@@ -993,8 +1047,6 @@ def get_admin_user_results(
 ) -> dict:
     db = SessionLocal()
     try:
-        from app.utils.department_helpers import exclude_software_users
-
         latest_record_ids_query = (
             db.query(func.max(InterviewRecord.id).label("latest_record_id"))
             .join(User, User.id == InterviewRecord.user_id)
@@ -1399,6 +1451,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             user_answer_text = (resp.get("answer_text") or "").strip()
             is_attempted = resp.get("is_attempted", False)
             manual_marks = resp.get("manual_marks")
+            user_answer_display = resp.get("answer_text")
+            typing_stats = None
 
             if not is_attempted:
                 status_label = "not_attempted"
@@ -1555,6 +1609,10 @@ def reset_user_today_attempt(user_id: int) -> dict:
         )
 
         if record:
+            # Delete any associated evaluations first to prevent FK violation
+            db.query(InterviewEvaluation).filter(
+                InterviewEvaluation.attempt_id == record.id
+            ).delete(synchronize_session=False)
             db.delete(record)
 
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
@@ -1651,8 +1709,6 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user.process_status = ProcessStatus.READY.value
 
         # Immediately assign a paper for today so they are not expired again
-        from app.paper_assignments.repository import assign_best_paper
-
         if user.department_id and user.test_level_id:
             assign_best_paper(
                 db, user.id, user.department_id, user.test_level_id, dt_date.today()
