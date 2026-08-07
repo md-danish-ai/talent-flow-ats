@@ -177,6 +177,7 @@ export const questionsApi = {
     return result.data as {
       success: boolean;
       count?: number;
+      skipped?: number;
       errors?: { row: number; errors: string[] }[];
     };
   },

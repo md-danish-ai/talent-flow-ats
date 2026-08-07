@@ -13,7 +13,7 @@ import {
   TableColumnToggle,
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
-import { Plus, Image as ImageIcon, Upload } from "lucide-react";
+import { Plus, Image as ImageIcon, Upload, Download } from "lucide-react";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { questionsApi } from "@lib/api/questions";
@@ -30,6 +30,7 @@ import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ImageMCQRow } from "./components/ImageMCQRow";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { ExportQuestionsModal } from "@components/features/questions/ExportQuestionsModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -66,6 +67,7 @@ export function ImageMCQClient({
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const handleAuthError = useCallback(
@@ -236,6 +238,18 @@ export function ImageMCQClient({
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
+            <Tooltip content="Export Questions" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isExportOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsExportOpen(true)}
+              >
+                <Download size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
@@ -408,6 +422,12 @@ export function ImageMCQClient({
         src={lightboxUrl || ""}
         onClose={() => setLightboxUrl(null)}
         title="Question Image Preview"
+      />
+
+      <ExportQuestionsModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        defaultQuestionType={QUESTION_TYPES.IMAGE_MULTIPLE_CHOICE}
       />
 
       <BulkUploadModal

@@ -82,7 +82,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Pass2020NothingSpecial
     ports:
-      - "5435:5432"
+      - "9600:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     # Performance tuning for 50-100 concurrent candidates

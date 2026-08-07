@@ -5,7 +5,7 @@ set -e
 # Default local DB config (can be overridden)
 # ===================================================================================================
 : "${DB_HOST:=localhost}"
-: "${DB_PORT:=5435}"
+: "${DB_PORT:=9600}"
 : "${DB_NAME:=talent_flow_ats}"
 : "${DB_USER:=postgres}"
 : "${DB_PASSWORD:=Pass2020NothingSpecial}"

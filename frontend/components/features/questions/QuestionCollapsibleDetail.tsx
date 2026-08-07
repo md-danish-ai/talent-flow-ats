@@ -207,134 +207,98 @@ export const QuestionCollapsibleDetail: React.FC<
   );
 
   const renderLeadGeneration = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3`}
-        >
-          <div className="flex items-center gap-2 text-brand-primary">
-            <Building2 size={16} />
-            <Typography variant="body4" weight="bold">
-              Company Details
-            </Typography>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Company Name
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.company_name || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Website
-              </Typography>
-              <Typography
-                variant="body4"
-                weight="semibold"
-                className="text-brand-primary break-all"
-              >
-                {String(options.website || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                LinkedIn URL
-              </Typography>
-              <Typography
-                variant="body4"
-                weight="semibold"
-                className="text-brand-primary break-all"
-              >
-                {String(options.linkedin_url || "N/A")}
-              </Typography>
-            </div>
-          </div>
-        </div>
-        <div
-          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-3`}
-        >
-          <div className="flex items-center gap-2 text-brand-primary">
-            <User size={16} />
-            <Typography variant="body4" weight="bold">
-              Contact Info
-            </Typography>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Contact Person
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.contact_name || "N/A")} (
-                {String(options.designation || "N/A")})
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Email Address
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.email || "N/A")}
-              </Typography>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Typography
-                  variant="body5"
-                  className="text-muted-foreground uppercase text-[10px]"
-                >
-                  Phone
-                </Typography>
-                <Typography variant="body4" weight="semibold">
-                  {String(options.phone || "N/A")}
-                </Typography>
-              </div>
-              <div>
-                <Typography
-                  variant="body5"
-                  className="text-muted-foreground uppercase text-[10px]"
-                >
-                  Location
-                </Typography>
-                <Typography variant="body4" weight="semibold">
-                  {String(options.address || "N/A")}
-                </Typography>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4">
+      {/* Target Company Name Banner */}
       <div
-        className={`p-5 pt-8 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.02] border border-brand-primary/10 relative`}
+        className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.04] border border-brand-primary/20 space-y-1`}
       >
-        {renderSectionHeader(
-          <Info size={12} className="text-brand-primary" />,
-          "Task / Instructions",
-        )}
-        <Typography
-          variant="body4"
-          className="text-foreground/80 leading-relaxed italic"
-        >
-          &quot;{question.question_text}&quot;
+        <div className="flex items-center gap-2 text-brand-primary">
+          <Building2 size={16} />
+          <Typography
+            variant="body5"
+            weight="bold"
+            className="uppercase tracking-wider"
+          >
+            Target Company Name
+          </Typography>
+        </div>
+        <Typography variant="h4" weight="bold" className="text-foreground">
+          {String(question.question_text || options.company_name || "N/A")}
         </Typography>
+      </div>
+
+      {/* Lead Details Card */}
+      <div
+        className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-4`}
+      >
+        <div className="flex items-center gap-2 text-brand-primary border-b border-border/40 pb-2">
+          <User size={16} />
+          <Typography variant="body4" weight="bold">
+            Lead Details
+          </Typography>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
+            >
+              Name of the Person
+            </Typography>
+            <Typography
+              variant="body4"
+              weight="semibold"
+              className="text-foreground mt-0.5"
+            >
+              {String(options.contact_name || "N/A")}
+            </Typography>
+          </div>
+          <div>
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
+            >
+              Title of the Person (Chairman/CEO/COO/President/Founder)
+            </Typography>
+            <Typography
+              variant="body4"
+              weight="semibold"
+              className="text-foreground mt-0.5"
+            >
+              {String(options.designation || "N/A")}
+            </Typography>
+          </div>
+          <div>
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
+            >
+              Website Address (URL)
+            </Typography>
+            <Typography
+              variant="body4"
+              weight="semibold"
+              className="text-brand-primary break-all mt-0.5"
+            >
+              {String(options.website || "N/A")}
+            </Typography>
+          </div>
+          <div>
+            <Typography
+              variant="body5"
+              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
+            >
+              Person&apos;s Email Address
+            </Typography>
+            <Typography
+              variant="body4"
+              weight="semibold"
+              className="text-foreground mt-0.5"
+            >
+              {String(options.email || "N/A")}
+            </Typography>
+          </div>
+        </div>
       </div>
     </div>
   );

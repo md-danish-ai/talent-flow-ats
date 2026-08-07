@@ -92,6 +92,14 @@ export function BulkUploadGuideCard({
                   provided in the sample template.
                 </span>
               </li>
+              <li className="flex items-start gap-2.5">
+                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0 shadow-[0_0_5px_rgba(var(--brand-primary-rgb),0.4)]" />
+                <span className="leading-relaxed">
+                  <b className="text-slate-900 dark:text-white">Question Id</b>{" "}
+                  is column #1 in exported/sample templates and will be
+                  processed automatically during bulk upload.
+                </span>
+              </li>
             </ul>
           </div>
 

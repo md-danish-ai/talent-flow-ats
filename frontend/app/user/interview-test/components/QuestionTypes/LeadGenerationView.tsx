@@ -76,60 +76,26 @@ export const LeadGenerationView = memo(function LeadGenerationView({
     onChangeAnswer(JSON.stringify(updated));
   };
 
-  const groups = [
+  const fields = [
     {
-      title: "Candidate Info",
-      icon: <UserIcon className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "contact_name",
-          label: "Full Name",
-          placeholder: "e.g. John Doe",
-        },
-        {
-          key: "designation",
-          label: "Current Role",
-          placeholder: "e.g. Manager",
-        },
-      ],
+      key: "contact_name",
+      label: "Name of the Person",
+      placeholder: "e.g. John Doe",
     },
     {
-      title: "Professional Details",
-      icon: <Building2 className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "company_name",
-          label: "Company",
-          placeholder: "e.g. Acme Corp",
-        },
-        {
-          key: "website",
-          label: "Website",
-          placeholder: "e.g. https://acme.com",
-        },
-        {
-          key: "linkedin_url",
-          label: "LinkedIn URL",
-          placeholder: "e.g. linkedin.com/johndoe",
-        },
-      ],
+      key: "designation",
+      label: "Title of the Person (Chairman/CEO/COO/President/Founder)",
+      placeholder: "e.g. CEO",
     },
     {
-      title: "Contact Details",
-      icon: <Mail className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "email",
-          label: "Work Email",
-          placeholder: "e.g. john@acme.com",
-        },
-        { key: "phone", label: "Phone", placeholder: "e.g. +1 123-456-7890" },
-        {
-          key: "address",
-          label: "Location",
-          placeholder: "e.g. Bangalore, India",
-        },
-      ],
+      key: "website",
+      label: "Website Address (URL)",
+      placeholder: "e.g. https://acme.com",
+    },
+    {
+      key: "email",
+      label: "Person's Email Address",
+      placeholder: "e.g. john@acme.com",
     },
   ];
 
@@ -181,7 +147,7 @@ export const LeadGenerationView = memo(function LeadGenerationView({
               weight="black"
               className="uppercase tracking-widest mr-1"
             >
-              Target Source / URL
+              Target Company Name
             </Typography>
           </div>
           <div className="p-5 flex items-center flex-wrap gap-3">
@@ -217,41 +183,37 @@ export const LeadGenerationView = memo(function LeadGenerationView({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
-        {groups.map((group) => (
-          <div
-            key={group.title}
-            className={cn(
-              "flex flex-col border border-border bg-muted/10 overflow-hidden shadow-sm",
-              STYLE_CONFIG.innerCardRadius,
-            )}
-          >
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/20">
-              {group.icon}
-              <Typography variant="body3" className="font-bold text-foreground">
-                {group.title}
+      {/* Single Unified Card */}
+      <div
+        className={cn(
+          "flex flex-col border border-border bg-muted/10 overflow-hidden shadow-sm",
+          STYLE_CONFIG.innerCardRadius,
+        )}
+      >
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/20">
+          <UserIcon className="w-4 h-4 text-brand-primary" />
+          <Typography variant="body3" className="font-bold text-foreground">
+            Contact & Lead Info
+          </Typography>
+        </div>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.map((f) => (
+            <div key={f.key} className="space-y-1.5">
+              <Typography
+                variant="body4"
+                className="font-semibold text-muted-foreground ml-0.5"
+              >
+                {f.label}
               </Typography>
+              <Input
+                value={fieldAnswers[f.key] || ""}
+                onChange={(e) => handleFieldChange(f.key, e.target.value)}
+                placeholder={f.placeholder}
+                className="bg-background border-border hover:border-brand-primary focus:border-brand-primary h-10"
+              />
             </div>
-            <div className="p-4 space-y-4 flex-1">
-              {group.fields.map((f) => (
-                <div key={f.key} className="space-y-1.5">
-                  <Typography
-                    variant="body4"
-                    className="font-semibold text-muted-foreground ml-0.5"
-                  >
-                    {f.label}
-                  </Typography>
-                  <Input
-                    value={fieldAnswers[f.key] || ""}
-                    onChange={(e) => handleFieldChange(f.key, e.target.value)}
-                    placeholder={f.placeholder}
-                    className="bg-background border-border hover:border-brand-primary focus:border-brand-primary h-10"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

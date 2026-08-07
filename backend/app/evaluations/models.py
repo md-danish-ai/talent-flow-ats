@@ -14,7 +14,10 @@ class InterviewEvaluation(Base):
         Integer, ForeignKey("users.id"), index=True, nullable=False
     )
     attempt_id = Column(
-        Integer, ForeignKey("interview_records.id"), index=True, nullable=False
+        Integer,
+        ForeignKey("interview_records.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
 
     # Metadata

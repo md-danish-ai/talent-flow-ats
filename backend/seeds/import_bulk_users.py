@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Set default env vars for DB
 os.environ.setdefault("DB_HOST", "localhost")
-os.environ.setdefault("DB_PORT", "5435")
+os.environ.setdefault("DB_PORT", "9600")
 os.environ.setdefault("DB_NAME", "talent_flow_ats")
 os.environ.setdefault("DB_USER", "postgres")
 os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")

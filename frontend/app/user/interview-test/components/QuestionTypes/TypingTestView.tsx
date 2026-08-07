@@ -3,6 +3,10 @@ import { memo, useState, useMemo, useCallback, useEffect } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import { Zap, Target, AlertTriangle, Clock, Trophy } from "lucide-react";
+import {
+  calculateTypingStats,
+  getTypingAlignment,
+} from "@lib/utils/typingUtils";
 
 interface TypingTestViewProps {
   questionText: string;
@@ -84,28 +88,7 @@ export const TypingTestView = memo(function TypingTestView({
       0.1,
     );
 
-    // Identify mistakes by mapping against original source
-    let correctChars = 0;
-    for (let i = 0; i < localTypedText.length; i++) {
-      if (localTypedText[i] === passage[i]) {
-        correctChars++;
-      }
-    }
-
-    const errors = localTypedText.length - correctChars;
-    const accuracy = Math.round((correctChars / localTypedText.length) * 100);
-
-    // Standard WPM calculation formula
-    const words = localTypedText.length / 5;
-    const minutes = timeTakenSeconds / 60;
-    const wpm = Math.round(words / minutes);
-
-    return {
-      wpm,
-      accuracy,
-      errors,
-      timeTaken: Math.round(timeTakenSeconds),
-    };
+    return calculateTypingStats(localTypedText, passage, timeTakenSeconds);
   }, [localTypedText, passage, startTime, endTime, liveTime, isFinished]);
 
   // Optimized zero-latency local change handler
@@ -129,23 +112,13 @@ export const TypingTestView = memo(function TypingTestView({
 
       // Run instantaneous stat projections for accurate DB snapshot logging
       const activeSeconds = actualStart ? (now - actualStart) / 1000 : 0;
-      let correctCharsCount = 0;
-      for (let i = 0; i < val.length; i++) {
-        if (val[i] === passage[i]) correctCharsCount++;
-      }
-
-      const instantWPM = Math.round(
-        val.length / 5 / (Math.max(activeSeconds, 0.1) / 60),
-      );
-      const instantAccuracy = Math.round(
-        (correctCharsCount / val.length) * 100,
-      );
+      const computedStats = calculateTypingStats(val, passage, activeSeconds);
 
       const logStats = {
-        wpm: instantWPM,
-        accuracy: instantAccuracy,
-        errors: val.length - correctCharsCount,
-        time_taken: Math.round(activeSeconds),
+        wpm: computedStats.wpm,
+        accuracy: computedStats.accuracy,
+        errors: computedStats.errors,
+        time_taken: computedStats.timeTaken,
       };
 
       // Auto-complete hook when text length meets passage limit
@@ -167,18 +140,24 @@ export const TypingTestView = memo(function TypingTestView({
   );
 
   const renderedPassage = useMemo(() => {
+    const { matchedPassageLength, passageCharStatuses } = getTypingAlignment(
+      localTypedText,
+      passage,
+    );
+
     return passage.split("").map((char, index) => {
       let colorClass = "text-foreground/40"; // Default
       let bgClass = "";
 
-      if (index < localTypedText.length) {
-        if (localTypedText[index] === char) {
+      if (index < matchedPassageLength) {
+        const status = passageCharStatuses[index];
+        if (status === "correct") {
           colorClass = "text-emerald-500 font-bold";
-        } else {
+        } else if (status === "error") {
           colorClass = "text-rose-500 font-bold";
           bgClass = "bg-rose-500/10";
         }
-      } else if (index === localTypedText.length && !isFinished) {
+      } else if (index === matchedPassageLength && !isFinished) {
         bgClass =
           char === " "
             ? "bg-brand-primary/30 rounded animate-pulse"

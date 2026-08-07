@@ -14,7 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Upload } from "lucide-react";
+import { Plus, ListChecks, Upload, Download } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
@@ -29,6 +29,7 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { ImageSubjectiveRow } from "./components/ImageSubjectiveRow";
 import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { ExportQuestionsModal } from "@components/features/questions/ExportQuestionsModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -53,6 +54,7 @@ export function ImageSubjectiveClient() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [subjects, setSubjects] = useState<Classification[]>([]);
@@ -204,6 +206,18 @@ export function ImageSubjectiveClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
+            <Tooltip content="Export Questions" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isExportOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsExportOpen(true)}
+              >
+                <Download size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
@@ -383,6 +397,12 @@ export function ImageSubjectiveClient() {
         src={lightboxUrl || ""}
         onClose={() => setLightboxUrl(null)}
         title="Question Image Preview"
+      />
+
+      <ExportQuestionsModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        defaultQuestionType={QUESTION_TYPES.IMAGE_SUBJECTIVE}
       />
 
       <BulkUploadModal

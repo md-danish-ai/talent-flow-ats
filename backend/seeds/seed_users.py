@@ -1,53 +1,90 @@
-from app.classifications.models import Classification
-from app.departments.models import Department
-from app.users.models import User
-from app.auth.utils import hash_password
-from app.database.db import SessionLocal
+# ruff: noqa
+# Auto-generated seed file from database on 2026-08-07 10:01:39
 import sys
 import os
-
-# Add the backend directory to sys.path at the VERY top
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Explicitly import related models to resolve SQLAlchemy relationships
+true = True
+false = False
+null = None
 
-# Set default env vars for DB if not present
-os.environ.setdefault("DB_HOST", "localhost")
-os.environ.setdefault("DB_PORT", "5435")
-os.environ.setdefault("DB_NAME", "talent_flow_ats")
-os.environ.setdefault("DB_USER", "postgres")
-os.environ.setdefault("DB_PASSWORD", "Pass2020NothingSpecial")
+from app.database.db import SessionLocal
+from app.users.models import User
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SEED USERS
-#
-# Password rule: password = mobile number (10 digits), bcrypt hashed
-#
-#   Admin  → mobile: 8829059600  | password: 8829059600  | role: admin
-#   User   → mobile: 1234567890  | password: 1234567890  | role: user
-# ─────────────────────────────────────────────────────────────────────────────
-
-USERS = [
+USERS_DATA = [
     {
+        "id": 1,
         "username": "Mohammed Danish",
-        "mobile":   "8829059600",
-        "email":    "mohammed.danish@arcgate.com",
-        "role":     "admin",
-        "test_level_id": None,
-        "department_id": None,
-        "is_active": True,
+        "mobile": "8829059600",
+        "email": "mohammed.danish@arcgate.com",
+        "password": "$2b$12$qhDlv1qYBzPi4dOmC8ilke4LI2RXKuWlZ71ziZ1RWRzM1a/9Hzd.u",
+        "role": "admin",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
     },
     {
+        "id": 2,
         "username": "Manish Joshi",
-        "mobile":   "6378297257",
-        "email":    "mmjoshi@arcgate.com",
-        "role":     "admin",
-        "test_level_id": None,
-        "department_id": None,
-        "is_active": True,
+        "mobile": "6378297257",
+        "email": "mmjoshi@arcgate.com",
+        "password": "$2b$12$4tn6xzIeQXnJRlD9gsY3cuzZQ.5io/LPwPFm/W8aOHGm8IaFqLlfa",
+        "role": "admin",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
+    },
+    {
+        "id": 3,
+        "username": "Shubham Pal Singh",
+        "mobile": "7014225334",
+        "email": "shubham@arcgate.com",
+        "password": "$2b$12$RB1FK9UKQ8byMDzL12i3UOE/9JJWJKbtRX38vql0F1RCglSYcyC.O",
+        "role": "project_lead",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
+    },
+    {
+        "id": 4,
+        "username": "Nilesh Jain",
+        "mobile": "9828067566",
+        "email": "nilesh@arcgate.com",
+        "password": "$2b$12$dbN73Ii6sxuMfJzsQVQ3pOZrPjp0tg5L/g8MmRccg9ZDMPRpWJ95q",
+        "role": "project_lead",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
+    },
+    {
+        "id": 5,
+        "username": "Ankit Gurjar",
+        "mobile": "9024287078",
+        "email": "agurjar@arcgate.com",
+        "password": "$2b$12$4Lx/jcsDYiRUpzQibwnnAut9tWdDeGhLsu4A15v3rcmJVz0/nUIIy",
+        "role": "project_lead",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
+    },
+    {
+        "id": 6,
+        "username": "Hina Dashora",
+        "mobile": "9460326133",
+        "email": "hina.dashora@arcgate.com",
+        "password": "$2b$12$2NTVl105iq81MdcwfxvNBuVJHqKATg2412Z0yhm9BmKWEMimXUcua",
+        "role": "project_lead",
+        "test_level_id": null,
+        "department_id": null,
+        "is_active": true,
+        "process_status": "pending"
     }
 ]
-
 
 def seed_users():
     db = SessionLocal()
@@ -56,73 +93,43 @@ def seed_users():
         total_seeded = 0
         total_updated = 0
 
-        for user_data in USERS:
-            # Check if mobile already exists
-            existing = db.query(User).filter(
-                User.mobile == user_data["mobile"]
-            ).first()
-
-            tid = user_data.get("test_level_id")
-            did = user_data.get("department_id")
+        for item in USERS_DATA:
+            existing = db.query(User).filter(User.mobile == item["mobile"]).first()
 
             if existing:
-                # Update existing user data
-                existing.test_level_id = tid
-                existing.department_id = did
-                existing.email = user_data.get("email", existing.email)
-                existing.role = user_data["role"]
-                # Ensure password is in sync with mobile number
-                existing.password = hash_password(user_data["mobile"])
-
-                print(
-                    f"  🔄 Updated [ {user_data['role'].upper()} ]: "
-                    f"{user_data['username']} — mobile: {user_data['mobile']} "
-                    f"(Dept ID: {did}, Lvl ID: {tid})"
-                )
+                existing.username = item["username"]
+                existing.email = item["email"]
+                existing.role = item["role"]
+                existing.test_level_id = item.get("test_level_id")
+                existing.department_id = item.get("department_id")
+                existing.is_active = item.get("is_active", True)
+                existing.process_status = item.get("process_status", "pending")
+                if item.get("password"):
+                    existing.password = item["password"]
                 total_updated += 1
-                continue
-
-            # Password = mobile number (bcrypt hashed)
-            hashed_pw = hash_password(user_data["mobile"])
-
-            new_user = User(
-                username=user_data["username"],
-                mobile=user_data["mobile"],
-                email=user_data.get("email"),
-                password=hashed_pw,
-                role=user_data["role"],
-                test_level_id=tid,
-                department_id=did,
-                is_active=user_data["is_active"],
-                created_by=None,
-            )
-            db.add(new_user)
-            db.flush()
-            total_seeded += 1
-            print(
-                f"  ✅ Added [ {user_data['role'].upper()} ]: "
-                f"{user_data['username']} — mobile: {user_data['mobile']} "
-                f"(Dept ID: {did}, Lvl ID: {tid})"
-            )
+            else:
+                usr = User(
+                    id=item["id"],
+                    username=item["username"],
+                    mobile=item["mobile"],
+                    email=item["email"],
+                    password=item["password"],
+                    role=item["role"],
+                    test_level_id=item.get("test_level_id"),
+                    department_id=item.get("department_id"),
+                    is_active=item.get("is_active", True),
+                    process_status=item.get("process_status", "pending"),
+                )
+                db.add(usr)
+                total_seeded += 1
 
         db.commit()
-        print(f"\n✨ User seeding complete!")
-        print(f"   Users added  : {total_seeded}")
-        print(f"   Users updated: {total_updated}")
-        print("\n📋 Login Credentials:")
-        print("   ┌──────────┬────────────────┬────────────┬─────────────────────┐")
-        print("   │ Role     │ Mobile         │ Password   │ Email               │")
-        print("   ├──────────┼────────────────┼────────────┼─────────────────────┤")
-        print("   │ Admin    │ 8829059600     │ 8829059600 │ admin@talentflow.com│")
-        print("   │ User     │ 1234567890     │ 1234567890 │ user@talentflow.com │")
-        print("   └──────────┴────────────────┴────────────┴─────────────────────┘")
-
+        print(f"✨ Users seeding complete! Added: {total_seeded}, Updated: {total_updated}")
     except Exception as e:
         db.rollback()
         print(f"❌ Error seeding users: {str(e)}")
     finally:
         db.close()
-
 
 if __name__ == "__main__":
     seed_users()

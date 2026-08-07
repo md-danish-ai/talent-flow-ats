@@ -153,8 +153,20 @@ async def bulk_upload_questions(
             StatusCode.BAD_REQUEST, "Bulk upload failed validation", data=result
         )
 
+    count = result.get("count", 0)
+    skipped = result.get("skipped", 0)
+
+    if count > 0 and skipped > 0:
+        msg = f"Successfully uploaded {count} questions ({skipped} skipped with Question ID)"
+    elif count > 0:
+        msg = f"Successfully uploaded {count} questions"
+    elif skipped > 0:
+        msg = f"No new questions uploaded ({skipped} existing question(s) skipped with Question ID)"
+    else:
+        msg = "No questions to process"
+
     return api_response(
         StatusCode.OK,
-        f"Successfully uploaded {result['count']} questions",
+        msg,
         data=result,
     )

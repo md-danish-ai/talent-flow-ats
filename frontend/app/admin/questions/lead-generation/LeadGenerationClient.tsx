@@ -14,7 +14,7 @@ import {
 } from "@components/ui-elements/Table";
 import { QuestionTableSkeleton } from "@components/ui-skeleton/QuestionTableSkeleton";
 import { Pagination } from "@components/ui-elements/Pagination";
-import { Plus, ListChecks, Upload } from "lucide-react";
+import { Plus, ListChecks, Upload, Download } from "lucide-react";
 import { questionsApi } from "@lib/api/questions";
 import { Question, Classification } from "@types";
 import { QUESTION_TYPES } from "@lib/constants/questions";
@@ -27,6 +27,7 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { LeadGenerationRow } from "./components/LeadGenerationRow";
 import EditLeadGenerationModal from "./components/EditLeadGenerationModal";
 import { BulkUploadModal } from "@components/features/questions/BulkUploadModal";
+import { ExportQuestionsModal } from "@components/features/questions/ExportQuestionsModal";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -50,6 +51,7 @@ export function LeadGenerationClient() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const [examLevels, setExamLevels] = useState<Classification[]>([]);
@@ -92,13 +94,14 @@ export function LeadGenerationClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "companyName", label: "CompanyName" },
-    { id: "website", label: "WebSite" },
-    { id: "name", label: "Name" },
-    { id: "title", label: "Title" },
-    { id: "linkedInUrl", label: "LinkedIn URL" },
-    { id: "phone", label: "Phone" },
-    { id: "address", label: "Address/Location" },
+    { id: "companyName", label: "Company Name" },
+    { id: "website", label: "Website Address (URL)" },
+    { id: "name", label: "Name of the Person" },
+    {
+      id: "title",
+      label: "Title of the Person (Chairman/CEO/COO/President/Founder)",
+    },
+    { id: "email", label: "Person's Email Address" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -109,7 +112,6 @@ export function LeadGenerationClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "name",
     "companyName",
     "subject",
     "examLevel",
@@ -193,6 +195,18 @@ export function LeadGenerationClient() {
               isFilterOpen={isFilterOpen}
               activeFiltersCount={activeFiltersCount}
             />
+            <Tooltip content="Export Questions" side="top">
+              <Button
+                variant="action"
+                size="rounded-icon"
+                isActive={isExportOpen}
+                animate="scale"
+                iconAnimation="none"
+                onClick={() => setIsExportOpen(true)}
+              >
+                <Download size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Bulk Upload" side="top">
               <Button
                 variant="action"
@@ -241,28 +255,21 @@ export function LeadGenerationClient() {
                       </TableHead>
                     )}
                     {visibleColumns.includes("companyName") && (
-                      <TableHead>CompanyName</TableHead>
+                      <TableHead>Company Name</TableHead>
                     )}
                     {visibleColumns.includes("website") && (
-                      <TableHead>WebSite</TableHead>
+                      <TableHead>Website Address (URL)</TableHead>
                     )}
                     {visibleColumns.includes("name") && (
-                      <TableHead>Name</TableHead>
+                      <TableHead>Name of the Person</TableHead>
                     )}
                     {visibleColumns.includes("title") && (
-                      <TableHead>Title</TableHead>
+                      <TableHead>
+                        Title of the Person (Chairman/CEO/COO/President/Founder)
+                      </TableHead>
                     )}
-                    {visibleColumns.includes("primaryEmail") && (
-                      <TableHead>Primary Email Address</TableHead>
-                    )}
-                    {visibleColumns.includes("linkedInUrl") && (
-                      <TableHead>LinkedIn URL</TableHead>
-                    )}
-                    {visibleColumns.includes("phone") && (
-                      <TableHead>Phone</TableHead>
-                    )}
-                    {visibleColumns.includes("address") && (
-                      <TableHead>Address/Location</TableHead>
+                    {visibleColumns.includes("email") && (
+                      <TableHead>Person&apos;s Email Address</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
@@ -376,6 +383,12 @@ export function LeadGenerationClient() {
           onSuccess={() => void refresh()}
         />
       )}
+
+      <ExportQuestionsModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        defaultQuestionType={QUESTION_TYPES.LEAD_GENERATION}
+      />
 
       <BulkUploadModal
         isOpen={isBulkUploadOpen}

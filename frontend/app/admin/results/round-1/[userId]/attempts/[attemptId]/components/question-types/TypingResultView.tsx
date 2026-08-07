@@ -5,6 +5,7 @@ import { Gauge, Target, AlertCircle, Timer } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { type AdminUserResultAnswer } from "@types";
 import { STYLE_CONFIG } from "@lib/config/style";
+import { getTypingDiffTokens } from "@lib/utils/typingUtils";
 
 interface TypingResultViewProps {
   answer: AdminUserResultAnswer;
@@ -140,27 +141,24 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
           className="font-mono leading-relaxed whitespace-pre-wrap select-all text-sm md:text-base"
         >
           {(() => {
-            if (
-              answer.user_answer &&
-              (answer.correct_answer || answer.passage)
-            ) {
-              return (answer.user_answer as string).split("").map((char, i) => {
-                const source =
-                  answer.correct_answer || (answer.passage as string);
-                const isCorrect = char === source[i];
-                return (
-                  <span
-                    key={i}
-                    className={
-                      isCorrect
-                        ? "text-foreground"
-                        : "text-rose-600 bg-rose-500/10 font-black underline decoration-rose-500/50 underline-offset-[3px]"
-                    }
-                  >
-                    {char}
-                  </span>
-                );
-              });
+            const typedText =
+              typeof answer.user_answer === "string" ? answer.user_answer : "";
+            const sourceText =
+              answer.correct_answer || (answer.passage as string) || "";
+            if (typedText && sourceText) {
+              const diffTokens = getTypingDiffTokens(typedText, sourceText);
+              return diffTokens.map((token, i) => (
+                <span
+                  key={i}
+                  className={
+                    token.isCorrect
+                      ? "text-foreground"
+                      : "text-rose-600 bg-rose-500/10 font-black underline decoration-rose-500/50 underline-offset-[3px]"
+                  }
+                >
+                  {token.text}
+                </span>
+              ));
             }
             return answer.user_answer || "No response recorded.";
           })()}

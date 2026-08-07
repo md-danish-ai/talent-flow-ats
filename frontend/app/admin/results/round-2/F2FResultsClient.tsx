@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import { evaluationsApi } from "@lib/api/evaluations";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
+import { DownloadReportIconButton } from "@components/ui-elements/DownloadReportIconButton";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { Skeleton } from "@components/ui-elements/Skeleton";
 import { toast } from "@lib/toast";
@@ -269,6 +270,12 @@ export default function F2FResultsClient() {
                                 <UserMinus size={16} />
                               </TableIconButton>
                             )}
+                            <DownloadReportIconButton
+                              userId={item.user_id || item.candidate_id || 0}
+                              attemptId={item.attempt_id}
+                              username={item.candidate_name}
+                              mobile={item.candidate_mobile}
+                            />
                             <Link
                               href={`/admin/results/round-1/${item.candidate_id}`}
                             >
