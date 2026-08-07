@@ -98,7 +98,7 @@ export function Pagination({
                 label: size.toString(),
               }))}
               onChange={(val) => onPageSizeChange(Number(val))}
-              className="w-20 pl-4 py-2"
+              className="w-24 min-h-[36px] h-9 px-3 py-1.5"
               placement="top"
               placeholder={pageSize.toString()}
               isClearable={false}
