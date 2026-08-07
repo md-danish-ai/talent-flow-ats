@@ -1,5 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-07 10:01:39
+# Auto-generated seed file from database
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,65 +9,97 @@ false = False
 null = None
 
 from app.database.db import SessionLocal
+from app.classifications.models import Classification
+from app.departments.models import Department
+from app.users.models import User
 from app.papers.models import Paper
 
 PAPERS_DATA = [
     {
         "id": 1,
-        "paper_name": "Test Paper KPO",
-        "description": "Set to be used for Testing Fresher Level",
+        "paper_name": "Assessment Paper - Set A",
+        "description": "Evaluation test paper matching all 9 subject & question type specifications: Comprehension (MCQ), Grammar (MCQ), Grammar (Subjective), Written (Subjective), Aptitude (MCQ), Industry Awareness (MCQ), Company Contact Details Test, Lead Generation Test, and Typing Test.",
         "department_id": 1,
         "test_level_id": 9,
         "subject_ids_data": [
             {
                 "order": 1,
-                "subject_id": 18,
+                "subject_id": 13,
                 "is_selected": true,
-                "total_marks": 5,
-                "time_minutes": 5,
+                "total_marks": 2,
+                "time_minutes": 10,
                 "question_count": 1
             },
             {
                 "order": 2,
+                "subject_id": 14,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 10,
+                "question_count": 2
+            },
+            {
+                "order": 3,
+                "subject_id": 12,
+                "is_selected": true,
+                "total_marks": 5,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 4,
+                "subject_id": 15,
+                "is_selected": true,
+                "total_marks": 1,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 5,
+                "subject_id": 17,
+                "is_selected": true,
+                "total_marks": 1,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 6,
+                "subject_id": 16,
+                "is_selected": true,
+                "total_marks": 20,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 7,
+                "subject_id": 18,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 8,
                 "subject_id": 19,
                 "is_selected": true,
                 "total_marks": 10,
-                "time_minutes": 5,
+                "time_minutes": 10,
                 "question_count": 1
             }
         ],
         "question_id": [
-            1,
             2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            24,
-            25,
-            26,
-            34,
-            35,
-            36,
-            37,
-            39,
-            42,
-            47,
-            50,
-            66,
-            67,
+            17,
+            38,
+            40,
+            62,
             68,
-            70,
-            72,
-            75,
-            77,
             78,
-            157,
+            81,
             74
         ],
-        "total_time": "00:10:00",
-        "total_marks": 15,
+        "total_time": "01:20:00",
+        "total_marks": 59,
         "is_active": true,
         "grade": null,
         "grade_settings": [
@@ -102,7 +134,128 @@ PAPERS_DATA = [
                 "grade_label": "Excellent"
             }
         ],
-        "created_by": 2
+        "created_by": 1
+    },
+    {
+        "id": 2,
+        "paper_name": "Assessment Paper - Set B",
+        "description": "Evaluation test paper matching all 9 subject & question type specifications: Comprehension (MCQ), Grammar (MCQ), Grammar (Subjective), Written (Subjective), Aptitude (MCQ), Industry Awareness (MCQ), Company Contact Details Test, Lead Generation Test, and Typing Test.",
+        "department_id": 1,
+        "test_level_id": 9,
+        "subject_ids_data": [
+            {
+                "order": 1,
+                "subject_id": 13,
+                "is_selected": true,
+                "total_marks": 2,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 2,
+                "subject_id": 14,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 10,
+                "question_count": 2
+            },
+            {
+                "order": 3,
+                "subject_id": 12,
+                "is_selected": true,
+                "total_marks": 5,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 4,
+                "subject_id": 15,
+                "is_selected": true,
+                "total_marks": 1,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 5,
+                "subject_id": 17,
+                "is_selected": true,
+                "total_marks": 1,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 6,
+                "subject_id": 16,
+                "is_selected": true,
+                "total_marks": 20,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 7,
+                "subject_id": 18,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 10,
+                "question_count": 1
+            },
+            {
+                "order": 8,
+                "subject_id": 19,
+                "is_selected": true,
+                "total_marks": 10,
+                "time_minutes": 10,
+                "question_count": 1
+            }
+        ],
+        "question_id": [
+            4,
+            17,
+            38,
+            49,
+            59,
+            67,
+            74,
+            78,
+            81
+        ],
+        "total_time": "01:20:00",
+        "total_marks": 59,
+        "is_active": true,
+        "grade": null,
+        "grade_settings": [
+            {
+                "max": 39.99,
+                "min": 0.0,
+                "grade_label": "Poor"
+            },
+            {
+                "max": 49.99,
+                "min": 40.0,
+                "grade_label": "Below Average"
+            },
+            {
+                "max": 59.99,
+                "min": 50.0,
+                "grade_label": "Average"
+            },
+            {
+                "max": 69.99,
+                "min": 60.0,
+                "grade_label": "Above Average"
+            },
+            {
+                "max": 84.99,
+                "min": 70.0,
+                "grade_label": "Good"
+            },
+            {
+                "max": 100.0,
+                "min": 85.0,
+                "grade_label": "Excellent"
+            }
+        ],
+        "created_by": 1
     }
 ]
 

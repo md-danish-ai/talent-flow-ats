@@ -4,6 +4,7 @@ import { type Department } from "@types";
 
 export function useDepartments(params?: {
   is_active?: boolean;
+  requires_interview?: boolean;
   page?: number;
   limit?: number;
   search?: string;

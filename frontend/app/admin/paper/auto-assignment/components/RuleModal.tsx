@@ -37,13 +37,16 @@ export function RuleModal({
 }: RuleModalProps) {
   const { data: departmentsData, isLoading: isLoadingDepts } = useDepartments({
     is_active: true,
+    requires_interview: true,
   });
   const { data: levelsData, isLoading: isLoadingLevels } = useClassifications({
     type: "exam_level",
     is_active: true,
   });
 
-  const departments = departmentsData || [];
+  const departments = (departmentsData || []).filter(
+    (d) => d.requires_interview !== false,
+  );
   const levels = levelsData?.data || [];
 
   const [formData, setFormData] = useState({
