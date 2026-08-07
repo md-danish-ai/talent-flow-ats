@@ -7,6 +7,7 @@ import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { QuestionInput } from "./QuestionInput";
+import { QuestionInstructionBanner } from "./QuestionInstructionBanner";
 import { humanizeString } from "@lib/utils";
 import type { InterviewQuestion, InterviewSection, TimerZone } from "../types";
 
@@ -113,6 +114,11 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
           </Badge>
         )}
       </div>
+
+      <QuestionInstructionBanner
+        subjectName={currentQuestion.subjectName}
+        type={currentQuestion.type}
+      />
 
       <QuestionInput
         question={currentQuestion}
