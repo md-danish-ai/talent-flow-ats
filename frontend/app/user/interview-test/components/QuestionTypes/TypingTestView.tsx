@@ -94,8 +94,6 @@ export const TypingTestView = memo(function TypingTestView({
   // Optimized zero-latency local change handler
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      if (isFinished) return;
-
       const val = e.target.value;
       const now = Date.now();
 
@@ -124,7 +122,10 @@ export const TypingTestView = memo(function TypingTestView({
       // Auto-complete hook when text length meets passage limit
       if (val.length >= passage.length) {
         setIsFinished(true);
-        setEndTime(now);
+        if (!endTime) setEndTime(now);
+      } else {
+        setIsFinished(false);
+        setEndTime(null);
       }
 
       // Dispatches update cleanly to parent context
@@ -136,7 +137,7 @@ export const TypingTestView = memo(function TypingTestView({
         }),
       );
     },
-    [startTime, isFinished, passage, onChangeAnswer],
+    [startTime, endTime, passage, onChangeAnswer],
   );
 
   const renderedPassage = useMemo(() => {
@@ -315,17 +316,12 @@ export const TypingTestView = memo(function TypingTestView({
             data-gramm={false}
             data-gramm_editor={false}
             data-enable-grammarly={false}
-            placeholder={
-              isFinished
-                ? "Test completed. Please click 'Save & Next' to continue."
-                : "Focus and start typing here..."
-            }
+            placeholder="Focus and start typing here..."
             value={localTypedText}
             onChange={handleInputChange}
-            disabled={isFinished}
             className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${
               isFinished
-                ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-900/40 cursor-not-allowed"
+                ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-900 focus:border-emerald-500 focus:bg-background focus:ring-[8px] focus:ring-emerald-500/10"
                 : "bg-muted/10 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10"
             }`}
           />
