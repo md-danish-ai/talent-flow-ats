@@ -1,7 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-06 18:15:07
-from app.users.models import User
-from app.database.db import SessionLocal
+# Auto-generated seed file from database on 2026-08-07 10:01:39
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -10,6 +8,8 @@ true = True
 false = False
 null = None
 
+from app.database.db import SessionLocal
+from app.users.models import User
 
 USERS_DATA = [
     {
@@ -86,7 +86,6 @@ USERS_DATA = [
     }
 ]
 
-
 def seed_users():
     db = SessionLocal()
     try:
@@ -95,9 +94,7 @@ def seed_users():
         total_updated = 0
 
         for item in USERS_DATA:
-            existing = db.query(User).filter(
-                (User.id == item["id"]) | (User.mobile == item["mobile"])
-            ).first()
+            existing = db.query(User).filter(User.mobile == item["mobile"]).first()
 
             if existing:
                 existing.username = item["username"]
@@ -127,14 +124,12 @@ def seed_users():
                 total_seeded += 1
 
         db.commit()
-        print(
-            f"✨ Users seeding complete! Added: {total_seeded}, Updated: {total_updated}")
+        print(f"✨ Users seeding complete! Added: {total_seeded}, Updated: {total_updated}")
     except Exception as e:
         db.rollback()
         print(f"❌ Error seeding users: {str(e)}")
     finally:
         db.close()
-
 
 if __name__ == "__main__":
     seed_users()

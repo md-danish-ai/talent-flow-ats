@@ -10,6 +10,8 @@ import io
 import base64
 import os
 from typing import Any
+from xhtml2pdf import pisa  # type: ignore
+
 from app.reports.html_template import REPORT_HTML_TEMPLATE
 
 
@@ -194,8 +196,6 @@ def build_report_html(data: dict) -> str:
 
 def generate_report_pdf(html: str) -> bytes:
     """Convert HTML string to PDF bytes using xhtml2pdf."""
-    from xhtml2pdf import pisa  # type: ignore
-
     buffer = io.BytesIO()
     result = pisa.CreatePDF(html, dest=buffer)
     if result.err:

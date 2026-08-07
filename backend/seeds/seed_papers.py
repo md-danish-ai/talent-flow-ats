@@ -1,5 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-06 18:15:08
+# Auto-generated seed file from database on 2026-08-07 10:01:39
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,62 +21,14 @@ PAPERS_DATA = [
         "subject_ids_data": [
             {
                 "order": 1,
-                "subject_id": 13,
+                "subject_id": 18,
                 "is_selected": true,
-                "total_marks": 10,
-                "time_minutes": 15,
-                "question_count": 5
+                "total_marks": 5,
+                "time_minutes": 5,
+                "question_count": 1
             },
             {
                 "order": 2,
-                "subject_id": 14,
-                "is_selected": true,
-                "total_marks": 25,
-                "time_minutes": 10,
-                "question_count": 5
-            },
-            {
-                "order": 3,
-                "subject_id": 12,
-                "is_selected": true,
-                "total_marks": 15,
-                "time_minutes": 20,
-                "question_count": 3
-            },
-            {
-                "order": 4,
-                "subject_id": 15,
-                "is_selected": true,
-                "total_marks": 7,
-                "time_minutes": 10,
-                "question_count": 7
-            },
-            {
-                "order": 5,
-                "subject_id": 17,
-                "is_selected": true,
-                "total_marks": 15,
-                "time_minutes": 5,
-                "question_count": 3
-            },
-            {
-                "order": 6,
-                "subject_id": 16,
-                "is_selected": true,
-                "total_marks": 60,
-                "time_minutes": 15,
-                "question_count": 3
-            },
-            {
-                "order": 7,
-                "subject_id": 18,
-                "is_selected": true,
-                "total_marks": 20,
-                "time_minutes": 10,
-                "question_count": 2
-            },
-            {
-                "order": 8,
                 "subject_id": 19,
                 "is_selected": true,
                 "total_marks": 10,
@@ -108,15 +60,14 @@ PAPERS_DATA = [
             68,
             70,
             72,
-            74,
-            81,
-            82,
-            78,
+            75,
             77,
-            75
+            78,
+            157,
+            74
         ],
-        "total_time": "01:30:00",
-        "total_marks": 162,
+        "total_time": "00:10:00",
+        "total_marks": 15,
         "is_active": true,
         "grade": null,
         "grade_settings": [

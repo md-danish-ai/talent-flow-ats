@@ -1,5 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-06 18:15:08
+# Auto-generated seed file from database on 2026-08-07 10:01:39
 import sys
 import os
 from datetime import datetime
@@ -10,10 +10,6 @@ false = False
 null = None
 
 from app.database.db import SessionLocal
-from app.departments.models import Department
-from app.classifications.models import Classification
-from app.users.models import User
-from app.papers.models import Paper
 from app.paper_assignments.models import AutoAssignmentRule
 
 AUTO_RULES_DATA = [

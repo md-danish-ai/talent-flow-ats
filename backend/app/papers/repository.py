@@ -87,6 +87,11 @@ def create_paper(db: Session, paper: PaperCreate, user_id: int) -> Paper:
     db.add(db_paper)
     db.commit()
     db.refresh(db_paper)
+
+    from app.paper_assignments.repository import rebuild_paper_cache
+
+    rebuild_paper_cache(db, db_paper.id)
+
     return get_paper(db, db_paper.id)
 
 

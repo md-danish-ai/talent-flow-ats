@@ -25,6 +25,8 @@ from .models import InterviewRecord
 from app.evaluations.models import InterviewEvaluation
 from app.utils.grade_utils import GradeLabel
 from datetime import date as dt_date
+from app.utils.department_helpers import exclude_software_users
+from app.paper_assignments.repository import assign_best_paper
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -993,8 +995,6 @@ def get_admin_user_results(
 ) -> dict:
     db = SessionLocal()
     try:
-        from app.utils.department_helpers import exclude_software_users
-
         latest_record_ids_query = (
             db.query(func.max(InterviewRecord.id).label("latest_record_id"))
             .join(User, User.id == InterviewRecord.user_id)
@@ -1399,6 +1399,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
             user_answer_text = (resp.get("answer_text") or "").strip()
             is_attempted = resp.get("is_attempted", False)
             manual_marks = resp.get("manual_marks")
+            user_answer_display = resp.get("answer_text")
+            typing_stats = None
 
             if not is_attempted:
                 status_label = "not_attempted"
@@ -1651,8 +1653,6 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user.process_status = ProcessStatus.READY.value
 
         # Immediately assign a paper for today so they are not expired again
-        from app.paper_assignments.repository import assign_best_paper
-
         if user.department_id and user.test_level_id:
             assign_best_paper(
                 db, user.id, user.department_id, user.test_level_id, dt_date.today()

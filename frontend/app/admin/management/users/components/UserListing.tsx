@@ -40,6 +40,7 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { CopyableText } from "@components/ui-elements/CopyableText";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
+import { DownloadReportIconButton } from "@components/ui-elements/DownloadReportIconButton";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
@@ -543,6 +544,13 @@ export function UserListing({ initialData }: UserListingProps) {
                                 <FileText size={16} />
                               </TableIconButton>
                             </Link>
+
+                            <DownloadReportIconButton
+                              userId={row.id}
+                              attemptId={row.latest_attempt?.attempt_id}
+                              username={row.username}
+                              mobile={row.mobile || undefined}
+                            />
                           </div>
                         </TableCell>
                       </TableRow>

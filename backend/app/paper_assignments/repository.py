@@ -11,7 +11,7 @@ from app.questions import repository as question_repository
 from app.users.models import User
 from app.utils.status_codes import StatusCode
 from app.utils.enums import ProcessStatus, RoleType
-from app.core.redis_client import get_cached_data, set_cached_data
+from app.core.redis_client import get_cached_data, set_cached_data, delete_cached_data
 
 from sqlalchemy import func, or_
 from app.user_details.models import UserDetail
@@ -22,6 +22,8 @@ from .schemas import (
     AutoAssignmentRuleUpdate,
 )
 from app.departments.models import Department
+
+PAPER_CACHE_TTL = 15 * 3600  # 15 Hours in seconds (54,000s)
 
 
 def create_auto_assignment_rule(
@@ -697,8 +699,8 @@ def get_my_interview_paper(
             detail=f"Active paper {assignment.paper_id} not found or missing questions",
         )
 
-    # Store in Redis (Permanent cache)
-    set_cached_data(cache_key, paper_details, expire_seconds=None)
+    # Store in Redis (15 Hours TTL cache)
+    set_cached_data(cache_key, paper_details, expire_seconds=PAPER_CACHE_TTL)
 
     return {
         "assignment_id": assignment.id,
@@ -777,6 +779,9 @@ def build_paper_details(db: Session, paper_id: int) -> dict | None:
         subject_name = subject.get("name") or "General"
 
         if subject_code not in sections_by_code:
+            if subject_config:
+                # If selected subjects are configured on the paper, skip questions from unselected subjects
+                continue
             fallback_section = {
                 "id": subject_code.lower(),
                 "code": subject_code,
@@ -837,13 +842,9 @@ def build_paper_details(db: Session, paper_id: int) -> dict | None:
 
 def rebuild_paper_cache(db: Session, paper_id: int) -> None:
     """Helper to manually rebuild paper cache from DB and store it in Redis."""
-    paper_details = build_paper_details(db, paper_id)
     cache_key = f"paper:{paper_id}:details"
+    delete_cached_data(cache_key)
 
+    paper_details = build_paper_details(db, paper_id)
     if paper_details:
-        set_cached_data(cache_key, paper_details, expire_seconds=None)
-    else:
-        # If paper became inactive or lost all questions, we should just delete its cache
-        from app.core.redis_client import delete_cached_data
-
-        delete_cached_data(cache_key)
+        set_cached_data(cache_key, paper_details, expire_seconds=PAPER_CACHE_TTL)
