@@ -166,6 +166,7 @@ def get_evaluations_by_lead(
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.user_id,
+            InterviewEvaluation.attempt_id,
             InterviewEvaluation.status,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
@@ -313,6 +314,7 @@ def get_all_evaluations_with_details(
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.status,
+            InterviewEvaluation.attempt_id,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
             Candidate.username.label("candidate_name"),
