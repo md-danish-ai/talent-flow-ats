@@ -33,37 +33,18 @@ export const TypingTestView = memo(function TypingTestView({
     return null;
   }, [currentAnswer]);
 
-  // Local typing text for 0ms zero-lag input updates, eagerly loaded via lazy state!
-  const [localTypedText, setLocalTypedText] = useState<string>(() => {
-    if (initialParsed) return initialParsed.typed_text || "";
-    return typeof currentAnswer === "string" ? currentAnswer : "";
-  });
+  // Always fresh on reload — typed text reset to empty
+  const [localTypedText, setLocalTypedText] = useState<string>("");
 
   // Smooth resuming: deduce past startTime based on elapsed seconds recorded during mount
-  const [startTime, setStartTime] = useState<number | null>(() => {
-    const savedStats = initialParsed?.stats;
-    if (
-      savedStats &&
-      typeof savedStats.time_taken === "number" &&
-      savedStats.time_taken > 0
-    ) {
-      return Date.now() - savedStats.time_taken * 1000;
-    }
-    return null;
-  });
+  // Timer always starts fresh on reload — user types kare tab hi shuru hoga
+  const [startTime, setStartTime] = useState<number | null>(null);
 
   const [endTime, setEndTime] = useState<number | null>(null);
   const [liveTime, setLiveTime] = useState<number>(() => Date.now());
 
-  // Eagerly resolve finished state directly on load
-  const [isFinished, setIsFinished] = useState<boolean>(() => {
-    const textLength = initialParsed
-      ? initialParsed.typed_text?.length || 0
-      : typeof currentAnswer === "string"
-        ? currentAnswer.length
-        : 0;
-    return textLength >= passage.length;
-  });
+  // Always false on reload — user dobara type karega
+  const [isFinished, setIsFinished] = useState<boolean>(false);
 
   // Live Ticking Clock effect updating every 100ms to yield fluid real-time WPM and Duration metrics
   useEffect(() => {
