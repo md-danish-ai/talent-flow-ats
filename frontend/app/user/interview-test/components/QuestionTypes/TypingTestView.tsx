@@ -1,11 +1,19 @@
 "use client";
-import { memo, useState, useMemo, useCallback, useEffect } from "react";
+import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
-import { Zap, Target, AlertTriangle, Clock, Trophy } from "lucide-react";
 import {
-  calculateTypingStats,
-  getTypingAlignment,
+  Zap,
+  Target,
+  AlertTriangle,
+  Clock,
+  Trophy,
+  CheckCircle,
+} from "lucide-react";
+import {
+  calculateProgressAwareStats,
+  getProgressAwareAlignment,
+  type TypingStats,
 } from "@lib/utils/typingUtils";
 
 interface TypingTestViewProps {
@@ -18,67 +26,59 @@ interface TypingTestViewProps {
 export const TypingTestView = memo(function TypingTestView({
   questionText,
   passage,
-  currentAnswer,
+  // currentAnswer: not destructured — resume disabled by design
   onChangeAnswer,
 }: TypingTestViewProps) {
-  // Parse once purely for initialization injection (pure, idempotent memoization)
-  const initialParsed = useMemo(() => {
-    if (!currentAnswer) return null;
-    try {
-      const parsed = JSON.parse(currentAnswer);
-      if (parsed && typeof parsed === "object") return parsed;
-    } catch {
-      // ignore
-    }
-    return null;
-  }, [currentAnswer]);
-
-  // Always fresh on reload — typed text reset to empty
   const [localTypedText, setLocalTypedText] = useState<string>("");
-
-  // Smooth resuming: deduce past startTime based on elapsed seconds recorded during mount
-  // Timer always starts fresh on reload — user types kare tab hi shuru hoga
   const [startTime, setStartTime] = useState<number | null>(null);
-
-  const [endTime, setEndTime] = useState<number | null>(null);
   const [liveTime, setLiveTime] = useState<number>(() => Date.now());
-
-  // Always false on reload — user dobara type karega
+  // isFinished: only true after Save & Next (finalization). NOT set by passage length.
   const [isFinished, setIsFinished] = useState<boolean>(false);
+  // frozen snapshot set exactly once at the Save & Next finalization moment
+  const [finalStats, setFinalStats] = useState<TypingStats | null>(null);
 
-  // Live Ticking Clock effect updating every 100ms to yield fluid real-time WPM and Duration metrics
+  // targetReached: user has typed at least as many chars as the passage.
+  // Does NOT finalize the test — typing continues.
+  const targetReached =
+    localTypedText.length >= passage.length && localTypedText.length > 0;
+
+  // endTimeRef: guards endTime from being set more than once (at Save & Next)
+  const endTimeRef = useRef<number | null>(null);
+
+  // 100ms tick for live UI — never used for time calculations.
+  // Timer runs until isFinished (i.e., until Save & Next).
   useEffect(() => {
     if (!startTime || isFinished) return;
-
-    const timer = setInterval(() => {
-      setLiveTime(Date.now());
-    }, 100);
-
+    const timer = setInterval(() => setLiveTime(Date.now()), 100);
     return () => clearInterval(timer);
   }, [startTime, isFinished]);
 
-  // Pure Real-Time Derived Stats (triggers instantaneously upon state/ticking adjustments!)
+  // returns frozen snapshot once finalized via Save & Next, live stats otherwise
   const stats = useMemo(() => {
+    if (isFinished && finalStats) return finalStats;
     if (!startTime || localTypedText.length === 0) {
       return { wpm: 0, accuracy: 100, errors: 0, timeTaken: 0 };
     }
-
-    const finalActiveTime = isFinished ? endTime || liveTime : liveTime;
-    const timeTakenSeconds = Math.max(
-      (finalActiveTime - startTime) / 1000,
-      0.1,
+    const timeTakenSeconds = Math.max((liveTime - startTime) / 1000, 0);
+    // calculateProgressAwareStats() handles the prefix logic internally:
+    // partial typing → compare against passage.slice(0, typed.length) only
+    // targetReached  → compare full typed vs full passage
+    return calculateProgressAwareStats(
+      localTypedText,
+      passage,
+      timeTakenSeconds,
     );
+  }, [localTypedText, passage, startTime, liveTime, isFinished, finalStats]);
 
-    return calculateTypingStats(localTypedText, passage, timeTakenSeconds);
-  }, [localTypedText, passage, startTime, endTime, liveTime, isFinished]);
-
-  // Optimized zero-latency local change handler
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      // Do NOT accept input after finalization
+      if (isFinished) return;
+
       const val = e.target.value;
       const now = Date.now();
 
-      // Clock initiates the absolute millisecond the first character is registered
+      // start timer on first character
       let actualStart = startTime;
       if (val.length > 0 && !startTime) {
         actualStart = now;
@@ -86,49 +86,47 @@ export const TypingTestView = memo(function TypingTestView({
         setLiveTime(now);
       }
 
-      // Instantly update local typing state to prevent UI visual lag
       setLocalTypedText(val);
 
-      // Run instantaneous stat projections for accurate DB snapshot logging
-      const activeSeconds = actualStart ? (now - actualStart) / 1000 : 0;
-      const computedStats = calculateTypingStats(val, passage, activeSeconds);
+      // Live stats — always recomputed from current text & elapsed time.
+      // The timer has NOT stopped (endTimeRef is only locked at Save & Next).
+      const activeTime = actualStart ? now - actualStart : 0;
+      const timeTakenSeconds = Math.max(activeTime / 1000, 0);
+      const computedStats = calculateProgressAwareStats(
+        val,
+        passage,
+        timeTakenSeconds,
+      );
 
-      const logStats = {
-        wpm: computedStats.wpm,
-        accuracy: computedStats.accuracy,
-        errors: computedStats.errors,
-        time_taken: computedStats.timeTaken,
-      };
-
-      // Auto-complete hook when text length meets passage limit
-      if (val.length >= passage.length) {
-        setIsFinished(true);
-        if (!endTime) setEndTime(now);
-      } else {
-        setIsFinished(false);
-        setEndTime(null);
-      }
-
-      // Dispatches update cleanly to parent context
+      // parent always gets the live computed stats on every keystroke
       onChangeAnswer(
         JSON.stringify({
           passage,
           typed_text: val,
-          stats: logStats,
+          stats: {
+            wpm: computedStats.wpm,
+            accuracy: computedStats.accuracy,
+            errors: computedStats.errors,
+            time_taken: computedStats.timeTaken,
+          },
         }),
       );
     },
-    [startTime, endTime, passage, onChangeAnswer],
+    [startTime, passage, onChangeAnswer, isFinished],
   );
 
+  // character-level highlighting — separate from stats
+  // getProgressAwareAlignment() applies the same prefix logic as
+  // calculateProgressAwareStats() so stats and visual always agree:
+  //   partial typing → only typed portion evaluated, rest stays "untyped"
+  //   targetReached  → full alignment; extraTyped rendered in red
   const renderedPassage = useMemo(() => {
-    const { matchedPassageLength, passageCharStatuses } = getTypingAlignment(
-      localTypedText,
-      passage,
-    );
+    const { matchedPassageLength, passageCharStatuses, extraTyped } =
+      getProgressAwareAlignment(localTypedText, passage);
 
-    return passage.split("").map((char, index) => {
-      let colorClass = "text-foreground/40"; // Default
+    // Passage characters with their alignment status
+    const passageSpans = passage.split("").map((char, index) => {
+      let colorClass = "text-foreground/40";
       let bgClass = "";
 
       if (index < matchedPassageLength) {
@@ -140,6 +138,7 @@ export const TypingTestView = memo(function TypingTestView({
           bgClass = "bg-rose-500/10";
         }
       } else if (index === matchedPassageLength && !isFinished) {
+        // cursor position — shown while not finalized
         bgClass =
           char === " "
             ? "bg-brand-primary/30 rounded animate-pulse"
@@ -155,6 +154,20 @@ export const TypingTestView = memo(function TypingTestView({
         </span>
       );
     });
+
+    // Extra typed characters beyond passage.length — rendered in red.
+    // These are insertion errors that have no corresponding passage char;
+    // getProgressAwareAlignment extracts them so they are visible.
+    const extraSpans = extraTyped.split("").map((char, i) => (
+      <span
+        key={`extra-${i}`}
+        className="text-rose-500 font-bold bg-rose-500/10 transition-colors duration-150 rounded-[2px]"
+      >
+        {char}
+      </span>
+    ));
+
+    return [...passageSpans, ...extraSpans];
   }, [passage, localTypedText, isFinished]);
 
   return (
@@ -266,21 +279,34 @@ export const TypingTestView = memo(function TypingTestView({
           <div className="flex items-center gap-2">
             <Typography
               variant="body4"
-              className={`font-black uppercase tracking-widest text-[11px] ${isFinished ? "text-emerald-600" : "text-brand-primary"}`}
+              className={`font-black uppercase tracking-widest text-[11px] ${
+                isFinished
+                  ? "text-emerald-600"
+                  : targetReached
+                    ? "text-amber-500"
+                    : "text-brand-primary"
+              }`}
             >
-              {isFinished ? "✓ Typing Completed" : "Start Typing Below"}
+              {isFinished
+                ? "✓ Typing Completed"
+                : targetReached
+                  ? "✓ Target Reached"
+                  : "Start Typing Below"}
             </Typography>
-            {!isFinished && (
+            {!isFinished && !targetReached && (
               <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
             )}
           </div>
           <div className="flex items-center gap-3">
             <Typography
               variant="body5"
-              className={`font-mono text-[11px] font-bold px-3 py-1 rounded-lg border transition-all duration-300 ${isFinished
+              className={`font-mono text-[11px] font-bold px-3 py-1 rounded-lg border transition-all duration-300 ${
+                isFinished
                   ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/30"
-                  : "text-brand-primary bg-brand-primary/10 border-brand-primary/20"
-                }`}
+                  : targetReached
+                    ? "text-amber-500 bg-amber-500/10 border-amber-500/30"
+                    : "text-brand-primary bg-brand-primary/10 border-brand-primary/20"
+              }`}
             >
               {localTypedText.length} / {passage.length} characters
             </Typography>
@@ -307,10 +333,11 @@ export const TypingTestView = memo(function TypingTestView({
             onCopy={(e) => e.preventDefault()}
             onCut={(e) => e.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
-            className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${isFinished
+            className={`relative rounded-2xl font-mono text-lg leading-relaxed border-2 transition-all p-6 shadow-inner ${
+              isFinished
                 ? "bg-emerald-500/[0.02] border-emerald-500/20 focus:border-emerald-500 focus:bg-background focus:ring-[8px] focus:ring-emerald-500/10"
                 : "bg-muted/10 border-border focus:border-brand-primary focus:bg-background focus:ring-[8px] focus:ring-brand-primary/10"
-              }`}
+            }`}
           />
         </div>
 
@@ -334,7 +361,30 @@ export const TypingTestView = memo(function TypingTestView({
           </Typography>
         </div>
 
-        {/* Completion Success Message */}
+        {/* Target Reached indicator — shown when passage length hit but NOT yet finalized */}
+        {targetReached && !isFinished && (
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 animate-in zoom-in duration-500">
+            <div className="p-2 rounded-full bg-amber-500/20">
+              <CheckCircle size={20} />
+            </div>
+            <div>
+              <Typography
+                variant="body4"
+                weight="black"
+                className="uppercase tracking-wide leading-none"
+              >
+                Target Reached!
+              </Typography>
+              <Typography variant="body5" className="mt-1 opacity-80">
+                You&apos;ve reached the end of the passage. You can continue
+                typing or click &quot;Save &amp; Next&quot; to submit your
+                result.
+              </Typography>
+            </div>
+          </div>
+        )}
+
+        {/* Completion Success Message — shown only after isFinished (Save & Next) */}
         {isFinished && (
           <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 animate-in zoom-in duration-500">
             <div className="p-2 rounded-full bg-emerald-500/20">
