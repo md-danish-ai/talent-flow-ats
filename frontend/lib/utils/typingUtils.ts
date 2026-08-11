@@ -88,12 +88,14 @@ export function calculateTypingStats(
   typed: string,
   passage: string,
   timeTakenSeconds: number,
+  correctedErrors: number = 0,
+  totalKeystrokes: number = 0,
 ): TypingStats {
   const safeTyped = typed ?? "";
   const safePassage = passage ?? "";
 
   // Empty input — well-defined initial state, no NaN/Infinity
-  if (safeTyped.length === 0) {
+  if (safeTyped.length === 0 && totalKeystrokes === 0) {
     return {
       wpm: 0,
       accuracy: 100,
@@ -104,10 +106,17 @@ export function calculateTypingStats(
 
   // --- Errors via full Levenshtein (typed vs ENTIRE passage) ---
   const editDistance = calculateLevenshteinDistance(safeTyped, safePassage);
+  const totalErrorsCommitted = editDistance + (correctedErrors ?? 0);
 
   // --- Accuracy ---
-  const denominator = Math.max(safeTyped.length, safePassage.length);
-  const rawAccuracy = (1 - editDistance / denominator) * 100;
+  // Denominator considers current typed length, passage length, and total keystrokes
+  const denominator = Math.max(
+    safeTyped.length,
+    safePassage.length,
+    totalKeystrokes ?? 0,
+  );
+  const rawAccuracy =
+    denominator === 0 ? 100 : (1 - totalErrorsCommitted / denominator) * 100;
   const accuracy = Math.max(0, Math.min(100, Math.round(rawAccuracy)));
 
   // --- WPM ---
@@ -129,28 +138,15 @@ export function calculateTypingStats(
 // ---------------------------------------------------------------------------
 
 /**
- * Computes live typing statistics with progress-aware passage comparison.
- *
- * THE KEY RULE:
- *   UNTYPED future passage characters must NEVER count as errors.
- *   Only the text the user has actually attempted is evaluated.
- *
- * Before targetReached (typed.length < passage.length):
- *   Compare typed against passage.slice(0, typed.length) only.
- *   Untyped chars contribute ZERO deletion errors.
- *   typed="A", passage="ArcGate...450 chars" → errors=0 if "A" matches.
- *
- * After targetReached (typed.length >= passage.length):
- *   Compare full typed against full passage.
- *   Extra chars typed beyond passage.length count as insertion errors.
- *   typed="Hello Worldx", passage="Hello World" → errors=1.
- *
- * WPM always uses typed.length (including extra chars if any).
+ * Computes live typing statistics with progress-aware passage comparison
+ * and keystroke-based accuracy tracking (Monkeytype Real Accuracy).
  */
 export function calculateProgressAwareStats(
   typed: string,
   passage: string,
   timeTakenSeconds: number,
+  correctedErrors: number = 0,
+  totalKeystrokes: number = 0,
 ): TypingStats {
   const safeTyped = typed ?? "";
   const safePassage = passage ?? "";
@@ -162,7 +158,13 @@ export function calculateProgressAwareStats(
       ? safePassage.slice(0, safeTyped.length)
       : safePassage;
 
-  return calculateTypingStats(safeTyped, effectivePassage, timeTakenSeconds);
+  return calculateTypingStats(
+    safeTyped,
+    effectivePassage,
+    timeTakenSeconds,
+    correctedErrors,
+    totalKeystrokes,
+  );
 }
 
 // ---------------------------------------------------------------------------

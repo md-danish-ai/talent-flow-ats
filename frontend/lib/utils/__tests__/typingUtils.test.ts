@@ -700,4 +700,19 @@ describe("getProgressAwareAlignment — progress-aware visual alignment", () => 
     const errors = result.passageCharStatuses.filter((s) => s === "error");
     expect(errors.length).toBeGreaterThan(0);
   });
+
+  it("keystroke accuracy: fixed typos via backspace reduce accuracy even if current errors = 0", () => {
+    // Passage = "Hello World" (11 chars). Current text matches perfectly (0 uncorrected errors).
+    // But 2 typos were made and backspaced (correctedErrors = 2, totalKeystrokes = 15).
+    const stats = calculateProgressAwareStats(
+      "Hello World",
+      "Hello World",
+      10,
+      2,
+      15,
+    );
+    expect(stats.errors).toBe(0); // active uncorrected errors on screen = 0
+    expect(stats.accuracy).toBeLessThan(100); // accuracy decreases due to corrected typos (87%)
+    expect(stats.accuracy).toBe(87); // (1 - 2/15) * 100 = 86.66% -> 87%
+  });
 });

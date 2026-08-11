@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useMemo, useCallback, useEffect } from "react";
+import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import {
@@ -35,6 +35,10 @@ export const TypingTestView = memo(function TypingTestView({
   // isFinished: false during active typing test (live stats continuously sent via onChangeAnswer).
   const isFinished = false;
   const finalStats: TypingStats | null = null;
+  const [correctedErrors, setCorrectedErrors] = useState<number>(0);
+  const [totalKeystrokes, setTotalKeystrokes] = useState<number>(0);
+  const prevErrorsRef = useRef<number>(0);
+  const prevTypedLenRef = useRef<number>(0);
 
   // targetReached: user has typed at least as many chars as the passage.
   // Does NOT finalize the test — typing continues.
@@ -63,8 +67,19 @@ export const TypingTestView = memo(function TypingTestView({
       localTypedText,
       passage,
       timeTakenSeconds,
+      correctedErrors,
+      totalKeystrokes,
     );
-  }, [localTypedText, passage, startTime, liveTime, isFinished, finalStats]);
+  }, [
+    localTypedText,
+    passage,
+    startTime,
+    liveTime,
+    isFinished,
+    finalStats,
+    correctedErrors,
+    totalKeystrokes,
+  ]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -88,10 +103,42 @@ export const TypingTestView = memo(function TypingTestView({
       // The timer has NOT stopped (endTimeRef is only locked at Save & Next).
       const activeTime = actualStart ? now - actualStart : 0;
       const timeTakenSeconds = Math.max(activeTime / 1000, 0);
+
+      // Track total keystrokes (typing and backspacing)
+      let nextTotalKeystrokes = totalKeystrokes;
+      const lenDelta = Math.abs(val.length - prevTypedLenRef.current);
+      if (lenDelta > 0) {
+        nextTotalKeystrokes += lenDelta;
+      } else if (val !== localTypedText) {
+        nextTotalKeystrokes += 1;
+      }
+      prevTypedLenRef.current = val.length;
+      setTotalKeystrokes(nextTotalKeystrokes);
+
+      // Active uncorrected errors on current typed text
+      const currentUncorrectedErrors = calculateProgressAwareStats(
+        val,
+        passage,
+        timeTakenSeconds,
+        0,
+        0,
+      ).errors;
+
+      // Track errors that were corrected via Backspace
+      let nextCorrectedErrors = correctedErrors;
+      if (currentUncorrectedErrors < prevErrorsRef.current) {
+        const fixedCount = prevErrorsRef.current - currentUncorrectedErrors;
+        nextCorrectedErrors += fixedCount;
+        setCorrectedErrors(nextCorrectedErrors);
+      }
+      prevErrorsRef.current = currentUncorrectedErrors;
+
       const computedStats = calculateProgressAwareStats(
         val,
         passage,
         timeTakenSeconds,
+        nextCorrectedErrors,
+        nextTotalKeystrokes,
       );
 
       // parent always gets the live computed stats on every keystroke
@@ -108,7 +155,15 @@ export const TypingTestView = memo(function TypingTestView({
         }),
       );
     },
-    [startTime, passage, onChangeAnswer, isFinished],
+    [
+      startTime,
+      passage,
+      onChangeAnswer,
+      isFinished,
+      localTypedText,
+      correctedErrors,
+      totalKeystrokes,
+    ],
   );
 
   // character-level highlighting — separate from stats
