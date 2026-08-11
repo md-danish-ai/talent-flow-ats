@@ -396,7 +396,7 @@ def get_users_by_role(
         UserDept = aliased(Department)
 
         # Latest assignment per user via row_number()
-        assignment_subq = db_session.query(
+        asgn_query = db_session.query(
             PaperAssignment.user_id,
             PaperAssignment.paper_id,
             PaperAssignment.department_id,
@@ -409,7 +409,14 @@ def get_users_by_role(
                 order_by=PaperAssignment.id.desc(),
             )
             .label("rn"),
-        ).subquery()
+        )
+        if range_from:
+            end_date_filter = range_to if range_to else range_from
+            asgn_query = asgn_query.filter(
+                PaperAssignment.assigned_date.between(range_from, end_date_filter)
+            )
+
+        assignment_subq = asgn_query.subquery()
 
         # Latest attempt per user via row_number()
         attempt_subq = db_session.query(
