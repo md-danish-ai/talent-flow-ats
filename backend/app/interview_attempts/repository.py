@@ -1708,7 +1708,10 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user.is_active = True
         user.process_status = ProcessStatus.READY.value
 
-        # Immediately assign a paper for today so they are not expired again
+        # Flush session so db.query inside assign_best_paper sees updated reinterview_date
+        db.flush()
+
+        # Assign paper via auto-assign rule for today if one exists
         if user.department_id and user.test_level_id:
             assign_best_paper(
                 db, user.id, user.department_id, user.test_level_id, dt_date.today()
