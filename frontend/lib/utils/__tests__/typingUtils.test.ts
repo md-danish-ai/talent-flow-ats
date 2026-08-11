@@ -688,4 +688,16 @@ describe("getProgressAwareAlignment — progress-aware visual alignment", () => 
     const result = getProgressAwareAlignment("suervices.", "services");
     expect(result.extraTyped).toBe("");
   });
+
+  it("internal insertion: 'suervices' vs 'services' → marks typo position as error in passage", () => {
+    const result = getTypingAlignment("suervices", "services");
+    const errors = result.passageCharStatuses.filter((s) => s === "error");
+    expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it("internal insertion: 'worsld' vs 'world' → marks typo position as error in passage", () => {
+    const result = getTypingAlignment("worsld", "world");
+    const errors = result.passageCharStatuses.filter((s) => s === "error");
+    expect(errors.length).toBeGreaterThan(0);
+  });
 });

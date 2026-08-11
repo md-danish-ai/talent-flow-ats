@@ -282,14 +282,20 @@ export function getTypingAlignment(
 
     if (currentVal === dp[prevOffset + j - 1] + cost) {
       // Match or substitution
-      passageStatuses[j - 1] = cost === 0 ? "correct" : "error";
+      const status = cost === 0 ? "correct" : "error";
+      // Never overwrite an existing error with correct
+      if (passageStatuses[j - 1] !== "error") {
+        passageStatuses[j - 1] = status;
+      }
       i--;
       j--;
     } else if (currentVal === dp[prevOffset + j] + 1) {
-      // Deletion (typed char consumed, no passage char advanced)
+      // Insertion in typed text (user typed extra character)
+      // Mark the corresponding passage character as error
+      passageStatuses[Math.max(0, j - 1)] = "error";
       i--;
     } else {
-      // Insertion (passage char skipped → error)
+      // Deletion in typed text (passage char skipped)
       passageStatuses[j - 1] = "error";
       j--;
     }

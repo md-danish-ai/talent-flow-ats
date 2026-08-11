@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useMemo, useCallback, useEffect } from "react";
 import { Textarea } from "@components/ui-elements/Textarea";
 import { Typography } from "@components/ui-elements/Typography";
 import {
@@ -32,18 +32,14 @@ export const TypingTestView = memo(function TypingTestView({
   const [localTypedText, setLocalTypedText] = useState<string>("");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [liveTime, setLiveTime] = useState<number>(() => Date.now());
-  // isFinished: only true after Save & Next (finalization). NOT set by passage length.
-  const [isFinished, setIsFinished] = useState<boolean>(false);
-  // frozen snapshot set exactly once at the Save & Next finalization moment
-  const [finalStats, setFinalStats] = useState<TypingStats | null>(null);
+  // isFinished: false during active typing test (live stats continuously sent via onChangeAnswer).
+  const isFinished = false;
+  const finalStats: TypingStats | null = null;
 
   // targetReached: user has typed at least as many chars as the passage.
   // Does NOT finalize the test — typing continues.
   const targetReached =
     localTypedText.length >= passage.length && localTypedText.length > 0;
-
-  // endTimeRef: guards endTime from being set more than once (at Save & Next)
-  const endTimeRef = useRef<number | null>(null);
 
   // 100ms tick for live UI — never used for time calculations.
   // Timer runs until isFinished (i.e., until Save & Next).
