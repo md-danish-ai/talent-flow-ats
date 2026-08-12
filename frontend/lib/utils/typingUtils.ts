@@ -390,63 +390,120 @@ export function getProgressAwareAlignment(
 }
 
 // ---------------------------------------------------------------------------
-// Word-level diff tokens (legacy helper, kept for backward compatibility)
+// Typed text diff tokens — for visual highlighting in result views
 // ---------------------------------------------------------------------------
 
 /**
- * Computes word-level alignment diff tokens for visual highlighting.
- * @deprecated Prefer character-level getTypingAlignment for accuracy.
+ * Computes character-level alignment diff tokens for visual highlighting of typed text.
+ * Uses full Levenshtein DP traceback to accurately identify correct vs wrong characters
+ * without losing sync on spacing or punctuation differences.
  */
 export function getTypingDiffTokens(
   typed: string,
   passage: string,
 ): DiffToken[] {
-  if (!typed) return [];
+  const safeTyped = typed ?? "";
+  const safePassage = passage ?? "";
+  const m = safeTyped.length;
+  const n = safePassage.length;
 
-  const typedWords = typed.split(/(\s+)/);
-  const passageWords = passage.split(/(\s+)/);
+  if (m === 0) return [];
+  if (n === 0) return [{ text: safeTyped, isCorrect: false }];
+  if (safeTyped === safePassage) return [{ text: safeTyped, isCorrect: true }];
 
-  const tokens: DiffToken[] = [];
-  let passageIdx = 0;
+  const width = n + 1;
+  const dp = new Int32Array((m + 1) * width);
 
-  for (let i = 0; i < typedWords.length; i++) {
-    const word = typedWords[i];
-    if (!word) continue;
+  // Initialise first row and column
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 0; i <= m; i++) dp[i * width] = i;
 
-    const target = passageWords[passageIdx];
+  // Fill DP table
+  for (let i = 1; i <= m; i++) {
+    const charTyped = safeTyped[i - 1];
+    const rowOffset = i * width;
+    const prevRowOffset = (i - 1) * width;
 
-    if (
-      target !== undefined &&
-      (word === target || word.trim() === target.trim())
-    ) {
-      tokens.push({ text: word, isCorrect: true });
-      passageIdx++;
-    } else {
-      let foundMatchIdx = -1;
-      for (
-        let k = passageIdx;
-        k < Math.min(passageIdx + 3, passageWords.length);
-        k++
+    for (let j = 1; j <= n; j++) {
+      const cost = charTyped === safePassage[j - 1] ? 0 : 1;
+      dp[rowOffset + j] = Math.min(
+        dp[prevRowOffset + j] + 1, // insertion in typed text
+        dp[rowOffset + j - 1] + 1, // deletion in typed text (passage char skipped)
+        dp[prevRowOffset + j - 1] + cost, // match or substitution
+      );
+    }
+  }
+
+  // Find best ending index in passage for traceback.
+  let bestJ = n;
+  if (m < n) {
+    const lastRowOffset = m * width;
+    let minCost = dp[lastRowOffset + n];
+    for (let j = 1; j <= n; j++) {
+      const val = dp[lastRowOffset + j];
+      if (
+        val < minCost ||
+        (val === minCost && Math.abs(j - m) < Math.abs(bestJ - m))
       ) {
-        if (
-          passageWords[k] === word ||
-          passageWords[k]?.trim() === word.trim()
-        ) {
-          foundMatchIdx = k;
-          break;
-        }
-      }
-
-      if (foundMatchIdx !== -1) {
-        passageIdx = foundMatchIdx + 1;
-        tokens.push({ text: word, isCorrect: true });
-      } else {
-        tokens.push({ text: word, isCorrect: false });
-        if (passageIdx < passageWords.length) {
-          passageIdx++;
-        }
+        minCost = val;
+        bestJ = j;
       }
     }
+  }
+
+  // Traceback to determine status for each character in safeTyped (0..m-1)
+  const isCorrectChar: boolean[] = new Array(m).fill(false);
+  let i = m;
+  let j = bestJ;
+
+  while (i > 0 && j > 0) {
+    const currOffset = i * width;
+    const prevOffset = (i - 1) * width;
+    const cost = safeTyped[i - 1] === safePassage[j - 1] ? 0 : 1;
+    const currentVal = dp[currOffset + j];
+
+    if (currentVal === dp[prevOffset + j - 1] + cost) {
+      // Match or substitution
+      isCorrectChar[i - 1] = cost === 0;
+      i--;
+      j--;
+    } else if (currentVal === dp[prevOffset + j] + 1) {
+      // Insertion in typed text (extra character typed)
+      isCorrectChar[i - 1] = false;
+      i--;
+    } else {
+      // Deletion in typed text (passage char skipped by user)
+      j--;
+    }
+  }
+
+  // Any remaining typed characters before j=0 are insertions/errors
+  while (i > 0) {
+    isCorrectChar[i - 1] = false;
+    i--;
+  }
+
+  // Group contiguous characters with the same status into tokens
+  const tokens: DiffToken[] = [];
+  let currentText = "";
+  let currentStatus: boolean | null = null;
+
+  for (let idx = 0; idx < m; idx++) {
+    const status = isCorrectChar[idx];
+    if (currentStatus === null) {
+      currentStatus = status;
+      currentText = safeTyped[idx];
+    } else if (status === currentStatus) {
+      currentText += safeTyped[idx];
+    } else {
+      tokens.push({ text: currentText, isCorrect: currentStatus });
+      currentStatus = status;
+      currentText = safeTyped[idx];
+    }
+  }
+
+  if (currentText.length > 0 && currentStatus !== null) {
+    tokens.push({ text: currentText, isCorrect: currentStatus });
   }
 
   return tokens;
