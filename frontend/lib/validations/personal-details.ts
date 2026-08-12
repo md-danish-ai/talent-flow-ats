@@ -188,7 +188,12 @@ export const educationSchema = z
     gradingType: z.string().default("Percentage"),
   })
   .superRefine((data, ctx) => {
-    const isMandatory = data.type === "10th Std" || data.type === "12th Std";
+    const isMandatory =
+      data.type === "10th / High School" ||
+      data.type === "12th / Intermediate" ||
+      data.type === "10th Std" ||
+      data.type === "12th Std" ||
+      data.type === "Graduation";
     const hasDetails =
       data.type.trim() !== "" ||
       data.school.trim() !== "" ||

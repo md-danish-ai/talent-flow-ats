@@ -156,9 +156,9 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
     };
   }) as Education[];
 
-  // Filter out extra blank rows (beyond the first 2) that were saved previously
-  return sanitized.filter((e, index) => {
-    if (index < 2) return true;
+  // Filter out extra blank rows (beyond the first 3) that were saved previously
+  const filtered = sanitized.filter((e, index) => {
+    if (index < 3) return true;
     const isBlank =
       !e.school &&
       !e.board &&
@@ -170,11 +170,45 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
       !e.details &&
       (!e.type ||
         e.type === "Post Graduation" ||
-        e.type === "Additional Qualification" ||
-        e.type === "Diploma" ||
-        e.type === "Graduation");
+        e.type === "Additional Qualification");
     return !isBlank;
   });
+
+  // Ensure mandatory default rows (10th / High School, 12th / Intermediate, Graduation) exist
+  const defaultTypes = [
+    {
+      type: "10th / High School",
+      legacyType: "10th Std",
+      defaultDetails: "All Subjects",
+    },
+    { type: "12th / Intermediate", legacyType: "12th Std", defaultDetails: "" },
+    { type: "Graduation", legacyType: "Graduation", defaultDetails: "" },
+  ];
+  defaultTypes.forEach((def, index) => {
+    if (!filtered[index]) {
+      filtered[index] = {
+        id: index + 1,
+        type: def.type,
+        school: "",
+        board: "",
+        startYear: "",
+        endYear: "",
+        division: "",
+        percentage: "",
+        medium: "",
+        details: def.defaultDetails,
+      };
+    } else {
+      if (!filtered[index].type || filtered[index].type === def.legacyType) {
+        filtered[index].type = def.type;
+      }
+      if (index === 0 && !filtered[index].details) {
+        filtered[index].details = "All Subjects";
+      }
+    }
+  });
+
+  return filtered;
 };
 
 const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
@@ -832,7 +866,7 @@ export function UserForm({
                 <RealtimeFormValidator form={form} values={values} />
               )}
             </form.Subscribe>
-            {/* Header: Title on Left, Buttons on Right */}
+            {/* Header: Title */}
             <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
@@ -853,51 +887,6 @@ export function UserForm({
                     {STEP_CONTENT[currentStep - 1]?.subtitle}
                   </Typography>
                 </div>
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex items-center gap-3">
-                {currentStep > 1 && (
-                  <Button
-                    type="button"
-                    color="primary"
-                    size="md"
-                    animate="scale"
-                    shadow
-                    disabled={isSaving}
-                    onClick={handlePrev}
-                    className="px-6 text-sm font-semibold group flex items-center gap-2"
-                  >
-                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                    PREVIOUS
-                  </Button>
-                )}
-
-                <Button
-                  type="button"
-                  color="primary"
-                  size="md"
-                  animate="scale"
-                  shadow
-                  disabled={isSaving}
-                  onClick={handleNext}
-                  className="px-6 text-sm font-semibold group flex items-center gap-2"
-                >
-                  {isSaving ? (
-                    "SAVING..."
-                  ) : currentStep === totalSteps ? (
-                    isAdmin ? (
-                      "UPDATE USER DETAILS"
-                    ) : (
-                      "SUBMIT DETAILS"
-                    )
-                  ) : (
-                    <>
-                      NEXT
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </Button>
               </div>
             </div>
 
@@ -931,6 +920,51 @@ export function UserForm({
                   <OtherDetailsStep key="step7" form={form} />
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* Navigation Buttons (Bottom Right) */}
+            <div className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-border/50">
+              {currentStep > 1 && (
+                <Button
+                  type="button"
+                  color="primary"
+                  size="md"
+                  animate="scale"
+                  shadow
+                  disabled={isSaving}
+                  onClick={handlePrev}
+                  className="px-6 text-sm font-semibold group flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                  PREVIOUS
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                color="primary"
+                size="md"
+                animate="scale"
+                shadow
+                disabled={isSaving}
+                onClick={handleNext}
+                className="px-6 text-sm font-semibold group flex items-center gap-2"
+              >
+                {isSaving ? (
+                  "SAVING..."
+                ) : currentStep === totalSteps ? (
+                  isAdmin ? (
+                    "UPDATE USER DETAILS"
+                  ) : (
+                    "SUBMIT DETAILS"
+                  )
+                ) : (
+                  <>
+                    NEXT
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </div>
