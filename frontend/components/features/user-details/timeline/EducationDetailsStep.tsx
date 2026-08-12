@@ -107,6 +107,19 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                 const headerTitle = selectedLabel
                   ? `Education - ${selectedLabel}`
                   : `Education ${index + 1}`;
+                const isSchool =
+                  item.type === "10th / High School" ||
+                  item.type === "10th Std" ||
+                  item.type === "12th / Intermediate" ||
+                  item.type === "12th Std";
+                const currentYear = new Date().getFullYear();
+                const endYrNum = parseInt(item.endYear || "", 10);
+                const isFutureEndYear =
+                  !isNaN(endYrNum) && endYrNum > currentYear;
+                const isPercentageRequired =
+                  (isMandatory || isEducationSelected) &&
+                  (isSchool || !isFutureEndYear);
+
                 return (
                   <div
                     key={item.id ? `edu-${item.id}-${index}` : `edu-${index}`}
@@ -391,7 +404,13 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                             {item.gradingType === "CGPA"
                               ? "(Out of 10)"
                               : "(%)"}{" "}
-                            <span className="text-red-500">*</span>
+                            {isPercentageRequired ? (
+                              <span className="text-red-500">*</span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (Optional)
+                              </span>
+                            )}
                           </label>
                           <form.Field name={`education[${index}].gradingType`}>
                             {(typeField) => (
