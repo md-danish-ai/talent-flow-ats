@@ -406,7 +406,7 @@ export const TypingTestView = memo(function TypingTestView({
             </strong>{" "}
             Type Complete Paragraph and Click on{" "}
             <span className="font-black underline decoration-2 underline-offset-4">
-              &quot;Save &amp; Next&quot;
+              &quot;Save &amp; Next&quot; / &quot;Submit Test&quot;
             </span>
             . You will not be able to come back on this section.
           </Typography>
@@ -428,8 +428,7 @@ export const TypingTestView = memo(function TypingTestView({
               </Typography>
               <Typography variant="body5" className="mt-1 opacity-80">
                 You&apos;ve reached the end of the passage. You can continue
-                typing or click &quot;Save &amp; Next&quot; to submit your
-                result.
+                typing or click the button below to submit your result.
               </Typography>
             </div>
           </div>

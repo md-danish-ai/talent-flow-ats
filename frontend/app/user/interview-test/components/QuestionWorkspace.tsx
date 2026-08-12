@@ -150,7 +150,7 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         >
           {isLastQuestionInSection
             ? isLastSection
-              ? "Finish Interview"
+              ? "Submit Test"
               : "Save & Next Section"
             : "Save & Next"}
         </Button>
