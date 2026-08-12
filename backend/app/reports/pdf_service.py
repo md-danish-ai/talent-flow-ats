@@ -13,6 +13,7 @@ from typing import Any
 from xhtml2pdf import pisa  # type: ignore
 
 from app.reports.html_template import REPORT_HTML_TEMPLATE
+from app.reports.report_builder import _fmt_date
 
 
 def _esc(val: Any) -> str:
@@ -73,8 +74,8 @@ def _work_rows_html(rows: list[dict]) -> str:
             f"""<tr>
               <td style="width: 25%;">{_esc(r.get("company", ""))}</td>
               <td style="width: 20%;">{_esc(r.get("designation", ""))}</td>
-              <td style="width: 15%;">{_esc(r.get("joinDate", ""))}</td>
-              <td style="width: 15%;">{_esc(r.get("leaveDate", ""))}</td>
+              <td style="width: 15%;">{_esc(_fmt_date(r.get("joinDate", "")))}</td>
+              <td style="width: 15%;">{_esc(_fmt_date(r.get("leaveDate", "") or r.get("relieveDate", "")))}</td>
               <td style="width: 15%;">{_esc(r.get("reason", ""))}</td>
               <td style="width: 10%;">{_esc(r.get("salary", ""))}</td>
             </tr>"""
