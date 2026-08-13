@@ -977,6 +977,7 @@ def seed_special_questions():
                 total_updated += 1
             else:
                 new_q = Question(
+                    id=lead["id"],
                     question_type="LEAD_GENERATION",
                     subject_type="LEAD_GENERATION",
                     exam_level="FRESHER",
@@ -1018,6 +1019,7 @@ def seed_special_questions():
                 total_updated += 1
             else:
                 new_q = Question(
+                    id=contact["id"],
                     question_type="CONTACT_DETAILS",
                     subject_type="COMPANY_CONTACT_DETAILS",
                     exam_level="FRESHER",
@@ -1054,6 +1056,7 @@ def seed_special_questions():
                 total_updated += 1
             else:
                 new_q = Question(
+                    id=typing["id"],
                     question_type="TYPING_TEST",
                     subject_type="TYPING_TEST",
                     exam_level="FRESHER",
@@ -1072,6 +1075,15 @@ def seed_special_questions():
                 print(f"  ✅ Added typing test: {q_text}")
 
         db.commit()
+
+        # ─── Reset sequence so future inserts don't conflict ──────────────
+        db.execute(
+            __import__('sqlalchemy').text(
+                "SELECT setval('questions_id_seq', (SELECT MAX(id) FROM questions))"
+            )
+        )
+        db.commit()
+        print("\n🔧 Sequence reset to max(id)")
 
         print(f"\n✨ Special questions seeding complete!")
         print(f"   Questions added  : {total_seeded}")
