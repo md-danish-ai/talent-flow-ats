@@ -421,7 +421,9 @@ export function UserDetailView({
                         </td>
                         <td className="px-6 py-5 text-right">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {edu.isPursuing ? "Pursuing" : formatPercentageOrCgpa(edu.percentage)}{" "}
+                            {edu.isPursuing
+                              ? "Pursuing"
+                              : formatPercentageOrCgpa(edu.percentage)}{" "}
                             {!edu.isPursuing && (
                               <span className="opacity-70 font-bold text-brand-primary">
                                 {computeDivisionAndGrade(

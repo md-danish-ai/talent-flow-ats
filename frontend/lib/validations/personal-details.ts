@@ -256,9 +256,10 @@ export const educationSchema = z
       const currentYear = new Date().getFullYear();
       const endYr = parseInt(data.endYear, 10);
       const isFutureEndYear = !isNaN(endYr) && endYr > currentYear;
-      const isPercentageRequired = !data.isPursuing && (isSchool || !isFutureEndYear);
+      const isPercentageRequired =
+        !data.isPursuing && (isSchool || !isFutureEndYear);
 
-      if (!data.isPursuing && data.percentage.trim() === "") {
+      if (data.percentage.trim() === "") {
         if (isPercentageRequired) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -296,7 +297,11 @@ export const educationSchema = z
         });
     }
 
-    if (data.startYear.trim() !== "" && data.endYear.trim() !== "") {
+    if (
+      !data.isPursuing &&
+      data.startYear.trim() !== "" &&
+      data.endYear.trim() !== ""
+    ) {
       if (parseInt(data.endYear, 10) <= parseInt(data.startYear, 10)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

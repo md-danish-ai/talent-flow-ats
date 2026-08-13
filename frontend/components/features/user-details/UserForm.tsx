@@ -463,7 +463,11 @@ export function UserForm({
           type: edu.type,
           school: edu.school,
           board: edu.board,
-          year: `${edu.startYear}-${edu.endYear}`,
+          year: edu.isPursuing
+            ? edu.startYear
+              ? `${edu.startYear}-Pursuing`
+              : "Pursuing"
+            : `${edu.startYear}-${edu.endYear}`,
           division: edu.division,
           percentage: edu.percentage,
           medium: edu.medium,
