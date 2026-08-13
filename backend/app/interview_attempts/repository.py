@@ -194,6 +194,171 @@ def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: 
     return obtained_marks, is_correct, status_label, typing_stats, safe_typed
 
 
+def _normalize_field_value(val: Any) -> str:
+    if val is None:
+        return ""
+    s = str(val).strip().lower()
+    s = re.sub(r"^https?://", "", s)
+    s = re.sub(r"^www\.", "", s)
+    s = s.rstrip("/")
+    s = " ".join(s.split())
+    return s
+
+
+def _normalize_phone(val: Any) -> str:
+    if val is None:
+        return ""
+    digits = re.sub(r"\D", "", str(val))
+    if len(digits) > 10 and digits.startswith("1"):
+        return digits[1:]
+    return digits
+
+
+def _evaluate_structured_answer(
+    user_answer_raw: str | None,
+    question_options: Any,
+    question_type: str | None,
+    subject_type: str | None,
+    max_marks: float,
+) -> tuple[float, bool, str]:
+    """
+    Evaluates LEAD_GENERATION and CONTACT_DETAILS (Company Contact Details) answers field-by-field.
+    Returns (obtained_marks, is_correct, status_label).
+    """
+    if not user_answer_raw or not str(user_answer_raw).strip():
+        return 0.0, False, "not_attempted"
+
+    user_data: dict = {}
+    try:
+        if isinstance(user_answer_raw, str):
+            user_data = json.loads(user_answer_raw)
+        elif isinstance(user_answer_raw, dict):
+            user_data = user_answer_raw
+    except Exception:
+        return 0.0, False, "incorrect"
+
+    if not isinstance(user_data, dict):
+        return 0.0, False, "incorrect"
+
+    expected_data: dict = {}
+    if isinstance(question_options, dict):
+        expected_data = question_options
+    elif isinstance(question_options, str):
+        try:
+            expected_data = json.loads(question_options)
+        except Exception:
+            pass
+
+    if not expected_data:
+        return 0.0, False, "incorrect"
+
+    is_lead_gen = (
+        question_type == "LEAD_GENERATION" or subject_type == "LEAD_GENERATION"
+    )
+    is_contact = (
+        question_type == "CONTACT_DETAILS" or subject_type == "COMPANY_CONTACT_DETAILS"
+    )
+
+    if is_lead_gen:
+        field_map = [
+            ("contact_name", ["contact_name", "contactname", "name", "person_name"]),
+            ("designation", ["designation", "title", "role"]),
+            ("website", ["website", "website_url", "url", "websiteurl"]),
+            ("email", ["email", "email_address", "person_email"]),
+        ]
+    elif is_contact:
+        # EXACTLY the 8 input fields rendered in candidate ContactDetailsView
+        field_map = [
+            ("companyName", ["companyname", "company_name", "company"]),
+            (
+                "companyPhoneNumber",
+                [
+                    "companyphonenumber",
+                    "company_phone_number",
+                    "phone",
+                    "phonenumber",
+                    "phone_number",
+                ],
+            ),
+            ("generalEmail", ["generalemail", "general_email", "email"]),
+            ("facebookPage", ["facebookpage", "facebook_page", "facebook"]),
+            ("streetAddress", ["streetaddress", "street_address", "address"]),
+            ("city", ["city"]),
+            ("state", ["state"]),
+            ("zipCode", ["zipcode", "zip_code", "zip"]),
+        ]
+    else:
+        field_map = [
+            (k, [k, k.lower(), k.replace("_", "")]) for k in expected_data.keys()
+        ]
+
+    user_norm_map = {
+        str(k).lower().replace("_", "").replace("-", ""): v
+        for k, v in user_data.items()
+    }
+    expected_norm_map = {
+        str(k).lower().replace("_", "").replace("-", ""): v
+        for k, v in expected_data.items()
+    }
+
+    valid_fields_count = 0
+    matched_fields_count = 0
+
+    for std_key, aliases in field_map:
+        exp_val = None
+        for alias in aliases:
+            clean_alias = alias.lower().replace("_", "").replace("-", "")
+            if clean_alias in expected_norm_map and expected_norm_map[
+                clean_alias
+            ] not in (None, "", "null"):
+                exp_val = expected_norm_map[clean_alias]
+                break
+
+        if exp_val is None or str(exp_val).strip() == "":
+            continue
+
+        valid_fields_count += 1
+
+        usr_val = None
+        for alias in aliases:
+            clean_alias = alias.lower().replace("_", "").replace("-", "")
+            if clean_alias in user_norm_map and user_norm_map[clean_alias] not in (
+                None,
+                "",
+                "null",
+            ):
+                usr_val = user_norm_map[clean_alias]
+                break
+
+        if usr_val is None or str(usr_val).strip() == "":
+            continue
+
+        if "phone" in std_key.lower():
+            u_phone = _normalize_phone(usr_val)
+            e_phone = _normalize_phone(exp_val)
+            if u_phone == e_phone or (
+                len(u_phone) >= 7
+                and len(e_phone) >= 7
+                and (u_phone.endswith(e_phone) or e_phone.endswith(u_phone))
+            ):
+                matched_fields_count += 1
+        else:
+            norm_usr = _normalize_field_value(usr_val)
+            norm_exp = _normalize_field_value(exp_val)
+            if norm_usr == norm_exp:
+                matched_fields_count += 1
+
+    if valid_fields_count == 0:
+        return 0.0, False, "incorrect"
+
+    ratio = matched_fields_count / float(valid_fields_count)
+    obtained_marks = round(ratio * max_marks, 2)
+    is_correct = ratio >= 0.5
+    status_label = "correct" if is_correct else "incorrect"
+
+    return obtained_marks, is_correct, status_label
+
+
 # ---------------------------------------------------------------------------
 # Private paper / question helpers
 # ---------------------------------------------------------------------------
@@ -472,6 +637,25 @@ def _recompute_grades(
                     source_text = question.passage or correct_text or ""
                     obtained, is_corr, _, _, _ = _evaluate_typing_test_answer(
                         user_text, source_text, q_marks
+                    )
+                    stats["obtained_marks"] += obtained
+                    if is_corr:
+                        stats["correct_count"] += 1
+                    else:
+                        stats["incorrect_count"] += 1
+                elif question.question_type in (
+                    "LEAD_GENERATION",
+                    "CONTACT_DETAILS",
+                ) or question.subject_type in (
+                    "LEAD_GENERATION",
+                    "COMPANY_CONTACT_DETAILS",
+                ):
+                    obtained, is_corr, _ = _evaluate_structured_answer(
+                        user_text,
+                        question.options,
+                        question.question_type,
+                        question.subject_type,
+                        q_marks,
                     )
                     stats["obtained_marks"] += obtained
                     if is_corr:
@@ -1482,6 +1666,27 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                             user_answer_display,
                         ) = _evaluate_typing_test_answer(
                             user_answer_text, source_text, float(question.marks or 0)
+                        )
+                elif question.question_type in (
+                    "LEAD_GENERATION",
+                    "CONTACT_DETAILS",
+                ) or question.subject_type in (
+                    "LEAD_GENERATION",
+                    "COMPANY_CONTACT_DETAILS",
+                ):
+                    if manual_marks is not None:
+                        marks_obtained = float(manual_marks)
+                        is_correct = marks_obtained > 0
+                        status_label = "correct" if is_correct else "incorrect"
+                    else:
+                        marks_obtained, is_correct, status_label = (
+                            _evaluate_structured_answer(
+                                user_answer_text,
+                                question.options,
+                                question.question_type,
+                                question.subject_type,
+                                float(question.marks or 0),
+                            )
                         )
                 else:
                     if manual_marks is not None:
