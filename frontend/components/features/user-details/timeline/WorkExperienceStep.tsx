@@ -59,6 +59,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
           relieveDate: "",
           reason: "",
           salary: "",
+          isPresent: false,
         },
       ]);
     }
@@ -77,6 +78,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
           relieveDate: "",
           reason: "",
           salary: "",
+          isPresent: false,
         },
       ]);
     } else {
@@ -95,6 +97,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             relieveDate: "",
             reason: "",
             salary: "",
+            isPresent: false,
           },
         ]);
       }
@@ -146,6 +149,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
             {([workExp]) => (
               <React.Fragment>
                 {workExp.map((exp: WorkExperience, index: number) => {
+                  const isLastCompany = index === workExp.length - 1;
+                  const isCurrentlyWorking =
+                    isLastCompany && Boolean(exp.isPresent);
                   const headerTitle = exp.company
                     ? `Company - ${exp.company}`
                     : `Company ${index + 1}`;
@@ -329,25 +335,36 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
                             Relieving Date{" "}
-                            <span className="text-red-500">*</span>
+                            {!isCurrentlyWorking && (
+                              <span className="text-red-500">*</span>
+                            )}
                           </label>
                           <form.Field name={`workExp[${index}].relieveDate`}>
                             {(field) => (
                               <div className="flex flex-col relative w-full text-center">
                                 <DatePicker
-                                  value={field.state.value}
+                                  value={
+                                    isCurrentlyWorking ? "" : field.state.value
+                                  }
                                   onChange={(date) => field.handleChange(date)}
                                   onBlur={field.handleBlur}
                                   className="w-full text-sm"
-                                  placeholder="Select Date"
+                                  placeholder={
+                                    isCurrentlyWorking
+                                      ? "Present"
+                                      : "Select Date"
+                                  }
+                                  disabled={isCurrentlyWorking}
                                   disableFuture
                                   minDate={exp.joinDate}
                                   error={
+                                    !isCurrentlyWorking &&
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
                                   }
                                 />
-                                {field.state.meta.isTouched &&
+                                {!isCurrentlyWorking &&
+                                  field.state.meta.isTouched &&
                                   field.state.meta.errors.length > 0 && (
                                     <p className="text-[10px] text-red-500 w-full mt-1">
                                       {getErrorMessage(
@@ -358,6 +375,34 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                               </div>
                             )}
                           </form.Field>
+                          {isLastCompany && (
+                            <form.Field name={`workExp[${index}].isPresent`}>
+                              {(field) => (
+                                <label className="flex items-center gap-2 mt-1 cursor-pointer text-xs font-medium text-foreground select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(field.state.value)}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      field.handleChange(checked);
+                                      if (checked) {
+                                        form.setFieldValue(
+                                          `workExp[${index}].relieveDate`,
+                                          "",
+                                        );
+                                        form.setFieldValue(
+                                          `workExp[${index}].reason`,
+                                          "",
+                                        );
+                                      }
+                                    }}
+                                    className="h-3.5 w-3.5 rounded border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer accent-brand-primary"
+                                  />
+                                  <span>Present (Currently Working)</span>
+                                </label>
+                              )}
+                            </form.Field>
+                          )}
                         </div>
 
                         {/* Reason of Leaving */}
@@ -372,19 +417,28 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                             {(field) => (
                               <div className="flex flex-col">
                                 <Input
-                                  value={field.state.value}
+                                  value={
+                                    isCurrentlyWorking ? "" : field.state.value
+                                  }
                                   onChange={(e) =>
                                     field.handleChange(e.target.value)
                                   }
                                   onBlur={field.handleBlur}
+                                  disabled={isCurrentlyWorking}
                                   className=""
-                                  placeholder="e.g. Better Opportunity"
+                                  placeholder={
+                                    isCurrentlyWorking
+                                      ? "N/A (Currently Working)"
+                                      : "e.g. Better Opportunity"
+                                  }
                                   error={
+                                    !isCurrentlyWorking &&
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
                                   }
                                 />
-                                {field.state.meta.isTouched &&
+                                {!isCurrentlyWorking &&
+                                  field.state.meta.isTouched &&
                                   field.state.meta.errors.length > 0 && (
                                     <p className="text-[10px] text-red-500 mt-1 pl-1">
                                       {getErrorMessage(
@@ -449,6 +503,11 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                 workExp.length > 0
                   ? Math.max(...workExp.map((w) => Number(w.id) || 0)) + 1
                   : 1;
+              const updatedWorkExp = workExp.map((w) => ({
+                ...w,
+                isPresent: false,
+              }));
+              form.setFieldValue("workExp", updatedWorkExp);
               form.pushFieldValue("workExp", {
                 id: nextId,
                 company: "",
@@ -458,6 +517,7 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                 relieveDate: "",
                 reason: "",
                 salary: "",
+                isPresent: false,
               });
             }}
             className="flex items-center gap-1.5 px-4 py-2 mt-2 w-fit text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors shadow-sm"

@@ -33,6 +33,7 @@ interface DatePickerProps {
   placeholder?: string;
   label?: React.ReactNode;
   error?: boolean;
+  disabled?: boolean;
   disablePast?: boolean;
   disableFuture?: boolean;
   minDate?: string | Date;
@@ -51,6 +52,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       placeholder = "Select Date",
       label,
       error,
+      disabled = false,
       disablePast = false,
       disableFuture = false,
       minDate,
@@ -107,6 +109,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
     };
 
     const toggleDropdown = () => {
+      if (disabled) return;
       if (!mounted) setMounted(true);
       if (!isOpen) {
         updateCoords();
@@ -484,12 +487,15 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
           <button
             ref={triggerRef}
             type="button"
+            disabled={disabled}
             onClick={toggleDropdown}
             className={cn(
               "flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-900 border rounded-md transition-all min-h-[52px] w-full hover:border-brand-primary/30 group",
               "border-slate-200 dark:border-slate-800",
               isOpen && "ring-1 ring-brand-primary border-brand-primary",
               error && "border-red-500 ring-1 ring-red-500/20",
+              disabled &&
+                "opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/50 hover:border-slate-200 pointer-events-none",
               className,
             )}
           >

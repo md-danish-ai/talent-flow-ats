@@ -78,9 +78,10 @@ class WorkExperienceDetailSchema(BaseModel):
     employmentType: str
     designation: str
     joinDate: str
-    relieveDate: str
+    relieveDate: Optional[str] = ""
     reason: Optional[str] = ""
     salary: str
+    isPresent: bool = False
 
 
 class OtherDetailsSchema(BaseModel):

@@ -323,7 +323,10 @@ export function UserDetailView({
                           </Typography>
                         </div>
                         <div className="px-3 py-1 bg-slate-50 dark:bg-zinc-800 rounded-lg border border-slate-100 dark:border-zinc-700 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          {work.joinDate} — {work.relieveDate || "Present"}
+                          {work.joinDate} —{" "}
+                          {work.isPresent || !work.relieveDate
+                            ? "Present"
+                            : work.relieveDate}
                         </div>
                       </div>
 

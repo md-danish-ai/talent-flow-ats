@@ -70,6 +70,7 @@ export interface WorkExperienceDetail {
   relieveDate: string;
   reason: string;
   salary: string;
+  isPresent?: boolean;
 }
 
 export interface OtherDetails {

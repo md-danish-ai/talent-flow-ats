@@ -40,6 +40,7 @@ export interface WorkExperience {
   relieveDate: string;
   reason: string;
   salary: string;
+  isPresent?: boolean;
 }
 
 export interface PersonalDetailsFormValues {
@@ -314,6 +315,7 @@ export const workExperienceSchema = z
     relieveDate: z.string().default(""),
     reason: z.string().default(""),
     salary: z.string().default(""),
+    isPresent: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     const isFresher = data.company.trim().toLowerCase() === "fresher";
@@ -343,7 +345,7 @@ export const workExperienceSchema = z
           message: "Join date required",
           path: ["joinDate"],
         });
-      if (data.relieveDate.trim() === "")
+      if (!data.isPresent && data.relieveDate.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Relieve date required",
@@ -356,7 +358,11 @@ export const workExperienceSchema = z
           path: ["salary"],
         });
 
-      if (data.joinDate.trim() !== "" && data.relieveDate.trim() !== "") {
+      if (
+        !data.isPresent &&
+        data.joinDate.trim() !== "" &&
+        data.relieveDate.trim() !== ""
+      ) {
         const join = new Date(data.joinDate);
         const relieve = new Date(data.relieveDate);
         if (relieve < join) {
@@ -486,6 +492,21 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
         path: ["source", "otherDetails"],
       });
     }
+
+    // Ensure non-last work experience items require relieving date
+    data.workExp.forEach((exp, index) => {
+      const isLast = index === data.workExp.length - 1;
+      const isFresher = exp.company.trim().toLowerCase() === "fresher";
+      if (!isFresher && !isLast) {
+        if (exp.relieveDate.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Relieve date required",
+            path: ["workExp", index, "relieveDate"],
+          });
+        }
+      }
+    });
 
     // Logic for Permanent Address Validation
     if (!data.sameAddress) {

@@ -156,6 +156,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       relieveDate: "",
       reason: "",
       salary: "",
+      isPresent: false,
     },
   ],
   serviceCommitment: "",
@@ -338,6 +339,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2021-06-30",
       reason: "Better Opportunity",
       salary: "35000",
+      isPresent: false,
     },
     {
       id: 2,
@@ -348,6 +350,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2022-08-31",
       reason: "Relocation",
       salary: "50000",
+      isPresent: false,
     },
     {
       id: 3,
@@ -358,6 +361,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2023-11-30",
       reason: "Role Enhancement",
       salary: "70000",
+      isPresent: false,
     },
     {
       id: 4,
@@ -368,6 +372,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2025-01-31",
       reason: "Higher Responsibilities",
       salary: "90000",
+      isPresent: false,
     },
     {
       id: 5,
@@ -378,6 +383,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2026-07-31",
       reason: "Career Growth",
       salary: "120000",
+      isPresent: false,
     },
   ],
   serviceCommitment: "Yes",

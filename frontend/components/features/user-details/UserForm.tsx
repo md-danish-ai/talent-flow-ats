@@ -223,6 +223,7 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
         relieveDate: "",
         reason: "",
         salary: "",
+        isPresent: false,
       },
     ];
   }
@@ -239,6 +240,7 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
       relieveDate: sanitizeStr(item.relieveDate),
       reason: sanitizeStr(item.reason),
       salary: sanitizeStr(item.salary),
+      isPresent: Boolean(item.isPresent),
     };
   }) as WorkExperience[];
 };
