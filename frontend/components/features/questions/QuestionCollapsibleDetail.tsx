@@ -84,30 +84,45 @@ export const QuestionCollapsibleDetail: React.FC<
     typeof question.question_type === "string"
       ? question.question_type
       : question.question_type?.code;
+  const subjectCode =
+    typeof question.subject === "string"
+      ? question.subject
+      : question.subject?.code ||
+        (question as unknown as Record<string, unknown>).subject_type;
+
+  const isLeadGen =
+    typeCode === QUESTION_TYPES.LEAD_GENERATION ||
+    subjectCode === "LEAD_GENERATION";
+  const isContactDetails =
+    typeCode === QUESTION_TYPES.CONTACT_DETAILS ||
+    subjectCode === "COMPANY_CONTACT_DETAILS" ||
+    subjectCode === "CONTACT_DETAILS";
+  const isTypingTest =
+    typeCode === QUESTION_TYPES.TYPING_TEST || subjectCode === "TYPING_TEST";
 
   const getHeaderInfo = () => {
-    switch (typeCode) {
-      case QUESTION_TYPES.LEAD_GENERATION:
-        return {
-          title: "Lead Generation Detail",
-          subtitle: "Prospect & Business Analysis",
-        };
-      case QUESTION_TYPES.CONTACT_DETAILS:
-        return {
-          title: "Company Contact Profile",
-          subtitle: "Firmographic & Communication Data",
-        };
-      case QUESTION_TYPES.TYPING_TEST:
-        return {
-          title: "Typing Test Parameter",
-          subtitle: "Speed & Accuracy Assessment",
-        };
-      default:
-        return {
-          title: "Question Detail",
-          subtitle: "Metadata & Content Overview",
-        };
+    if (isLeadGen) {
+      return {
+        title: "Lead Generation Detail",
+        subtitle: "Prospect & Business Analysis",
+      };
     }
+    if (isContactDetails) {
+      return {
+        title: "Company Contact Profile",
+        subtitle: "Firmographic & Communication Data",
+      };
+    }
+    if (isTypingTest) {
+      return {
+        title: "Typing Test Parameter",
+        subtitle: "Speed & Accuracy Assessment",
+      };
+    }
+    return {
+      title: "Question Detail",
+      subtitle: "Metadata & Content Overview",
+    };
   };
 
   const header = getHeaderInfo();
@@ -206,235 +221,154 @@ export const QuestionCollapsibleDetail: React.FC<
     </div>
   );
 
-  const renderLeadGeneration = () => (
-    <div className="space-y-4">
-      {/* Target Company Name Banner */}
-      <div
-        className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-brand-primary/[0.04] border border-brand-primary/20 space-y-1`}
-      >
-        <div className="flex items-center gap-2 text-brand-primary">
-          <Building2 size={16} />
+  const renderLeadGeneration = () => {
+    const targetCompany =
+      question.question_text || (options.company_name as string) || "N/A";
+
+    const leadKeyValueList = [
+      {
+        key: "Name of the Person",
+        value: String(options.contact_name || "N/A"),
+      },
+      {
+        key: "Title / Designation",
+        value: String(options.designation || "N/A"),
+      },
+      {
+        key: "Website Address (URL)",
+        value: String(options.website || "N/A"),
+      },
+      {
+        key: "Person's Email Address",
+        value: String(options.email || "N/A"),
+      },
+    ];
+
+    return (
+      <div className="space-y-4">
+        {/* Prominent Target Company Banner */}
+        <div className="p-4 rounded-xl border border-brand-primary/20 bg-brand-primary/[0.04] flex flex-col space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary">
+            Target Company Name
+          </span>
+          <span className="text-base font-bold text-foreground break-all">
+            {targetCompany}
+          </span>
+        </div>
+
+        {/* 2-Column Grid for Form Fields */}
+        <div className="rounded-2xl border border-border/80 bg-white/60 dark:bg-slate-900/60 p-6 space-y-4 shadow-sm">
           <Typography
             variant="body5"
-            weight="bold"
-            className="uppercase tracking-wider"
+            weight="black"
+            className="text-muted-foreground/80 uppercase tracking-widest text-[10px] block font-mono"
           >
-            Target Company Name
+            LEAD GENERATION DETAILS
           </Typography>
-        </div>
-        <Typography variant="h4" weight="bold" className="text-foreground">
-          {String(question.question_text || options.company_name || "N/A")}
-        </Typography>
-      </div>
 
-      {/* Lead Details Card */}
-      <div
-        className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50 space-y-4`}
-      >
-        <div className="flex items-center gap-2 text-brand-primary border-b border-border/40 pb-2">
-          <User size={16} />
-          <Typography variant="body4" weight="bold">
-            Lead Details
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {leadKeyValueList.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-3.5 rounded-xl border border-border/50 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-center space-y-1"
+              >
+                <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">
+                  {item.key}
+                </span>
+                <span className="text-sm font-semibold text-foreground break-all">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderContactDetails = () => {
+    const targetUrl =
+      question.question_text ||
+      (options.websiteUrl as string) ||
+      (options.website as string) ||
+      "N/A";
+
+    const contactKeyValueList = [
+      {
+        key: "Company Name",
+        value: String(options.companyName || "N/A"),
+      },
+      {
+        key: "Phone Number",
+        value: String(options.companyPhoneNumber || "N/A"),
+      },
+      {
+        key: "General Email",
+        value: String(options.generalEmail || "N/A"),
+      },
+      {
+        key: "Facebook Page",
+        value: String(options.facebookPage || "N/A"),
+      },
+      {
+        key: "Street Address",
+        value: String(options.streetAddress || "N/A"),
+      },
+      {
+        key: "City",
+        value: String(options.city || "N/A"),
+      },
+      {
+        key: "State",
+        value: String(options.state || "N/A"),
+      },
+      {
+        key: "Zip Code",
+        value: String(options.zipCode || "N/A"),
+      },
+    ];
+
+    return (
+      <div className="space-y-4">
+        {/* Prominent Target Source / URL Banner */}
+        <div className="p-4 rounded-xl border border-brand-primary/20 bg-brand-primary/[0.04] flex flex-col space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary">
+            Target Source / URL
+          </span>
+          <span className="text-base font-bold text-foreground break-all">
+            {targetUrl}
+          </span>
+        </div>
+
+        {/* 2-Column Grid for the 8 Form Fields */}
+        <div className="rounded-2xl border border-border/80 bg-white/60 dark:bg-slate-900/60 p-6 space-y-4 shadow-sm">
+          <Typography
+            variant="body5"
+            weight="black"
+            className="text-muted-foreground/80 uppercase tracking-widest text-[10px] block font-mono"
+          >
+            COMPANY CONTACT DETAILS
           </Typography>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Typography
-              variant="body5"
-              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
-            >
-              Name of the Person
-            </Typography>
-            <Typography
-              variant="body4"
-              weight="semibold"
-              className="text-foreground mt-0.5"
-            >
-              {String(options.contact_name || "N/A")}
-            </Typography>
-          </div>
-          <div>
-            <Typography
-              variant="body5"
-              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
-            >
-              Title of the Person (Chairman/CEO/COO/President/Founder)
-            </Typography>
-            <Typography
-              variant="body4"
-              weight="semibold"
-              className="text-foreground mt-0.5"
-            >
-              {String(options.designation || "N/A")}
-            </Typography>
-          </div>
-          <div>
-            <Typography
-              variant="body5"
-              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
-            >
-              Website Address (URL)
-            </Typography>
-            <Typography
-              variant="body4"
-              weight="semibold"
-              className="text-brand-primary break-all mt-0.5"
-            >
-              {String(options.website || "N/A")}
-            </Typography>
-          </div>
-          <div>
-            <Typography
-              variant="body5"
-              className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider"
-            >
-              Person&apos;s Email Address
-            </Typography>
-            <Typography
-              variant="body4"
-              weight="semibold"
-              className="text-foreground mt-0.5"
-            >
-              {String(options.email || "N/A")}
-            </Typography>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
-  const renderContactDetails = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div
-          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
-        >
-          <div className="flex items-center gap-2 text-brand-primary mb-3">
-            <Building2 size={16} />
-            <Typography variant="body4" weight="bold">
-              Company
-            </Typography>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {contactKeyValueList.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-3.5 rounded-xl border border-border/50 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-center space-y-1"
               >
-                Name
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.companyName || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Website
-              </Typography>
-              <Typography
-                variant="body4"
-                weight="semibold"
-                className="text-brand-primary break-all"
-              >
-                {String(options.websiteUrl || "N/A")}
-              </Typography>
-            </div>
-          </div>
-        </div>
-        <div
-          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
-        >
-          <div className="flex items-center gap-2 text-emerald-600 mb-3">
-            <Phone size={16} />
-            <Typography variant="body4" weight="bold">
-              Communication
-            </Typography>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Phone
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.companyPhoneNumber || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Email
-              </Typography>
-              <Typography
-                variant="body4"
-                weight="semibold"
-                className="break-all"
-              >
-                {String(options.generalEmail || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Facebook
-              </Typography>
-              <Typography
-                variant="body4"
-                weight="semibold"
-                className="break-all"
-              >
-                {String(options.facebookPage || "N/A")}
-              </Typography>
-            </div>
-          </div>
-        </div>
-        <div
-          className={`p-4 ${STYLE_CONFIG.innerCardRadius} bg-slate-50 dark:bg-slate-800/50 border border-border/50`}
-        >
-          <div className="flex items-center gap-2 text-amber-600 mb-3">
-            <MapPin size={16} />
-            <Typography variant="body4" weight="bold">
-              Location
-            </Typography>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                Street
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.streetAddress || "N/A")}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground uppercase text-[10px]"
-              >
-                City / State / Zip
-              </Typography>
-              <Typography variant="body4" weight="semibold">
-                {String(options.city || "N/A")},{" "}
-                {String(options.state || "N/A")} {String(options.zipCode || "")}
-              </Typography>
-            </div>
+                <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">
+                  {item.key}
+                </span>
+                <span className="text-sm font-semibold text-foreground break-all">
+                  {item.value}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderTypingTest = () => (
     <div className="space-y-6">
@@ -471,16 +405,10 @@ export const QuestionCollapsibleDetail: React.FC<
   );
 
   const renderContent = () => {
-    switch (typeCode) {
-      case QUESTION_TYPES.LEAD_GENERATION:
-        return renderLeadGeneration();
-      case QUESTION_TYPES.CONTACT_DETAILS:
-        return renderContactDetails();
-      case QUESTION_TYPES.TYPING_TEST:
-        return renderTypingTest();
-      default:
-        return null;
-    }
+    if (isLeadGen) return renderLeadGeneration();
+    if (isContactDetails) return renderContactDetails();
+    if (isTypingTest) return renderTypingTest();
+    return null;
   };
 
   return (

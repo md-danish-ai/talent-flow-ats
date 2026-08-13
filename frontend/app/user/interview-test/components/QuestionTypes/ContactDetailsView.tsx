@@ -87,52 +87,46 @@ export const ContactDetailsView = memo(function ContactDetailsView({
     onChangeAnswer(JSON.stringify(updated));
   };
 
-  const groups = [
+  const fields = [
     {
-      title: "Company Info",
-      icon: <Building2 className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "companyName",
-          label: "Company Name",
-          placeholder: "e.g. Acme Corp",
-        },
-      ],
+      key: "companyName",
+      label: "COMPANY NAME",
+      placeholder: "ABC Corporation",
     },
     {
-      title: "Communication",
-      icon: <Phone className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "companyPhoneNumber",
-          label: "Phone Number",
-          placeholder: "e.g. +1 123-456-7890",
-        },
-        {
-          key: "generalEmail",
-          label: "General Email",
-          placeholder: "e.g. contact@acme.com",
-        },
-        {
-          key: "facebookPage",
-          label: "Facebook Page",
-          placeholder: "e.g. https://facebook.com/acme",
-        },
-      ],
+      key: "companyPhoneNumber",
+      label: "PHONE NUMBER",
+      placeholder: "+1 123-456-7890",
     },
     {
-      title: "Location",
-      icon: <MapPin className="w-4 h-4 text-brand-primary" />,
-      fields: [
-        {
-          key: "streetAddress",
-          label: "Street Address",
-          placeholder: "e.g. 123 Main St",
-        },
-        { key: "city", label: "City", placeholder: "e.g. Irving" },
-        { key: "state", label: "State", placeholder: "e.g. TX" },
-        { key: "zipCode", label: "Zip Code", placeholder: "e.g. 75039" },
-      ],
+      key: "generalEmail",
+      label: "GENERAL EMAIL",
+      placeholder: "contact@example.com",
+    },
+    {
+      key: "facebookPage",
+      label: "FACEBOOK PAGE",
+      placeholder: "https://facebook.com/example",
+    },
+    {
+      key: "streetAddress",
+      label: "STREET ADDRESS",
+      placeholder: "123 Main St",
+    },
+    {
+      key: "city",
+      label: "CITY",
+      placeholder: "New York",
+    },
+    {
+      key: "state",
+      label: "STATE",
+      placeholder: "NY",
+    },
+    {
+      key: "zipCode",
+      label: "ZIP CODE",
+      placeholder: "10001",
     },
   ];
 
@@ -232,41 +226,38 @@ export const ContactDetailsView = memo(function ContactDetailsView({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
-        {groups.map((group) => (
-          <div
-            key={group.title}
-            className={cn(
-              "flex flex-col border border-border bg-muted/10 overflow-hidden shadow-sm",
-              STYLE_CONFIG.innerCardRadius,
-            )}
-          >
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/20">
-              {group.icon}
-              <Typography variant="body3" className="font-bold text-foreground">
-                {group.title}
+      {/* 2-Column Grid Candidate Data Entry */}
+      <div
+        className={cn(
+          "flex flex-col border border-border bg-muted/10 overflow-hidden shadow-sm",
+          STYLE_CONFIG.innerCardRadius,
+        )}
+      >
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/20">
+          <Building2 className="w-4 h-4 text-brand-primary" />
+          <Typography variant="body3" className="font-bold text-foreground">
+            Company Contact Entry
+          </Typography>
+        </div>
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.map((f) => (
+            <div key={f.key} className="space-y-1.5">
+              <Typography
+                variant="body5"
+                weight="black"
+                className="uppercase tracking-wider text-[10px] text-muted-foreground/80 block"
+              >
+                {f.label}
               </Typography>
+              <Input
+                value={fieldAnswers[f.key] || ""}
+                onChange={(e) => handleFieldChange(f.key, e.target.value)}
+                placeholder={f.placeholder}
+                className="bg-background border-border hover:border-brand-primary focus:border-brand-primary h-10 font-medium"
+              />
             </div>
-            <div className="p-4 space-y-4 flex-1">
-              {group.fields.map((f) => (
-                <div key={f.key} className="space-y-1.5">
-                  <Typography
-                    variant="body4"
-                    className="font-semibold text-muted-foreground ml-0.5"
-                  >
-                    {f.label}
-                  </Typography>
-                  <Input
-                    value={fieldAnswers[f.key] || ""}
-                    onChange={(e) => handleFieldChange(f.key, e.target.value)}
-                    placeholder={f.placeholder}
-                    className="bg-background border-border hover:border-brand-primary focus:border-brand-primary h-10"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

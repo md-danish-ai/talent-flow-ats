@@ -80,22 +80,22 @@ export const LeadGenerationView = memo(function LeadGenerationView({
     {
       key: "contact_name",
       label: "Name of the Person",
-      placeholder: "e.g. John Doe",
+      placeholder: "John Doe",
     },
     {
       key: "designation",
       label: "Title of the Person (Chairman/CEO/COO/President/Founder)",
-      placeholder: "e.g. CEO",
+      placeholder: "CEO",
     },
     {
       key: "website",
       label: "Website Address (URL)",
-      placeholder: "e.g. https://acme.com",
+      placeholder: "https://example.com",
     },
     {
       key: "email",
       label: "Person's Email Address",
-      placeholder: "e.g. john@acme.com",
+      placeholder: "john@example.com",
     },
   ];
 
