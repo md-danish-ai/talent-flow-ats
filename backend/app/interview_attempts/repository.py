@@ -1537,10 +1537,70 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
 
         # Grade settings for scale display (not for computation — grades already stored)
         grade_settings = (paper_obj.grade_settings or []) if paper_obj else []
+
+        subject_grades_to_sort = record.subject_grades
+        if not subject_grades_to_sort and detailed_answers:
+            section_stats: dict[str, dict] = {}
+            for ans in detailed_answers:
+                s_name = ans.get("section_name") or "General"
+                s_code = ans.get("section_code") or "GENERAL"
+                if s_name not in section_stats:
+                    section_stats[s_name] = {
+                        "section_code": s_code,
+                        "section_name": s_name,
+                        "total_questions": 0,
+                        "attempted_count": 0,
+                        "unattempted_count": 0,
+                        "correct_count": 0,
+                        "incorrect_count": 0,
+                        "total_marks": 0.0,
+                        "obtained_marks": 0.0,
+                    }
+                st = section_stats[s_name]
+                st["total_questions"] += 1
+                if ans.get("is_attempted"):
+                    st["attempted_count"] += 1
+                else:
+                    st["unattempted_count"] += 1
+
+                if ans.get("status") == "correct":
+                    st["correct_count"] += 1
+                elif ans.get("status") == "incorrect":
+                    st["incorrect_count"] += 1
+
+                st["total_marks"] += float(ans.get("max_marks") or 0)
+                st["obtained_marks"] += float(ans.get("marks_obtained") or 0)
+
+            computed_subject_grades = []
+            for s_name, st in section_stats.items():
+                tot_m = st["total_marks"]
+                obt_m = st["obtained_marks"]
+                pct = round((obt_m / tot_m * 100), 2) if tot_m > 0 else 0.0
+                st["percentage"] = pct
+                st["grade"] = "In Progress" if record.status == "started" else "N/A"
+                computed_subject_grades.append(st)
+
+            subject_grades_to_sort = computed_subject_grades
+
         ordered_subject_results = _sort_subject_results_by_paper_order(
             db,
             paper_obj,
-            record.subject_grades,
+            subject_grades_to_sort,
+        )
+
+        total_obtained = (
+            sum(float(a.get("marks_obtained") or 0) for a in detailed_answers)
+            if (record.status == "started" or not float(record.obtained_marks or 0))
+            else float(record.obtained_marks)
+        )
+        total_max = (
+            sum(float(a.get("max_marks") or 0) for a in detailed_answers)
+            if (record.status == "started" or not float(record.total_marks or 0))
+            else float(record.total_marks)
+        )
+
+        overall_pct = (
+            round(total_obtained / total_max * 100, 2) if total_max > 0 else 0.0
         )
 
         return {
@@ -1566,8 +1626,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "total_questions": record.total_questions,
                 "attempted_count": record.attempted_count,
                 "unattempted_count": record.unattempted_count,
-                "total_marks": float(record.total_marks),
-                "obtained_marks": float(record.obtained_marks),
+                "total_marks": total_max,
+                "obtained_marks": total_obtained,
                 "overall_grade": record.overall_grade,
                 "is_auto_submitted": record.is_auto_submitted,
             },
@@ -1575,12 +1635,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "correct_count": correct_count,
                 "incorrect_count": incorrect_count,
                 "not_attempted_count": not_attempted_count,
-                "total_marks_obtained": float(record.obtained_marks),
-                "overall_percentage": round(
-                    float(record.obtained_marks) / float(record.total_marks) * 100, 2
-                )
-                if float(record.total_marks) > 0
-                else 0,
+                "total_marks_obtained": total_obtained,
+                "overall_percentage": overall_pct,
                 "overall_grade": record.overall_grade,
             },
             "subject_results": ordered_subject_results,
