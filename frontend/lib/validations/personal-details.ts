@@ -29,6 +29,7 @@ export interface Education {
   medium: string;
   details: string;
   gradingType?: string;
+  isPursuing?: boolean;
 }
 
 export interface WorkExperience {
@@ -187,6 +188,7 @@ export const educationSchema = z
     medium: z.string().default(""),
     details: z.string().default(""),
     gradingType: z.string().default("Percentage"),
+    isPursuing: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     const isMandatory =
@@ -237,14 +239,14 @@ export const educationSchema = z
           message: "Start Year required",
           path: ["startYear"],
         });
-      if (data.endYear.trim() === "")
+      if (!data.isPursuing && data.endYear.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "End Year required",
           path: ["endYear"],
         });
       // Percentage field condition:
-      // For higher education after 12th (e.g., Graduation, Post Graduation), if endYear is in the future (> current year),
+      // For higher education after 12th (e.g., Graduation, Post Graduation), if endYear is in the future (> current year) or isPursuing is true,
       // percentage is NOT required. Otherwise (10th/12th or past/current endYear), percentage is required.
       const isSchool =
         data.type === "10th / High School" ||
@@ -254,9 +256,9 @@ export const educationSchema = z
       const currentYear = new Date().getFullYear();
       const endYr = parseInt(data.endYear, 10);
       const isFutureEndYear = !isNaN(endYr) && endYr > currentYear;
-      const isPercentageRequired = isSchool || !isFutureEndYear;
+      const isPercentageRequired = !data.isPursuing && (isSchool || !isFutureEndYear);
 
-      if (data.percentage.trim() === "") {
+      if (!data.isPursuing && data.percentage.trim() === "") {
         if (isPercentageRequired) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

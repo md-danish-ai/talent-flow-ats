@@ -67,9 +67,10 @@ class EducationDetailSchema(BaseModel):
     board: str
     year: str
     division: str
-    percentage: str
+    percentage: Optional[str] = ""
     medium: str
     details: Optional[str] = ""
+    isPursuing: bool = False
 
 
 class WorkExperienceDetailSchema(BaseModel):

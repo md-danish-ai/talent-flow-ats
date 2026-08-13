@@ -153,6 +153,7 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
       percentage: sanitizeStr(item.percentage),
       medium: sanitizeStr(item.medium),
       details: sanitizeStr(item.details),
+      isPursuing: Boolean(item.isPursuing),
     };
   }) as Education[];
 

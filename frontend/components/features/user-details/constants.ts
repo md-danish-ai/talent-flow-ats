@@ -120,6 +120,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "All Subjects",
+      isPursuing: false,
     },
     {
       id: 2,
@@ -132,6 +133,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "",
+      isPursuing: false,
     },
     {
       id: 3,
@@ -144,6 +146,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "",
+      isPursuing: false,
     },
   ],
   workExp: [
@@ -279,6 +282,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "88",
       medium: "English",
       details: "Science & Math",
+      isPursuing: false,
     },
     {
       id: 2,
@@ -291,6 +295,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "86",
       medium: "English",
       details: "Physics, Chemistry, Math",
+      isPursuing: false,
     },
     {
       id: 3,
@@ -303,6 +308,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.2",
       medium: "English",
       details: "B.Tech Computer Science",
+      isPursuing: false,
     },
     {
       id: 4,
@@ -315,6 +321,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.6",
       medium: "English",
       details: "M.Tech Data Science",
+      isPursuing: false,
     },
     {
       id: 6,
@@ -327,6 +334,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.8",
       medium: "English",
       details: "Ph.D Artificial Intelligence",
+      isPursuing: false,
     },
   ],
   workExp: [

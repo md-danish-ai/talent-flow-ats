@@ -86,39 +86,56 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
     >
       <div className="flex flex-col gap-5">
         <form.Subscribe selector={(state) => [state.values.education]}>
-          {([education]) => (
-            <React.Fragment>
-              {education.map((item: Education, index: number) => {
-                const isMandatory = index < 3;
-                const isEducationSelected = Boolean(
-                  item.type &&
-                  (isLoadingEducation ||
-                    educationOptions.some(
-                      (opt: { id: string | number }) =>
-                        String(opt.id) === String(item.type),
-                    )),
-                );
-                const prevEndYear =
-                  index > 0 ? education[index - 1]?.endYear : undefined;
-                const selectedLabel = educationOptions.find(
-                  (opt: { id: string | number; label: string }) =>
-                    String(opt.id) === String(item.type),
-                )?.label;
-                const headerTitle = selectedLabel
-                  ? `Education - ${selectedLabel}`
-                  : `Education ${index + 1}`;
+          {([education]) => {
+            const lastEligibleIndex = education.reduce(
+              (lastIdx: number, item: Education, idx: number) => {
                 const isSchool =
                   item.type === "10th / High School" ||
                   item.type === "10th Std" ||
                   item.type === "12th / Intermediate" ||
                   item.type === "12th Std";
-                const currentYear = new Date().getFullYear();
-                const endYrNum = parseInt(item.endYear || "", 10);
-                const isFutureEndYear =
-                  !isNaN(endYrNum) && endYrNum > currentYear;
-                const isPercentageRequired =
-                  (isMandatory || isEducationSelected) &&
-                  (isSchool || !isFutureEndYear);
+                return !isSchool ? idx : lastIdx;
+              },
+              -1,
+            );
+
+            return (
+              <React.Fragment>
+                {education.map((item: Education, index: number) => {
+                  const isMandatory = index < 3;
+                  const isEducationSelected = Boolean(
+                    item.type &&
+                    (isLoadingEducation ||
+                      educationOptions.some(
+                        (opt: { id: string | number }) =>
+                          String(opt.id) === String(item.type),
+                      )),
+                  );
+                  const prevEndYear =
+                    index > 0 ? education[index - 1]?.endYear : undefined;
+                  const selectedLabel = educationOptions.find(
+                    (opt: { id: string | number; label: string }) =>
+                      String(opt.id) === String(item.type),
+                  )?.label;
+                  const headerTitle = selectedLabel
+                    ? `Education - ${selectedLabel}`
+                    : `Education ${index + 1}`;
+                  const isSchool =
+                    item.type === "10th / High School" ||
+                    item.type === "10th Std" ||
+                    item.type === "12th / Intermediate" ||
+                    item.type === "12th Std";
+                  const isLastEligible = !isSchool && index === lastEligibleIndex;
+                  const isPursuing = isLastEligible && Boolean(item.isPursuing);
+
+                  const currentYear = new Date().getFullYear();
+                  const endYrNum = parseInt(item.endYear || "", 10);
+                  const isFutureEndYear =
+                    !isNaN(endYrNum) && endYrNum > currentYear;
+                  const isPercentageRequired =
+                    !isPursuing &&
+                    (isMandatory || isEducationSelected) &&
+                    (isSchool || !isFutureEndYear);
 
                 return (
                   <div
@@ -359,7 +376,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-muted-foreground">
                           End Year{" "}
-                          {(isMandatory || isEducationSelected) && (
+                          {!isPursuing && (isMandatory || isEducationSelected) && (
                             <span className="text-red-500">*</span>
                           )}
                         </label>
@@ -367,10 +384,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           {(field) => (
                             <div className="flex flex-col relative w-full text-center">
                               <YearPicker
-                                value={field.state.value}
+                                value={isPursuing ? "" : field.state.value}
                                 onChange={(val) => field.handleChange(val)}
-                                placeholder="End"
-                                disabled={!isEducationSelected}
+                                placeholder={isPursuing ? "Pursuing" : "End"}
+                                disabled={isPursuing || !isEducationSelected}
                                 disableFuture={false}
                                 minYear={
                                   item.startYear
@@ -379,11 +396,13 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                 }
                                 className="w-full"
                                 error={
+                                  !isPursuing &&
                                   field.state.meta.isTouched &&
                                   field.state.meta.errors.length > 0
                                 }
                               />
-                              {field.state.meta.isTouched &&
+                              {!isPursuing &&
+                                field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0 && (
                                   <p className="text-[10px] text-red-500 w-full mt-1">
                                     {getErrorMessage(
@@ -394,6 +413,28 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                             </div>
                           )}
                         </form.Field>
+                        {isLastEligible && (
+                          <form.Field name={`education[${index}].isPursuing`}>
+                            {(field) => (
+                              <label className="flex items-center gap-2 mt-1 cursor-pointer text-xs font-medium text-foreground select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(field.state.value)}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    field.handleChange(checked);
+                                    if (checked) {
+                                      form.setFieldValue(`education[${index}].endYear`, "");
+                                      form.setFieldValue(`education[${index}].percentage`, "");
+                                    }
+                                  }}
+                                  className="h-3.5 w-3.5 rounded border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer accent-brand-primary"
+                                />
+                                <span>Pursuing (Currently Studying)</span>
+                              </label>
+                            )}
+                          </form.Field>
+                        )}
                       </div>
 
                       {/* Percentage (%) / CGPA */}
@@ -437,7 +478,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           {(field) => (
                             <div className="flex flex-col">
                               <Input
-                                value={field.state.value}
+                                value={isPursuing ? "" : field.state.value}
                                 onChange={(e) => {
                                   let val = e.target.value.replace(
                                     /[^0-9.]/g,
@@ -451,19 +492,23 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   field.handleChange(val);
                                 }}
                                 onBlur={field.handleBlur}
-                                disabled={!isEducationSelected}
+                                disabled={isPursuing || !isEducationSelected}
                                 className="disabled:opacity-50 disabled:cursor-not-allowed"
                                 placeholder={
-                                  item.gradingType === "CGPA"
-                                    ? "e.g. 8.5"
-                                    : "e.g. 85"
+                                  isPursuing
+                                    ? "N/A (Pursuing)"
+                                    : item.gradingType === "CGPA"
+                                      ? "e.g. 8.5"
+                                      : "e.g. 85"
                                 }
                                 error={
+                                  !isPursuing &&
                                   field.state.meta.isTouched &&
                                   field.state.meta.errors.length > 0
                                 }
                               />
-                              {field.state.meta.isTouched &&
+                              {!isPursuing &&
+                                field.state.meta.isTouched &&
                                 field.state.meta.errors.length > 0 && (
                                   <p className="text-[10px] text-red-500 mt-1 pl-1">
                                     {getErrorMessage(
@@ -520,7 +565,8 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                 );
               })}
             </React.Fragment>
-          )}
+          );
+        }}
         </form.Subscribe>
         <button
           type="button"
@@ -530,6 +576,11 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
               education.length > 0
                 ? Math.max(...education.map((e) => Number(e.id) || 0)) + 1
                 : 1;
+            const updatedEducation = education.map((e) => ({
+              ...e,
+              isPursuing: false,
+            }));
+            form.setFieldValue("education", updatedEducation);
             form.pushFieldValue("education", {
               id: nextId,
               type: "",
@@ -541,6 +592,8 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
               percentage: "",
               medium: "",
               details: "",
+              gradingType: "Percentage",
+              isPursuing: false,
             });
           }}
           className="flex items-center gap-1.5 px-4 py-2 mt-2 w-fit text-sm font-medium bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors shadow-sm"

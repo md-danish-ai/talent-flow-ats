@@ -415,17 +415,21 @@ export function UserDetailView({
                           {edu.board}
                         </td>
                         <td className="px-6 py-5 text-center font-bold">
-                          {edu.year}
+                          {edu.isPursuing || edu.year.endsWith("-")
+                            ? `${edu.year.replace(/-$/, "")} - Pursuing`
+                            : edu.year}
                         </td>
                         <td className="px-6 py-5 text-right">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {formatPercentageOrCgpa(edu.percentage)}{" "}
-                            <span className="opacity-70 font-bold text-brand-primary">
-                              {computeDivisionAndGrade(
-                                edu.percentage,
-                                edu.division,
-                              )}
-                            </span>
+                            {edu.isPursuing ? "Pursuing" : formatPercentageOrCgpa(edu.percentage)}{" "}
+                            {!edu.isPursuing && (
+                              <span className="opacity-70 font-bold text-brand-primary">
+                                {computeDivisionAndGrade(
+                                  edu.percentage,
+                                  edu.division,
+                                )}
+                              </span>
+                            )}
                           </span>
                         </td>
                       </tr>
