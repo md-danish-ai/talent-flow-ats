@@ -1,5 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-13 15:57:36
+# Auto-generated seed file from database on 2026-08-13 16:24:01
 import sys
 import os
 
@@ -20,21 +20,21 @@ from app.database.db import SessionLocal
 
 CONTACTS = [
     {
-        "id": 75,
+        "id": 100,
         "question_text": "http://celanese.com",
         "marks": 20,
         "city": "Irving",
         "state": "TX",
-        "zipCode": "75039",
+        "zipCode": 75039,
         "websiteUrl": "http://celanese.com",
         "companyName": "Celanese Corporation",
         "facebookPage": "https://www.facebook.com/Celanese/",
         "generalEmail": "questions@celanese.com",
         "streetAddress": "222 W. Las Colinas Blvd.",
-        "companyPhoneNumber": "+1 972-443-4000",
+        "companyPhoneNumber": "#ERROR!",
     },
     {
-        "id": 76,
+        "id": 101,
         "question_text": "http://calgoncarbon.com",
         "marks": 20,
         "city": "Moon Township",
@@ -48,12 +48,12 @@ CONTACTS = [
         "companyPhoneNumber": "412-787-6700",
     },
     {
-        "id": 77,
+        "id": 102,
         "question_text": "http://beltpower.com",
         "marks": 20,
         "city": "Atlanta",
         "state": "GA",
-        "zipCode": "30339",
+        "zipCode": 30339,
         "websiteUrl": "http://beltpower.com",
         "companyName": "Belt Power, LLC",
         "facebookPage": "https://www.facebook.com/BeltPower/",
@@ -62,7 +62,7 @@ CONTACTS = [
         "companyPhoneNumber": "800-886-2358",
     },
     {
-        "id": 78,
+        "id": 103,
         "question_text": "http://ceda.com/",
         "marks": 20,
         "city": "Calgary",
@@ -76,7 +76,7 @@ CONTACTS = [
         "companyPhoneNumber": "1-403-253-3233",
     },
     {
-        "id": 79,
+        "id": 104,
         "question_text": "http://cclind.com",
         "marks": 20,
         "city": "Toronto",
@@ -90,12 +90,12 @@ CONTACTS = [
         "companyPhoneNumber": 4167568500,
     },
     {
-        "id": 80,
+        "id": 105,
         "question_text": "http://calnetix.com",
         "marks": 20,
         "city": "Cerritos",
         "state": "CA",
-        "zipCode": "90703",
+        "zipCode": 90703,
         "websiteUrl": "http://calnetix.com",
         "companyName": "Calnetix Technologies, LLC",
         "facebookPage": "https://www.facebook.com/calnetix/",
@@ -104,7 +104,7 @@ CONTACTS = [
         "companyPhoneNumber": "1-562-293-1660",
     },
     {
-        "id": 81,
+        "id": 106,
         "question_text": "http://calmac.com",
         "marks": 20,
         "city": "Fair Lawn",
@@ -118,7 +118,7 @@ CONTACTS = [
         "companyPhoneNumber": "201-797-1511",
     },
     {
-        "id": 82,
+        "id": 107,
         "question_text": "http://cmcorporation.com",
         "marks": 20,
         "city": "Dayville",
@@ -132,7 +132,7 @@ CONTACTS = [
         "companyPhoneNumber": "(1) 860 774 4812",
     },
     {
-        "id": 83,
+        "id": 108,
         "question_text": "http://bwen.com/",
         "marks": 20,
         "city": "Cicero",
@@ -143,10 +143,10 @@ CONTACTS = [
         "facebookPage": "https://www.facebook.com/Broadwind/",
         "generalEmail": "info@bwen.com",
         "streetAddress": "3240 S. Central Ave.",
-        "companyPhoneNumber": "708\u00ad.780.4800",
+        "companyPhoneNumber": "708­.780.4800",
     },
     {
-        "id": 84,
+        "id": 109,
         "question_text": "http://bridgewellresources.com",
         "marks": 20,
         "city": "TIGARD",
@@ -160,7 +160,7 @@ CONTACTS = [
         "companyPhoneNumber": "503.872.3557",
     },
     {
-        "id": 85,
+        "id": 110,
         "question_text": "http://boydcorp.com",
         "marks": 20,
         "city": "Pleasanton",
@@ -174,7 +174,7 @@ CONTACTS = [
         "companyPhoneNumber": "1(888)244-6931",
     },
     {
-        "id": 86,
+        "id": 111,
         "question_text": "http://bucorp.com",
         "marks": 20,
         "city": "Elgin",
@@ -188,7 +188,7 @@ CONTACTS = [
         "companyPhoneNumber": "1-800-638-2520",
     },
     {
-        "id": 87,
+        "id": 112,
         "question_text": "http://bluecatnetworks.com",
         "marks": 20,
         "city": "Toronto",
@@ -202,7 +202,7 @@ CONTACTS = [
         "companyPhoneNumber": "1.416.646.8400",
     },
     {
-        "id": 88,
+        "id": 113,
         "question_text": "http://blockandcompany.com",
         "marks": 20,
         "city": "Wheeling",
@@ -216,7 +216,7 @@ CONTACTS = [
         "companyPhoneNumber": "800.323.7556",
     },
     {
-        "id": 89,
+        "id": 114,
         "question_text": "http://bliley.com",
         "marks": 20,
         "city": "Erie",
@@ -230,7 +230,7 @@ CONTACTS = [
         "companyPhoneNumber": "(814) 838-3571",
     },
     {
-        "id": 90,
+        "id": 115,
         "question_text": "http://blakejarrett.ca/portfolio/",
         "marks": 20,
         "city": "Toronto",
@@ -244,7 +244,7 @@ CONTACTS = [
         "companyPhoneNumber": "416.385.1660",
     },
     {
-        "id": 91,
+        "id": 116,
         "question_text": "http://bitordertech.com",
         "marks": 20,
         "city": "Frisco",
@@ -258,7 +258,7 @@ CONTACTS = [
         "companyPhoneNumber": "1 (415) 230 0592",
     },
     {
-        "id": 92,
+        "id": 117,
         "question_text": "http://www.beumergroup.com/",
         "marks": 20,
         "city": "Somerset",
@@ -272,7 +272,7 @@ CONTACTS = [
         "companyPhoneNumber": "1 732 893 - 2800",
     },
     {
-        "id": 93,
+        "id": 118,
         "question_text": "http://beracahhomes.com",
         "marks": 20,
         "city": "Greenwood",
@@ -286,7 +286,7 @@ CONTACTS = [
         "companyPhoneNumber": "1 302-349-4561",
     },
     {
-        "id": 94,
+        "id": 119,
         "question_text": "http://bepex.com/",
         "marks": 20,
         "city": "Minneapolis",
@@ -300,7 +300,7 @@ CONTACTS = [
         "companyPhoneNumber": "1 612-260-7462",
     },
     {
-        "id": 95,
+        "id": 120,
         "question_text": "http://www.apache-inc.com",
         "marks": 20,
         "city": "Cedar Rapids",
@@ -314,7 +314,7 @@ CONTACTS = [
         "companyPhoneNumber": "(866) 757-7816",
     },
     {
-        "id": 96,
+        "id": 121,
         "question_text": "http://americanexcelsior.com",
         "marks": 20,
         "city": "Arlington",
@@ -328,7 +328,7 @@ CONTACTS = [
         "companyPhoneNumber": "(800) 777-7645",
     },
     {
-        "id": 97,
+        "id": 122,
         "question_text": "http://alignproductionsystems.com/",
         "marks": 20,
         "city": "Maryland Heights",
@@ -342,7 +342,7 @@ CONTACTS = [
         "companyPhoneNumber": "(800) 888-0018",
     },
     {
-        "id": 98,
+        "id": 123,
         "question_text": "http://afltele.com",
         "marks": 20,
         "city": "Duncan",
@@ -356,7 +356,7 @@ CONTACTS = [
         "companyPhoneNumber": "(800) 235-3423",
     },
     {
-        "id": 99,
+        "id": 124,
         "question_text": "http://texaskingindopakrestaurant.com",
         "marks": 20,
         "city": "Plano",
@@ -370,7 +370,7 @@ CONTACTS = [
         "companyPhoneNumber": "972-517-5151",
     },
     {
-        "id": 100,
+        "id": 125,
         "question_text": "http://bentleymills.com",
         "marks": 20,
         "city": "City of Industry",
@@ -384,7 +384,7 @@ CONTACTS = [
         "companyPhoneNumber": "1 800-423-4709",
     },
     {
-        "id": 101,
+        "id": 126,
         "question_text": "http://behlenmfg.com",
         "marks": 20,
         "city": "Columbus",
@@ -398,7 +398,7 @@ CONTACTS = [
         "companyPhoneNumber": "(402) 564-3111",
     },
     {
-        "id": 102,
+        "id": 127,
         "question_text": "http://ballard.com/",
         "marks": 20,
         "city": "Burnaby",
@@ -412,7 +412,7 @@ CONTACTS = [
         "companyPhoneNumber": "1-604-454-900",
     },
     {
-        "id": 103,
+        "id": 128,
         "question_text": "http://avure.com",
         "marks": 20,
         "city": "Middletown",
@@ -426,21 +426,21 @@ CONTACTS = [
         "companyPhoneNumber": "1-513-433-2500",
     },
     {
-        "id": 104,
+        "id": 129,
         "question_text": "http://tebos.net",
         "marks": 20,
         "city": "Gladstone",
         "state": "OR",
         "zipCode": 97027,
         "websiteUrl": "http://tebos.net",
-        "companyName": "JC Tebo\u2019s Restaurant",
+        "companyName": "JC Tebo’s Restaurant",
         "facebookPage": "https://www.facebook.com/TebosRestaurant",
         "generalEmail": "jctebos@tebos.net",
         "streetAddress": "19120 S.E. McLoughlin Blvd.",
         "companyPhoneNumber": "503-655-6333",
     },
     {
-        "id": 105,
+        "id": 130,
         "question_text": "http://acmepizzaria.com",
         "marks": 20,
         "city": "Cottonwood",
@@ -454,7 +454,7 @@ CONTACTS = [
         "companyPhoneNumber": "(928) 634-ACME (2263)",
     },
     {
-        "id": 106,
+        "id": 131,
         "question_text": "http://antonsgreekrestaurant.com",
         "marks": 20,
         "city": "Albany",
@@ -468,21 +468,21 @@ CONTACTS = [
         "companyPhoneNumber": "518-453-9191",
     },
     {
-        "id": 107,
+        "id": 132,
         "question_text": "http://barryspizza.com",
         "marks": 20,
         "city": "Houston",
         "state": "TX",
         "zipCode": 77057,
         "websiteUrl": "http://barryspizza.com",
-        "companyName": "Barry\u2019s Pizza And Italian Diner",
+        "companyName": "Barry’s Pizza And Italian Diner",
         "facebookPage": "https://www.facebook.com/BarrysPizza/about",
         "generalEmail": "barryspizza@sbcglobal.net",
         "streetAddress": "6003 Richmond",
         "companyPhoneNumber": "713-266-8692",
     },
     {
-        "id": 108,
+        "id": 133,
         "question_text": "http://bettermypos.com/",
         "marks": 20,
         "city": "Las Vegas",
@@ -496,7 +496,7 @@ CONTACTS = [
         "companyPhoneNumber": "(702) 449-9384",
     },
     {
-        "id": 109,
+        "id": 134,
         "question_text": "http://bhr-sullivan.com/",
         "marks": 20,
         "city": "Rock Hill",
@@ -510,7 +510,7 @@ CONTACTS = [
         "companyPhoneNumber": "(845) 796-3333",
     },
     {
-        "id": 110,
+        "id": 135,
         "question_text": "http://brettscasualamerican.com/",
         "marks": 20,
         "city": "Athens",
@@ -524,7 +524,7 @@ CONTACTS = [
         "companyPhoneNumber": "706-850-1395",
     },
     {
-        "id": 111,
+        "id": 136,
         "question_text": "http://brianashville.com/",
         "marks": 20,
         "city": "Nashville",
@@ -538,7 +538,7 @@ CONTACTS = [
         "companyPhoneNumber": "615-646-8274",
     },
     {
-        "id": 112,
+        "id": 137,
         "question_text": "http://brix.com/",
         "marks": 20,
         "city": "Napa",
@@ -552,7 +552,7 @@ CONTACTS = [
         "companyPhoneNumber": "707.944.2749",
     },
     {
-        "id": 113,
+        "id": 138,
         "question_text": "http://discoveradams.com/",
         "marks": 20,
         "city": "North Port",
@@ -566,7 +566,7 @@ CONTACTS = [
         "companyPhoneNumber": "941.639.7188",
     },
     {
-        "id": 114,
+        "id": 139,
         "question_text": "http://adcomfg.com",
         "marks": 20,
         "city": "Sanger",
@@ -580,7 +580,7 @@ CONTACTS = [
         "companyPhoneNumber": "(559) 875-5563",
     },
     {
-        "id": 115,
+        "id": 140,
         "question_text": "http://afcosystems.com",
         "marks": 20,
         "city": "Farmingdale",
@@ -594,7 +594,7 @@ CONTACTS = [
         "companyPhoneNumber": "(631) 249-9441",
     },
     {
-        "id": 116,
+        "id": 141,
         "question_text": "https://www.reliasmedia.com",
         "marks": 20,
         "city": "Morrisville",
@@ -608,7 +608,7 @@ CONTACTS = [
         "companyPhoneNumber": "1-800-688-2421",
     },
     {
-        "id": 117,
+        "id": 142,
         "question_text": "http://almo.com",
         "marks": 20,
         "city": "Philadelphia",
@@ -622,7 +622,7 @@ CONTACTS = [
         "companyPhoneNumber": "(215) 698-4000",
     },
     {
-        "id": 118,
+        "id": 143,
         "question_text": "http://atfco.com/",
         "marks": 20,
         "city": "Cleveland",
@@ -636,7 +636,7 @@ CONTACTS = [
         "companyPhoneNumber": "(216) 252-1500",
     },
     {
-        "id": 119,
+        "id": 144,
         "question_text": "http://amuneal.com/",
         "marks": 20,
         "city": "Philadelphia",
@@ -650,7 +650,7 @@ CONTACTS = [
         "companyPhoneNumber": "(215) 535-3000",
     },
     {
-        "id": 120,
+        "id": 145,
         "question_text": "http://www.redyetijeff.com/",
         "marks": 20,
         "city": "Jeffersonville",
@@ -664,7 +664,7 @@ CONTACTS = [
         "companyPhoneNumber": "(812) 288-5788",
     },
     {
-        "id": 121,
+        "id": 146,
         "question_text": "http://simplerootsbrewing.com/",
         "marks": 20,
         "city": "Burlington",
@@ -681,228 +681,253 @@ CONTACTS = [
 
 LEADS = [
     {
-        "id": 122,
+        "id": 75,
         "question_text": "Blake Jarrett & Co",
         "marks": 10,
         "email": "blake@blakejarrett.ca",
         "website": "blakejarrett.ca",
         "designation": "CEO",
+        "company_name": "Blake Jarrett & Co",
         "contact_name": "Blake Jarrett",
     },
     {
-        "id": 123,
+        "id": 76,
         "question_text": "Beracah Homes, Inc.",
         "marks": 10,
         "email": "trent@beracahhomes.com",
         "website": "beracahhomes.com",
         "designation": "Contractor Sales",
+        "company_name": "Beracah Homes, Inc.",
         "contact_name": "Trent Collins",
     },
     {
-        "id": 124,
+        "id": 77,
         "question_text": "American Excelsior Company",
         "marks": 10,
         "email": "tsadowski@americanexcelsior.com",
         "website": "americanexcelsior.com",
         "designation": "President",
+        "company_name": "American Excelsior Company",
         "contact_name": "Terry Sadowski",
     },
     {
-        "id": 125,
+        "id": 78,
         "question_text": "Calgon Carbon Corporation",
         "marks": 10,
         "email": "dconley@calgoncarbon.com",
         "website": "calgoncarbon.com",
         "designation": "Marketing Manager- Municipal",
+        "company_name": "Calgon Carbon Corporation",
         "contact_name": "Doug Conley",
     },
     {
-        "id": 126,
+        "id": 79,
         "question_text": "American Tank & Fabricating Company",
         "marks": 10,
         "email": "tedt@atfco.com",
         "website": "atfco.com",
         "designation": "General Manager",
+        "company_name": "American Tank & Fabricating Company",
         "contact_name": "Ted Thorbjornsen",
     },
     {
-        "id": 127,
+        "id": 80,
         "question_text": "Paul Evans",
         "marks": 10,
         "email": "evan@paulevansny.com",
         "website": "paulevansny.com",
         "designation": "CEO",
+        "company_name": "Paul Evans",
         "contact_name": "Evan Fript",
     },
     {
-        "id": 128,
+        "id": 81,
         "question_text": "DanceFIT Studio, LLC",
         "marks": 10,
         "email": "gina@dancefitstudio.com",
         "website": "dancefitstudio.com",
         "designation": "Founder",
+        "company_name": "DanceFIT Studio, LLC",
         "contact_name": "Gina Fay",
     },
     {
-        "id": 129,
+        "id": 82,
         "question_text": "Portland Pedal Power LLC",
         "marks": 10,
         "email": "Jenn@portlandpedalpower.com",
         "website": "portlandpedalpower.com",
         "designation": "Founder",
+        "company_name": "Portland Pedal Power LLC",
         "contact_name": "Jenn Dederich",
     },
     {
-        "id": 130,
+        "id": 83,
         "question_text": "Milan Media Group",
         "marks": 10,
         "email": "reva@milanmediagroup.com",
         "website": "milanmediagroup.com",
         "designation": "Chief Executive Officer",
+        "company_name": "Milan Media Group",
         "contact_name": "Reva Caldwell-Johnson",
     },
     {
-        "id": 131,
+        "id": 84,
         "question_text": "Anitox Corp.",
         "marks": 10,
         "email": "rphillips@anitox.com",
         "website": "anitox.com",
         "designation": "CEO",
+        "company_name": "Anitox Corp.",
         "contact_name": "Rick Phillips",
     },
     {
-        "id": 132,
+        "id": 85,
         "question_text": "American Products, L.L.C.",
         "marks": 10,
         "email": "ssmith@amprod.us",
         "website": "amprod.us",
         "designation": "President",
+        "company_name": "American Products, L.L.C.",
         "contact_name": "Steven Smith",
     },
     {
-        "id": 133,
+        "id": 86,
         "question_text": "Rent frock Repeat",
         "marks": 10,
         "email": "lisa@rentfrockrepeat.com",
         "website": "rentfrockrepeat.com",
         "designation": "Founder",
+        "company_name": "Rent frock Repeat",
         "contact_name": "Lisa Delorme",
     },
     {
-        "id": 134,
+        "id": 87,
         "question_text": "Black Box Social Media, LLC",
         "marks": 10,
         "email": "tom@blackboxsocialmedia.com",
         "website": "blackboxsocialmedia.com",
         "designation": "CEO",
+        "company_name": "Black Box Social Media, LLC",
         "contact_name": "Tom Bukacek",
     },
     {
-        "id": 135,
+        "id": 88,
         "question_text": "Bombardier Recreational Products Inc.",
         "marks": 10,
         "email": "johanne.denault@brp.com",
         "website": "brp.com",
         "designation": "Manager, Corporate Communications",
+        "company_name": "Bombardier Recreational Products Inc.",
         "contact_name": "Johanne Denault",
     },
     {
-        "id": 136,
+        "id": 89,
         "question_text": "Broadwind Energy, Inc.",
         "marks": 10,
         "email": "brett.hartman@bwen.com",
         "website": "bwen.com",
         "designation": "Sales Engineer",
+        "company_name": "Broadwind Energy, Inc.",
         "contact_name": "Brett Hartman",
     },
     {
-        "id": 137,
+        "id": 90,
         "question_text": "Bluecat Networks Inc",
         "marks": 10,
         "email": "mharris@bluecatnetworks.com",
         "website": "bluecatnetworks.com",
         "designation": "CEO",
+        "company_name": "Bluecat Networks Inc",
         "contact_name": "Michael Harris",
     },
     {
-        "id": 138,
+        "id": 91,
         "question_text": "Block and Company, Inc.",
         "marks": 10,
         "email": "cbrugioni@blockinc.com",
         "website": "blockandcompany.com",
         "designation": "Creative Services & Marketing Communications",
+        "company_name": "Block and Company, Inc.",
         "contact_name": "Cindy Brugioni",
     },
     {
-        "id": 139,
+        "id": 92,
         "question_text": "Belt Power, LLC",
         "marks": 10,
         "email": "jshelton@beltpower.com",
         "website": "beltpower.com",
         "designation": "President",
+        "company_name": "Belt Power, LLC",
         "contact_name": "John Shelton",
     },
     {
-        "id": 140,
+        "id": 93,
         "question_text": "Amuneal Manufacturing Corp.",
         "marks": 10,
         "email": "adamk@amuneal.com",
         "website": "amuneal.com",
         "designation": "CEO",
+        "company_name": "Amuneal Manufacturing Corp.",
         "contact_name": "Adam Kamens",
     },
     {
-        "id": 141,
+        "id": 94,
         "question_text": "Almo Corporation",
         "marks": 10,
         "email": "wchaiken@almo.com",
         "website": "almo.com",
         "designation": "Chief Operating Officer",
+        "company_name": "Almo Corporation",
         "contact_name": "Warren Chaiken",
     },
     {
-        "id": 142,
+        "id": 95,
         "question_text": "Align Production Systems",
         "marks": 10,
         "email": "jstoecker@alignprod.com",
         "website": "alignproductionsystems.com",
         "designation": "CEO",
+        "company_name": "Align Production Systems",
         "contact_name": "Jason Stoecker",
     },
     {
-        "id": 143,
+        "id": 96,
         "question_text": "Active Power, Inc.",
         "marks": 10,
         "email": "johnpenver@activepower.com",
         "website": "https://www.activepower.com/en-GB",
         "designation": "Chief Financial Officer",
+        "company_name": "Active Power, Inc.",
         "contact_name": "John K. Penver",
     },
     {
-        "id": 144,
+        "id": 97,
         "question_text": "Engineering for Kids",
         "marks": 10,
         "email": "droberts@engineeringforkids.net",
         "website": "engineeringforkids.com",
         "designation": "CEO",
+        "company_name": "Engineering for Kids",
         "contact_name": "Dori Roberts",
     },
     {
-        "id": 145,
+        "id": 98,
         "question_text": "BTI Consulting, Inc.",
         "marks": 10,
         "email": "bruno@bti-consulting.net",
         "website": "bticonsulting.com",
         "designation": "Chief Executive Officer",
+        "company_name": "BTI Consulting, Inc.",
         "contact_name": "Bruno Tateossian",
     },
     {
-        "id": 146,
+        "id": 99,
         "question_text": "Photonova Studios",
         "marks": 10,
         "email": "Rick@photonovastudios.com",
         "website": "photonovastudios.com",
         "designation": "President",
+        "company_name": "Photonova Studios",
         "contact_name": "Rick Portanova",
     },
 ]
@@ -930,8 +955,7 @@ def seed_special_questions():
         user_id = user.id if user else 1
 
         # ─── 1. Lead Generation ───────────────────────────────────────────
-        print("
-🚀 Seeding Lead Generation questions...")
+        print("\n🚀 Seeding Lead Generation questions...")
         for lead in LEADS:
             q_text = lead["question_text"]
             marks = lead.get("marks", 10)
@@ -972,8 +996,7 @@ def seed_special_questions():
         db.commit()
 
         # ─── 2. Contact Details ────────────────────────────────────────────
-        print("
-🚀 Seeding Contact Details questions...")
+        print("\n🚀 Seeding Contact Details questions...")
         for contact in CONTACTS:
             q_text = contact["question_text"]
             marks = contact.get("marks", 20)
@@ -1014,8 +1037,7 @@ def seed_special_questions():
         db.commit()
 
         # ─── 3. Typing Test ────────────────────────────────────────────────
-        print("
-🚀 Seeding Typing Test questions...")
+        print("\n🚀 Seeding Typing Test questions...")
         for typing in TYPING_TESTS:
             q_text = typing["title"]
             marks = typing.get("marks", 10)
@@ -1051,8 +1073,7 @@ def seed_special_questions():
 
         db.commit()
 
-        print(f"
-✨ Special questions seeding complete!")
+        print(f"\n✨ Special questions seeding complete!")
         print(f"   Questions added  : {total_seeded}")
         print(f"   Questions updated: {total_updated}")
 

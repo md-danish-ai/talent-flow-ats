@@ -1,5 +1,5 @@
 # ruff: noqa
-# Auto-generated seed file from database on 2026-08-13 15:56:58
+# Auto-generated seed file from database on 2026-08-13 16:24:01
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,9 +23,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "15 years", "option_label": "A"}, {"is_correct": true, "option_text": "18 years", "option_label": "B"}, {"is_correct": false, "option_text": "20 years", "option_label": "C"}, {"is_correct": false, "option_text": "23 years", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "15 years", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "18 years", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "20 years", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "23 years", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -38,9 +38,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "230", "option_label": "A"}, {"is_correct": false, "option_text": "245", "option_label": "B"}, {"is_correct": true, "option_text": "255", "option_label": "C"}, {"is_correct": false, "option_text": "260", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "230", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "245", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "255", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "260", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -53,9 +53,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Rs. 80", "option_label": "A"}, {"is_correct": true, "option_text": "Rs. 100", "option_label": "B"}, {"is_correct": false, "option_text": "Rs. 120", "option_label": "C"}, {"is_correct": false, "option_text": "Rs. 150", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Rs. 80", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Rs. 100", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Rs. 120", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Rs. 150", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -68,9 +68,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "85 kg", "option_label": "A"}, {"is_correct": false, "option_text": "88 kg", "option_label": "B"}, {"is_correct": true, "option_text": "90 kg", "option_label": "C"}, {"is_correct": false, "option_text": "95 kg", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "85 kg", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "88 kg", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "90 kg", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "95 kg", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -83,9 +83,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Sparrow", "option_label": "A"}, {"is_correct": false, "option_text": "Eagle", "option_label": "B"}, {"is_correct": true, "option_text": "Ostrich", "option_label": "C"}, {"is_correct": false, "option_text": "Pigeon", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Sparrow", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Eagle", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "Ostrich", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Pigeon", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -98,9 +98,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "BDFH", "option_label": "A"}, {"is_correct": false, "option_text": "CEGI", "option_label": "B"}, {"is_correct": true, "option_text": "ILNP", "option_label": "C"}, {"is_correct": false, "option_text": "MOQS", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "BDFH", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "CEGI", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "ILNP", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "MOQS", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -113,9 +113,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "115", "option_label": "A"}, {"is_correct": false, "option_text": "120", "option_label": "B"}, {"is_correct": true, "option_text": "125", "option_label": "C"}, {"is_correct": false, "option_text": "130", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "115", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "120", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "125", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "130", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -130,7 +130,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "1 year", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "2 years", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "30 years", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "Data inadequate", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -143,9 +143,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": true, "option_text": "$2,475", "option_label": "A"}, {"is_correct": false, "option_text": "$2,500", "option_label": "B"}, {"is_correct": false, "option_text": "$2,600", "option_label": "C"}, {"is_correct": false, "option_text": "$2,700", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": true, "option_text": "$2,475", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "$2,500", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "$2,600", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "$2,700", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -160,7 +160,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "16", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "18", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "20", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "22", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -175,7 +175,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "0.1", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "0.125", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "0.15", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "0.08", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -190,7 +190,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "15 km", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "18 km", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "20 km", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "21 km", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -205,7 +205,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "Brother", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Nephew", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Cousin", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Son", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -220,7 +220,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "x = 3 and y = 8", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "x = 4 and y = 7", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "x = 5 and y = 6", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "x = 2 and y = 9", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -235,7 +235,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "6", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "6.2", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "6.4", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "6.6", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -250,7 +250,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "70 years", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "72 years", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "75 years", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "78 years", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -263,9 +263,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Withdrawing money directly from a savings account", "option_label": "A"}, {"is_correct": true, "option_text": "Borrowing money from the bank up to a set limit", "option_label": "B"}, {"is_correct": false, "option_text": "Transferring money instantly between two banks free of cost", "option_label": "C"}, {"is_correct": false, "option_text": "None of the above", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Withdrawing money directly from a savings account", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Borrowing money from the bank up to a set limit", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Transferring money instantly between two banks free of cost", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of the above", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -278,9 +278,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Zomato", "option_label": "A"}, {"is_correct": false, "option_text": "Swiggy", "option_label": "B"}, {"is_correct": false, "option_text": "DoorDash", "option_label": "C"}, {"is_correct": true, "option_text": "None of these", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Zomato", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Swiggy", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "DoorDash", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "None of these", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -293,9 +293,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Croissant", "option_label": "A"}, {"is_correct": false, "option_text": "Bagel", "option_label": "B"}, {"is_correct": false, "option_text": "Baguette", "option_label": "C"}, {"is_correct": true, "option_text": "Risotto", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Croissant", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Bagel", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Baguette", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "Risotto", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -308,9 +308,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Kid's Meal", "option_label": "A"}, {"is_correct": true, "option_text": "Family Combo", "option_label": "B"}, {"is_correct": false, "option_text": "Solo Meal", "option_label": "C"}, {"is_correct": false, "option_text": "Executive Meal", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Kid's Meal", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Family Combo", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Solo Meal", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Executive Meal", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -323,9 +323,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": true, "option_text": "Prosecco", "option_label": "A"}, {"is_correct": false, "option_text": "Sake", "option_label": "B"}, {"is_correct": false, "option_text": "Whisky", "option_label": "C"}, {"is_correct": false, "option_text": "Vodka", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": true, "option_text": "Prosecco", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Sake", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Whisky", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Vodka", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -338,9 +338,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Burger King", "option_label": "A"}, {"is_correct": false, "option_text": "KFC", "option_label": "B"}, {"is_correct": true, "option_text": "McDonald's", "option_label": "C"}, {"is_correct": false, "option_text": "Subway", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Burger King", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "KFC", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "McDonald's", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Subway", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -355,7 +355,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "E-governance", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "E-commerce", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "E-marketing", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "E-procurement", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -370,7 +370,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "Postal delivery", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Electronic/digital delivery", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Courier service", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of the above", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -385,7 +385,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "True", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "False", "option_label": "B"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -400,7 +400,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "Amazon", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Nykaa", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "BigBasket", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "A railway station ticket counter", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -415,7 +415,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "A discounted price offered before peak hours", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "A time when the restaurant is closed", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "A special menu only for breakfast", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of the above", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -424,13 +424,13 @@ QUESTIONS_DATA = [
         "question_type": "MULTIPLE_CHOICE",
         "subject_type": "INDUSTRY_AWARENESS",
         "exam_level": "FRESHER",
-        "question_text": "Hollandaise, B\u00e9chamel and Marinara are types of:",
+        "question_text": "Hollandaise, Béchamel and Marinara are types of:",
         "image_url": null,
         "passage": null,
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "Sauces", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Breads", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Desserts", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Beverages", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -445,7 +445,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": false, "option_text": "China", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Japan", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Thailand", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Korea", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -460,7 +460,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "A wine with added distilled spirit, increasing its alcohol content", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "A wine stored in a fortified cellar", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "A wine made only from fortified grapes", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of the above", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -475,7 +475,7 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "A percentage of the purchase amount returned to the buyer after the transaction", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "An additional fee charged for using cash", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "A loan given at the time of purchase", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of these", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -484,13 +484,13 @@ QUESTIONS_DATA = [
         "question_type": "MULTIPLE_CHOICE",
         "subject_type": "INDUSTRY_AWARENESS",
         "exam_level": "FRESHER",
-        "question_text": "The term 'table d'h\u00f4te' refers to:",
+        "question_text": "The term 'table d'hôte' refers to:",
         "image_url": null,
         "passage": null,
         "marks": 1,
         "options": [{"image_url": null, "is_correct": true, "option_text": "A fixed-price meal with limited choices offered at a set price", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "A meal that must be custom ordered", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "A free meal offered by the host", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "None of the above", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -503,9 +503,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "will finish", "option_label": "A"}, {"is_correct": true, "option_text": "will have finished", "option_label": "B"}, {"is_correct": false, "option_text": "finish", "option_label": "C"}, {"is_correct": false, "option_text": "are finishing", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "will finish", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "will have finished", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "finish", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "are finishing", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -518,9 +518,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": true, "option_text": "could", "option_label": "A"}, {"is_correct": false, "option_text": "can", "option_label": "B"}, {"is_correct": false, "option_text": "would", "option_label": "C"}, {"is_correct": false, "option_text": "should", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": true, "option_text": "could", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "can", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "would", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "should", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "A",
         "explanation": "nan"
     },
@@ -533,9 +533,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Scarce", "option_label": "A"}, {"is_correct": true, "option_text": "Plentiful", "option_label": "B"}, {"is_correct": false, "option_text": "Meager", "option_label": "C"}, {"is_correct": false, "option_text": "Sparse", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Scarce", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Plentiful", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Meager", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Sparse", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -548,9 +548,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "rejecting", "option_label": "A"}, {"is_correct": false, "option_text": "is rejected", "option_label": "B"}, {"is_correct": false, "option_text": "has been rejected", "option_label": "C"}, {"is_correct": true, "option_text": "Either B or C", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "rejecting", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "is rejected", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "has been rejected", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "Either B or C", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -563,9 +563,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "have met", "option_label": "A"}, {"is_correct": false, "option_text": "had meet", "option_label": "B"}, {"is_correct": true, "option_text": "met", "option_label": "C"}, {"is_correct": false, "option_text": "meet", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "have met", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "had meet", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "met", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "meet", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -578,9 +578,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "had never drink", "option_label": "A"}, {"is_correct": false, "option_text": "has never drink", "option_label": "B"}, {"is_correct": true, "option_text": "never drinks", "option_label": "C"}, {"is_correct": false, "option_text": "Never she drinks", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "had never drink", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "has never drink", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "never drinks", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Never she drinks", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -593,9 +593,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": null,
         "marks": 1,
-        "options": [{"is_correct": false, "option_text": "Have you wish to", "option_label": "A"}, {"is_correct": true, "option_text": "Would you like to", "option_label": "B"}, {"is_correct": false, "option_text": "Do you wish to", "option_label": "C"}, {"is_correct": false, "option_text": "Will you wish to", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Have you wish to", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Would you like to", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Do you wish to", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Will you wish to", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -610,9 +610,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Sincerity",
-        "explanation": "nan"
+        "explanation": "Sincerity"
     },
     {
         "id": 41,
@@ -625,9 +625,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Fortunate",
-        "explanation": "nan"
+        "explanation": "Fortunate"
     },
     {
         "id": 42,
@@ -640,9 +640,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Beyond",
-        "explanation": "nan"
+        "explanation": "Beyond"
     },
     {
         "id": 43,
@@ -655,9 +655,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Incidence",
-        "explanation": "nan"
+        "explanation": "Incidence"
     },
     {
         "id": 44,
@@ -670,9 +670,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Argument",
-        "explanation": "nan"
+        "explanation": "Argument"
     },
     {
         "id": 45,
@@ -685,9 +685,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Historic",
-        "explanation": "nan"
+        "explanation": "Historic"
     },
     {
         "id": 46,
@@ -700,9 +700,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Essential",
-        "explanation": "nan"
+        "explanation": "Essential"
     },
     {
         "id": 47,
@@ -715,9 +715,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Milestone",
-        "explanation": "nan"
+        "explanation": "Milestone"
     },
     {
         "id": 48,
@@ -730,9 +730,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Preferred",
-        "explanation": "nan"
+        "explanation": "Preferred"
     },
     {
         "id": 49,
@@ -745,9 +745,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Empower",
-        "explanation": "nan"
+        "explanation": "Empower"
     },
     {
         "id": 50,
@@ -760,9 +760,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Optimistic",
-        "explanation": "nan"
+        "explanation": "Optimistic"
     },
     {
         "id": 51,
@@ -775,9 +775,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Compute",
-        "explanation": "nan"
+        "explanation": "Compute"
     },
     {
         "id": 52,
@@ -790,9 +790,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Reliable",
-        "explanation": "nan"
+        "explanation": "Reliable"
     },
     {
         "id": 53,
@@ -805,9 +805,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Ahead",
-        "explanation": "nan"
+        "explanation": "Ahead"
     },
     {
         "id": 54,
@@ -820,9 +820,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Benchmark",
-        "explanation": "nan"
+        "explanation": "Benchmark"
     },
     {
         "id": 55,
@@ -835,9 +835,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "When will you finish the project?",
-        "explanation": "nan"
+        "explanation": "When will you finish the project?"
     },
     {
         "id": 56,
@@ -850,9 +850,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "What are you doing here?",
-        "explanation": "nan"
+        "explanation": "What are you doing here?"
     },
     {
         "id": 57,
@@ -865,9 +865,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Exercise is essential for good health.",
-        "explanation": "nan"
+        "explanation": "Exercise is essential for good health."
     },
     {
         "id": 58,
@@ -880,9 +880,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Why has the flight been delayed?",
-        "explanation": "nan"
+        "explanation": "Why has the flight been delayed?"
     },
     {
         "id": 59,
@@ -895,9 +895,9 @@ QUESTIONS_DATA = [
         "marks": 4,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Who led the winning team?",
-        "explanation": "nan"
+        "explanation": "Who led the winning team?"
     },
     {
         "id": 60,
@@ -910,9 +910,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "How long do we need to wait here?",
-        "explanation": "nan"
+        "explanation": "How long do we need to wait here?"
     },
     {
         "id": 61,
@@ -925,9 +925,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "The product was set to launch next week.",
-        "explanation": "nan"
+        "explanation": "The product was set to launch next week."
     },
     {
         "id": 62,
@@ -940,9 +940,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "If you want to achieve success, don't give up.",
-        "explanation": "nan"
+        "explanation": "If you want to achieve success, don't give up."
     },
     {
         "id": 63,
@@ -955,9 +955,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "The boy looked up at the vast blue sky and admired the stars.",
-        "explanation": "nan"
+        "explanation": "The boy looked up at the vast blue sky and admired the stars."
     },
     {
         "id": 64,
@@ -970,9 +970,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "So he treated his sprained ankle quickly.",
-        "explanation": "nan"
+        "explanation": "So he treated his sprained ankle quickly."
     },
     {
         "id": 65,
@@ -985,9 +985,9 @@ QUESTIONS_DATA = [
         "marks": 1,
         "options": [],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "Everyone rushed to see what was going on.",
-        "explanation": "nan"
+        "explanation": "Everyone rushed to see what was going on."
     },
     {
         "id": 66,
@@ -998,9 +998,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "It allowed telegraph operators to work at night", "option_label": "A"}, {"is_correct": true, "option_text": "It enabled daily life to continue after sunset", "option_label": "B"}, {"is_correct": false, "option_text": "It made Edison a wealthy businessman", "option_label": "C"}, {"is_correct": false, "option_text": "It helped factories reduce production costs", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "It allowed telegraph operators to work at night", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "It enabled daily life to continue after sunset", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "It made Edison a wealthy businessman", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "It helped factories reduce production costs", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -1013,9 +1013,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "His formal schooling", "option_label": "A"}, {"is_correct": false, "option_text": "His work as a telegraph operator", "option_label": "B"}, {"is_correct": true, "option_text": "His persistence despite repeated failures", "option_label": "C"}, {"is_correct": false, "option_text": "Support from the government", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "His formal schooling", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "His work as a telegraph operator", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "His persistence despite repeated failures", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Support from the government", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -1028,9 +1028,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "Relying purely on natural talent", "option_label": "A"}, {"is_correct": false, "option_text": "Learning solely from his teachers", "option_label": "B"}, {"is_correct": true, "option_text": "Persistent experimentation despite setbacks", "option_label": "C"}, {"is_correct": false, "option_text": "Following instructions from mentors", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Relying purely on natural talent", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Learning solely from his teachers", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "Persistent experimentation despite setbacks", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Following instructions from mentors", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -1043,9 +1043,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "Determined", "option_label": "A"}, {"is_correct": false, "option_text": "Tenacious", "option_label": "B"}, {"is_correct": false, "option_text": "Unwavering", "option_label": "C"}, {"is_correct": true, "option_text": "Fickle", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Determined", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Tenacious", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Unwavering", "option_label": "C"}, {"image_url": null, "is_correct": true, "option_text": "Fickle", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "D",
         "explanation": "nan"
     },
@@ -1058,9 +1058,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "Inquisitive", "option_label": "A"}, {"is_correct": true, "option_text": "Indifferent", "option_label": "B"}, {"is_correct": false, "option_text": "Eager", "option_label": "C"}, {"is_correct": false, "option_text": "Attentive", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Inquisitive", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Indifferent", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Eager", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Attentive", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -1075,7 +1075,7 @@ QUESTIONS_DATA = [
         "marks": 2,
         "options": [{"image_url": null, "is_correct": false, "option_text": "Cunning", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Naive", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Sharp", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Clever", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -1088,9 +1088,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "Damage severely", "option_label": "A"}, {"is_correct": true, "option_text": "Change completely", "option_label": "B"}, {"is_correct": false, "option_text": "Remain constant", "option_label": "C"}, {"is_correct": false, "option_text": "Slow down", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Damage severely", "option_label": "A"}, {"image_url": null, "is_correct": true, "option_text": "Change completely", "option_label": "B"}, {"image_url": null, "is_correct": false, "option_text": "Remain constant", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Slow down", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "B",
         "explanation": "nan"
     },
@@ -1103,9 +1103,9 @@ QUESTIONS_DATA = [
         "image_url": null,
         "passage": "Darkness had ruled the night for centuries until a persistent inventor in Menlo Park decided otherwise. Thomas Alva Edison, born in Ohio in 1847, was a curious child who was often labelled as inattentive by his teachers. His mother, a former schoolteacher, took charge of his education at home, nurturing his love for experimentation. As a young man, Edison worked as a telegraph operator, but his real passion lay in tinkering with machines during his free hours. He believed that persistence, more than genius, was the key to invention. After thousands of failed attempts with different filament materials, Edison finally succeeded in 1879 in creating a carbon filament bulb that could glow for over thirteen hours. This breakthrough transformed daily life, allowing factories, homes and streets to be lit long after sunset. Edison was not only an inventor but also a shrewd businessman; he established the Edison Electric Light Company to bring his invention to ordinary households. He held over a thousand patents by the end of his life and remained devoted to experimentation until his final years. When he passed away in 1931, several cities across the United States dimmed their lights briefly in his honour, a quiet tribute to the man who had once lit up the world.",
         "marks": 2,
-        "options": [{"is_correct": false, "option_text": "Contempt", "option_label": "A"}, {"is_correct": false, "option_text": "Suspicion", "option_label": "B"}, {"is_correct": true, "option_text": "High regard", "option_label": "C"}, {"is_correct": false, "option_text": "Fear", "option_label": "D"}],
+        "options": [{"image_url": null, "is_correct": false, "option_text": "Contempt", "option_label": "A"}, {"image_url": null, "is_correct": false, "option_text": "Suspicion", "option_label": "B"}, {"image_url": null, "is_correct": true, "option_text": "High regard", "option_label": "C"}, {"image_url": null, "is_correct": false, "option_text": "Fear", "option_label": "D"}],
         "is_active": true,
-        "created_by": 2,
+        "created_by": 1,
         "answer_text": "C",
         "explanation": "nan"
     },
@@ -1120,13 +1120,13 @@ def seed_questions():
         for item in QUESTIONS_DATA:
             existing = db.query(Question).filter(Question.id == item["id"]).first()
             if existing:
-                existing.question_type = item["question_type"]
-                existing.subject_type = item["subject_type"]
-                existing.exam_level = item["exam_level"]
-                existing.question_text = item["question_text"]
+                existing.question_type = item.get("question_type")
+                existing.subject_type = item.get("subject_type")
+                existing.exam_level = item.get("exam_level")
+                existing.question_text = item.get("question_text")
                 existing.image_url = item.get("image_url")
                 existing.passage = item.get("passage")
-                existing.marks = item.get("marks", 5)
+                existing.marks = item.get("marks")
                 existing.options = item.get("options")
                 flag_modified(existing, "options")
                 existing.is_active = item.get("is_active", True)
