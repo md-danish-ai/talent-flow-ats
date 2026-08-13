@@ -41,35 +41,38 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
   const educationOptions = React.useMemo(() => {
     const apiOptions = (educationRes?.data || []).map((c: { name: string }) => {
-      let id = c.name;
-      let label = c.name;
-
-      // Map backend values to our internal constants to avoid duplicates
-      if (c.name === "10th / High School" || c.name === "10th Std") {
-        id = "10th Std";
-        label = "10th / High School";
-      } else if (c.name === "12th / Intermediate" || c.name === "12th Std") {
-        id = "12th Std";
-        label = "12th / Intermediate";
-      }
-
-      return { id, label };
+      return { id: c.name, label: c.name };
     });
 
-    // Ensure 10th and 12th Std exist even before loading finishes
+    // Ensure 10th / High School, 12th / Intermediate, and Graduation exist even before loading finishes
     if (
       !apiOptions.some(
-        (o: { id: string; label: string }) => o.id === "10th Std",
+        (o: { id: string; label: string }) =>
+          o.id === "10th / High School" || o.id === "10th Std",
       )
     ) {
-      apiOptions.unshift({ id: "10th Std", label: "10th / High School" });
+      apiOptions.unshift({
+        id: "10th / High School",
+        label: "10th / High School",
+      });
     }
     if (
       !apiOptions.some(
-        (o: { id: string; label: string }) => o.id === "12th Std",
+        (o: { id: string; label: string }) =>
+          o.id === "12th / Intermediate" || o.id === "12th Std",
       )
     ) {
-      apiOptions.splice(1, 0, { id: "12th Std", label: "12th / Intermediate" });
+      apiOptions.splice(1, 0, {
+        id: "12th / Intermediate",
+        label: "12th / Intermediate",
+      });
+    }
+    if (
+      !apiOptions.some(
+        (o: { id: string; label: string }) => o.id === "Graduation",
+      )
+    ) {
+      apiOptions.splice(2, 0, { id: "Graduation", label: "Graduation" });
     }
     return apiOptions;
   }, [educationRes]);
@@ -86,7 +89,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
           {([education]) => (
             <React.Fragment>
               {education.map((item: Education, index: number) => {
-                const isMandatory = index < 2;
+                const isMandatory = index < 3;
                 const isEducationSelected = Boolean(
                   item.type &&
                   (isLoadingEducation ||
@@ -104,6 +107,19 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                 const headerTitle = selectedLabel
                   ? `Education - ${selectedLabel}`
                   : `Education ${index + 1}`;
+                const isSchool =
+                  item.type === "10th / High School" ||
+                  item.type === "10th Std" ||
+                  item.type === "12th / Intermediate" ||
+                  item.type === "12th Std";
+                const currentYear = new Date().getFullYear();
+                const endYrNum = parseInt(item.endYear || "", 10);
+                const isFutureEndYear =
+                  !isNaN(endYrNum) && endYrNum > currentYear;
+                const isPercentageRequired =
+                  (isMandatory || isEducationSelected) &&
+                  (isSchool || !isFutureEndYear);
+
                 return (
                   <div
                     key={item.id ? `edu-${item.id}-${index}` : `edu-${index}`}
@@ -388,7 +404,13 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                             {item.gradingType === "CGPA"
                               ? "(Out of 10)"
                               : "(%)"}{" "}
-                            <span className="text-red-500">*</span>
+                            {isPercentageRequired ? (
+                              <span className="text-red-500">*</span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (Optional)
+                              </span>
+                            )}
                           </label>
                           <form.Field name={`education[${index}].gradingType`}>
                             {(typeField) => (

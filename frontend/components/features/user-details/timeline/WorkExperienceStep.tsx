@@ -364,7 +364,9 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
                             Reason of Leaving{" "}
-                            <span className="text-red-500">*</span>
+                            <span className="text-[10px] text-muted-foreground font-normal">
+                              (Optional)
+                            </span>
                           </label>
                           <form.Field name={`workExp[${index}].reason`}>
                             {(field) => (

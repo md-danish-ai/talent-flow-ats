@@ -28,7 +28,7 @@ export function SubmitModal({
               <X size={48} className="text-red-500" />
             </div>
 
-            <div className="text-center space-y-3 mb-8">
+            <div className="text-center space-y-2 mb-6 w-full">
               <Typography
                 variant="h2"
                 weight="bold"
@@ -36,29 +36,38 @@ export function SubmitModal({
               >
                 Incomplete Details
               </Typography>
-              <Typography
-                variant="body1"
-                className="text-muted-foreground px-4"
-              >
+              <Typography variant="body2" className="text-muted-foreground">
                 Please complete the following timelines before submitting:
-                <br />
-                <span className="font-semibold text-red-600">
-                  {incompleteSteps
-                    .map((step) => {
-                      const stepNames: Record<number, string> = {
-                        1: "Personal Details",
-                        2: "Additional Personal Details",
-                        3: "Family Details",
-                        4: "Source of Information",
-                        5: "Education Details",
-                        6: "Work Experience",
-                        7: "Other Details",
-                      };
-                      return stepNames[step] || `Timeline ${step}`;
-                    })
-                    .join(", ")}
-                </span>
               </Typography>
+
+              <div className="mt-4 p-4 rounded-2xl bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 text-left w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {incompleteSteps.map((step) => {
+                    const stepNames: Record<number, string> = {
+                      1: "Personal Details",
+                      2: "Additional Personal Details",
+                      3: "Family Details",
+                      4: "Source of Information",
+                      5: "Education Details",
+                      6: "Work Experience",
+                      7: "Other Details",
+                    };
+                    return (
+                      <div
+                        key={step}
+                        className="flex items-center gap-2.5 p-2.5 rounded-xl bg-background/80 dark:bg-slate-900/60 border border-red-500/15 shadow-sm"
+                      >
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 text-xs font-bold shrink-0">
+                          {step}
+                        </span>
+                        <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                          {stepNames[step] || `Timeline ${step}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-4">

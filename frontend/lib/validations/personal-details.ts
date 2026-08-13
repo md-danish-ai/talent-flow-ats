@@ -188,7 +188,12 @@ export const educationSchema = z
     gradingType: z.string().default("Percentage"),
   })
   .superRefine((data, ctx) => {
-    const isMandatory = data.type === "10th Std" || data.type === "12th Std";
+    const isMandatory =
+      data.type === "10th / High School" ||
+      data.type === "12th / Intermediate" ||
+      data.type === "10th Std" ||
+      data.type === "12th Std" ||
+      data.type === "Graduation";
     const hasDetails =
       data.type.trim() !== "" ||
       data.school.trim() !== "" ||
@@ -237,13 +242,27 @@ export const educationSchema = z
           message: "End Year required",
           path: ["endYear"],
         });
-      // Division field is optional (Point 13)
+      // Percentage field condition:
+      // For higher education after 12th (e.g., Graduation, Post Graduation), if endYear is in the future (> current year),
+      // percentage is NOT required. Otherwise (10th/12th or past/current endYear), percentage is required.
+      const isSchool =
+        data.type === "10th / High School" ||
+        data.type === "10th Std" ||
+        data.type === "12th / Intermediate" ||
+        data.type === "12th Std";
+      const currentYear = new Date().getFullYear();
+      const endYr = parseInt(data.endYear, 10);
+      const isFutureEndYear = !isNaN(endYr) && endYr > currentYear;
+      const isPercentageRequired = isSchool || !isFutureEndYear;
+
       if (data.percentage.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${data.gradingType || "Percentage"} required`,
-          path: ["percentage"],
-        });
+        if (isPercentageRequired) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${data.gradingType || "Percentage"} required`,
+            path: ["percentage"],
+          });
+        }
       } else {
         const num = parseFloat(data.percentage.replace("%", "").trim());
         if (isNaN(num)) {
@@ -329,12 +348,6 @@ export const workExperienceSchema = z
           code: z.ZodIssueCode.custom,
           message: "Relieve date required",
           path: ["relieveDate"],
-        });
-      if (data.reason.trim() === "")
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Reason required",
-          path: ["reason"],
         });
       if (data.salary.trim() === "")
         ctx.addIssue({

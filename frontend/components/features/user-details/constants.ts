@@ -111,7 +111,19 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   education: [
     {
       id: 1,
-      type: "10th Std",
+      type: "10th / High School",
+      school: "",
+      board: "",
+      startYear: "",
+      endYear: "",
+      division: "",
+      percentage: "",
+      medium: "",
+      details: "All Subjects",
+    },
+    {
+      id: 2,
+      type: "12th / Intermediate",
       school: "",
       board: "",
       startYear: "",
@@ -122,8 +134,8 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       details: "",
     },
     {
-      id: 2,
-      type: "12th Std",
+      id: 3,
+      type: "Graduation",
       school: "",
       board: "",
       startYear: "",
@@ -257,7 +269,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
   education: [
     {
       id: 1,
-      type: "10th Std",
+      type: "10th / High School",
       school: "St. Anselm's Sr Sec School",
       board: "CBSE",
       startYear: "2010",
@@ -269,7 +281,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
     },
     {
       id: 2,
-      type: "12th Std",
+      type: "12th / Intermediate",
       school: "Government Sr Sec School",
       board: "RBSE",
       startYear: "2012",
@@ -281,18 +293,6 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
     },
     {
       id: 3,
-      type: "Diploma",
-      school: "Government Polytechnic College Ajmer",
-      board: "BTER",
-      startYear: "2013",
-      endYear: "2015",
-      division: "First",
-      percentage: "82",
-      medium: "English",
-      details: "Diploma Computer Engineering",
-    },
-    {
-      id: 4,
       type: "Graduation",
       school: "Engineering College Ajmer",
       board: "RTU Kota",
@@ -304,7 +304,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       details: "B.Tech Computer Science",
     },
     {
-      id: 5,
+      id: 4,
       type: "Post Graduation",
       school: "MNIT Jaipur",
       board: "MNIT",
