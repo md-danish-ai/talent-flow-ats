@@ -137,9 +137,14 @@ def generate_seed_questions(questions):
         "null = None",
         "",
         "from app.database.db import SessionLocal",
+        "from app.users.models import User  # needed for FK resolution",
         "from app.questions.models import Question",
         "from app.answer.models import QuestionAnswer",
+        "from app.classifications.models import Classification  # needed for FK resolution",
+        "from app.departments.models import Department  # needed for FK resolution",
         "from sqlalchemy.orm.attributes import flag_modified",
+
+
         "",
         "QUESTIONS_DATA = [",
     ]
