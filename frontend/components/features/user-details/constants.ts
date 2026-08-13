@@ -120,6 +120,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "All Subjects",
+      isPursuing: false,
     },
     {
       id: 2,
@@ -132,6 +133,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "",
+      isPursuing: false,
     },
     {
       id: 3,
@@ -144,6 +146,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       percentage: "",
       medium: "",
       details: "",
+      isPursuing: false,
     },
   ],
   workExp: [
@@ -156,6 +159,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
       relieveDate: "",
       reason: "",
       salary: "",
+      isPresent: false,
     },
   ],
   serviceCommitment: "",
@@ -278,6 +282,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "88",
       medium: "English",
       details: "Science & Math",
+      isPursuing: false,
     },
     {
       id: 2,
@@ -290,6 +295,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "86",
       medium: "English",
       details: "Physics, Chemistry, Math",
+      isPursuing: false,
     },
     {
       id: 3,
@@ -302,6 +308,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.2",
       medium: "English",
       details: "B.Tech Computer Science",
+      isPursuing: false,
     },
     {
       id: 4,
@@ -314,6 +321,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.6",
       medium: "English",
       details: "M.Tech Data Science",
+      isPursuing: false,
     },
     {
       id: 6,
@@ -326,6 +334,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       percentage: "9.8",
       medium: "English",
       details: "Ph.D Artificial Intelligence",
+      isPursuing: false,
     },
   ],
   workExp: [
@@ -338,6 +347,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2021-06-30",
       reason: "Better Opportunity",
       salary: "35000",
+      isPresent: false,
     },
     {
       id: 2,
@@ -348,6 +358,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2022-08-31",
       reason: "Relocation",
       salary: "50000",
+      isPresent: false,
     },
     {
       id: 3,
@@ -358,6 +369,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2023-11-30",
       reason: "Role Enhancement",
       salary: "70000",
+      isPresent: false,
     },
     {
       id: 4,
@@ -368,6 +380,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2025-01-31",
       reason: "Higher Responsibilities",
       salary: "90000",
+      isPresent: false,
     },
     {
       id: 5,
@@ -378,6 +391,7 @@ export const defaultPersonalDetailsValues2: PersonalDetailsFormValues = {
       relieveDate: "2026-07-31",
       reason: "Career Growth",
       salary: "120000",
+      isPresent: false,
     },
   ],
   serviceCommitment: "Yes",

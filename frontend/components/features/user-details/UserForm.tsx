@@ -153,6 +153,7 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
       percentage: sanitizeStr(item.percentage),
       medium: sanitizeStr(item.medium),
       details: sanitizeStr(item.details),
+      isPursuing: Boolean(item.isPursuing),
     };
   }) as Education[];
 
@@ -223,6 +224,7 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
         relieveDate: "",
         reason: "",
         salary: "",
+        isPresent: false,
       },
     ];
   }
@@ -239,6 +241,7 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
       relieveDate: sanitizeStr(item.relieveDate),
       reason: sanitizeStr(item.reason),
       salary: sanitizeStr(item.salary),
+      isPresent: Boolean(item.isPresent),
     };
   }) as WorkExperience[];
 };
@@ -460,7 +463,11 @@ export function UserForm({
           type: edu.type,
           school: edu.school,
           board: edu.board,
-          year: `${edu.startYear}-${edu.endYear}`,
+          year: edu.isPursuing
+            ? edu.startYear
+              ? `${edu.startYear}-Pursuing`
+              : "Pursuing"
+            : `${edu.startYear}-${edu.endYear}`,
           division: edu.division,
           percentage: edu.percentage,
           medium: edu.medium,

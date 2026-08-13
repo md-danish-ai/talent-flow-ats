@@ -59,6 +59,7 @@ export interface EducationDetail {
   percentage: string;
   medium: string;
   details: string;
+  isPursuing?: boolean;
 }
 
 export interface WorkExperienceDetail {
@@ -70,6 +71,7 @@ export interface WorkExperienceDetail {
   relieveDate: string;
   reason: string;
   salary: string;
+  isPresent?: boolean;
 }
 
 export interface OtherDetails {

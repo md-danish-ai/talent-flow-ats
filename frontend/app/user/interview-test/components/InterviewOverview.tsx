@@ -45,9 +45,10 @@ export function InterviewOverview({
   const instructionItems: ReactNode[] = [
     <>
       <span className="font-semibold">Sequential Navigation:</span> Use only the{" "}
-      <span className="text-brand-primary font-medium italic">Previous</span>{" "}
-      and{" "}
+      <span className="text-brand-primary font-medium italic">Previous</span>,{" "}
       <span className="text-brand-primary font-medium italic">Save & Next</span>{" "}
+      and{" "}
+      <span className="text-brand-primary font-medium italic">Submit Test</span>{" "}
       buttons for navigation. Direct section jumping is disabled.
     </>,
     <>
@@ -91,35 +92,7 @@ export function InterviewOverview({
 
       <div className="relative z-10 space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge
-              shape="square"
-              variant="outline"
-              color="primary"
-              icon={
-                <Sparkles
-                  size={12}
-                  className="opacity-80 animate-pulse duration-1000"
-                />
-              }
-              className="font-bold shadow-sm shadow-brand-primary/10"
-            >
-              Interview Module
-            </Badge>
-            <Badge
-              shape="square"
-              variant="outline"
-              color="default"
-              icon={
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-              }
-              className="font-bold bg-background/50 backdrop-blur-sm"
-            >
-              Live Session
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto order-2 sm:order-1">
             <Link href="/user/dashboard" className="flex-1 sm:flex-none">
               <Button
                 size="md"
@@ -153,6 +126,34 @@ export function InterviewOverview({
             >
               Start Interview
             </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 order-1 sm:order-2">
+            <Badge
+              shape="square"
+              variant="outline"
+              color="primary"
+              icon={
+                <Sparkles
+                  size={12}
+                  className="opacity-80 animate-pulse duration-1000"
+                />
+              }
+              className="font-bold shadow-sm shadow-brand-primary/10"
+            >
+              Interview Module
+            </Badge>
+            <Badge
+              shape="square"
+              variant="outline"
+              color="default"
+              icon={
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+              }
+              className="font-bold bg-background/50 backdrop-blur-sm"
+            >
+              Live Session
+            </Badge>
           </div>
         </div>
 
