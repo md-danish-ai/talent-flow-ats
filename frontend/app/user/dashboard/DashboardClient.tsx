@@ -232,16 +232,26 @@ export function DashboardClient({
                     : "Status: Restricted. Supplemental data required to authorize assessment phase."}
                 </Typography>
 
-                {isDetailsComplete && (
+                {isDetailsComplete ? (
                   <Link
                     href="/user/profile"
                     className="w-full relative z-10 mb-10"
                   >
-                    <button className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-brand-primary text-brand-primary font-black text-xs uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10">
+                    <button className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-brand-primary text-brand-primary font-black text-xs uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10 cursor-pointer">
                       Submission Details
                       <ArrowRight className="h-4 w-4" />
                     </button>
                   </Link>
+                ) : (
+                  <div className="w-full relative z-10 mb-10">
+                    <button
+                      disabled
+                      className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-600 font-black text-xs uppercase tracking-widest bg-slate-50/50 dark:bg-zinc-900/30 opacity-60 cursor-not-allowed"
+                    >
+                      Submission Details
+                      <Lock className="h-4 w-4" />
+                    </button>
+                  </div>
                 )}
 
                 <div className="mt-auto w-full relative z-10">
