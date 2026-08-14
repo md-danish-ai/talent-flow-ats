@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, LayoutGrid, List } from "lucide-react";
+import { Users, LayoutGrid, List, FileSpreadsheet } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -17,6 +17,7 @@ import {
   ListingBadge,
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
+import { ExportResultsModal } from "@components/features/results/ExportResultsModal";
 
 import { resultsApi, managementApi } from "@lib/api";
 import {
@@ -45,6 +46,7 @@ import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
 export function UserResultsClient() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   // Column Visibility
   const availableColumns = useMemo(
@@ -211,6 +213,18 @@ export function UserResultsClient() {
                   <List size={18} />
                 </Button>
               </Tooltip>
+
+              <Tooltip content="Export Exam Results" side="bottom">
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  animate="scale"
+                  onClick={() => setIsExportOpen(true)}
+                  className="hover:text-emerald-600 hover:border-emerald-500/30"
+                >
+                  <FileSpreadsheet size={18} />
+                </Button>
+              </Tooltip>
             </div>
 
             <ListingIcons
@@ -283,6 +297,11 @@ export function UserResultsClient() {
           dynamicOptions={{
             project_lead_id: leadsOptions,
           }}
+        />
+
+        <ExportResultsModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
         />
       </MainCard>
     </PageContainer>

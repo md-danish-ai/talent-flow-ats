@@ -1,6 +1,11 @@
 import { api } from "./base";
 import { ENDPOINTS } from "./endpoints";
-import { type PaginatedReportUsers, type GetReportUsersParams } from "@types";
+import {
+  type PaginatedReportUsers,
+  type GetReportUsersParams,
+  type ExportReportItem,
+  type ExportReportsParams,
+} from "@types";
 
 export const reportsApi = {
   getAllReports: async ({
@@ -36,6 +41,19 @@ export const reportsApi = {
 
     return api.get<PaginatedReportUsers>(
       `${ENDPOINTS.RESULTS.GET_ALL_REPORTS}?${params.toString()}`,
+    );
+  },
+
+  exportAllReports: async ({
+    startDate,
+    endDate,
+  }: ExportReportsParams = {}) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+
+    return api.get<ExportReportItem[]>(
+      `${ENDPOINTS.RESULTS.EXPORT_ALL_REPORTS}?${params.toString()}`,
     );
   },
 };

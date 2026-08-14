@@ -143,8 +143,6 @@ def generate_seed_questions(questions):
         "from app.classifications.models import Classification  # needed for FK resolution",
         "from app.departments.models import Department  # needed for FK resolution",
         "from sqlalchemy.orm.attributes import flag_modified",
-
-
         "",
         "QUESTIONS_DATA = [",
     ]
