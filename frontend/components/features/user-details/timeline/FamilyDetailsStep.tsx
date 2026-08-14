@@ -60,32 +60,38 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
             state.values.assignedEmergencyRelation,
           ]}
         >
-          {([family, emergencyRelation, assignedRelation]) => (
-            <React.Fragment>
-              {(family as FamilyMember[]).map(
-                (member: FamilyMember, index: number) => {
+          {([family, emergencyRelation, assignedRelation]) => {
+            const familyList = (family as FamilyMember[]) || [];
+            const emergencyIndex =
+              typeof emergencyRelation === "string" && emergencyRelation
+                ? familyList.findIndex(
+                    (m) =>
+                      m.relation &&
+                      m.relation.toUpperCase() ===
+                        emergencyRelation.toUpperCase(),
+                  )
+                : -1;
+
+            const assignedIndex =
+              typeof assignedRelation === "string" && assignedRelation
+                ? familyList.findIndex(
+                    (m) =>
+                      m.relation &&
+                      m.relation.toUpperCase() ===
+                        assignedRelation.toUpperCase(),
+                  )
+                : -1;
+
+            return (
+              <React.Fragment>
+                {familyList.map((member: FamilyMember, index: number) => {
                   const isDeleteDisabled =
                     index === 0 ||
                     index === 1 ||
-                    member.relation?.toUpperCase() === "FATHER" ||
-                    member.relation?.toUpperCase() === "MOTHER" ||
-                    (typeof emergencyRelation === "string" &&
-                      Boolean(emergencyRelation) &&
-                      Boolean(member.relation) &&
-                      member.relation.toUpperCase() ===
-                        emergencyRelation.toUpperCase()) ||
-                    (typeof assignedRelation === "string" &&
-                      Boolean(assignedRelation) &&
-                      Boolean(member.relation) &&
-                      member.relation.toUpperCase() ===
-                        assignedRelation.toUpperCase());
+                    index === emergencyIndex ||
+                    index === assignedIndex;
                   const isMandatory = isDeleteDisabled;
-                  const isEmergencyContact =
-                    typeof emergencyRelation === "string" &&
-                    Boolean(emergencyRelation) &&
-                    Boolean(member.relation) &&
-                    member.relation.toUpperCase() ===
-                      emergencyRelation.toUpperCase();
+                  const isEmergencyContact = index === emergencyIndex;
                   const isRelationSelected = Boolean(
                     member.relation &&
                     (isLoadingRelations ||
@@ -350,10 +356,10 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                       )}
                     </div>
                   );
-                },
-              )}
-            </React.Fragment>
-          )}
+                })}
+              </React.Fragment>
+            );
+          }}
         </form.Subscribe>
 
         <button
