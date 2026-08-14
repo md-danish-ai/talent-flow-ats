@@ -1,7 +1,6 @@
-from __future__ import annotations
-
+import json
 import math
-from sqlalchemy import case, desc
+from sqlalchemy import case, desc, func
 
 from app.database.db import SessionLocal
 from app.users.models import User
@@ -211,5 +210,136 @@ def get_report_user_list(
                 "has_previous": page > 1,
             },
         }
+    finally:
+        db.close()
+
+
+def get_export_all_reports_data(
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[dict]:
+    """
+    Fetch candidate test results within date range formatted for Excel report export.
+    """
+    db = SessionLocal()
+    try:
+        query = (
+            db.query(InterviewRecord, User)
+            .join(User, User.id == InterviewRecord.user_id)
+            .filter(User.role == RoleType.USER.value)
+        )
+
+        if start_date:
+            query = query.filter(
+                func.coalesce(
+                    func.date(InterviewRecord.submitted_at),
+                    func.date(InterviewRecord.started_at),
+                )
+                >= start_date
+            )
+
+        if end_date:
+            query = query.filter(
+                func.coalesce(
+                    func.date(InterviewRecord.submitted_at),
+                    func.date(InterviewRecord.started_at),
+                )
+                <= end_date
+            )
+
+        records = query.order_by(
+            desc(
+                func.coalesce(InterviewRecord.submitted_at, InterviewRecord.started_at)
+            ),
+            desc(InterviewRecord.id),
+        ).all()
+
+        results: list[dict] = []
+
+        for record, user in records:
+            subject_grades: list[dict] = record.subject_grades or []
+            responses: list[dict] = record.responses or []
+
+            grades_by_subject: dict[str, str] = {}
+            lead_obt = 0.0
+            company_obt = 0.0
+
+            for sg in subject_grades:
+                if not isinstance(sg, dict):
+                    continue
+                s_name = (sg.get("section_name") or "").strip().lower()
+                s_code = (sg.get("section_code") or "").strip().lower()
+                grade = sg.get("grade") or "-"
+                obt_m = float(sg.get("obtained_marks") or 0.0)
+
+                grades_by_subject[s_name] = grade
+                grades_by_subject[s_code] = grade
+
+                if "lead generation" in s_name or "lead_generation" in s_code:
+                    lead_obt = obt_m
+                elif (
+                    "company contact details" in s_name
+                    or "company_contact_details" in s_code
+                ):
+                    company_obt = obt_m
+
+            wpm = 0.0
+            accuracy = 0.0
+            for r in responses:
+                if not isinstance(r, dict):
+                    continue
+
+                if r.get("typing_stats") and isinstance(r["typing_stats"], dict):
+                    ts = r["typing_stats"]
+                    wpm = float(ts.get("wpm", 0.0))
+                    accuracy = float(ts.get("accuracy", 0.0))
+                    break
+
+                section_code = str(r.get("section_code") or "").upper()
+                section_name = str(r.get("section_name") or "").upper()
+                if "TYPING" in section_code or "TYPING" in section_name:
+                    ans_text = r.get("answer_text") or ""
+                    if isinstance(ans_text, str) and ans_text.strip().startswith("{"):
+                        try:
+                            parsed = json.loads(ans_text)
+                            stats = parsed.get("stats") or parsed.get("typing_stats")
+                            if stats and isinstance(stats, dict):
+                                wpm = float(stats.get("wpm", 0.0))
+                                accuracy = float(stats.get("accuracy", 0.0))
+                                break
+                        except Exception:
+                            pass
+
+            internet_marks = lead_obt + company_obt
+
+            def get_grade(names: list[str]) -> str:
+                for n in names:
+                    if n.lower() in grades_by_subject:
+                        return grades_by_subject[n.lower()]
+                return "-"
+
+            comp_grade = get_grade(["comprehension", "reading comprehension"])
+            written_grade = get_grade(["written", "business writing"])
+            grammar_grade = get_grade(["english grammar", "grammar"])
+            aptitude_grade = get_grade(["aptitude", "logical reasoning"])
+            industry_grade = get_grade(["industry awareness", "general awareness"])
+
+            results.append(
+                {
+                    "name": user.username or "",
+                    "mobile": user.mobile or "",
+                    "comprehension": comp_grade,
+                    "written": written_grade,
+                    "grammar": grammar_grade,
+                    "aptitude": aptitude_grade,
+                    "industry_awareness": industry_grade,
+                    "internet_marks": f"{internet_marks:.2f}",
+                    "typing_wpm": f"{wpm:.2f}",
+                    "typing_accuracy": f"{accuracy:.2f}",
+                    "date": str(record.submitted_at or record.started_at or "")[:10],
+                }
+            )
+
+        return results
     finally:
         db.close()

@@ -94,13 +94,10 @@ export function LeadGenerationClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "companyName", label: "Company Name" },
-    { id: "website", label: "Website Address (URL)" },
+    { id: "companyName", label: "Target Company Name" },
     { id: "name", label: "Name of the Person" },
-    {
-      id: "title",
-      label: "Title of the Person (Chairman/CEO/COO/President/Founder)",
-    },
+    { id: "title", label: "Title / Designation" },
+    { id: "website", label: "Website Address (URL)" },
     { id: "email", label: "Person's Email Address" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
@@ -255,7 +252,7 @@ export function LeadGenerationClient() {
                       </TableHead>
                     )}
                     {visibleColumns.includes("companyName") && (
-                      <TableHead>Company Name</TableHead>
+                      <TableHead>Target Company Name</TableHead>
                     )}
                     {visibleColumns.includes("website") && (
                       <TableHead>Website Address (URL)</TableHead>
@@ -264,9 +261,7 @@ export function LeadGenerationClient() {
                       <TableHead>Name of the Person</TableHead>
                     )}
                     {visibleColumns.includes("title") && (
-                      <TableHead>
-                        Title of the Person (Chairman/CEO/COO/President/Founder)
-                      </TableHead>
+                      <TableHead>Title / Designation</TableHead>
                     )}
                     {visibleColumns.includes("email") && (
                       <TableHead>Person&apos;s Email Address</TableHead>

@@ -55,19 +55,27 @@ def _ensure_dict(val: Any) -> dict:
 
 def _fmt_date(val: Any) -> str:
     """Return val formatted as DD-MM-YYYY. Handles YYYY-MM-DD ISO strings,
-    datetime / date objects, and already-formatted DD-MM-YYYY strings.
-    Returns the original string unchanged if parsing fails."""
+    datetime / date objects, slash separated dates, etc."""
     if not val:
         return ""
     s = str(val).strip()
-    # Already DD-MM-YYYY?
+    if not s:
+        return ""
+    # Already DD-MM-YYYY
     if len(s) == 10 and s[2] == "-" and s[5] == "-":
         return s
-    # Try ISO YYYY-MM-DD (first 10 chars to ignore time component)
+    # DD/MM/YYYY
+    if len(s) == 10 and s[2] == "/" and s[5] == "/":
+        return s.replace("/", "-")
     try:
-        dt = datetime.strptime(s[:10], "%Y-%m-%d")
-        return dt.strftime("%d-%m-%Y")
-    except ValueError:
+        clean_s = s.split("T")[0].split(" ")[0]
+        parts = clean_s.replace("/", "-").split("-")
+        if len(parts) == 3:
+            if len(parts[0]) == 4:  # YYYY-MM-DD
+                return f"{parts[2].zfill(2)}-{parts[1].zfill(2)}-{parts[0]}"
+            elif len(parts[2]) == 4:  # DD-MM-YYYY
+                return f"{parts[0].zfill(2)}-{parts[1].zfill(2)}-{parts[2]}"
+    except Exception:
         pass
     return s
 
@@ -378,10 +386,10 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                     "designation": item.get("designation", "")
                     if isinstance(item, dict)
                     else "",
-                    "joinDate": item.get("joinDate", "")
+                    "joinDate": _fmt_date(item.get("joinDate", ""))
                     if isinstance(item, dict)
                     else "",
-                    "leaveDate": (
+                    "leaveDate": _fmt_date(
                         item.get("leaveDate", "") or item.get("relieveDate", "")
                     )
                     if isinstance(item, dict)

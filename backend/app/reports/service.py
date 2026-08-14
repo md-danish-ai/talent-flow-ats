@@ -63,3 +63,20 @@ def get_report_user_list(
         raise HTTPException(
             status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
         )
+
+
+def get_export_all_reports_data(
+    start_date: str | None = None,
+    end_date: str | None = None,
+):
+    try:
+        return repository.get_export_all_reports_data(
+            start_date=start_date,
+            end_date=end_date,
+        )
+    except HTTPException:
+        raise
+    except Exception as exception:
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR, detail=str(exception)
+        )

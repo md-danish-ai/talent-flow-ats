@@ -103,14 +103,17 @@ export function AttemptDetailClient({
   const handleManualMarksApply = async (questionId: number, index: number) => {
     const key = `${questionId}-${index}`;
     const value = manualMarks[key];
-    if (!value) return;
+    if (value === undefined || value === "") return;
+
+    const parsedNumber = parseFloat(value);
+    if (isNaN(parsedNumber) || parsedNumber < 0) return;
 
     try {
       await resultsApi.applyManualMarks(
         userId,
         attemptId,
         questionId,
-        parseFloat(value),
+        parsedNumber,
       );
 
       setManualMarksApplied((previous) => ({

@@ -6,7 +6,11 @@ from sqlalchemy.orm import Session
 from app.utils.dependencies import authenticate_user, require_roles
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.database.db import get_db
-from app.reports.service import generate_report_pdf_file, get_report_user_list
+from app.reports.service import (
+    generate_report_pdf_file,
+    get_report_user_list,
+    get_export_all_reports_data,
+)
 
 router = APIRouter(
     dependencies=[Depends(authenticate_user)],
@@ -77,3 +81,22 @@ async def get_all_reports(
         limit=limit,
     )
     return api_response(StatusCode.OK, ResponseMessage.FETCHED("Report"), data=data)
+
+
+@router.get(
+    "/admin/results/export-all-reports",
+    dependencies=[Depends(require_roles(["admin", "project_lead"]))],
+    tags=["Reports"],
+)
+async def export_all_reports(
+    start_date: str | None = Query(default=None),
+    end_date: str | None = Query(default=None),
+):
+    """Export exam results report data for all candidates in date range."""
+    data = get_export_all_reports_data(
+        start_date=start_date,
+        end_date=end_date,
+    )
+    return api_response(
+        StatusCode.OK, ResponseMessage.FETCHED("Export Report Data"), data=data
+    )

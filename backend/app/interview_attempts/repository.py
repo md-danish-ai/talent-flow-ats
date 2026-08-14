@@ -194,6 +194,171 @@ def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: 
     return obtained_marks, is_correct, status_label, typing_stats, safe_typed
 
 
+def _normalize_field_value(val: Any) -> str:
+    if val is None:
+        return ""
+    s = str(val).strip().lower()
+    s = re.sub(r"^https?://", "", s)
+    s = re.sub(r"^www\.", "", s)
+    s = s.rstrip("/")
+    s = " ".join(s.split())
+    return s
+
+
+def _normalize_phone(val: Any) -> str:
+    if val is None:
+        return ""
+    digits = re.sub(r"\D", "", str(val))
+    if len(digits) > 10 and digits.startswith("1"):
+        return digits[1:]
+    return digits
+
+
+def _evaluate_structured_answer(
+    user_answer_raw: str | None,
+    question_options: Any,
+    question_type: str | None,
+    subject_type: str | None,
+    max_marks: float,
+) -> tuple[float, bool, str]:
+    """
+    Evaluates LEAD_GENERATION and CONTACT_DETAILS (Company Contact Details) answers field-by-field.
+    Returns (obtained_marks, is_correct, status_label).
+    """
+    if not user_answer_raw or not str(user_answer_raw).strip():
+        return 0.0, False, "not_attempted"
+
+    user_data: dict = {}
+    try:
+        if isinstance(user_answer_raw, str):
+            user_data = json.loads(user_answer_raw)
+        elif isinstance(user_answer_raw, dict):
+            user_data = user_answer_raw
+    except Exception:
+        return 0.0, False, "incorrect"
+
+    if not isinstance(user_data, dict):
+        return 0.0, False, "incorrect"
+
+    expected_data: dict = {}
+    if isinstance(question_options, dict):
+        expected_data = question_options
+    elif isinstance(question_options, str):
+        try:
+            expected_data = json.loads(question_options)
+        except Exception:
+            pass
+
+    if not expected_data:
+        return 0.0, False, "incorrect"
+
+    is_lead_gen = (
+        question_type == "LEAD_GENERATION" or subject_type == "LEAD_GENERATION"
+    )
+    is_contact = (
+        question_type == "CONTACT_DETAILS" or subject_type == "COMPANY_CONTACT_DETAILS"
+    )
+
+    if is_lead_gen:
+        field_map = [
+            ("contact_name", ["contact_name", "contactname", "name", "person_name"]),
+            ("designation", ["designation", "title", "role"]),
+            ("website", ["website", "website_url", "url", "websiteurl"]),
+            ("email", ["email", "email_address", "person_email"]),
+        ]
+    elif is_contact:
+        # EXACTLY the 8 input fields rendered in candidate ContactDetailsView
+        field_map = [
+            ("companyName", ["companyname", "company_name", "company"]),
+            (
+                "companyPhoneNumber",
+                [
+                    "companyphonenumber",
+                    "company_phone_number",
+                    "phone",
+                    "phonenumber",
+                    "phone_number",
+                ],
+            ),
+            ("generalEmail", ["generalemail", "general_email", "email"]),
+            ("facebookPage", ["facebookpage", "facebook_page", "facebook"]),
+            ("streetAddress", ["streetaddress", "street_address", "address"]),
+            ("city", ["city"]),
+            ("state", ["state"]),
+            ("zipCode", ["zipcode", "zip_code", "zip"]),
+        ]
+    else:
+        field_map = [
+            (k, [k, k.lower(), k.replace("_", "")]) for k in expected_data.keys()
+        ]
+
+    user_norm_map = {
+        str(k).lower().replace("_", "").replace("-", ""): v
+        for k, v in user_data.items()
+    }
+    expected_norm_map = {
+        str(k).lower().replace("_", "").replace("-", ""): v
+        for k, v in expected_data.items()
+    }
+
+    valid_fields_count = 0
+    matched_fields_count = 0
+
+    for std_key, aliases in field_map:
+        exp_val = None
+        for alias in aliases:
+            clean_alias = alias.lower().replace("_", "").replace("-", "")
+            if clean_alias in expected_norm_map and expected_norm_map[
+                clean_alias
+            ] not in (None, "", "null"):
+                exp_val = expected_norm_map[clean_alias]
+                break
+
+        if exp_val is None or str(exp_val).strip() == "":
+            continue
+
+        valid_fields_count += 1
+
+        usr_val = None
+        for alias in aliases:
+            clean_alias = alias.lower().replace("_", "").replace("-", "")
+            if clean_alias in user_norm_map and user_norm_map[clean_alias] not in (
+                None,
+                "",
+                "null",
+            ):
+                usr_val = user_norm_map[clean_alias]
+                break
+
+        if usr_val is None or str(usr_val).strip() == "":
+            continue
+
+        if "phone" in std_key.lower():
+            u_phone = _normalize_phone(usr_val)
+            e_phone = _normalize_phone(exp_val)
+            if u_phone == e_phone or (
+                len(u_phone) >= 7
+                and len(e_phone) >= 7
+                and (u_phone.endswith(e_phone) or e_phone.endswith(u_phone))
+            ):
+                matched_fields_count += 1
+        else:
+            norm_usr = _normalize_field_value(usr_val)
+            norm_exp = _normalize_field_value(exp_val)
+            if norm_usr == norm_exp:
+                matched_fields_count += 1
+
+    if valid_fields_count == 0:
+        return 0.0, False, "incorrect"
+
+    ratio = matched_fields_count / float(valid_fields_count)
+    obtained_marks = round(ratio * max_marks, 2)
+    is_correct = ratio >= 0.5
+    status_label = "correct" if is_correct else "incorrect"
+
+    return obtained_marks, is_correct, status_label
+
+
 # ---------------------------------------------------------------------------
 # Private paper / question helpers
 # ---------------------------------------------------------------------------
@@ -472,6 +637,25 @@ def _recompute_grades(
                     source_text = question.passage or correct_text or ""
                     obtained, is_corr, _, _, _ = _evaluate_typing_test_answer(
                         user_text, source_text, q_marks
+                    )
+                    stats["obtained_marks"] += obtained
+                    if is_corr:
+                        stats["correct_count"] += 1
+                    else:
+                        stats["incorrect_count"] += 1
+                elif question.question_type in (
+                    "LEAD_GENERATION",
+                    "CONTACT_DETAILS",
+                ) or question.subject_type in (
+                    "LEAD_GENERATION",
+                    "COMPANY_CONTACT_DETAILS",
+                ):
+                    obtained, is_corr, _ = _evaluate_structured_answer(
+                        user_text,
+                        question.options,
+                        question.question_type,
+                        question.subject_type,
+                        q_marks,
                     )
                     stats["obtained_marks"] += obtained
                     if is_corr:
@@ -1483,6 +1667,27 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                         ) = _evaluate_typing_test_answer(
                             user_answer_text, source_text, float(question.marks or 0)
                         )
+                elif question.question_type in (
+                    "LEAD_GENERATION",
+                    "CONTACT_DETAILS",
+                ) or question.subject_type in (
+                    "LEAD_GENERATION",
+                    "COMPANY_CONTACT_DETAILS",
+                ):
+                    if manual_marks is not None:
+                        marks_obtained = float(manual_marks)
+                        is_correct = marks_obtained > 0
+                        status_label = "correct" if is_correct else "incorrect"
+                    else:
+                        marks_obtained, is_correct, status_label = (
+                            _evaluate_structured_answer(
+                                user_answer_text,
+                                question.options,
+                                question.question_type,
+                                question.subject_type,
+                                float(question.marks or 0),
+                            )
+                        )
                 else:
                     if manual_marks is not None:
                         marks_obtained = float(manual_marks)
@@ -1537,10 +1742,70 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
 
         # Grade settings for scale display (not for computation — grades already stored)
         grade_settings = (paper_obj.grade_settings or []) if paper_obj else []
+
+        subject_grades_to_sort = record.subject_grades
+        if not subject_grades_to_sort and detailed_answers:
+            section_stats: dict[str, dict] = {}
+            for ans in detailed_answers:
+                s_name = ans.get("section_name") or "General"
+                s_code = ans.get("section_code") or "GENERAL"
+                if s_name not in section_stats:
+                    section_stats[s_name] = {
+                        "section_code": s_code,
+                        "section_name": s_name,
+                        "total_questions": 0,
+                        "attempted_count": 0,
+                        "unattempted_count": 0,
+                        "correct_count": 0,
+                        "incorrect_count": 0,
+                        "total_marks": 0.0,
+                        "obtained_marks": 0.0,
+                    }
+                st = section_stats[s_name]
+                st["total_questions"] += 1
+                if ans.get("is_attempted"):
+                    st["attempted_count"] += 1
+                else:
+                    st["unattempted_count"] += 1
+
+                if ans.get("status") == "correct":
+                    st["correct_count"] += 1
+                elif ans.get("status") == "incorrect":
+                    st["incorrect_count"] += 1
+
+                st["total_marks"] += float(ans.get("max_marks") or 0)
+                st["obtained_marks"] += float(ans.get("marks_obtained") or 0)
+
+            computed_subject_grades = []
+            for s_name, st in section_stats.items():
+                tot_m = st["total_marks"]
+                obt_m = st["obtained_marks"]
+                pct = round((obt_m / tot_m * 100), 2) if tot_m > 0 else 0.0
+                st["percentage"] = pct
+                st["grade"] = "In Progress" if record.status == "started" else "N/A"
+                computed_subject_grades.append(st)
+
+            subject_grades_to_sort = computed_subject_grades
+
         ordered_subject_results = _sort_subject_results_by_paper_order(
             db,
             paper_obj,
-            record.subject_grades,
+            subject_grades_to_sort,
+        )
+
+        total_obtained = (
+            sum(float(a.get("marks_obtained") or 0) for a in detailed_answers)
+            if (record.status == "started" or not float(record.obtained_marks or 0))
+            else float(record.obtained_marks)
+        )
+        total_max = (
+            sum(float(a.get("max_marks") or 0) for a in detailed_answers)
+            if (record.status == "started" or not float(record.total_marks or 0))
+            else float(record.total_marks)
+        )
+
+        overall_pct = (
+            round(total_obtained / total_max * 100, 2) if total_max > 0 else 0.0
         )
 
         return {
@@ -1566,8 +1831,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "total_questions": record.total_questions,
                 "attempted_count": record.attempted_count,
                 "unattempted_count": record.unattempted_count,
-                "total_marks": float(record.total_marks),
-                "obtained_marks": float(record.obtained_marks),
+                "total_marks": total_max,
+                "obtained_marks": total_obtained,
                 "overall_grade": record.overall_grade,
                 "is_auto_submitted": record.is_auto_submitted,
             },
@@ -1575,12 +1840,8 @@ def get_admin_user_result_detail(user_id: int, attempt_id: int | None = None) ->
                 "correct_count": correct_count,
                 "incorrect_count": incorrect_count,
                 "not_attempted_count": not_attempted_count,
-                "total_marks_obtained": float(record.obtained_marks),
-                "overall_percentage": round(
-                    float(record.obtained_marks) / float(record.total_marks) * 100, 2
-                )
-                if float(record.total_marks) > 0
-                else 0,
+                "total_marks_obtained": total_obtained,
+                "overall_percentage": overall_pct,
                 "overall_grade": record.overall_grade,
             },
             "subject_results": ordered_subject_results,
@@ -1708,7 +1969,10 @@ def reset_user_for_reinterview(user_id: int) -> dict:
         user.is_active = True
         user.process_status = ProcessStatus.READY.value
 
-        # Immediately assign a paper for today so they are not expired again
+        # Flush session so db.query inside assign_best_paper sees updated reinterview_date
+        db.flush()
+
+        # Assign paper via auto-assign rule for today if one exists
         if user.department_id and user.test_level_id:
             assign_best_paper(
                 db, user.id, user.department_id, user.test_level_id, dt_date.today()

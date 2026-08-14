@@ -10,6 +10,7 @@ null = None
 
 from app.database.db import SessionLocal
 from app.classifications.models import Classification
+from sqlalchemy import text
 
 CLASSIFICATIONS_DATA = [
     {
@@ -186,7 +187,7 @@ CLASSIFICATIONS_DATA = [
         "type": "subject",
         "name": "Company Contact Details",
         "code": "COMPANY_CONTACT_DETAILS",
-        "sort_order": 17,
+        "sort_order": 16,
         "metadata": {
             "description": "Knowledge regarding organizational contact structures, hierarchy, and professional data handling/formatting.",
             "is_exclusive": true
@@ -198,7 +199,7 @@ CLASSIFICATIONS_DATA = [
         "type": "subject",
         "name": "Industry Awareness",
         "code": "INDUSTRY_AWARENESS",
-        "sort_order": 16,
+        "sort_order": 17,
         "metadata": {
             "description": "General awareness concerning current global industry trends, market shifts, and emerging business technologies.",
             "is_exclusive": false
@@ -300,7 +301,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Father",
         "code": "FATHER",
-        "sort_order": 32,
+        "sort_order": 26,
         "metadata": null,
         "is_active": true
     },
@@ -309,7 +310,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Mother",
         "code": "MOTHER",
-        "sort_order": 33,
+        "sort_order": 27,
         "metadata": null,
         "is_active": true
     },
@@ -318,7 +319,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Husband",
         "code": "HUSBAND",
-        "sort_order": 34,
+        "sort_order": 28,
         "metadata": null,
         "is_active": true
     },
@@ -327,7 +328,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Wife",
         "code": "WIFE",
-        "sort_order": 35,
+        "sort_order": 29,
         "metadata": null,
         "is_active": true
     },
@@ -336,7 +337,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Son",
         "code": "SON",
-        "sort_order": 36,
+        "sort_order": 30,
         "metadata": null,
         "is_active": true
     },
@@ -345,7 +346,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Daughter",
         "code": "DAUGHTER",
-        "sort_order": 37,
+        "sort_order": 31,
         "metadata": null,
         "is_active": true
     },
@@ -354,7 +355,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Brother",
         "code": "BROTHER",
-        "sort_order": 38,
+        "sort_order": 32,
         "metadata": null,
         "is_active": true
     },
@@ -363,7 +364,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Sister",
         "code": "SISTER",
-        "sort_order": 39,
+        "sort_order": 33,
         "metadata": null,
         "is_active": true
     },
@@ -372,7 +373,7 @@ CLASSIFICATIONS_DATA = [
         "type": "family_relation",
         "name": "Guardian",
         "code": "GUARDIAN",
-        "sort_order": 40,
+        "sort_order": 34,
         "metadata": null,
         "is_active": true
     },
@@ -381,7 +382,7 @@ CLASSIFICATIONS_DATA = [
         "type": "marital_status",
         "name": "Single",
         "code": "SINGLE",
-        "sort_order": 41,
+        "sort_order": 35,
         "metadata": null,
         "is_active": true
     },
@@ -390,7 +391,7 @@ CLASSIFICATIONS_DATA = [
         "type": "marital_status",
         "name": "Married",
         "code": "MARRIED",
-        "sort_order": 42,
+        "sort_order": 36,
         "metadata": null,
         "is_active": true
     },
@@ -399,7 +400,7 @@ CLASSIFICATIONS_DATA = [
         "type": "marital_status",
         "name": "Divorced",
         "code": "DIVORCED",
-        "sort_order": 43,
+        "sort_order": 37,
         "metadata": null,
         "is_active": true
     },
@@ -408,7 +409,7 @@ CLASSIFICATIONS_DATA = [
         "type": "marital_status",
         "name": "Widowed",
         "code": "WIDOWED",
-        "sort_order": 44,
+        "sort_order": 38,
         "metadata": null,
         "is_active": true
     },
@@ -417,7 +418,7 @@ CLASSIFICATIONS_DATA = [
         "type": "marital_status",
         "name": "Separated",
         "code": "SEPARATED",
-        "sort_order": 45,
+        "sort_order": 39,
         "metadata": null,
         "is_active": true
     },
@@ -426,7 +427,7 @@ CLASSIFICATIONS_DATA = [
         "type": "education_category",
         "name": "10th / High School",
         "code": "HIGH_SCHOOL",
-        "sort_order": 46,
+        "sort_order": 40,
         "metadata": null,
         "is_active": true
     },
@@ -435,277 +436,268 @@ CLASSIFICATIONS_DATA = [
         "type": "education_category",
         "name": "12th / Intermediate",
         "code": "INTERMEDIATE",
-        "sort_order": 47,
+        "sort_order": 41,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 42,
         "type": "education_category",
-        "name": "Diploma",
-        "code": "DIPLOMA",
-        "sort_order": 48,
+        "name": "Graduation",
+        "code": "GRADUATION",
+        "sort_order": 42,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 43,
         "type": "education_category",
-        "name": "Bachelor's Degree",
-        "code": "BACHELORS",
-        "sort_order": 49,
+        "name": "Post Graduation",
+        "code": "POST_GRADUATION",
+        "sort_order": 43,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 44,
         "type": "education_category",
-        "name": "Master's Degree",
-        "code": "MASTERS",
-        "sort_order": 50,
+        "name": "Ph.D. / Doctorate",
+        "code": "DOCTORATE",
+        "sort_order": 44,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 45,
-        "type": "education_category",
-        "name": "Ph.D. / Doctorate",
-        "code": "DOCTORATE",
-        "sort_order": 51,
+        "type": "language",
+        "name": "English",
+        "code": "ENGLISH",
+        "sort_order": 45,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 46,
         "type": "language",
-        "name": "English",
-        "code": "ENGLISH",
-        "sort_order": 52,
+        "name": "Hindi",
+        "code": "HINDI",
+        "sort_order": 46,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 47,
-        "type": "language",
-        "name": "Hindi",
-        "code": "HINDI",
-        "sort_order": 53,
+        "type": "religion",
+        "name": "Hinduism",
+        "code": "HINDUISM",
+        "sort_order": 47,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 48,
         "type": "religion",
-        "name": "Hinduism",
-        "code": "HINDUISM",
-        "sort_order": 54,
+        "name": "Islam",
+        "code": "ISLAM",
+        "sort_order": 48,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 49,
         "type": "religion",
-        "name": "Islam",
-        "code": "ISLAM",
-        "sort_order": 55,
+        "name": "Christianity",
+        "code": "CHRISTIANITY",
+        "sort_order": 49,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 50,
         "type": "religion",
-        "name": "Christianity",
-        "code": "CHRISTIANITY",
-        "sort_order": 56,
+        "name": "Sikhism",
+        "code": "SIKHISM",
+        "sort_order": 50,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 51,
         "type": "religion",
-        "name": "Sikhism",
-        "code": "SIKHISM",
-        "sort_order": 57,
+        "name": "Buddhism",
+        "code": "BUDDHISM",
+        "sort_order": 51,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 52,
         "type": "religion",
-        "name": "Buddhism",
-        "code": "BUDDHISM",
-        "sort_order": 58,
+        "name": "Jainism",
+        "code": "JAINISM",
+        "sort_order": 52,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 53,
         "type": "religion",
-        "name": "Jainism",
-        "code": "JAINISM",
-        "sort_order": 59,
+        "name": "Other",
+        "code": "OTHER",
+        "sort_order": 53,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 54,
-        "type": "religion",
-        "name": "Other",
-        "code": "OTHER",
-        "sort_order": 60,
+        "type": "social_category",
+        "name": "General",
+        "code": "GENERAL",
+        "sort_order": 54,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 55,
         "type": "social_category",
-        "name": "General",
-        "code": "GENERAL",
-        "sort_order": 61,
+        "name": "OBC",
+        "code": "OBC",
+        "sort_order": 55,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 56,
         "type": "social_category",
-        "name": "OBC",
-        "code": "OBC",
-        "sort_order": 62,
+        "name": "SC",
+        "code": "SC",
+        "sort_order": 56,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 57,
         "type": "social_category",
-        "name": "SC",
-        "code": "SC",
-        "sort_order": 63,
+        "name": "ST",
+        "code": "ST",
+        "sort_order": 57,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 58,
         "type": "social_category",
-        "name": "ST",
-        "code": "ST",
-        "sort_order": 64,
+        "name": "EWS",
+        "code": "EWS",
+        "sort_order": 58,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 59,
-        "type": "social_category",
-        "name": "EWS",
-        "code": "EWS",
-        "sort_order": 65,
+        "type": "blood_group",
+        "name": "A+",
+        "code": "A_POSITIVE",
+        "sort_order": 59,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 60,
         "type": "blood_group",
-        "name": "A+",
-        "code": "A_POSITIVE",
-        "sort_order": 66,
+        "name": "A-",
+        "code": "A_NEGATIVE",
+        "sort_order": 60,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 61,
         "type": "blood_group",
-        "name": "A-",
-        "code": "A_NEGATIVE",
-        "sort_order": 67,
+        "name": "B+",
+        "code": "B_POSITIVE",
+        "sort_order": 61,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 62,
         "type": "blood_group",
-        "name": "B+",
-        "code": "B_POSITIVE",
-        "sort_order": 68,
+        "name": "B-",
+        "code": "B_NEGATIVE",
+        "sort_order": 62,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 63,
         "type": "blood_group",
-        "name": "B-",
-        "code": "B_NEGATIVE",
-        "sort_order": 69,
+        "name": "O+",
+        "code": "O_POSITIVE",
+        "sort_order": 63,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 64,
         "type": "blood_group",
-        "name": "O+",
-        "code": "O_POSITIVE",
-        "sort_order": 70,
+        "name": "O-",
+        "code": "O_NEGATIVE",
+        "sort_order": 64,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 65,
         "type": "blood_group",
-        "name": "O-",
-        "code": "O_NEGATIVE",
-        "sort_order": 71,
+        "name": "AB+",
+        "code": "AB_POSITIVE",
+        "sort_order": 65,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 66,
         "type": "blood_group",
-        "name": "AB+",
-        "code": "AB_POSITIVE",
-        "sort_order": 72,
+        "name": "AB-",
+        "code": "AB_NEGATIVE",
+        "sort_order": 66,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 67,
-        "type": "blood_group",
-        "name": "AB-",
-        "code": "AB_NEGATIVE",
-        "sort_order": 73,
+        "type": "employment_type",
+        "name": "Full-time",
+        "code": "FULL_TIME",
+        "sort_order": 67,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 68,
         "type": "employment_type",
-        "name": "Full-time",
-        "code": "FULL_TIME",
-        "sort_order": 74,
+        "name": "Part-time",
+        "code": "PART_TIME",
+        "sort_order": 68,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 69,
         "type": "employment_type",
-        "name": "Part-time",
-        "code": "PART_TIME",
-        "sort_order": 75,
+        "name": "Contract",
+        "code": "CONTRACT",
+        "sort_order": 69,
         "metadata": null,
         "is_active": true
     },
     {
         "id": 70,
         "type": "employment_type",
-        "name": "Contract",
-        "code": "CONTRACT",
-        "sort_order": 76,
-        "metadata": null,
-        "is_active": true
-    },
-    {
-        "id": 71,
-        "type": "employment_type",
         "name": "Internship",
         "code": "INTERNSHIP",
-        "sort_order": 77,
+        "sort_order": 70,
         "metadata": null,
         "is_active": true
     }
@@ -718,12 +710,21 @@ def seed_classifications():
         total_seeded = 0
         total_updated = 0
 
+        valid_type_codes = {(item["type"], item["code"]) for item in CLASSIFICATIONS_DATA}
+        existing_all = db.query(Classification).all()
+        for item in existing_all:
+            if (item.type, item.code) not in valid_type_codes:
+                db.delete(item)
+
+        db.flush()
+
         for item in CLASSIFICATIONS_DATA:
             existing = db.query(Classification).filter(
                 (Classification.type == item["type"]) & (Classification.code == item["code"])
             ).first()
 
             if existing:
+                existing.id = item["id"]
                 existing.name = item["name"]
                 existing.sort_order = item.get("sort_order", 0)
                 existing.extra_metadata = item.get("metadata")
@@ -742,6 +743,8 @@ def seed_classifications():
                 db.add(cls_obj)
                 total_seeded += 1
 
+        db.commit()
+        db.execute(text("SELECT setval('classifications_id_seq', (SELECT MAX(id) FROM classifications))"))
         db.commit()
         print(f"✨ Classifications seeding complete! Added: {total_seeded}, Updated: {total_updated}")
     except Exception as e:

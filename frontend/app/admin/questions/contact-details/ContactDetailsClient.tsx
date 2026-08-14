@@ -113,13 +113,15 @@ export function ContactDetailsClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "websiteUrl", label: "WebSiteURL" },
-    { id: "companyName", label: "Organization" },
-    { id: "name", label: "Company Name" },
-    { id: "title", label: "Title" },
-    { id: "primaryEmail", label: "Communication Email" },
-    { id: "secondaryEmail", label: "Secondary Email Address" },
-    { id: "linkedInUrl", label: "LinkedIn URL" },
+    { id: "websiteUrl", label: "Target Source / URL" },
+    { id: "companyName", label: "Company Name" },
+    { id: "companyPhoneNumber", label: "Phone Number" },
+    { id: "generalEmail", label: "General Email" },
+    { id: "facebookPage", label: "Facebook Page" },
+    { id: "streetAddress", label: "Street Address" },
+    { id: "city", label: "City" },
+    { id: "state", label: "State" },
+    { id: "zipCode", label: "Zip Code" },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -130,9 +132,7 @@ export function ContactDetailsClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
-    "name",
-    "companyName",
-    "primaryEmail",
+    "websiteUrl",
     "subject",
     "examLevel",
     "marks",
@@ -275,25 +275,31 @@ export function ContactDetailsClient() {
                       </TableHead>
                     )}
                     {visibleColumns.includes("websiteUrl") && (
-                      <TableHead>WebSiteURL</TableHead>
+                      <TableHead>Target Source / URL</TableHead>
                     )}
                     {visibleColumns.includes("companyName") && (
-                      <TableHead>Organization</TableHead>
-                    )}
-                    {visibleColumns.includes("name") && (
                       <TableHead>Company Name</TableHead>
                     )}
-                    {visibleColumns.includes("title") && (
-                      <TableHead>Title</TableHead>
+                    {visibleColumns.includes("companyPhoneNumber") && (
+                      <TableHead>Phone Number</TableHead>
                     )}
-                    {visibleColumns.includes("primaryEmail") && (
-                      <TableHead>Communication Email</TableHead>
+                    {visibleColumns.includes("generalEmail") && (
+                      <TableHead>General Email</TableHead>
                     )}
-                    {visibleColumns.includes("secondaryEmail") && (
-                      <TableHead>Secondary Email Address</TableHead>
+                    {visibleColumns.includes("facebookPage") && (
+                      <TableHead>Facebook Page</TableHead>
                     )}
-                    {visibleColumns.includes("linkedInUrl") && (
-                      <TableHead>LinkedIn URL</TableHead>
+                    {visibleColumns.includes("streetAddress") && (
+                      <TableHead>Street Address</TableHead>
+                    )}
+                    {visibleColumns.includes("city") && (
+                      <TableHead>City</TableHead>
+                    )}
+                    {visibleColumns.includes("state") && (
+                      <TableHead>State</TableHead>
+                    )}
+                    {visibleColumns.includes("zipCode") && (
+                      <TableHead>Zip Code</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>

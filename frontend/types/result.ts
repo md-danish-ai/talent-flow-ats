@@ -199,3 +199,22 @@ export interface GetReportUsersParams {
   department_id?: string;
   test_level_id?: string;
 }
+
+export interface ExportReportItem {
+  name: string;
+  mobile: string;
+  comprehension: string;
+  written: string;
+  grammar: string;
+  aptitude: string;
+  industry_awareness: string;
+  internet_marks: string;
+  typing_wpm: string;
+  typing_accuracy: string;
+  date?: string;
+}
+
+export interface ExportReportsParams {
+  startDate?: string;
+  endDate?: string;
+}

@@ -29,6 +29,7 @@ export interface Education {
   medium: string;
   details: string;
   gradingType?: string;
+  isPursuing?: boolean;
 }
 
 export interface WorkExperience {
@@ -40,6 +41,7 @@ export interface WorkExperience {
   relieveDate: string;
   reason: string;
   salary: string;
+  isPresent?: boolean;
 }
 
 export interface PersonalDetailsFormValues {
@@ -186,9 +188,15 @@ export const educationSchema = z
     medium: z.string().default(""),
     details: z.string().default(""),
     gradingType: z.string().default("Percentage"),
+    isPursuing: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
-    const isMandatory = data.type === "10th Std" || data.type === "12th Std";
+    const isMandatory =
+      data.type === "10th / High School" ||
+      data.type === "12th / Intermediate" ||
+      data.type === "10th Std" ||
+      data.type === "12th Std" ||
+      data.type === "Graduation";
     const hasDetails =
       data.type.trim() !== "" ||
       data.school.trim() !== "" ||
@@ -231,19 +239,34 @@ export const educationSchema = z
           message: "Start Year required",
           path: ["startYear"],
         });
-      if (data.endYear.trim() === "")
+      if (!data.isPursuing && data.endYear.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "End Year required",
           path: ["endYear"],
         });
-      // Division field is optional (Point 13)
+      // Percentage field condition:
+      // For higher education after 12th (e.g., Graduation, Post Graduation), if endYear is in the future (> current year) or isPursuing is true,
+      // percentage is NOT required. Otherwise (10th/12th or past/current endYear), percentage is required.
+      const isSchool =
+        data.type === "10th / High School" ||
+        data.type === "10th Std" ||
+        data.type === "12th / Intermediate" ||
+        data.type === "12th Std";
+      const currentYear = new Date().getFullYear();
+      const endYr = parseInt(data.endYear, 10);
+      const isFutureEndYear = !isNaN(endYr) && endYr > currentYear;
+      const isPercentageRequired =
+        !data.isPursuing && (isSchool || !isFutureEndYear);
+
       if (data.percentage.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${data.gradingType || "Percentage"} required`,
-          path: ["percentage"],
-        });
+        if (isPercentageRequired) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${data.gradingType || "Percentage"} required`,
+            path: ["percentage"],
+          });
+        }
       } else {
         const num = parseFloat(data.percentage.replace("%", "").trim());
         if (isNaN(num)) {
@@ -274,7 +297,11 @@ export const educationSchema = z
         });
     }
 
-    if (data.startYear.trim() !== "" && data.endYear.trim() !== "") {
+    if (
+      !data.isPursuing &&
+      data.startYear.trim() !== "" &&
+      data.endYear.trim() !== ""
+    ) {
       if (parseInt(data.endYear, 10) <= parseInt(data.startYear, 10)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -295,6 +322,7 @@ export const workExperienceSchema = z
     relieveDate: z.string().default(""),
     reason: z.string().default(""),
     salary: z.string().default(""),
+    isPresent: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     const isFresher = data.company.trim().toLowerCase() === "fresher";
@@ -324,17 +352,11 @@ export const workExperienceSchema = z
           message: "Join date required",
           path: ["joinDate"],
         });
-      if (data.relieveDate.trim() === "")
+      if (!data.isPresent && data.relieveDate.trim() === "")
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Relieve date required",
           path: ["relieveDate"],
-        });
-      if (data.reason.trim() === "")
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Reason required",
-          path: ["reason"],
         });
       if (data.salary.trim() === "")
         ctx.addIssue({
@@ -343,7 +365,11 @@ export const workExperienceSchema = z
           path: ["salary"],
         });
 
-      if (data.joinDate.trim() !== "" && data.relieveDate.trim() !== "") {
+      if (
+        !data.isPresent &&
+        data.joinDate.trim() !== "" &&
+        data.relieveDate.trim() !== ""
+      ) {
         const join = new Date(data.joinDate);
         const relieve = new Date(data.relieveDate);
         if (relieve < join) {
@@ -473,6 +499,21 @@ export const personalDetailsSchema: z.ZodType<PersonalDetailsFormValues> =
         path: ["source", "otherDetails"],
       });
     }
+
+    // Ensure non-last work experience items require relieving date
+    data.workExp.forEach((exp, index) => {
+      const isLast = index === data.workExp.length - 1;
+      const isFresher = exp.company.trim().toLowerCase() === "fresher";
+      if (!isFresher && !isLast) {
+        if (exp.relieveDate.trim() === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Relieve date required",
+            path: ["workExp", index, "relieveDate"],
+          });
+        }
+      }
+    });
 
     // Logic for Permanent Address Validation
     if (!data.sameAddress) {

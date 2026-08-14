@@ -57,9 +57,15 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
         <TableCell>
           <Typography
             variant="body4"
-            className="truncate text-muted-foreground"
+            weight="semibold"
+            className="truncate text-foreground group-hover/row:text-brand-primary transition-colors max-w-[320px]"
           >
-            {(options.websiteUrl as React.ReactNode) || "N/A"}
+            {row.question_text ||
+              ((row.options as Record<string, unknown>)
+                ?.websiteUrl as React.ReactNode) ||
+              ((row.options as Record<string, unknown>)
+                ?.website as React.ReactNode) ||
+              "N/A"}
           </Typography>
         </TableCell>
       )}
@@ -76,23 +82,15 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
         </TableCell>
       )}
 
-      {visibleColumns.includes("name") && (
+      {visibleColumns.includes("companyPhoneNumber") && (
         <TableCell>
           <Typography variant="body4" className="text-muted-foreground">
-            {(options.companyName as React.ReactNode) || "N/A"}
+            {(options.companyPhoneNumber as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
 
-      {visibleColumns.includes("title") && (
-        <TableCell>
-          <Typography variant="body4" className="text-muted-foreground">
-            {(options.title as React.ReactNode) || "N/A"}
-          </Typography>
-        </TableCell>
-      )}
-
-      {visibleColumns.includes("primaryEmail") && (
+      {visibleColumns.includes("generalEmail") && (
         <TableCell>
           <Typography
             variant="body4"
@@ -103,21 +101,48 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
         </TableCell>
       )}
 
-      {visibleColumns.includes("secondaryEmail") && (
+      {visibleColumns.includes("facebookPage") && (
         <TableCell>
-          <Typography variant="body4" className="text-muted-foreground/60">
-            {(options.secondaryEmail as React.ReactNode) || "N/A"}
+          <Typography
+            variant="body4"
+            className="text-blue-500 truncate max-w-[180px]"
+          >
+            {(options.facebookPage as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}
 
-      {visibleColumns.includes("linkedInUrl") && (
+      {visibleColumns.includes("streetAddress") && (
         <TableCell>
           <Typography
             variant="body4"
-            className="text-blue-500 truncate max-w-[150px]"
+            className="text-muted-foreground truncate max-w-[200px]"
           >
-            {(options.linkedInUrl as React.ReactNode) || "N/A"}
+            {(options.streetAddress as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("city") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.city as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("state") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.state as React.ReactNode) || "N/A"}
+          </Typography>
+        </TableCell>
+      )}
+
+      {visibleColumns.includes("zipCode") && (
+        <TableCell>
+          <Typography variant="body4" className="text-muted-foreground">
+            {(options.zipCode as React.ReactNode) || "N/A"}
           </Typography>
         </TableCell>
       )}

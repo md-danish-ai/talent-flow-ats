@@ -323,7 +323,10 @@ export function UserDetailView({
                           </Typography>
                         </div>
                         <div className="px-3 py-1 bg-slate-50 dark:bg-zinc-800 rounded-lg border border-slate-100 dark:border-zinc-700 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          {work.joinDate} — {work.relieveDate || "Present"}
+                          {work.joinDate} —{" "}
+                          {work.isPresent || !work.relieveDate
+                            ? "Present"
+                            : work.relieveDate}
                         </div>
                       </div>
 
@@ -412,17 +415,23 @@ export function UserDetailView({
                           {edu.board}
                         </td>
                         <td className="px-6 py-5 text-center font-bold">
-                          {edu.year}
+                          {edu.isPursuing || edu.year.endsWith("-")
+                            ? `${edu.year.replace(/-$/, "")} - Pursuing`
+                            : edu.year}
                         </td>
                         <td className="px-6 py-5 text-right">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {formatPercentageOrCgpa(edu.percentage)}{" "}
-                            <span className="opacity-70 font-bold text-brand-primary">
-                              {computeDivisionAndGrade(
-                                edu.percentage,
-                                edu.division,
-                              )}
-                            </span>
+                            {edu.isPursuing
+                              ? "Pursuing"
+                              : formatPercentageOrCgpa(edu.percentage)}{" "}
+                            {!edu.isPursuing && (
+                              <span className="opacity-70 font-bold text-brand-primary">
+                                {computeDivisionAndGrade(
+                                  edu.percentage,
+                                  edu.division,
+                                )}
+                              </span>
+                            )}
                           </span>
                         </td>
                       </tr>

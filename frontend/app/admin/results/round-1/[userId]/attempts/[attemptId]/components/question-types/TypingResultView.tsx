@@ -3,7 +3,7 @@
 import React from "react";
 import { Gauge, Target, AlertCircle, Timer } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
-import { type AdminUserResultAnswer } from "@types";
+import { type AdminUserResultAnswer, type TypingStats } from "@types";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { getTypingDiffTokens } from "@lib/utils/typingUtils";
 
@@ -12,14 +12,45 @@ interface TypingResultViewProps {
 }
 
 export const TypingResultView = ({ answer }: TypingResultViewProps) => {
+  // Safely parse JSON payload if answer.user_answer is a stringified JSON object
+  const parsedPayload = React.useMemo(() => {
+    if (
+      typeof answer.user_answer === "string" &&
+      answer.user_answer.startsWith("{")
+    ) {
+      try {
+        const parsed = JSON.parse(answer.user_answer);
+        if (parsed && typeof parsed === "object") {
+          return {
+            typedText:
+              typeof parsed.typed_text === "string"
+                ? parsed.typed_text
+                : answer.user_answer,
+            stats: (parsed.stats as TypingStats) || null,
+          };
+        }
+      } catch {
+        // Fall back to raw string
+      }
+    }
+    return {
+      typedText: answer.user_answer || "",
+      stats: null,
+    };
+  }, [answer.user_answer]);
+
+  const typedText = parsedPayload.typedText;
+  const stats = answer.typing_stats || parsedPayload.stats;
+  const sourceText = answer.correct_answer || (answer.passage as string) || "";
+
   return (
     <div className="grid grid-cols-1 gap-6">
-      {answer.typing_stats && (
+      {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-1000">
           {[
             {
               label: "Speed",
-              value: `${answer.typing_stats.wpm} WPM`,
+              value: `${stats.wpm} WPM`,
               color: "text-amber-500 dark:text-amber-400",
               icon: (
                 <Gauge
@@ -33,7 +64,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
             },
             {
               label: "Accuracy",
-              value: `${answer.typing_stats.accuracy}%`,
+              value: `${stats.accuracy}%`,
               color: "text-emerald-600 dark:text-emerald-400",
               icon: (
                 <Target
@@ -47,7 +78,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
             },
             {
               label: "Errors",
-              value: answer.typing_stats.errors,
+              value: stats.errors,
               color: "text-rose-500 dark:text-rose-400",
               icon: (
                 <AlertCircle
@@ -61,7 +92,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
             },
             {
               label: "Duration",
-              value: `${Math.round(answer.typing_stats.time_taken)}s`,
+              value: `${Math.round(stats.time_taken)}s`,
               color: "text-indigo-500 dark:text-indigo-400",
               icon: (
                 <Timer
@@ -73,14 +104,14 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
               accentBorder:
                 "hover:border-indigo-500/30 hover:shadow-indigo-500/[0.03]",
             },
-          ].map((stat, i) => (
+          ].map((statItem, i) => (
             <div
               key={i}
-              className={`group/stat p-5 ${STYLE_CONFIG.innerCardRadius} border border-border/50 dark:border-white/[0.04] bg-card/60 backdrop-blur-md shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg flex items-center justify-between relative overflow-hidden ${stat.accentBorder}`}
+              className={`group/stat p-5 ${STYLE_CONFIG.innerCardRadius} border border-border/50 dark:border-white/[0.04] bg-card/60 backdrop-blur-md shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg flex items-center justify-between relative overflow-hidden ${statItem.accentBorder}`}
             >
               {/* Subtle background glow flare */}
               <div
-                className={`absolute -top-6 -right-6 w-20 h-20 ${stat.accentBg} rounded-full blur-xl opacity-60 group-hover/stat:opacity-100 transition-all duration-500 pointer-events-none`}
+                className={`absolute -top-6 -right-6 w-20 h-20 ${statItem.accentBg} rounded-full blur-xl opacity-60 group-hover/stat:opacity-100 transition-all duration-500 pointer-events-none`}
               />
 
               <div className="space-y-1.5 relative z-10">
@@ -88,20 +119,20 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
                   variant="body5"
                   className="font-black text-muted-foreground/60 uppercase tracking-widest text-[10px] select-none"
                 >
-                  {stat.label}
+                  {statItem.label}
                 </Typography>
                 <Typography
                   variant="h2"
-                  className={`font-black ${stat.color} tracking-tighter text-2xl md:text-3xl bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text select-none`}
+                  className={`font-black ${statItem.color} tracking-tighter text-2xl md:text-3xl bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text select-none`}
                 >
-                  {stat.value}
+                  {statItem.value}
                 </Typography>
               </div>
 
               <div
-                className={`h-10 w-10 rounded-lg ${stat.accentBg} border border-border/20 dark:border-white/[0.02] flex items-center justify-center shadow-sm relative z-10 group-hover/stat:scale-110 transition-all duration-300`}
+                className={`h-10 w-10 rounded-lg ${statItem.accentBg} border border-border/20 dark:border-white/[0.02] flex items-center justify-center shadow-sm relative z-10 group-hover/stat:scale-110 transition-all duration-300`}
               >
-                {stat.icon}
+                {statItem.icon}
               </div>
             </div>
           ))}
@@ -122,7 +153,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
           variant="body2"
           className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-sm md:text-base"
         >
-          {answer.correct_answer || answer.passage || "N/A"}
+          {sourceText || "N/A"}
         </Typography>
       </div>
 
@@ -141,10 +172,6 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
           className="font-mono leading-relaxed whitespace-pre-wrap select-all text-sm md:text-base"
         >
           {(() => {
-            const typedText =
-              typeof answer.user_answer === "string" ? answer.user_answer : "";
-            const sourceText =
-              answer.correct_answer || (answer.passage as string) || "";
             if (typedText && sourceText) {
               const diffTokens = getTypingDiffTokens(typedText, sourceText);
               return diffTokens.map((token, i) => (
@@ -160,7 +187,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
                 </span>
               ));
             }
-            return answer.user_answer || "No response recorded.";
+            return typedText || "No response recorded.";
           })()}
         </Typography>
       </div>
