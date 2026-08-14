@@ -9,11 +9,13 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  HelpCircle,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import Link from "next/link";
 import { Card } from "@components/ui-cards/Card";
 import type { CurrentUser } from "@lib/auth/user-utils";
+import { useUserTour } from "@lib/tour";
 
 interface DashboardClientProps {
   user: CurrentUser | null;
@@ -62,6 +64,13 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
+  const { runTourManually } = useUserTour({
+    user,
+    isDetailsComplete,
+    isInterviewSubmitted,
+    activeInterviewStatus,
+  });
+
   const requiresInterview = user?.requires_interview !== false;
 
   const activeStatus = activeInterviewStatus?.status;
@@ -108,7 +117,7 @@ export function DashboardClient({
       <div className="mx-auto">
         {/* Dashboard Header */}
         <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-2">
+          <div id="user-dashboard-header" className="space-y-2 p-1 rounded-xl">
             <Typography
               variant="h1"
               weight="black"
@@ -124,6 +133,18 @@ export function DashboardClient({
             </Typography>
           </div>
           <div className="h-0.5 flex-1 mx-12 bg-slate-200/50 dark:bg-zinc-800/30 hidden lg:block mb-5" />
+          <div className="flex items-center gap-3 mb-1 shrink-0">
+            <button
+              id="tour-help-trigger"
+              type="button"
+              onClick={() => runTourManually()}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm shadow-brand-primary/5 cursor-pointer active:scale-95 hover:border-brand-primary/50"
+              title="Take a quick tour"
+            >
+              <HelpCircle className="h-4 w-4 text-brand-primary animate-pulse" />
+              <span>Quick Tour</span>
+            </button>
+          </div>
         </div>
 
         {/* Interview Status Alert */}
@@ -177,7 +198,7 @@ export function DashboardClient({
           }`}
         >
           {/* Card 1: Candidate Identity */}
-          <motion.div variants={itemVariants}>
+          <motion.div id="step-card-profile" variants={itemVariants}>
             <div
               className="h-full relative group"
               onMouseEnter={() => setHoveredCard("identity")}
@@ -232,18 +253,18 @@ export function DashboardClient({
                     : "Status: Restricted. Supplemental data required to authorize assessment phase."}
                 </Typography>
 
-                {isDetailsComplete ? (
-                  <Link
-                    href="/user/profile"
-                    className="w-full relative z-10 mb-10"
-                  >
-                    <button className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-brand-primary text-brand-primary font-black text-xs uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10 cursor-pointer">
-                      Submission Details
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </Link>
-                ) : (
-                  <div className="w-full relative z-10 mb-10">
+                <div
+                  id="step-submission-button"
+                  className="w-full relative z-10 mb-10"
+                >
+                  {isDetailsComplete ? (
+                    <Link href="/user/profile" className="w-full block">
+                      <button className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-brand-primary text-brand-primary font-black text-xs uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10 cursor-pointer">
+                        Submission Details
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </Link>
+                  ) : (
                     <button
                       disabled
                       className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-600 font-black text-xs uppercase tracking-widest bg-slate-50/50 dark:bg-zinc-900/30 opacity-60 cursor-not-allowed"
@@ -251,8 +272,8 @@ export function DashboardClient({
                       Submission Details
                       <Lock className="h-4 w-4" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <div className="mt-auto w-full relative z-10">
                   <div className="flex justify-between items-center mb-3 px-1">
@@ -284,7 +305,7 @@ export function DashboardClient({
           </motion.div>
 
           {/* Card 2: Personal Dossier */}
-          <motion.div variants={itemVariants}>
+          <motion.div id="step-card-personal-details" variants={itemVariants}>
             <Link
               href={isDetailsComplete ? "#" : "/user/personal-details"}
               onClick={(event) => isDetailsComplete && event.preventDefault()}
@@ -366,7 +387,7 @@ export function DashboardClient({
 
           {/* Card 3: Combat/Interview Test - hidden for departments that don't require interview */}
           {requiresInterview && (
-            <motion.div variants={itemVariants}>
+            <motion.div id="step-card-interview-test" variants={itemVariants}>
               <div
                 className={`group relative h-full rounded-[3rem] transition-all duration-700 ${!isInterviewEnabled && "opacity-80"}`}
                 onMouseEnter={() => setHoveredCard("interview")}

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
@@ -25,6 +25,7 @@ interface QuestionWorkspaceProps {
   onAnswerChange: (value: string) => void;
   onPrevious: () => void;
   onSaveAndNext: () => void;
+  onRunTour?: () => void;
 }
 
 export const QuestionWorkspace = memo(function QuestionWorkspace({
@@ -41,24 +42,40 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
   onAnswerChange,
   onPrevious,
   onSaveAndNext,
+  onRunTour,
 }: QuestionWorkspaceProps) {
   return (
     <MainCard
       title="Question Workspace"
       action={
-        <Badge
-          variant="outline"
-          shape="square"
-          color="violet"
-          className="whitespace-nowrap"
-        >
-          <Typography variant="span" className="sm:hidden">
-            Q {questionIndex + 1}/{currentSection.questions.length}
-          </Typography>
-          <Typography variant="span" className="hidden sm:inline">
-            Question {questionIndex + 1}/{currentSection.questions.length}
-          </Typography>
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge
+            id="interview-active-question-badge"
+            variant="outline"
+            shape="square"
+            color="violet"
+            className="whitespace-nowrap"
+          >
+            <Typography variant="span" className="sm:hidden">
+              Q {questionIndex + 1}/{currentSection.questions.length}
+            </Typography>
+            <Typography variant="span" className="hidden sm:inline">
+              Question {questionIndex + 1}/{currentSection.questions.length}
+            </Typography>
+          </Badge>
+          {onRunTour && (
+            <button
+              id="interview-active-help-trigger"
+              type="button"
+              onClick={onRunTour}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50"
+              title="Active Test Guide"
+            >
+              <HelpCircle className="h-3.5 w-3.5 text-brand-primary" />
+              <span className="hidden sm:inline">Test Guide</span>
+            </button>
+          )}
+        </div>
       }
       bodyClassName="space-y-4"
     >
@@ -89,7 +106,10 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         </motion.div>
       )}
 
-      <div className="flex items-center justify-between gap-4 pb-2">
+      <div
+        id="interview-active-question-type"
+        className="flex items-center justify-between gap-4 pb-2"
+      >
         <div className="flex items-center gap-3">
           <div className="h-8 w-1.5 rounded-full bg-brand-primary" />
           <div>
@@ -115,18 +135,25 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         )}
       </div>
 
-      <QuestionInstructionBanner
-        subjectName={currentQuestion.subjectName}
-        type={currentQuestion.type}
-      />
+      <div id="interview-active-instruction">
+        <QuestionInstructionBanner
+          subjectName={currentQuestion.subjectName}
+          type={currentQuestion.type}
+        />
+      </div>
 
-      <QuestionInput
-        question={currentQuestion}
-        currentAnswer={currentAnswer}
-        onChangeAnswer={onAnswerChange}
-      />
+      <div id="interview-active-workspace-content">
+        <QuestionInput
+          question={currentQuestion}
+          currentAnswer={currentAnswer}
+          onChangeAnswer={onAnswerChange}
+        />
+      </div>
 
-      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+      <div
+        id="interview-active-nav-actions"
+        className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-1"
+      >
         <Button
           variant="outline"
           color="primary"

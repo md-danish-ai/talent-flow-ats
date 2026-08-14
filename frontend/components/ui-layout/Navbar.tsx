@@ -117,7 +117,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle />
+            <div id="theme-toggle" className="flex items-center">
+              <ThemeToggle />
+            </div>
             {(user?.role === "admin" || user?.role === "project_lead") && (
               <div ref={notificationsRef}>
                 <NotificationDropdown
@@ -133,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
               </div>
             )}
 
-            <div ref={dropdownRef}>
+            <div id="user-profile-menu" ref={dropdownRef}>
               <ProfileDropdown
                 user={user}
                 isOpen={isProfileOpen}

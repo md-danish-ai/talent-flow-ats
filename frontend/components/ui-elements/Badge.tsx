@@ -16,7 +16,7 @@ export type BadgeColor =
 
 export type BadgeAnimate = "pulse" | "none";
 
-interface BadgeProps {
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode;
   variant?: BadgeVariant;
   shape?: BadgeShape;
@@ -71,6 +71,7 @@ export const Badge = ({
   icon,
   animate = "none",
   className,
+  ...props
 }: BadgeProps) => {
   return (
     <span
@@ -82,6 +83,7 @@ export const Badge = ({
         animate === "pulse" && "animate-pulse",
         className,
       )}
+      {...props}
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <Typography
