@@ -133,13 +133,28 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
     const item = e as Record<string, unknown>;
     let startYear = sanitizeStr(item.startYear);
     let endYear = sanitizeStr(item.endYear);
+    let isPursuing = Boolean(item.isPursuing);
 
-    // Fallback: parse from 'year' if missing
+    // Fallback: parse from 'year' if missing or contains Pursuing
     const yearStr = sanitizeStr(item.year);
-    if (!startYear && !endYear && yearStr && yearStr.includes("-")) {
-      const parts = yearStr.split("-");
-      startYear = parts[0] || "";
-      endYear = parts[1] || "";
+    if (yearStr) {
+      if (yearStr.toLowerCase().includes("pursuing")) {
+        isPursuing = true;
+        const parts = yearStr.split("-");
+        startYear =
+          startYear ||
+          (parts[0] && parts[0].toLowerCase() !== "pursuing" ? parts[0] : "");
+        endYear = "";
+      } else if (!startYear && !endYear && yearStr.includes("-")) {
+        const parts = yearStr.split("-");
+        startYear = parts[0] || "";
+        endYear = parts[1] || "";
+      }
+    }
+
+    if (endYear.toLowerCase() === "pursuing") {
+      isPursuing = true;
+      endYear = "";
     }
 
     return {
@@ -148,12 +163,12 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
       school: sanitizeStr(item.school),
       board: sanitizeStr(item.board),
       startYear,
-      endYear,
+      endYear: isPursuing ? "" : endYear,
       division: sanitizeStr(item.division),
       percentage: sanitizeStr(item.percentage),
       medium: sanitizeStr(item.medium),
       details: sanitizeStr(item.details),
-      isPursuing: Boolean(item.isPursuing),
+      isPursuing,
     };
   }) as Education[];
 
@@ -228,9 +243,23 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
       },
     ];
   }
+  const isFresherRecord =
+    arr.length === 1 &&
+    sanitizeStr((arr[0] as Record<string, unknown>).company).toLowerCase() ===
+      "fresher";
+
   return arr.map((i, index) => {
     const item = i as Record<string, unknown>;
     const companyStr = sanitizeStr(item.company);
+    const relieveDateStr = sanitizeStr(item.relieveDate);
+    const isLastCompany = index === arr.length - 1;
+    const isPresent =
+      Boolean(item.isPresent) ||
+      (!isFresherRecord &&
+        isLastCompany &&
+        Boolean(companyStr) &&
+        (relieveDateStr.toLowerCase() === "present" || !relieveDateStr));
+
     return {
       ...item,
       id: Number(item.id) || index + 1,
@@ -238,10 +267,11 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
       employmentType: sanitizeStr(item.employmentType),
       designation: sanitizeStr(item.designation),
       joinDate: sanitizeStr(item.joinDate),
-      relieveDate: sanitizeStr(item.relieveDate),
+      relieveDate:
+        relieveDateStr.toLowerCase() === "present" ? "" : relieveDateStr,
       reason: sanitizeStr(item.reason),
       salary: sanitizeStr(item.salary),
-      isPresent: Boolean(item.isPresent),
+      isPresent,
     };
   }) as WorkExperience[];
 };
@@ -472,8 +502,13 @@ export function UserForm({
           percentage: edu.percentage,
           medium: edu.medium,
           details: edu.details,
+          isPursuing: Boolean(edu.isPursuing),
         })),
-        workExperienceDetails: value.workExp,
+        workExperienceDetails: value.workExp.map((exp, index) => ({
+          ...exp,
+          id: exp.id ?? index + 1,
+          isPresent: Boolean(exp.isPresent),
+        })),
         otherDetails: {
           serviceCommitment: value.serviceCommitment,
           securityDeposit: value.securityDeposit,
