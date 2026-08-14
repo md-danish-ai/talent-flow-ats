@@ -64,14 +64,28 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
             <React.Fragment>
               {(family as FamilyMember[]).map(
                 (member: FamilyMember, index: number) => {
-                  const isMandatory =
-                    member.relation === "FATHER" ||
-                    member.relation === "MOTHER" ||
-                    member.relation === emergencyRelation ||
-                    (Boolean(assignedRelation) &&
-                      member.relation === assignedRelation);
+                  const isDeleteDisabled =
+                    index === 0 ||
+                    index === 1 ||
+                    member.relation?.toUpperCase() === "FATHER" ||
+                    member.relation?.toUpperCase() === "MOTHER" ||
+                    (typeof emergencyRelation === "string" &&
+                      Boolean(emergencyRelation) &&
+                      Boolean(member.relation) &&
+                      member.relation.toUpperCase() ===
+                        emergencyRelation.toUpperCase()) ||
+                    (typeof assignedRelation === "string" &&
+                      Boolean(assignedRelation) &&
+                      Boolean(member.relation) &&
+                      member.relation.toUpperCase() ===
+                        assignedRelation.toUpperCase());
+                  const isMandatory = isDeleteDisabled;
                   const isEmergencyContact =
-                    member.relation === emergencyRelation;
+                    typeof emergencyRelation === "string" &&
+                    Boolean(emergencyRelation) &&
+                    Boolean(member.relation) &&
+                    member.relation.toUpperCase() ===
+                      emergencyRelation.toUpperCase();
                   const isRelationSelected = Boolean(
                     member.relation &&
                     (isLoadingRelations ||
@@ -105,12 +119,14 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                           )}
                         </h4>
                         <Tooltip
-                          content={isMandatory ? "Required Row" : "Delete Row"}
+                          content={
+                            isDeleteDisabled ? "Required Row" : "Delete Row"
+                          }
                           side="top"
                         >
                           <button
                             type="button"
-                            disabled={isMandatory}
+                            disabled={isDeleteDisabled}
                             onClick={() => {
                               form.removeFieldValue("family", index);
                             }}
@@ -147,7 +163,7 @@ export function FamilyDetailsStep({ form }: FamilyDetailsStepProps) {
                                   }}
                                   placeholder="Select Relation"
                                   isLoading={isLoadingRelations}
-                                  disabled={isMandatory}
+                                  disabled={false}
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
