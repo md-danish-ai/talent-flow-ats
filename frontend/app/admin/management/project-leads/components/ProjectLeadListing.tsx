@@ -10,12 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@components/ui-elements/Table";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Pencil } from "lucide-react";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { toast } from "@lib/toast";
 import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { AddProjectLeadModal } from "./AddProjectLeadModal";
+import { EditProjectLeadModal } from "./EditProjectLeadModal";
 import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
 import { UserListResponse } from "@types";
 import { Badge } from "@components/ui-elements/Badge";
@@ -27,6 +28,8 @@ import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDraw
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { CopyableText } from "@components/ui-elements/CopyableText";
+import { TableIconButton } from "@components/ui-elements/TableIconButton";
 
 interface ProjectLeadListingProps {
   initialData?: {
@@ -44,6 +47,7 @@ interface ProjectLeadListingProps {
 
 export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<UserListResponse | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
 
@@ -152,14 +156,17 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                     <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
                       Status
                     </TableHead>
+                    <TableHead className="w-[100px] text-center font-bold text-slate-500 text-xs uppercase">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
+                    <SimpleTableSkeleton columnCount={6} rowCount={pageSize} />
                   ) : !Array.isArray(users) || users.length === 0 ? (
                     <EmptyState
-                      colSpan={5}
+                      colSpan={6}
                       title="No project leads found"
                       description="There are currently no project lead accounts registered in the system."
                     />
@@ -172,9 +179,31 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                         <TableCell className="font-semibold">
                           {row.username || "-"}
                         </TableCell>
-                        <TableCell>{row.mobile}</TableCell>
+                        <TableCell>
+                          {row.mobile ? (
+                            <CopyableText
+                              value={row.mobile}
+                              className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200"
+                              title="Copy Mobile Number"
+                            >
+                              <span>{row.mobile}</span>
+                            </CopyableText>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {row.email || "-"}
+                          {row.email ? (
+                            <CopyableText
+                              value={row.email}
+                              className="inline-flex text-xs text-muted-foreground"
+                              title="Copy Email"
+                            >
+                              <span>{row.email}</span>
+                            </CopyableText>
+                          ) : (
+                            "-"
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col items-center justify-center gap-1">
@@ -191,6 +220,19 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                             >
                               {row.is_active ? "ACTIVE" : "INACTIVE"}
                             </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-2">
+                            <TableIconButton
+                              iconColor="blue"
+                              btnSize="sm"
+                              animate="scale"
+                              title="Edit Project Lead"
+                              onClick={() => setEditingLead(row)}
+                            >
+                              <Pencil size={16} />
+                            </TableIconButton>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -228,6 +270,15 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
         isOpen={isAddModalOpen}
         onClose={() => {
           setIsAddModalOpen(false);
+          void refresh();
+        }}
+      />
+
+      <EditProjectLeadModal
+        isOpen={!!editingLead}
+        lead={editingLead}
+        onClose={() => {
+          setEditingLead(null);
           void refresh();
         }}
       />

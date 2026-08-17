@@ -49,7 +49,7 @@ class UpdateUserSchema(BaseModel):
     test_level_id: Optional[int] = None
     department_id: Optional[int] = None
 
-    @validator("email", "department_id", pre=True)
+    @validator("email", "department_id", "test_level_id", pre=True)
     def empty_to_none(cls, field_value):
         if field_value == "":
             return None
@@ -57,15 +57,16 @@ class UpdateUserSchema(BaseModel):
 
     @validator("name")
     def validate_full_name(cls, value):
-        # Single word name is allowed now
-        if not re.match(r"^[A-Za-z ]+$", value):
-            raise ValueError("Full name must only contain alphabetic characters.")
+        if value is not None:
+            if not re.match(r"^[A-Za-z ]+$", value):
+                raise ValueError("Full name must only contain alphabetic characters.")
         return value
 
     @validator("mobile")
     def validate_mobile(cls, value):
-        if not re.match(r"^[0-9]{10}$", value):
-            raise ValueError("The mobile number must be exactly 10 digits.")
+        if value is not None:
+            if not re.match(r"^[0-9]{10}$", value):
+                raise ValueError("The mobile number must be exactly 10 digits.")
         return value
 
 
