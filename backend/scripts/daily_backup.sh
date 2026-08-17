@@ -239,8 +239,8 @@ if [ "$UPLOAD_GDRIVE" = "true" ]; then
     else
         GDRIVE_DEST="${GDRIVE_REMOTE_NAME}:${GDRIVE_FOLDER_PATH}"
 
-        # Copy without progress bar to keep cron log files clean
-        if rclone copy "$OUTPUT_FILE" "$GDRIVE_DEST" --log-level ERROR; then
+        # Copy all local backups to catch up any previously failed uploads (skips already existing files)
+        if rclone copy "$BACKUP_DIR" "$GDRIVE_DEST" --include "talent_flow_ats_backup_*.sql" --retries 3 --retries-sleep 5s --log-level ERROR; then
             log_success "Uploaded to Google Drive"
 
             # Clean up old backups on Google Drive
