@@ -325,15 +325,35 @@ export const QuestionResultCard = ({
                 </div>
 
                 <div className="space-y-3.5">
-                  {/* PRESERVED INPUT: Exactly matching user's styling without modifications */}
+                  {/* Decimal and integer support (e.g., 4.5, 17.29) up to max_marks */}
                   <Input
-                    type="number"
-                    min={0}
-                    max={answer.max_marks}
+                    type="text"
+                    inputMode="decimal"
                     value={manualMarksValue}
-                    onChange={(e) =>
-                      onManualMarksChange(e.target.value.replace(/\D/g, ""))
-                    }
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (val === "") {
+                        onManualMarksChange("");
+                        return;
+                      }
+                      // Allow numbers and single decimal point
+                      val = val.replace(/[^0-9.]/g, "");
+                      const parts = val.split(".");
+                      if (parts.length > 2) {
+                        val = parts[0] + "." + parts.slice(1).join("");
+                      }
+                      // Limit decimal to max 2 decimal places
+                      const [intPart, decPart] = val.split(".");
+                      if (decPart !== undefined) {
+                        val = `${intPart}.${decPart.slice(0, 2)}`;
+                      }
+                      // Cap if greater than max_marks
+                      const num = parseFloat(val);
+                      if (!isNaN(num) && num > answer.max_marks) {
+                        val = String(answer.max_marks);
+                      }
+                      onManualMarksChange(val);
+                    }}
                     placeholder={`Score (0-${answer.max_marks})`}
                     className="font-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />

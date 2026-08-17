@@ -29,7 +29,7 @@ services:
     volumes:
       - ./backend:/backend
       - .env:/backend/.env:ro
-    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 60 --graceful-timeout 30 --reload
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50
 
   frontend:
     container_name: talent-flow-frontend

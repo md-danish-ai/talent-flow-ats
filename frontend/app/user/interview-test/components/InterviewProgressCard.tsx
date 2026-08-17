@@ -75,6 +75,7 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
     <MainCard title="Exam Progress" bodyClassName="space-y-6">
       {/* Optimized Prominent Timer Display */}
       <div
+        id="interview-active-timer"
         className={cn(
           "relative overflow-hidden border transition-all duration-700 p-5 sm:p-8 bg-background border-border/40",
           STYLE_CONFIG.cardRadius,
@@ -213,7 +214,7 @@ export const InterviewProgressCard = memo(function InterviewProgressCard({
         />
       </div>
 
-      <div className="space-y-4">
+      <div id="interview-active-progress" className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" shape="square" color="secondary">
             Section {sectionIndex + 1}/{totalSections}

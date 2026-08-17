@@ -21,9 +21,12 @@ import {
   paperAssignmentsApi,
   type AssignedInterviewPaperResponse,
 } from "@lib/api/paper-assignments";
+import { useMe } from "@hooks/api/user/use-me";
+import { useActiveTestTour } from "@lib/tour";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
 export function InterviewTestClient() {
+  const { data: currentUser } = useMe();
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const [loadedSections, setLoadedSections] =
     useState<InterviewSection[]>(DUMMY_SECTIONS);
@@ -66,6 +69,10 @@ export function InterviewTestClient() {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [finalSummary, setFinalSummary] =
     useState<AttemptSummaryResponse | null>(null);
+
+  const { runTourManually: runActiveTestTour } = useActiveTestTour(
+    hasStarted && !isCompleted ? currentUser || null : null,
+  );
 
   const currentSection = sections[sectionIndex] ?? sections[0];
   const currentQuestion =
@@ -715,6 +722,7 @@ export function InterviewTestClient() {
             onAnswerChange={setCurrentAnswer}
             onPrevious={handlePrevious}
             onSaveAndNext={handleSaveAndNext}
+            onRunTour={runActiveTestTour}
           />
         </div>
 
