@@ -33,8 +33,7 @@ export function SignInForm() {
     const clearAuth =
       searchParams.get("clear_auth") || urlParams.get("clear_auth");
     const isInactive =
-      searchParams.get("inactive") === "1" ||
-      urlParams.get("inactive") === "1";
+      searchParams.get("inactive") === "1" || urlParams.get("inactive") === "1";
 
     if (isInactive) {
       const timer = setTimeout(() => {
