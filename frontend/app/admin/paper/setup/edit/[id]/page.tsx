@@ -8,7 +8,7 @@ import { PaperSetup, PaperSetupCreate } from "@types";
 import { toast } from "@lib/toast";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { PageHeader } from "@components/ui-elements/PageHeader";
-import { Loader2 } from "lucide-react";
+import { PaperFormSkeleton } from "@components/ui-skeleton/PaperFormSkeleton";
 
 export default function EditPaperPage() {
   const router = useRouter();
@@ -54,8 +54,12 @@ export default function EditPaperPage() {
   if (isLoading) {
     return (
       <PageContainer animate>
-        <div className="flex h-[400px] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+        <PageHeader
+          title="Modify Test Paper"
+          description="Update paper details, adjust subject weightage, or reorder the exam structure."
+        />
+        <div className="mt-6">
+          <PaperFormSkeleton />
         </div>
       </PageContainer>
     );

@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, MapPin, Map, Loader2, Plus, Edit2 } from "lucide-react";
+import { Search, MapPin, Map, Plus, Edit2 } from "lucide-react";
 import { Input } from "@components/ui-elements/Input";
 import { Button } from "@components/ui-elements/Button";
 import { useStates, useDistrictsByState } from "@hooks/useLocations";
 import { DistrictModal } from "./components/DistrictModal";
 import { District } from "@lib/api/locations";
+import {
+  StateListSkeleton,
+  DistrictGridSkeleton,
+} from "@components/ui-skeleton/LocationSkeleton";
 
 export default function LocationsManagementPage() {
   const [selectedStateId, setSelectedStateId] = useState<number | null>(null);
@@ -67,9 +71,7 @@ export default function LocationsManagementPage() {
 
           <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
             {isStatesLoading ? (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
+              <StateListSkeleton />
             ) : filteredStates.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground text-sm">
                 No states found.
@@ -138,9 +140,7 @@ export default function LocationsManagementPage() {
 
               <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
                 {isDistrictsLoading ? (
-                  <div className="flex items-center justify-center h-40">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                  </div>
+                  <DistrictGridSkeleton />
                 ) : filteredDistricts.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground text-sm">
                     No districts found.

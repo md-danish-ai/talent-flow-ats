@@ -10,6 +10,7 @@ import {
   formatSecondsToTime,
 } from "@lib/utils";
 import { InterviewOverview } from "./components/InterviewOverview";
+import { InterviewOverviewSkeleton } from "@components/ui-skeleton/InterviewOverviewSkeleton";
 import { InterviewCompleted } from "./components/InterviewCompleted";
 import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
@@ -683,7 +684,7 @@ export function InterviewTestClient() {
   if (isLoadingPaper && !hasStarted) {
     return (
       <PageContainer className="py-2 sm:py-3 lg:py-4">
-        Loading assigned paper...
+        <InterviewOverviewSkeleton />
       </PageContainer>
     );
   }

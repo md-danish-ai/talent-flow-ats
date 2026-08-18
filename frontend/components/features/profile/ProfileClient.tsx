@@ -267,7 +267,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                           color="primary"
                           size="sm"
                           onClick={handleProfileUpdate}
-                          // isLoading={isSaving}
+                          isLoading={updateProfileMutation.isPending}
                           className="rounded-xl px-6 py-2 font-bold h-10"
                         >
                           <Save size={16} className="mr-2" />
@@ -324,15 +324,9 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                       <Input
                         placeholder="Your Mobile Number"
                         value={formData.mobile}
-                        onChange={(e) =>
-                          setFormData({ ...formData, mobile: e.target.value })
-                        }
-                        disabled={!isEditing}
+                        disabled={true}
                         startIcon={<Phone size={18} />}
-                        className={cn(
-                          !isEditing &&
-                            "bg-muted/30 border-transparent cursor-not-allowed",
-                        )}
+                        className="bg-muted/30 border-transparent cursor-not-allowed opacity-75"
                       />
                     </div>
                   </div>

@@ -131,12 +131,12 @@ export async function toggleUserStatus(
 export async function updateBasicInfo(
   userId: number,
   data: SignUpFormValues | CreateAdminFormValues | Partial<SignUpFormValues>,
-  options?: Pick<ApiRequestOptions, "cookies">,
+  options?: Pick<ApiRequestOptions, "cookies" | "silentSuccess">,
 ): Promise<{ message: string; user_id: number }> {
   return api.put<{ message: string; user_id: number }>(
     ENDPOINTS.AUTH.UPDATE_BASIC_INFO(userId),
     data,
-    options,
+    { ...options, silentSuccess: true },
   );
 }
 

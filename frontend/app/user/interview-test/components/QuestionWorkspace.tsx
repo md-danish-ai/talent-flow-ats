@@ -69,10 +69,10 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
               type="button"
               onClick={onRunTour}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50"
-              title="Active Test Guide"
+              title="Quick Guide"
             >
               <HelpCircle className="h-3.5 w-3.5 text-brand-primary" />
-              <span className="hidden sm:inline">Test Guide</span>
+              <span className="hidden sm:inline">Quick Guide</span>
             </button>
           )}
         </div>
