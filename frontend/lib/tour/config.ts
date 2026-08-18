@@ -26,7 +26,7 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "👋 Welcome to TalentFlow",
       description:
-        "This is your candidate dashboard. Here you can track and complete each phase of your application lifecycle.",
+        "This is your candidate dashboard. Follow the 3 simple steps below to complete your application process.",
       side: "bottom",
       align: "start",
     },
@@ -56,17 +56,17 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "📝 Step 1: Personal Details",
       description:
-        "Start by filling in your contact details, education, and work experience. This step is mandatory before taking the test.",
+        "Start here! Fill out your personal info, contact details, education, and work experience. This step is required before taking the test.",
       side: "top",
       align: "center",
     },
   },
   {
-    element: "#step-submission-button",
+    element: "#step-card-profile",
     popover: {
-      title: "🔍 Step 2: Review Submission Details",
+      title: "🔍 Step 2: Review Profile",
       description:
-        "Once Step 1 is completed, this button activates. You can cross-check and review all your submitted information here.",
+        "Once you submit Step 1, this card unlocks so you can cross-check and review all your submitted details anytime.",
       side: "top",
       align: "center",
     },
@@ -76,7 +76,7 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "🎯 Step 3: Online Assessment",
       description:
-        "Your Round-1 technical test unlocks after profile submission. Click here to enter the test room and start your assessment.",
+        "Your online assessment unlocks after Step 1 is submitted. Click here to enter the test room when you are ready.",
       side: "top",
       align: "center",
     },
@@ -86,7 +86,7 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "💡 Quick Guide",
       description:
-        "Need a quick reminder? Click this button anytime to replay the guide and review the steps.",
+        "Need a quick reminder? Click this button anytime to replay the guide and review your steps.",
       side: "bottom",
       align: "end",
     },
@@ -95,21 +95,21 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
 
 /**
  * 2. Re-Interview / Completed Details Candidate Tour Steps (Dashboard)
- * 1. Dashboard Overview
- * 2. Light / Dark Mode
+ * 1. Welcome to TalentFlow
+ * 2. Light & Dark Mode
  * 3. Candidate Profile
- * 4. Step 1: Submission Details (Review)
- * 5. Step 2: Personal Details (Locked)
- * 6. Step 3: Online Assessment (Unlocked & Ready)
+ * 4. Step 1: Personal Details
+ * 5. Step 2: Review Profile
+ * 6. Step 3: Online Assessment
  * 7. Quick Tour & Help
  */
 export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
   {
     element: "#user-dashboard-header",
     popover: {
-      title: "👋 Application Dashboard",
+      title: "👋 Welcome to TalentFlow",
       description:
-        "Your profile is submitted. Here is the updated status of your application lifecycle.",
+        "This is your candidate dashboard. Here is the updated status of your application steps.",
       side: "bottom",
       align: "start",
     },
@@ -135,21 +135,20 @@ export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
     },
   },
   {
-    element: "#step-submission-button",
+    element: "#step-card-personal-details",
     popover: {
-      title: "🔍 Review Submission Details",
-      description:
-        "Your personal details are submitted. Click here anytime to cross-check and review all your submitted information.",
+      title: "📝 Step 1: Personal Details",
+      description: "Your application details have been submitted and saved.",
       side: "top",
       align: "center",
     },
   },
   {
-    element: "#step-card-personal-details",
+    element: "#step-card-profile",
     popover: {
-      title: "🔒 Personal Details Cleared",
+      title: "🔍 Step 2: Review Profile",
       description:
-        "Your operational data is now locked and verified. No further modifications are required.",
+        "Click here anytime to view and review your submitted candidate information.",
       side: "top",
       align: "center",
     },
@@ -157,9 +156,9 @@ export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
   {
     element: "#step-card-interview-test",
     popover: {
-      title: "🚀 Assessment Ready!",
+      title: "🎯 Step 3: Online Assessment",
       description:
-        "Your Round-1 Assessment is unlocked! Click here to enter the test room and complete your evaluation.",
+        "Your assessment is unlocked! Click here when you are ready to start your test.",
       side: "top",
       align: "center",
     },
@@ -169,7 +168,7 @@ export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "💡 Quick Guide",
       description:
-        "Need a reminder? You can replay the guide and review your next steps anytime by clicking Quick Guide.",
+        "Need a reminder? You can replay the guide anytime by clicking Quick Guide.",
       side: "bottom",
       align: "end",
     },
@@ -205,7 +204,7 @@ export const PERSONAL_DETAILS_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "✍️ Required Information",
       description:
-        "Please ensure all mandatory fields marked with an asterisk (*) like contact info, education, and documents are filled accurately.",
+        "Please ensure all mandatory fields marked with an asterisk (*) like personal info, contact, education, and experience are filled accurately.",
       side: "top",
       align: "center",
     },

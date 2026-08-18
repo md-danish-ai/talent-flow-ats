@@ -10,6 +10,10 @@ import {
   CheckCircle2,
   Lock,
   HelpCircle,
+  Clock,
+  Check,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import Link from "next/link";
@@ -29,7 +33,7 @@ interface DashboardClientProps {
 }
 
 /**
- * Clean Border Animation Component
+ * Animated SVG Border on Card Hover
  */
 function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
   return (
@@ -39,11 +43,11 @@ function AnimatedBorder({ color, active }: { color: string; active: boolean }) {
         y="0"
         width="100%"
         height="100%"
-        rx="46px"
-        ry="46px"
+        rx="24px"
+        ry="24px"
         fill="none"
         stroke={color}
-        strokeWidth="6"
+        strokeWidth="4"
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{
@@ -88,10 +92,8 @@ export function DashboardClient({
     activeInterviewStatus?.has_attempt &&
     activeStatus === "started" &&
     !isExpired;
-  const isDecommissioned =
-    isInterviewSubmitted ||
-    (activeInterviewStatus?.has_attempt && isExpired) ||
-    (activeStatus && activeStatus !== "started");
+
+  const candidateFirstName = user?.username?.split(" ")[0] || "Candidate";
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -104,42 +106,49 @@ export function DashboardClient({
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] } as Transition,
+      transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] } as Transition,
     },
   };
 
   return (
-    <div className="min-h-screen dark:bg-[radial-gradient(circle_at_top_right,_rgba(39,39,42,0.1),_transparent_40%)] py-4 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto">
+    <div className="w-full min-h-full py-2 px-2 sm:px-4 lg:px-6">
+      <div className="w-full space-y-6">
         {/* Dashboard Header */}
-        <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div id="user-dashboard-header" className="space-y-2 p-1 rounded-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-zinc-800/80">
+          <div id="user-dashboard-header" className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-primary/10 text-brand-primary">
+                Candidate Portal
+              </span>
+            </div>
             <Typography
               variant="h1"
-              weight="black"
-              className="tracking-tighter uppercase italic text-4xl leading-none text-slate-900 dark:text-zinc-100"
+              weight="bold"
+              className="text-2xl sm:text-3xl text-slate-900 dark:text-zinc-100 font-bold tracking-tight"
             >
-              Talent Dashboard
+              Welcome, {candidateFirstName}!
             </Typography>
             <Typography
               variant="body2"
-              className="text-slate-500 dark:text-zinc-500 font-bold uppercase tracking-widest text-[10px]"
+              className="text-slate-600 dark:text-zinc-400 font-normal text-sm"
             >
-              Central Command / Application Lifecycle
+              Follow the 3 simple steps below to complete your application
+              process.
             </Typography>
           </div>
-          <div className="h-0.5 flex-1 mx-12 bg-slate-200/50 dark:bg-zinc-800/30 hidden lg:block mb-5" />
-          <div className="flex items-center gap-3 mb-1 shrink-0">
+
+          <div className="flex items-center gap-4 shrink-0">
+            {/* Quick Guide Tour Button */}
             <button
               id="tour-help-trigger"
               type="button"
               onClick={() => runTourManually()}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm shadow-brand-primary/5 cursor-pointer active:scale-95 hover:border-brand-primary/50"
-              title="Quick Guide"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700/60 text-slate-700 dark:text-zinc-200 font-medium text-xs sm:text-sm transition-all shadow-sm cursor-pointer active:scale-95"
+              title="Quick Guide Walkthrough"
             >
               <HelpCircle className="h-4 w-4 text-brand-primary" />
               <span>Quick Guide</span>
@@ -147,375 +156,430 @@ export function DashboardClient({
           </div>
         </div>
 
-        {/* Interview Status Alert */}
+        {/* Assessment Submitted Success Alert Banner */}
         {requiresInterview && isInterviewSubmitted && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-10 p-5 rounded-3xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-6 relative overflow-hidden group shadow-sm shadow-emerald-500/5"
+            className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 flex items-start sm:items-center gap-4 shadow-sm"
           >
-            <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
-              <CheckCircle2 className="h-7 w-7" />
+            <div className="h-12 w-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
             <div className="flex-1 space-y-1">
               <Typography
                 variant="h4"
-                weight="black"
-                className="text-emerald-950 dark:text-emerald-400 tracking-tighter uppercase italic leading-none"
+                weight="bold"
+                className="text-emerald-900 dark:text-emerald-300 text-base sm:text-lg font-bold"
               >
-                Mission Accomplished
+                Assessment Submitted Successfully!
               </Typography>
               <Typography
                 variant="body2"
-                className="text-emerald-700/80 dark:text-zinc-500 font-medium leading-tight max-w-3xl"
+                className="text-emerald-700 dark:text-emerald-400/90 text-sm font-normal"
               >
-                Your technical assessment has been successfully logged. Our
-                recruitment core is now analyzing your performance.
+                Your technical test responses have been logged. Our recruitment
+                team is currently reviewing your profile and will update you on
+                the next steps.
               </Typography>
             </div>
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500 animate-pulse" />
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-emerald-600 uppercase tracking-tighter text-[9px]"
-              >
-                Analysis In Progress
-              </Typography>
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-semibold shrink-0">
+              <Clock className="h-3.5 w-3.5" />
+              Under Review
             </div>
           </motion.div>
         )}
 
-        {/* Action Cards Grid */}
+        {/* Step Cards Grid - Full View (1fr per card) */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className={`grid grid-cols-1 gap-10 ${
+          className={`grid grid-cols-1 gap-6 ${
             !requiresInterview
               ? "md:grid-cols-2"
               : "md:grid-cols-2 lg:grid-cols-3"
           }`}
         >
-          {/* Card 1: Candidate Identity */}
-          <motion.div id="step-card-profile" variants={itemVariants}>
+          {/* ============================================================
+              STEP 1: Personal Details Form
+              ============================================================ */}
+          <motion.div id="step-card-personal-details" variants={itemVariants}>
             <div
-              className="h-full relative group"
-              onMouseEnter={() => setHoveredCard("identity")}
+              className={`h-full relative group ${
+                !isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"
+              }`}
+              onMouseEnter={() => setHoveredCard("personal")}
               onMouseLeave={() => setHoveredCard(null)}
             >
-              <Card className="h-full bg-white dark:bg-zinc-800/30 backdrop-blur-2xl border border-slate-200 dark:border-zinc-800/50 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.6)] dark:ring-1 dark:ring-white/10 p-12 flex flex-col items-center text-center relative overflow-hidden transition-all duration-700 hover:border-brand-primary/30">
+              <Card
+                className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+                  !isDetailsComplete
+                    ? "border-emerald-500/40 shadow-md shadow-emerald-500/5 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer"
+                    : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
+                }`}
+              >
+                {/* Animated Border on Hover */}
                 <AnimatedBorder
-                  color="#f43f5e"
-                  active={hoveredCard === "identity"}
+                  color="#10b981"
+                  active={hoveredCard === "personal"}
                 />
 
-                <div className="absolute -top-12 -right-12 p-4 opacity-[0.02] group-hover:opacity-[0.04] transition-opacity rotate-12 -z-0 pointer-events-none">
-                  <User size={240} strokeWidth={1} />
-                </div>
-
-                <div className="relative h-20 w-20 rounded-3xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center border-2 border-slate-200 dark:border-zinc-800 mb-10 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                  <User className="h-10 w-10 text-slate-400 dark:text-zinc-600" />
-                  {isDetailsComplete && (
-                    <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-xl bg-emerald-500 border-4 border-white dark:border-zinc-900 shadow-[0_0_15px_rgba(16,185,129,0.5)] flex items-center justify-center z-10">
-                      <CheckCircle2 className="h-4 w-4 text-white animate-pulse" />
-                    </div>
+                {/* Step Header & Badge */}
+                <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                    Step 1
+                  </span>
+                  {isDetailsComplete ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                      <Lock className="h-3 w-3" />
+                      Locked
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 animate-pulse">
+                      Action Required
+                    </span>
                   )}
                 </div>
 
-                <div className="flex flex-col items-center gap-3 mb-6 relative z-10">
-                  <Typography
-                    variant="h3"
-                    weight="black"
-                    className="text-2xl tracking-tighter uppercase italic"
+                {/* Icon & Title */}
+                <div className="flex items-start gap-4 mb-4 relative z-10">
+                  <div
+                    className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 ${
+                      !isDetailsComplete
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-105"
+                        : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
+                    }`}
                   >
-                    {user?.username?.split(" ")[0] || "Candidate"}
-                  </Typography>
-                  <div className="px-4 py-1.5 rounded-full bg-brand-primary/5 dark:bg-brand-primary/10 border border-brand-primary/20">
+                    {isDetailsComplete ? (
+                      <CheckCircle2 className="h-7 w-7 text-emerald-500/80" />
+                    ) : (
+                      <FileText className="h-7 w-7" />
+                    )}
+                  </div>
+                  <div>
                     <Typography
-                      variant="body5"
-                      weight="black"
-                      className="text-brand-primary uppercase tracking-widest text-[9px]"
+                      variant="h3"
+                      weight="bold"
+                      className="text-lg sm:text-xl text-slate-900 dark:text-zinc-100 font-bold"
                     >
-                      Operational Profile
+                      Personal Details
                     </Typography>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                      Personal, Education & Experience
+                    </p>
                   </div>
                 </div>
 
-                <Typography
-                  variant="body2"
-                  className="text-slate-500 dark:text-zinc-500 line-clamp-3 mb-10 leading-relaxed font-medium"
-                >
+                {/* Description */}
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
                   {isDetailsComplete
-                    ? isInterviewSubmitted
-                      ? "Status: Deployed. Assessment archived for review. No pending mission."
-                      : "Status: Unlocked. Profile verification complete. Assessment phase pending."
-                    : "Status: Restricted. Supplemental data required to authorize assessment phase."}
-                </Typography>
+                    ? "Your personal information, educational background, and work history have been saved and locked."
+                    : "Fill out your personal information, contact details, educational background, and work experience."}
+                </p>
 
-                <div
-                  id="step-submission-button"
-                  className="w-full relative z-10 mb-10"
-                >
-                  {isDetailsComplete ? (
-                    <Link href="/user/profile" className="w-full block">
-                      <button className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-brand-primary text-brand-primary font-black text-xs uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10 cursor-pointer">
-                        Submission Details
+                {/* Card Action CTA */}
+                <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10">
+                  {!isDetailsComplete ? (
+                    <Link
+                      href="/user/personal-details"
+                      className="w-full block"
+                    >
+                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] cursor-pointer">
+                        <span>Fill Application Details</span>
                         <ArrowRight className="h-4 w-4" />
                       </button>
                     </Link>
                   ) : (
                     <button
                       disabled
-                      className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.2rem] border-2 border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-600 font-black text-xs uppercase tracking-widest bg-slate-50/50 dark:bg-zinc-900/30 opacity-60 cursor-not-allowed"
+                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
                     >
-                      Submission Details
                       <Lock className="h-4 w-4" />
+                      <span>Details Submitted & Locked</span>
                     </button>
                   )}
-                </div>
-
-                <div className="mt-auto w-full relative z-10">
-                  <div className="flex justify-between items-center mb-3 px-1">
-                    <Typography
-                      variant="body5"
-                      weight="black"
-                      className="text-slate-400 uppercase tracking-widest text-[9px]"
-                    >
-                      Completion Level
-                    </Typography>
-                    <Typography
-                      variant="body5"
-                      weight="black"
-                      className="text-brand-primary uppercase tracking-widest text-[9px]"
-                    >
-                      {isDetailsComplete ? "100%" : "30%"}
-                    </Typography>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-zinc-950 rounded-full overflow-hidden border border-slate-200/50 dark:border-zinc-800/50">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: isDetailsComplete ? "100%" : "30%" }}
-                      className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary"
-                    />
-                  </div>
                 </div>
               </Card>
             </div>
           </motion.div>
 
-          {/* Card 2: Personal Dossier */}
-          <motion.div id="step-card-personal-details" variants={itemVariants}>
-            <Link
-              href={isDetailsComplete ? "#" : "/user/personal-details"}
-              onClick={(event) => isDetailsComplete && event.preventDefault()}
-              className={`group relative block h-full ${
-                isDetailsComplete ? "cursor-not-allowed" : "cursor-pointer"
+          {/* ============================================================
+              STEP 2: Review Submitted Application Profile (Primary Color)
+              ============================================================ */}
+          <motion.div id="step-card-profile" variants={itemVariants}>
+            <div
+              className={`h-full relative group ${
+                isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"
               }`}
-              onMouseEnter={() => setHoveredCard("personal")}
+              onMouseEnter={() => setHoveredCard("identity")}
               onMouseLeave={() => setHoveredCard(null)}
             >
               <Card
-                className={`h-full relative overflow-hidden flex flex-col p-12 border transition-all duration-700 rounded-[3rem] bg-white dark:bg-zinc-800/30 backdrop-blur-2xl ${
-                  !isDetailsComplete
-                    ? "border-slate-200 dark:border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.6)] dark:ring-1 dark:ring-white/10 hover:shadow-[0_45px_100px_rgba(244,63,94,0.1)] dark:hover:shadow-[0_45px_100px_rgba(0,0,0,0.73)] hover:border-emerald-500/40 hover:-translate-y-2"
-                    : "border-slate-100 dark:border-zinc-800/40 opacity-90 grayscale-[0.2]"
+                className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+                  isDetailsComplete
+                    ? "border-brand-primary/30 dark:border-brand-primary/30 shadow-sm hover:border-brand-primary/60 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                    : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
                 }`}
               >
+                {/* Animated Border on Hover (Primary Brand Color) */}
                 <AnimatedBorder
-                  color="#10b981"
-                  active={hoveredCard === "personal"}
+                  color="#f43f5e"
+                  active={hoveredCard === "identity"}
                 />
 
-                <div className="absolute -top-12 -right-12 p-4 opacity-[0.02] group-hover:opacity-[0.04] transition-opacity rotate-6 -z-0 pointer-events-none">
-                  <FileText size={240} strokeWidth={1} />
-                </div>
-
-                <div className="flex items-start justify-between mb-10 relative z-10">
-                  <div
-                    className={`h-20 w-20 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 ${
-                      !isDetailsComplete
-                        ? "bg-brand-primary/5 border-brand-primary/10 text-brand-primary group-hover:scale-110 shadow-inner"
-                        : "bg-slate-50 dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-300"
-                    }`}
-                  >
-                    <FileText className="h-10 w-10" />
-                  </div>
-                  {isDetailsComplete && (
-                    <div className="h-10 w-10 rounded-2xl bg-emerald-500 border-4 border-white dark:border-zinc-900 flex items-center justify-center text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] relative">
-                      <CheckCircle2 className="h-5 w-5 animate-pulse" />
-                      <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40 animate-[ping_2s_infinite]" />
-                    </div>
+                {/* Step Header & Badge */}
+                <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                    Step 2
+                  </span>
+                  {isDetailsComplete ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-primary/10 dark:bg-brand-primary/15 text-brand-primary border border-brand-primary/20 dark:border-brand-primary/30">
+                      Available
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                      <Lock className="h-3 w-3" />
+                      Locked
+                    </span>
                   )}
                 </div>
 
-                <div className="mb-10 relative z-10">
-                  <Typography
-                    variant="h3"
-                    weight="black"
-                    className={`mb-3 text-2xl tracking-tighter uppercase italic ${isDetailsComplete ? "text-slate-400 dark:text-zinc-600" : "text-slate-900 dark:text-white"}`}
-                  >
-                    Personal Details
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    className={`leading-relaxed font-medium line-clamp-4 ${
-                      !isDetailsComplete
-                        ? "text-slate-500 dark:text-zinc-500"
-                        : "text-slate-300 dark:text-zinc-700"
+                {/* Icon & Title */}
+                <div className="flex items-start gap-4 mb-4 relative z-10">
+                  <div
+                    className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 ${
+                      isDetailsComplete
+                        ? "bg-brand-primary/10 dark:bg-brand-primary/15 border-brand-primary/30 text-brand-primary"
+                        : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
                     }`}
                   >
-                    {isDetailsComplete
-                      ? "Your operational data is now locked. No further modifications allowed after clearance."
-                      : "Initialize your academy record, professional trail, and contact matrix to gain clearance."}
-                  </Typography>
+                    <User className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <Typography
+                      variant="h3"
+                      weight="bold"
+                      className="text-lg sm:text-xl text-slate-900 dark:text-zinc-100 font-bold"
+                    >
+                      Review Profile
+                    </Typography>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                      View Submitted Information
+                    </p>
+                  </div>
                 </div>
 
+                {/* Description */}
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
+                  {isDetailsComplete
+                    ? "Cross-check and review your submitted candidate details, education, experience, and profile summary anytime."
+                    : "This section unlocks after you submit your Personal Details form in Step 1."}
+                </p>
+
+                {/* Card Action CTA */}
                 <div
-                  className={`mt-auto h-14 flex items-center gap-3 font-black text-xs uppercase tracking-widest transition-all relative z-10 ${
-                    !isDetailsComplete
-                      ? "text-brand-primary group-hover:translate-x-2"
-                      : "text-slate-300 dark:text-zinc-800"
-                  }`}
+                  id="step-submission-button"
+                  className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10"
                 >
-                  {isDetailsComplete ? "Cleared" : "Authorize Data"}
-                  {!isDetailsComplete && <ArrowRight className="h-4 w-4" />}
+                  {isDetailsComplete ? (
+                    <Link href="/user/profile" className="w-full block">
+                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl border border-brand-primary/30 hover:border-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-semibold text-sm transition-all shadow-sm active:scale-[0.98] cursor-pointer">
+                        <span>View Submitted Details</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </Link>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
+                    >
+                      <Lock className="h-4 w-4" />
+                      <span>Locked (Complete Step 1)</span>
+                    </button>
+                  )}
                 </div>
               </Card>
-            </Link>
+            </div>
           </motion.div>
 
-          {/* Card 3: Combat/Interview Test - hidden for departments that don't require interview */}
+          {/* ============================================================
+              STEP 3: Online Assessment (Interview Test)
+              ============================================================ */}
           {requiresInterview && (
             <motion.div id="step-card-interview-test" variants={itemVariants}>
               <div
-                className={`group relative h-full rounded-[3rem] transition-all duration-700 ${!isInterviewEnabled && "opacity-80"}`}
+                className={`h-full relative group ${
+                  isInterviewEnabled
+                    ? "cursor-pointer"
+                    : isInterviewSubmitted
+                      ? "cursor-default"
+                      : "cursor-not-allowed"
+                }`}
                 onMouseEnter={() => setHoveredCard("interview")}
                 onMouseLeave={() => setHoveredCard(null)}
               >
-                <Link
-                  href={isInterviewEnabled ? "/user/interview-test" : "#"}
-                  onClick={(event) =>
-                    !isInterviewEnabled && event.preventDefault()
-                  }
-                  className={`block h-full ${isInterviewEnabled ? "cursor-pointer" : "cursor-not-allowed"}`}
+                <Card
+                  className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+                    isInterviewEnabled
+                      ? "border-blue-500/40 shadow-md shadow-blue-500/5 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                      : isInterviewSubmitted
+                        ? "border-slate-200 dark:border-zinc-800/80 shadow-sm hover:shadow-md cursor-default"
+                        : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
+                  }`}
                 >
-                  <Card
-                    className={`h-full relative overflow-hidden flex flex-col p-12 border transition-all duration-700 rounded-[3rem] bg-white dark:bg-zinc-800/30 backdrop-blur-2xl ${
-                      isInterviewEnabled
-                        ? "border-slate-200 dark:border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_80px_rgba(0,0,0,0.6)] dark:ring-1 dark:ring-white/10 hover:shadow-[0_45px_100px_rgba(37,99,235,0.12)] dark:hover:shadow-[0_45px_100px_rgba(0,0,0,0.73)] hover:border-blue-400/40 hover:-translate-y-2"
-                        : "border-slate-100 dark:border-zinc-800/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
-                    }`}
-                  >
-                    <AnimatedBorder
-                      color="#3b82f6"
-                      active={hoveredCard === "interview"}
-                    />
+                  {/* Animated Border on Hover */}
+                  <AnimatedBorder
+                    color="#3b82f6"
+                    active={hoveredCard === "interview"}
+                  />
 
-                    <div className="absolute -top-12 -right-12 p-4 opacity-[0.02] group-hover:opacity-[0.04] transition-opacity rotate-12 -z-0 pointer-events-none">
-                      <PlayCircle size={240} strokeWidth={1} />
-                    </div>
+                  {/* Step Header & Badge */}
+                  <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                      Step 3
+                    </span>
+                    {isInterviewSubmitted ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                        <Check className="h-3.5 w-3.5" />
+                        Completed
+                      </span>
+                    ) : isExpired ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40">
+                        Expired
+                      </span>
+                    ) : isResuming ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 animate-pulse">
+                        In Progress
+                      </span>
+                    ) : isInterviewEnabled ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40 animate-pulse">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-ping inline-block" />
+                        Ready to Start
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                        <Lock className="h-3 w-3" />
+                        Locked
+                      </span>
+                    )}
+                  </div>
 
-                    <div className="flex items-start justify-between mb-10 relative z-10">
-                      <div
-                        className={`h-20 w-20 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 ${
-                          isInterviewEnabled
-                            ? "bg-blue-50 dark:bg-blue-900/10 border-blue-400/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 shadow-inner"
-                            : "bg-slate-50 dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-300"
-                        }`}
-                      >
-                        {isDecommissioned ? (
-                          <CheckCircle2
-                            className={`h-10 w-10 ${isInterviewSubmitted ? "text-emerald-500" : "text-slate-400"}`}
-                          />
-                        ) : (
-                          <PlayCircle className="h-10 w-10" />
-                        )}
-                      </div>
-                      {isInterviewSubmitted && (
-                        <div className="h-10 w-10 rounded-2xl bg-emerald-500 border-4 border-white dark:border-zinc-900 flex items-center justify-center text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] relative">
-                          <CheckCircle2 className="h-5 w-5 animate-pulse" />
-                          <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40 animate-[ping_2s_infinite]" />
-                        </div>
-                      )}
-                      {!isInterviewEnabled && !isInterviewSubmitted && (
-                        <div className="h-20 w-20 rounded-3xl bg-slate-50 dark:bg-zinc-950 border-2 border-slate-100 dark:border-zinc-800 flex items-center justify-center text-slate-300">
-                          <Lock className="h-7 w-7" />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mb-10 relative z-10">
-                      <Typography
-                        variant="h3"
-                        weight="black"
-                        className={`tracking-tight uppercase italic ${
-                          !isInterviewEnabled
-                            ? "text-slate-400 dark:text-zinc-600"
-                            : "text-slate-900 dark:text-zinc-100"
-                        }`}
-                      >
-                        {isDecommissioned
-                          ? "Decommissioned"
-                          : isResuming
-                            ? "Resume Phase"
-                            : "Initiate Phase"}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        className={`leading-relaxed font-medium line-clamp-4 ${
-                          isInterviewEnabled
-                            ? "text-slate-500 dark:text-zinc-500"
-                            : "text-slate-300 dark:text-zinc-700"
-                        }`}
-                      >
-                        {isInterviewSubmitted
-                          ? "Interview successfully completed and processed."
-                          : isExpired
-                            ? "Interview time has expired. Participation closed."
-                            : isResuming
-                              ? "An active session exists. Resume your core assessment."
-                              : "Standard competency evaluation protocols."}
-                      </Typography>
-                    </div>
-
+                  {/* Icon & Title */}
+                  <div className="flex items-start gap-4 mb-4 relative z-10">
                     <div
-                      className={`mt-auto h-14 flex items-center gap-3 font-black text-xs uppercase tracking-widest transition-all relative z-10 ${
-                        isInterviewEnabled
-                          ? "text-blue-600 dark:text-blue-400 group-hover:translate-x-2"
-                          : "text-slate-300 dark:text-zinc-800"
+                      className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 ${
+                        isInterviewSubmitted
+                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400"
+                          : isInterviewEnabled
+                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40 text-blue-600 dark:text-blue-400"
+                            : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
                       }`}
                     >
-                      {isInterviewSubmitted
-                        ? "Decommissioned"
-                        : isDetailsComplete
-                          ? "Initiate Phase"
-                          : "Awaiting Clearance"}
-                      {isInterviewEnabled && <ArrowRight className="h-4 w-4" />}
-                      {isInterviewSubmitted && (
-                        <CheckCircle2 className="h-4 w-4" />
+                      {isInterviewSubmitted ? (
+                        <CheckCircle2 className="h-7 w-7" />
+                      ) : (
+                        <PlayCircle className="h-7 w-7" />
                       )}
                     </div>
-                  </Card>
-                </Link>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        weight="bold"
+                        className="text-lg sm:text-xl text-slate-900 dark:text-zinc-100 font-bold"
+                      >
+                        Online Assessment
+                      </Typography>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                        Technical Evaluation
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
+                    {isInterviewSubmitted
+                      ? "You have successfully completed and submitted your online assessment."
+                      : isExpired
+                        ? "The assessment time has expired. Please reach out to recruitment for assistance."
+                        : isResuming
+                          ? "You have an ongoing test session. Click below to resume your assessment."
+                          : isDetailsComplete
+                            ? "Your assessment is ready! Click below to enter the test room and start your evaluation."
+                            : "Complete your Personal Details (Step 1) to unlock this online assessment."}
+                  </p>
+
+                  {/* Card Action CTA */}
+                  <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10">
+                    {isInterviewEnabled ? (
+                      <Link
+                        href="/user/interview-test"
+                        className="w-full block"
+                      >
+                        <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] cursor-pointer">
+                          <span>
+                            {isResuming
+                              ? "Resume Assessment"
+                              : "Start Assessment"}
+                          </span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </Link>
+                    ) : isInterviewSubmitted ? (
+                      <div className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 font-medium text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <span>Assessment Completed</span>
+                      </div>
+                    ) : isExpired ? (
+                      <div className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 font-medium text-sm">
+                        <Lock className="h-4 w-4" />
+                        <span>Assessment Closed</span>
+                      </div>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
+                      >
+                        <Lock className="h-4 w-4" />
+                        <span>Locked (Complete Step 1)</span>
+                      </button>
+                    )}
+                  </div>
+                </Card>
               </div>
             </motion.div>
           )}
         </motion.div>
 
+        {/* Bottom Helper Callout */}
         {!isDetailsComplete && (
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1 }}
-            className="mt-12 flex items-center gap-4 px-6 py-4 rounded-2xl bg-amber-50 dark:bg-amber-950/10 border border-amber-100/50 dark:border-amber-900/20 text-amber-700 dark:text-amber-500 text-xs font-black uppercase tracking-widest"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/30 text-amber-800 dark:text-amber-400 text-xs sm:text-sm font-medium shadow-sm"
           >
-            <div className="h-6 w-6 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Lock className="h-3 w-3" />
-            </div>
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              Clearance Alert: Complete your profile to authorize the core
-              assessment phase.
+              <strong>Next Step:</strong> Please complete your{" "}
+              <strong>Personal Details (Step 1)</strong> to unlock your online
+              assessment.
+            </span>
+          </motion.div>
+        )}
+
+        {isDetailsComplete && !isInterviewSubmitted && requiresInterview && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/30 text-blue-800 dark:text-blue-400 text-xs sm:text-sm font-medium shadow-sm"
+          >
+            <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
+            <span>
+              <strong>Great job!</strong> Your personal details are submitted.
+              You are ready to start your{" "}
+              <strong>Online Assessment (Step 3)</strong>.
             </span>
           </motion.div>
         )}

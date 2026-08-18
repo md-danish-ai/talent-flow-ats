@@ -666,7 +666,7 @@ export function InterviewTestClient() {
 
   if (isCompleted) {
     return (
-      <PageContainer className="py-3 sm:py-4 lg:py-6">
+      <PageContainer>
         <InterviewCompleted
           totalSections={totalSections}
           totalQuestions={finalSummary?.total_questions ?? totalQuestions}
@@ -683,7 +683,7 @@ export function InterviewTestClient() {
 
   if (isLoadingPaper && !hasStarted) {
     return (
-      <PageContainer className="py-2 sm:py-3 lg:py-4">
+      <PageContainer>
         <InterviewOverviewSkeleton />
       </PageContainer>
     );
@@ -691,7 +691,7 @@ export function InterviewTestClient() {
 
   if (!hasStarted) {
     return (
-      <PageContainer className="py-2 sm:py-3 lg:py-4">
+      <PageContainer>
         <InterviewOverview
           sections={sections}
           overallExamDurationMinutes={overallExamDurationMinutes}
@@ -706,7 +706,7 @@ export function InterviewTestClient() {
   }
 
   return (
-    <PageContainer className="py-2 sm:py-3 select-none">
+    <PageContainer className="select-none">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0">
         <div className="xl:col-span-8 2xl:col-span-9 space-y-4 sm:space-y-5 min-w-0">
           <QuestionWorkspace
