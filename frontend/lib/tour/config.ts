@@ -84,7 +84,7 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
   {
     element: "#tour-help-trigger",
     popover: {
-      title: "💡 Quick Tour & Help",
+      title: "💡 Quick Guide",
       description:
         "Need a quick reminder? Click this button anytime to replay the guide and review the steps.",
       side: "bottom",
@@ -167,9 +167,9 @@ export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
   {
     element: "#tour-help-trigger",
     popover: {
-      title: "💡 Quick Tour & Help",
+      title: "💡 Quick Guide",
       description:
-        "Need a reminder? You can replay the guide and review your next steps anytime by clicking Quick Tour.",
+        "Need a reminder? You can replay the guide and review your next steps anytime by clicking Quick Guide.",
       side: "bottom",
       align: "end",
     },
@@ -223,7 +223,7 @@ export const PERSONAL_DETAILS_TOUR_STEPS: DriveStep[] = [
   {
     element: "#personal-details-help-trigger",
     popover: {
-      title: "💡 Form Guide",
+      title: "💡 Quick Guide",
       description:
         "Need tips on filling this form? Click here anytime for a quick walkthrough.",
       side: "bottom",
@@ -319,7 +319,7 @@ export const INTERVIEW_OVERVIEW_TOUR_STEPS: DriveStep[] = [
   {
     element: "#interview-help-trigger",
     popover: {
-      title: "💡 Exam Tips & Guide",
+      title: "💡 Quick Guide",
       description:
         "Need a quick reminder on rules or exam protocols? Click this button anytime before starting.",
       side: "bottom",
@@ -415,7 +415,7 @@ export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
   {
     element: "#interview-active-help-trigger",
     popover: {
-      title: "💡 Test Guide",
+      title: "💡 Quick Guide",
       description:
         "Need a quick reminder on how the test workspace works? Click this guide button anytime during the exam.",
       side: "bottom",

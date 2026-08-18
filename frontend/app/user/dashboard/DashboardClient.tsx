@@ -139,10 +139,10 @@ export function DashboardClient({
               type="button"
               onClick={() => runTourManually()}
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm shadow-brand-primary/5 cursor-pointer active:scale-95 hover:border-brand-primary/50"
-              title="Take a quick tour"
+              title="Quick Guide"
             >
-              <HelpCircle className="h-4 w-4 text-brand-primary animate-pulse" />
-              <span>Quick Tour</span>
+              <HelpCircle className="h-4 w-4 text-brand-primary" />
+              <span>Quick Guide</span>
             </button>
           </div>
         </div>

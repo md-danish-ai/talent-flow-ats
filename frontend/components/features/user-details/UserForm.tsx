@@ -946,10 +946,10 @@ export function UserForm({
                   type="button"
                   onClick={() => runTourManually()}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50 shrink-0"
-                  title="Form Guide & Tips"
+                  title="Quick Guide"
                 >
                   <HelpCircle className="h-4 w-4 text-brand-primary" />
-                  <span className="hidden sm:inline">Form Guide</span>
+                  <span className="hidden sm:inline">Quick Guide</span>
                 </button>
               )}
             </div>
