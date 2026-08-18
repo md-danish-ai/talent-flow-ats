@@ -256,12 +256,19 @@ def get_user_by_id(user_id):
         if not user_obj:
             return None
 
+        if not user_obj.is_active:
+            raise HTTPException(
+                status_code=StatusCode.UNAUTHORIZED,
+                detail="Your account is currently inactive. Please contact the administrator.",
+            )
+
         user = {
             "id": user_obj.id,
             "username": user_obj.username,
             "mobile": user_obj.mobile,
             "email": user_obj.email,
             "role": user_obj.role,
+            "is_active": user_obj.is_active,
             "test_level_id": user_obj.test_level_id,
             "test_level_name": user_obj.test_level.name
             if user_obj.test_level

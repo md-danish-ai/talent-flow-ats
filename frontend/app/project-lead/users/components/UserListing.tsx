@@ -1,10 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import React, { useState, useCallback, useMemo } from "react";
 import { evaluationsApi } from "@lib/api";
 import {
   UserCheck,
-  Eye,
   Phone,
   ShieldCheck,
   Calendar,
@@ -42,7 +41,6 @@ interface UserListingProps {
 }
 
 export const UserListing = React.memo(({ leadId }: UserListingProps) => {
-  const router = useRouter();
   const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -261,18 +259,6 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                                 username={task.candidate_name}
                                 mobile={task.candidate_mobile}
                               />
-                              <TableIconButton
-                                title="View Results"
-                                iconColor="amber"
-                                btnSize="sm"
-                                onClick={() =>
-                                  router.push(
-                                    `/project-lead/users/${task.user_id}`,
-                                  )
-                                }
-                              >
-                                <Eye size={18} />
-                              </TableIconButton>
                               <TableIconButton
                                 title={
                                   task.status === "completed"

@@ -130,7 +130,7 @@ export async function toggleUserStatus(
 // PUT /auth/update-basic-info/{user_id} - Update basic user info
 export async function updateBasicInfo(
   userId: number,
-  data: SignUpFormValues,
+  data: SignUpFormValues | CreateAdminFormValues | Partial<SignUpFormValues>,
   options?: Pick<ApiRequestOptions, "cookies">,
 ): Promise<{ message: string; user_id: number }> {
   return api.put<{ message: string; user_id: number }>(

@@ -7,6 +7,7 @@ from app.classifications.models import Classification
 from app.core.realtime import realtime_manager
 from app.utils.enums import EvaluationStatus
 from app.duplicates.models import AdminNotification
+from app.utils.google_chat import send_evaluation_to_google_chat
 import logging
 
 logger = logging.getLogger(__name__)
@@ -246,6 +247,30 @@ async def update_evaluation(
                 "created_at": notification.created_at,
             },
             user_id="admin",
+        )
+
+        # Trigger Google Chat Webhook Notification (Fail-safe)
+        result_name = None
+        if db_obj.final_result_id:
+            cls_obj = (
+                db.query(Classification)
+                .filter(Classification.id == db_obj.final_result_id)
+                .first()
+            )
+            result_name = cls_obj.name if cls_obj else None
+
+        send_evaluation_to_google_chat(
+            candidate_name=candidate_name,
+            candidate_mobile=candidate.mobile if candidate else None,
+            candidate_email=candidate.email if candidate else None,
+            department_name=candidate.department.name
+            if candidate and candidate.department
+            else None,
+            lead_name=lead_name,
+            overall_grade=db_obj.overall_grade,
+            final_result_name=result_name,
+            evaluation_data=db_obj.evaluation_data,
+            comments=db_obj.comments,
         )
     except Exception as e:
         logger.error(f"Error triggering submission notification: {e}")

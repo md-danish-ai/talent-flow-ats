@@ -19,6 +19,8 @@ class Settings:
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
+    GOOGLE_CHAT_WEBHOOK_URL = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+
     # Third-party ArcCRM sync API
     ARCCRM_SYNC_URL = os.getenv("ARCCRM_SYNC_URL", "")
 
