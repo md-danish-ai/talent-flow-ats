@@ -42,7 +42,7 @@ interface ProfileClientProps {
 }
 
 export function ProfileClient({ user, userDetails }: ProfileClientProps) {
-  const [activeTab, setActiveTab] = useState("personal");
+  const [activeTab, setActiveTab] = useState("security");
   const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -105,86 +105,88 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
 
   return (
     <div className=" w-full max-w-none pb-20">
-      {/* Header Profile Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative mt-8 mb-10"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 via-transparent to-brand-primary/5 blur-3xl -z-10 h-64 opacity-50" />
+      {/* Header Profile Section - Hidden for user role */}
+      {user?.role !== "user" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative mt-8 mb-10"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 via-transparent to-brand-primary/5 blur-3xl -z-10 h-64 opacity-50" />
 
-        <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-xl overflow-hidden relative group">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Avatar Section */}
-            <div className="relative group/avatar">
-              <div className="w-32 h-32 rounded-3xl bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center border-4 border-white dark:border-zinc-800 shadow-2xl relative z-10 transition-transform duration-500 group-hover/avatar:scale-[1.02] overflow-hidden">
-                <Typography
-                  variant="h1"
-                  weight="black"
-                  className="text-4xl text-brand-primary select-none"
-                >
-                  {initials}
-                </Typography>
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/20 to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-500" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 h-10 w-10 rounded-xl bg-green-500 border-4 border-white dark:border-zinc-800 flex items-center justify-center z-20 shadow-lg">
-                <CheckCircle2 className="h-5 w-5 text-white" />
-              </div>
-            </div>
-
-            {/* Basic Info Section */}
-            <div className="flex-1 text-center md:text-left space-y-4">
-              <div className="space-y-1">
-                <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-8 w-full">
+              {/* Avatar Section */}
+              <div className="relative group/avatar">
+                <div className="w-32 h-32 rounded-3xl bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center border-4 border-white dark:border-zinc-800 shadow-2xl relative z-10 transition-transform duration-500 group-hover/avatar:scale-[1.02] overflow-hidden">
                   <Typography
-                    variant="h2"
+                    variant="h1"
                     weight="black"
-                    className="text-3xl tracking-tight leading-tight"
+                    className="text-4xl text-brand-primary select-none"
                   >
-                    {formData.full_name}
+                    {initials}
                   </Typography>
-                  <div className="flex justify-center md:justify-start">
-                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20 uppercase tracking-widest leading-none">
-                      {displayRole} Account
-                    </span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/20 to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-500" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-10 w-10 rounded-xl bg-green-500 border-4 border-white dark:border-zinc-800 flex items-center justify-center z-20 shadow-lg">
+                  <CheckCircle2 className="h-5 w-5 text-white" />
+                </div>
+              </div>
+
+              {/* Basic Info Section */}
+              <div className="flex-1 text-center md:text-left space-y-4">
+                <div className="space-y-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    <Typography
+                      variant="h2"
+                      weight="black"
+                      className="text-3xl tracking-tight leading-tight"
+                    >
+                      {formData.full_name}
+                    </Typography>
+                    <div className="flex justify-center md:justify-start">
+                      <span className="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20 uppercase tracking-widest leading-none">
+                        {displayRole} Account
+                      </span>
+                    </div>
                   </div>
+                  <Typography
+                    variant="body3"
+                    weight="medium"
+                    className="text-muted-foreground flex items-center justify-center md:justify-start gap-2"
+                  >
+                    <Mail size={16} className="text-brand-primary/60" />
+                    {formData.email}
+                  </Typography>
                 </div>
-                <Typography
-                  variant="body3"
-                  weight="medium"
-                  className="text-muted-foreground flex items-center justify-center md:justify-start gap-2"
-                >
-                  <Mail size={16} className="text-brand-primary/60" />
-                  {formData.email}
-                </Typography>
-              </div>
 
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20 w-fit">
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <Typography
-                    variant="body5"
-                    weight="black"
-                    className="text-green-600 dark:text-green-500 uppercase tracking-widest text-[9px]"
-                  >
-                    Authenticated Session
-                  </Typography>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-primary/5 border border-brand-primary/10 w-fit">
-                  <Shield size={12} className="text-brand-primary" />
-                  <Typography
-                    variant="body5"
-                    weight="black"
-                    className="text-brand-primary uppercase tracking-widest text-[10px] opacity-80"
-                  >
-                    Role: {user?.role?.replace("_", " ").toUpperCase()}
-                  </Typography>
+                <div className="flex flex-wrap justify-center md:justify-start items-center gap-4">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20 w-fit">
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    <Typography
+                      variant="body5"
+                      weight="black"
+                      className="text-green-600 dark:text-green-500 uppercase tracking-widest text-[9px]"
+                    >
+                      Authenticated Session
+                    </Typography>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-primary/5 border border-brand-primary/10 w-fit">
+                    <Shield size={12} className="text-brand-primary" />
+                    <Typography
+                      variant="body5"
+                      weight="black"
+                      className="text-brand-primary uppercase tracking-widest text-[10px] opacity-80"
+                    >
+                      Role: {user?.role?.replace("_", " ").toUpperCase()}
+                    </Typography>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </Card>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Tabs Section */}
       {user?.role !== "user" ? (
@@ -207,7 +209,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
               onChange={setActiveTab}
               variant="pills"
               size="lg"
-              className="bg-slate-100/50 dark:bg-slate-900/40 p-1.5 backdrop-blur-md border border-slate-200/50 dark:border-white/5"
+              className="bg-card border border-border p-1.5 rounded-2xl shadow-sm"
             />
           </div>
 
@@ -220,7 +222,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                 exit={{ opacity: 0, x: 20 }}
                 className="grid grid-cols-1 gap-8"
               >
-                <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+                <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                   <div className="flex items-center justify-between mb-8">
                     <div className="space-y-1">
                       <Typography
@@ -330,7 +332,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                       />
                     </div>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             ) : (
               <motion.div
@@ -340,7 +342,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                 exit={{ opacity: 0, x: 20 }}
                 className="grid grid-cols-1 gap-8"
               >
-                <Card className="p-8 border-slate-200/60 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+                <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                   <div className="space-y-1 mb-8">
                     <Typography
                       variant="h4"
@@ -475,7 +477,7 @@ export function ProfileClient({ user, userDetails }: ProfileClientProps) {
                       </form.Subscribe>
                     </div>
                   </form>
-                </Card>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

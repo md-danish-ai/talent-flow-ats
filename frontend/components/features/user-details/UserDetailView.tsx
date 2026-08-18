@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   User,
   Mail,
@@ -9,7 +9,6 @@ import {
   Briefcase,
   GraduationCap,
   Users as UsersIcon,
-  Info,
   Pencil,
   FileText,
   Calendar,
@@ -17,20 +16,73 @@ import {
   Shield,
   Fingerprint,
   CreditCard,
+  Building2,
+  Compass,
 } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import type { UserDetails } from "@types";
-import { Card } from "@components/ui-cards/Card";
-
-import { computeDivisionAndGrade, formatPercentageOrCgpa } from "@lib/utils";
+import { motion } from "framer-motion";
+import { cn } from "@lib/utils";
 
 interface UserDetailViewProps {
   details: UserDetails;
   userId: string | number;
   hideHeader?: boolean;
 }
+
+const TIMELINE_STEPS = [
+  {
+    id: "personal",
+    step: 1,
+    title: "Personal Details",
+    icon: User,
+    color: "text-brand-primary",
+  },
+  {
+    id: "identity",
+    step: 2,
+    title: "Identity & Demographics",
+    icon: Fingerprint,
+    color: "text-violet-500",
+  },
+  {
+    id: "family",
+    step: 3,
+    title: "Family Details",
+    icon: UsersIcon,
+    color: "text-rose-500",
+  },
+  {
+    id: "source",
+    step: 4,
+    title: "Source of Information",
+    icon: Compass,
+    color: "text-teal-500",
+  },
+  {
+    id: "education",
+    step: 5,
+    title: "Education Details",
+    icon: GraduationCap,
+    color: "text-amber-500",
+  },
+  {
+    id: "experience",
+    step: 6,
+    title: "Work Experience",
+    icon: Briefcase,
+    color: "text-blue-500",
+  },
+  {
+    id: "others",
+    step: 7,
+    title: "Other Details & Preferences",
+    icon: FileText,
+    color: "text-indigo-500",
+  },
+];
 
 export function UserDetailView({
   details,
@@ -49,6 +101,138 @@ export function UserDetailView({
     test_level_name,
   } = details;
 
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const fillLineRef = useRef<HTMLDivElement>(null);
+  const targetHeightRef = useRef<number>(0);
+  const currentHeightRef = useRef<number>(0);
+
+  const [totalSpanPx, setTotalSpanPx] = useState<number>(0);
+  const [node1OffsetTop, setNode1OffsetTop] = useState<number>(24);
+  const [activeSteps, setActiveSteps] = useState<number[]>([1]);
+  const [activeSectionId, setActiveSectionId] = useState<string>("personal");
+
+  // 60/120fps Smooth Physics Interpolation Loop (RAF + LERP)
+  useEffect(() => {
+    const container = timelineContainerRef.current;
+    if (!container) return;
+
+    // Detect actual scrolling parent container (<main overflow-y-auto> or window)
+    const findScrollParent = (
+      node: HTMLElement | null,
+    ): HTMLElement | Window => {
+      if (!node) return window;
+      let parent = node.parentElement;
+      while (parent) {
+        const { overflowY } = window.getComputedStyle(parent);
+        if (overflowY === "auto" || overflowY === "scroll") {
+          return parent;
+        }
+        parent = parent.parentElement;
+      }
+      return window;
+    };
+
+    const scrollParent = findScrollParent(container);
+    let animationFrameId: number;
+    let isRunning = true;
+
+    // Animation Loop: Silky Smooth Linear Interpolation
+    const animate = () => {
+      if (!isRunning) return;
+
+      const diff = targetHeightRef.current - currentHeightRef.current;
+      if (Math.abs(diff) > 0.1) {
+        currentHeightRef.current += diff * 0.16; // 0.16 easing constant for fluid glide
+      } else {
+        currentHeightRef.current = targetHeightRef.current;
+      }
+
+      if (fillLineRef.current) {
+        fillLineRef.current.style.height = `${currentHeightRef.current}px`;
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleScroll = () => {
+      if (!timelineContainerRef.current) return;
+      const currentContainer = timelineContainerRef.current;
+      const containerRect = currentContainer.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      const node1El = document.getElementById("timeline-section-personal");
+      const node7El = document.getElementById("timeline-section-others");
+      if (!node1El || !node7El) return;
+
+      const node1Top = node1El.offsetTop + 24; // Center of Node 1
+      const node7Top = node7El.offsetTop + 24; // Center of Node 7
+      const span = Math.max(100, node7Top - node1Top);
+
+      setNode1OffsetTop(node1Top);
+      setTotalSpanPx(span);
+
+      // Check if user has reached bottom of scroll container
+      let isAtBottom = false;
+      if (scrollParent instanceof HTMLElement) {
+        isAtBottom =
+          scrollParent.scrollTop + scrollParent.clientHeight >=
+          scrollParent.scrollHeight - 60;
+      } else {
+        isAtBottom =
+          window.scrollY + window.innerHeight >=
+          document.documentElement.scrollHeight - 60;
+      }
+
+      // Focal sweep line in viewport (50% down from viewport top)
+      const focalY = windowHeight * 0.5;
+      const currentY = focalY - (containerRect.top + node1Top);
+
+      let progress = span > 0 ? currentY / span : 0;
+      if (isAtBottom) {
+        progress = 1;
+      } else {
+        progress = Math.max(0, Math.min(1, progress));
+      }
+
+      const calculatedTargetHeight = progress * span;
+      targetHeightRef.current = calculatedTargetHeight;
+
+      // Detect reached steps
+      const reached: number[] = [1];
+      let currentActiveId = "personal";
+
+      TIMELINE_STEPS.forEach((s) => {
+        const el = document.getElementById(`timeline-section-${s.id}`);
+        if (el) {
+          const elTop = el.offsetTop + 24;
+          const nodeDist = elTop - node1Top;
+          if (calculatedTargetHeight >= nodeDist - 20 || isAtBottom) {
+            reached.push(s.step);
+            currentActiveId = s.id;
+          }
+        }
+      });
+
+      setActiveSteps(reached);
+      setActiveSectionId(currentActiveId);
+    };
+
+    scrollParent.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+      scrollParent.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
   // Admin-assigned relation takes priority over user-chosen relation
   const emergencyRelationCode =
     details.assigned_emergency_relation || details.emergency_contact_relation;
@@ -56,597 +240,903 @@ export function UserDetailView({
   const emergencyMember = familyDetails.find(
     (f) => f.relation?.toUpperCase() === emergencyRelationCode?.toUpperCase(),
   );
-  const emergencyContactNo = emergencyMember?.contactNo || "—";
+  const emergencyContactNo = emergencyMember?.contactNo || "N/A";
 
   const getEmergencyRelationLabel = () => {
-    if (!emergencyRelationCode) return "—";
+    if (!emergencyRelationCode) return "N/A";
     if (emergencyMember?.relationLabel) return emergencyMember.relationLabel;
-    // Prettify code: "BROTHER" → "Brother"
     return (
       emergencyRelationCode.charAt(0).toUpperCase() +
       emergencyRelationCode.slice(1).toLowerCase()
     );
   };
 
+  const formatEducationScore = (edu: (typeof educationDetails)[number]) => {
+    if (!edu.percentage || String(edu.percentage).trim() === "") return "N/A";
+    const val = String(edu.percentage).trim();
+    if (val.includes("%") || val.toLowerCase().includes("cgpa")) return val;
+    const gradingType = (edu as unknown as { gradingType?: string })
+      .gradingType;
+    if (gradingType === "Percentage") return `${val}%`;
+    if (gradingType === "CGPA") return val;
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 10) return `${val}%`;
+    return val;
+  };
+
   if (!personalDetails) return null;
 
+  const scrollToStep = (id: string) => {
+    const el = document.getElementById(`timeline-section-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-10 w-full mx-auto">
-      {/* Header Info */}
+    <div className="flex flex-col gap-8 w-full mx-auto">
+      {/* Top Header Section (When rendered in Admin or standalone) */}
       {!hideHeader && (
-        <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="flex items-center gap-8">
-            <div className="w-24 h-24 rounded-3xl bg-brand-primary/10 flex items-center justify-center text-brand-primary border-4 border-brand-primary/5 shadow-inner">
-              <User size={48} strokeWidth={1.5} />
-            </div>
-            <div className="space-y-1">
+        <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 md:gap-6">
+            {/* Avatar Section */}
+            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-brand-primary border border-brand-primary/20 dark:border-brand-primary/30 shadow-inner shrink-0">
               <Typography
-                variant="h2"
+                variant="h3"
                 weight="black"
-                className="capitalize tracking-tight"
+                className="text-xl sm:text-2xl font-black uppercase text-brand-primary select-none"
               >
-                {personalDetails?.firstName} {personalDetails?.lastName}
+                {`${personalDetails?.firstName?.charAt(0) || ""}${personalDetails?.lastName?.charAt(0) || ""}` ||
+                  "U"}
               </Typography>
-              <div className="flex flex-wrap gap-5 text-slate-500 dark:text-zinc-500">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <Mail size={16} className="text-brand-primary/60" />
-                  {personalDetails?.email}
+            </div>
+
+            {/* Candidate Details & Metadata */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <Typography
+                  variant="h3"
+                  weight="black"
+                  className="capitalize text-xl md:text-2xl font-black tracking-tight text-foreground"
+                >
+                  {personalDetails?.firstName} {personalDetails?.lastName}
+                </Typography>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-brand-primary/10 text-brand-primary border border-brand-primary/20 uppercase tracking-widest leading-none">
+                  Candidate #{userId}
                 </span>
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <Phone size={16} className="text-brand-primary/60" />
-                  {personalDetails?.primaryMobile}
-                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-muted-foreground">
+                {personalDetails?.email && (
+                  <span className="flex items-center gap-1.5 font-medium hover:text-foreground transition-colors">
+                    <Mail size={15} className="text-brand-primary" />
+                    {personalDetails.email}
+                  </span>
+                )}
+                {personalDetails?.primaryMobile && (
+                  <span className="flex items-center gap-1.5 font-medium hover:text-foreground transition-colors">
+                    <Phone size={15} className="text-brand-primary" />
+                    {personalDetails.primaryMobile}
+                  </span>
+                )}
                 {department_name && (
-                  <span className="flex items-center gap-2 text-sm font-semibold">
-                    <Briefcase size={16} className="text-brand-primary/60" />
+                  <span className="flex items-center gap-1.5 font-medium hover:text-foreground transition-colors">
+                    <Briefcase size={15} className="text-brand-primary" />
                     {department_name}
                   </span>
                 )}
                 {test_level_name && (
-                  <span className="flex items-center gap-2 text-sm font-semibold">
-                    <GraduationCap
-                      size={16}
-                      className="text-brand-primary/60"
-                    />
+                  <span className="flex items-center gap-1.5 font-medium hover:text-foreground transition-colors">
+                    <GraduationCap size={15} className="text-brand-primary" />
                     {test_level_name}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <Link href={`/admin/management/users/update-details/${userId}`}>
-            <Button
-              variant="primary"
-              animate="scale"
-              startIcon={<Pencil size={18} />}
-              className="rounded-2xl px-8 py-5 h-auto font-black text-xs uppercase tracking-widest"
-            >
-              Update Profile
-            </Button>
-          </Link>
+
+          {/* Action Button */}
+          <div className="shrink-0 flex items-center">
+            <Link href={`/admin/management/users/update-details/${userId}`}>
+              <Button
+                variant="outline"
+                color="primary"
+                animate="scale"
+                startIcon={<Pencil size={15} />}
+                className="rounded-xl px-5 py-2.5 font-bold text-xs uppercase tracking-wider shadow-sm"
+              >
+                Update Profile
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Personal Bio Section - Usually important info */}
-        <div className="md:col-span-1">
-          <SectionCard
-            title="Bio Data"
-            icon={<Info size={20} />}
-            bgIcon={Info}
-            accentColor="bg-brand-primary"
-          >
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <DetailItem label="Gender" value={personalDetails?.gender} />
-                <DetailItem label="DOB" value={personalDetails?.dob} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <DetailItem
-                  label="Alternate Contact"
-                  value={personalDetails?.alternateMobile || "—"}
-                />
-                <DetailItem
-                  label="Emergency Relation"
-                  value={getEmergencyRelationLabel()}
-                />
-              </div>
-              <DetailItem
-                label="Emergency Contact Number"
-                value={emergencyContactNo}
+      {/* Non-Sticky Horizontal Quick Step Navigation Pill Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {TIMELINE_STEPS.map((step) => {
+          const Icon = step.icon;
+          const isActive = activeSectionId === step.id;
+          return (
+            <button
+              key={step.id}
+              onClick={() => scrollToStep(step.id)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all text-xs font-bold shrink-0 shadow-sm cursor-pointer active:scale-95",
+                isActive
+                  ? "bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/20"
+                  : "bg-card border-border hover:border-brand-primary/40 hover:bg-brand-primary/5 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-5 w-5 rounded-lg items-center justify-center text-[11px] font-black",
+                  isActive
+                    ? "bg-white/20 text-white"
+                    : "bg-brand-primary/10 text-brand-primary",
+                )}
+              >
+                {step.step}
+              </span>
+              <Icon
+                size={15}
+                className={isActive ? "text-white" : step.color}
               />
+              <span className="inline">{step.title}</span>
+            </button>
+          );
+        })}
+      </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <div className="space-y-2">
-                  <Typography
-                    variant="body5"
-                    weight="black"
-                    className="text-slate-400 uppercase tracking-tighter text-[10px]"
-                  >
-                    Present Address
-                  </Typography>
-                  <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {[
-                      personalDetails?.presentAddressLine1,
-                      personalDetails?.presentAddressLine2,
-                      personalDetails?.presentCity,
-                      personalDetails?.presentDistrict,
-                      personalDetails?.presentState,
-                      personalDetails?.presentPincode,
-                    ]
-                      .filter((x) => x && String(x).trim() !== "")
-                      .join(", ")}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Typography
-                    variant="body5"
-                    weight="black"
-                    className="text-slate-400 uppercase tracking-tighter text-[10px]"
-                  >
-                    Permanent Address
-                  </Typography>
-                  <p className="text-sm font-medium leading-relaxed text-slate-700 dark:text-zinc-300">
-                    {personalDetails?.sameAddress
-                      ? [
-                          personalDetails?.presentAddressLine1,
-                          personalDetails?.presentAddressLine2,
-                          personalDetails?.presentCity,
-                          personalDetails?.presentDistrict,
-                          personalDetails?.presentState,
-                          personalDetails?.presentPincode,
-                        ]
-                          .filter((x) => x && String(x).trim() !== "")
-                          .join(", ")
-                      : [
-                          personalDetails?.permanentAddressLine1,
-                          personalDetails?.permanentAddressLine2,
-                          personalDetails?.permanentCity,
-                          personalDetails?.permanentDistrict,
-                          personalDetails?.permanentState,
-                          personalDetails?.permanentPincode,
-                        ]
-                          .filter((x) => x && String(x).trim() !== "")
-                          .join(", ")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </SectionCard>
+      {/* ─── VERTICAL TIMELINE CONTAINER WITH ULTRA-SMOOTH RAF GLIDE ─── */}
+      <div ref={timelineContainerRef} className="relative space-y-16 pt-2">
+        {/* Background Grey Guide Line */}
+        <div
+          style={{
+            top: `${node1OffsetTop}px`,
+            height: totalSpanPx > 0 ? `${totalSpanPx}px` : "calc(100% - 48px)",
+          }}
+          className="absolute left-[22px] md:left-[26px] w-[4px] bg-slate-200 dark:bg-zinc-800 rounded-full"
+        />
+
+        {/* Dynamic Foreground Filled Line (Ultra-smooth 60/120fps hardware accelerated RAF) */}
+        <div
+          ref={fillLineRef}
+          style={{
+            top: `${node1OffsetTop}px`,
+            height: "0px",
+            willChange: "height",
+          }}
+          className="absolute left-[22px] md:left-[26px] w-[4px] bg-gradient-to-b from-brand-primary via-orange-500 to-amber-500 rounded-full shadow-[0_0_15px_rgba(249,99,49,0.85)] z-0"
+        >
+          {/* Glowing laser tip pulse bulb at bottom of active line */}
+          <div className="absolute -bottom-1.5 -left-1 w-3.5 h-3.5 rounded-full bg-white ring-4 ring-brand-primary shadow-[0_0_14px_#f96331] animate-pulse" />
         </div>
 
-        {/* Identity & Demographics Section */}
-        <div className="md:col-span-1">
-          <SectionCard
-            title="Identity & Demographics"
-            icon={<Fingerprint size={20} />}
-            bgIcon={Fingerprint}
-            accentColor="bg-violet-500"
-          >
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <DetailItem
-                  label="Blood Group"
-                  value={additionalPersonalDetails?.bloodGroup || ""}
-                />
-                <DetailItem
-                  label="Religion"
-                  value={additionalPersonalDetails?.religion || ""}
-                />
-                <DetailItem
-                  label="Category"
-                  value={additionalPersonalDetails?.category || ""}
-                />
-                <DetailItem
-                  label="Marital Status"
-                  value={additionalPersonalDetails?.maritalStatus || ""}
-                />
+        {/* ══════════════════════════════════════════
+            STEP 1: PERSONAL DETAILS
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-personal"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={1}
+            isReached={activeSteps.includes(1)}
+            icon={User}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={1}
+              title="Personal Details"
+              subtitle="Basic contact, demographic, and residential information"
+              badge="Step 01"
+            />
+
+            <TimelineCard>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailItem
+                    label="First Name"
+                    value={personalDetails?.firstName}
+                  />
+                  <DetailItem
+                    label="Last Name"
+                    value={personalDetails?.lastName}
+                  />
+                  <DetailItem label="Gender" value={personalDetails?.gender} />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-5 border-t border-border/50">
+                  <DetailItem
+                    label="Date of Birth"
+                    value={personalDetails?.dob}
+                    icon={<Calendar size={16} />}
+                  />
+                  <DetailItem
+                    label="Primary Mobile"
+                    value={personalDetails?.primaryMobile}
+                    icon={<Phone size={16} />}
+                  />
+                  <DetailItem
+                    label="Alternate Mobile"
+                    value={personalDetails?.alternateMobile || "N/A"}
+                    icon={<Phone size={16} />}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-5 border-t border-border/50">
+                  <DetailItem
+                    label="Email Address"
+                    value={personalDetails?.email}
+                    icon={<Mail size={16} />}
+                  />
+                </div>
+
+                {/* Residential Addresses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-border/50">
+                  <div className="p-5 rounded-2xl bg-muted/30 border border-border/60 space-y-2.5">
+                    <Typography
+                      variant="body5"
+                      weight="black"
+                      className="text-muted-foreground uppercase tracking-wider text-xs flex items-center gap-2"
+                    >
+                      <MapPin size={15} className="text-brand-primary" />{" "}
+                      Present Address
+                    </Typography>
+                    <p className="text-sm md:text-base font-semibold leading-relaxed text-foreground">
+                      {[
+                        personalDetails?.presentAddressLine1,
+                        personalDetails?.presentAddressLine2,
+                        personalDetails?.presentCity,
+                        personalDetails?.presentDistrict,
+                        personalDetails?.presentState,
+                        personalDetails?.presentPincode,
+                      ]
+                        .filter((x) => x && String(x).trim() !== "")
+                        .join(", ") || "N/A"}
+                    </p>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-muted/30 border border-border/60 space-y-2.5">
+                    <Typography
+                      variant="body5"
+                      weight="black"
+                      className="text-muted-foreground uppercase tracking-wider text-xs flex items-center gap-2"
+                    >
+                      <MapPin size={15} className="text-brand-primary" />{" "}
+                      Permanent Address
+                    </Typography>
+                    <p className="text-sm md:text-base font-semibold leading-relaxed text-foreground">
+                      {(personalDetails?.sameAddress
+                        ? [
+                            personalDetails?.presentAddressLine1,
+                            personalDetails?.presentAddressLine2,
+                            personalDetails?.presentCity,
+                            personalDetails?.presentDistrict,
+                            personalDetails?.presentState,
+                            personalDetails?.presentPincode,
+                          ]
+                        : [
+                            personalDetails?.permanentAddressLine1,
+                            personalDetails?.permanentAddressLine2,
+                            personalDetails?.permanentCity,
+                            personalDetails?.permanentDistrict,
+                            personalDetails?.permanentState,
+                            personalDetails?.permanentPincode,
+                          ]
+                      )
+                        .filter((x) => x && String(x).trim() !== "")
+                        .join(", ") || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 2: IDENTITY & DEMOGRAPHICS
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-identity"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={2}
+            isReached={activeSteps.includes(2)}
+            icon={Fingerprint}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={2}
+              title="Identity & Demographics"
+              subtitle="Government identity credentials, category, and marital information"
+              badge="Step 02"
+            />
+
+            <TimelineCard>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <DetailItem
+                    label="Blood Group"
+                    value={additionalPersonalDetails?.bloodGroup}
+                  />
+                  <DetailItem
+                    label="Religion"
+                    value={additionalPersonalDetails?.religion}
+                  />
+                  <DetailItem
+                    label="Category"
+                    value={additionalPersonalDetails?.category}
+                  />
+                  <DetailItem
+                    label="Marital Status"
+                    value={additionalPersonalDetails?.maritalStatus}
+                  />
+                </div>
+
                 {additionalPersonalDetails?.maritalStatus === "Married" &&
                   additionalPersonalDetails?.anniversaryDate && (
-                    <DetailItem
-                      label="Anniversary"
-                      value={additionalPersonalDetails.anniversaryDate}
-                    />
+                    <div className="pt-5 border-t border-border/50">
+                      <DetailItem
+                        label="Anniversary Date"
+                        value={additionalPersonalDetails.anniversaryDate}
+                        icon={<Calendar size={16} />}
+                      />
+                    </div>
                   )}
-              </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DetailItem
-                    label="Aadhaar No."
-                    value={additionalPersonalDetails?.aadhaarNo || ""}
-                    icon={<CreditCard size={14} />}
-                  />
-                  <DetailItem
-                    label="Name on Aadhaar"
-                    value={additionalPersonalDetails?.nameAsPerAadhaar || ""}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DetailItem
-                    label="PAN No."
-                    value={additionalPersonalDetails?.panNo || ""}
-                    icon={<CreditCard size={14} />}
-                  />
-                  <DetailItem
-                    label="Name on PAN"
-                    value={additionalPersonalDetails?.nameAsPerPan || ""}
-                  />
-                </div>
-              </div>
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Work Experience - Needs more width */}
-        <div className="md:col-span-2">
-          <SectionCard
-            title="Experience Trail"
-            icon={<Briefcase size={20} />}
-            bgIcon={Briefcase}
-            accentColor="bg-blue-500"
-          >
-            <div className="space-y-8">
-              {!workExperienceDetails?.length ||
-              workExperienceDetails[0].company === "" ? (
-                <EmptyState message="No professional history documented yet." />
-              ) : (
-                workExperienceDetails
-                  .filter((w) => w.company)
-                  .map((work, idx) => (
-                    <div
-                      key={idx}
-                      className="group/work relative pl-8 border-l-2 border-slate-100 dark:border-zinc-800 pb-2 hover:border-blue-500 transition-colors"
-                    >
-                      <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 border-4 border-white dark:border-zinc-900 group-hover/work:bg-blue-500 transition-colors shadow-sm" />
-
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="body1"
-                            weight="black"
-                            className="tracking-tight uppercase"
-                          >
-                            {work.company}
-                          </Typography>
-                          <Typography
-                            variant="body3"
-                            weight="bold"
-                            className="text-blue-600 dark:text-blue-400 flex items-center gap-2"
-                          >
-                            {work.designation}
-                            {work.employmentType && (
-                              <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-zinc-700">
-                                {work.employmentType.replace("_", " ")}
-                              </span>
-                            )}
-                          </Typography>
-                        </div>
-                        <div className="px-3 py-1 bg-slate-50 dark:bg-zinc-800 rounded-lg border border-slate-100 dark:border-zinc-700 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          {work.joinDate} —{" "}
-                          {work.isPresent || !work.relieveDate
-                            ? "Present"
-                            : work.relieveDate}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                        <div className="p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-950/20 border border-slate-100 dark:border-zinc-800/50">
-                          <Typography
-                            variant="body5"
-                            weight="black"
-                            className="text-slate-400 uppercase tracking-tighter text-[9px] mb-1 block"
-                          >
-                            Departure Reason
-                          </Typography>
-                          <Typography
-                            variant="body4"
-                            className="text-slate-600 dark:text-zinc-400 italic"
-                          >
-                            &quot;{work.reason || "N/A"}&quot;
-                          </Typography>
-                        </div>
-                        <div className="p-4 rounded-2xl bg-blue-50/20 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20">
-                          <Typography
-                            variant="body5"
-                            weight="black"
-                            className="text-blue-400 uppercase tracking-tighter text-[9px] mb-1 block"
-                          >
-                            Last Package
-                          </Typography>
-                          <Typography
-                            variant="body3"
-                            weight="black"
-                            className="text-blue-700 dark:text-blue-300"
-                          >
-                            ₹{work.salary}
-                          </Typography>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-              )}
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Education - Full Width too to avoid squished table */}
-        <div className="md:col-span-2">
-          <SectionCard
-            title="Academic Credentials"
-            icon={<GraduationCap size={20} />}
-            bgIcon={GraduationCap}
-            accentColor="bg-amber-500"
-          >
-            <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-zinc-800">
-              <table className="w-full text-sm border-collapse min-w-[600px]">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-800/50 text-slate-400 dark:text-zinc-500">
-                    <th className="text-left px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      Level
-                    </th>
-                    <th className="text-left px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      Institution
-                    </th>
-                    <th className="text-left px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      Board
-                    </th>
-                    <th className="text-center px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      Year
-                    </th>
-                    <th className="text-right px-6 py-4 font-black uppercase tracking-widest text-[10px]">
-                      % / CGPA
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                  {educationDetails
-                    .filter((e) => e.school)
-                    .map((edu, idx) => (
-                      <tr
-                        key={idx}
-                        className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20 transition-colors"
-                      >
-                        <td className="px-6 py-5 font-black text-xs text-brand-primary uppercase">
-                          {edu.type}
-                        </td>
-                        <td className="px-6 py-5 font-bold">{edu.school}</td>
-                        <td className="px-6 py-5 text-slate-500">
-                          {edu.board}
-                        </td>
-                        <td className="px-6 py-5 text-center font-bold">
-                          {edu.isPursuing || edu.year.endsWith("-")
-                            ? `${edu.year.replace(/-$/, "")} - Pursuing`
-                            : edu.year}
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 font-black text-[11px] text-slate-700 dark:text-zinc-300">
-                            {edu.isPursuing
-                              ? "Pursuing"
-                              : formatPercentageOrCgpa(edu.percentage)}{" "}
-                            {!edu.isPursuing && (
-                              <span className="opacity-70 font-bold text-brand-primary">
-                                {computeDivisionAndGrade(
-                                  edu.percentage,
-                                  edu.division,
-                                )}
-                              </span>
-                            )}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Logistics Section */}
-        <div className="md:col-span-1">
-          <SectionCard
-            title="Logistics"
-            icon={<FileText size={20} />}
-            bgIcon={FileText}
-            accentColor="bg-indigo-500"
-          >
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DetailItem
-                  label="Service Commitment"
-                  value={otherDetails?.serviceCommitment}
-                  icon={<Clock size={14} />}
-                />
-                <DetailItem
-                  label="Security Deposit"
-                  value={otherDetails?.securityDeposit}
-                  icon={<Shield size={14} />}
-                />
-              </div>
-              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <DetailItem
-                  label="Shift Preference"
-                  value={otherDetails?.shiftTime}
-                  icon={<Calendar size={14} />}
-                />
-              </div>
-              <div className="flex gap-4 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <DetailItem
-                  label="Joining"
-                  value={otherDetails?.expectedJoiningDate}
-                />
-                <DetailItem
-                  label="Exp. Salary"
-                  value={
-                    otherDetails?.expectedSalary
-                      ? `₹${otherDetails.expectedSalary}`
-                      : "—"
-                  }
-                />
-              </div>
-            </div>
-          </SectionCard>
-        </div>
-
-        <div className="md:col-span-1">
-          <SectionCard
-            title="Acquisition"
-            icon={<MapPin size={20} />}
-            bgIcon={MapPin}
-            accentColor="bg-teal-500"
-          >
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <DetailItem
-                  label="Previous Interview"
-                  value={
-                    sourceOfInformation?.interviewedBefore === true ||
-                    sourceOfInformation?.interviewedBefore === "yes" ||
-                    sourceOfInformation?.interviewedBefore === "Yes"
-                      ? "Yes, Previously"
-                      : "No"
-                  }
-                />
-                <DetailItem
-                  label="Past Employment"
-                  value={
-                    sourceOfInformation?.workedBefore === true ||
-                    sourceOfInformation?.workedBefore === "yes" ||
-                    sourceOfInformation?.workedBefore === "Yes"
-                      ? "Yes, Previously"
-                      : "No"
-                  }
-                />
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/50">
-                <Typography
-                  variant="body5"
-                  weight="black"
-                  className="text-slate-400 uppercase tracking-widest text-[10px] mb-3 block"
-                >
-                  Discovery Channels
-                </Typography>
-                <div className="flex flex-wrap gap-2">
-                  {sourceOfInformation?.source &&
-                    Object.entries(sourceOfInformation.source)
-                      .filter(
-                        ([key, value]) =>
-                          key !== "otherDetails" && Boolean(value),
-                      )
-                      .map(([key]) => {
-                        let label = key.replace(/([A-Z])/g, " $1");
-                        if (
-                          key.toLowerCase() === "others" ||
-                          key.toLowerCase() === "other"
-                        ) {
-                          const otherText =
-                            sourceOfInformation?.source?.otherDetails;
-                          label = otherText
-                            ? `Others - ${otherText}`
-                            : "Others";
-                        }
-                        return (
-                          <span
-                            key={key}
-                            className="px-3 py-1.5 bg-teal-500/10 dark:bg-teal-500/20 rounded-xl text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20"
-                          >
-                            {label}
-                          </span>
-                        );
-                      })}
-                </div>
-              </div>
-            </div>
-          </SectionCard>
-        </div>
-
-        {/* Bottom Grid: Family */}
-        <div className="md:col-span-2">
-          <SectionCard
-            title="Family Ties"
-            icon={<UsersIcon size={20} />}
-            bgIcon={UsersIcon}
-            accentColor="bg-rose-500"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {familyDetails
-                .filter((f) => f.name)
-                .map((fam, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center bg-slate-50/50 dark:bg-zinc-950/20 p-4 rounded-2xl border border-slate-100 dark:border-zinc-800/50"
-                  >
-                    <div className="flex flex-col">
-                      <Typography
-                        variant="body5"
-                        weight="black"
-                        className="text-rose-400 uppercase tracking-tighter text-[9px]"
-                      >
-                        {fam.relationLabel ||
-                          (fam.relation
-                            ? fam.relation.charAt(0).toUpperCase() +
-                              fam.relation.slice(1).toLowerCase()
-                            : "")}
-                      </Typography>
-                      <Typography variant="body3" weight="bold">
-                        {fam.name}
-                      </Typography>
-                    </div>
-                    <div className="px-3 py-1 bg-white dark:bg-zinc-800 rounded-lg text-[10px] font-bold text-slate-400">
-                      {fam.occupation || "N/A"}
-                    </div>
+                {/* Identity Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-border/50">
+                  <div className="space-y-4 p-5 rounded-2xl bg-muted/20 border border-border/60">
+                    <DetailItem
+                      label="Aadhaar Number"
+                      value={additionalPersonalDetails?.aadhaarNo}
+                      icon={
+                        <CreditCard size={16} className="text-violet-500" />
+                      }
+                    />
+                    <DetailItem
+                      label="Name as per Aadhaar"
+                      value={additionalPersonalDetails?.nameAsPerAadhaar}
+                    />
                   </div>
-                ))}
-            </div>
-          </SectionCard>
+                  <div className="space-y-4 p-5 rounded-2xl bg-muted/20 border border-border/60">
+                    <DetailItem
+                      label="PAN Card Number"
+                      value={additionalPersonalDetails?.panNo}
+                      icon={
+                        <CreditCard size={16} className="text-violet-500" />
+                      }
+                    />
+                    <DetailItem
+                      label="Name as per PAN"
+                      value={additionalPersonalDetails?.nameAsPerPan}
+                    />
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-border/50">
+                  <DetailItem
+                    label="Emergency Contact Relation"
+                    value={getEmergencyRelationLabel()}
+                  />
+                  <DetailItem
+                    label="Emergency Contact Number"
+                    value={emergencyContactNo}
+                    icon={<Phone size={16} />}
+                  />
+                </div>
+              </div>
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 3: FAMILY DETAILS
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-family"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={3}
+            isReached={activeSteps.includes(3)}
+            icon={UsersIcon}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={3}
+              title="Family Details"
+              subtitle="Immediate family members and contact records"
+              badge="Step 03"
+            />
+
+            <TimelineCard>
+              {familyDetails.filter((f) => f.name).length === 0 ? (
+                <EmptyState message="No family members recorded" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm md:text-base">
+                    <thead>
+                      <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
+                        <th className="pb-3.5 font-bold w-[18%]">Relation</th>
+                        <th className="pb-3.5 font-bold w-[26%]">Name</th>
+                        <th className="pb-3.5 font-bold w-[22%]">Occupation</th>
+                        <th className="pb-3.5 font-bold w-[16%]">Dependent</th>
+                        <th className="pb-3.5 font-bold w-[18%]">Contact No</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {familyDetails
+                        .filter((f) => f.name)
+                        .map((fam, idx) => (
+                          <tr
+                            key={idx}
+                            className="hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="py-4 font-bold text-rose-500">
+                              {fam.relationLabel ||
+                                (fam.relation
+                                  ? fam.relation.charAt(0).toUpperCase() +
+                                    fam.relation.slice(1).toLowerCase()
+                                  : "N/A")}
+                            </td>
+                            <td className="py-4 font-bold text-foreground">
+                              {fam.name}
+                            </td>
+                            <td className="py-4 text-muted-foreground">
+                              {fam.occupation || "N/A"}
+                            </td>
+                            <td className="py-4 text-muted-foreground">
+                              {fam.dependent || "N/A"}
+                            </td>
+                            <td className="py-4 font-semibold text-muted-foreground">
+                              {fam.contactNo || "N/A"}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 4: SOURCE OF INFORMATION
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-source"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={4}
+            isReached={activeSteps.includes(4)}
+            icon={Compass}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={4}
+              title="Source of Information"
+              subtitle="Recruitment channels, referrals, and prior organization history"
+              badge="Step 04"
+            />
+
+            <TimelineCard>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <DetailItem
+                    label="Previous Interview"
+                    value={
+                      sourceOfInformation?.interviewedBefore === true ||
+                      sourceOfInformation?.interviewedBefore === "yes" ||
+                      sourceOfInformation?.interviewedBefore === "Yes"
+                        ? "Yes, Previously Interviewed"
+                        : "No"
+                    }
+                  />
+                  <DetailItem
+                    label="Past Employment at Company"
+                    value={
+                      sourceOfInformation?.workedBefore === true ||
+                      sourceOfInformation?.workedBefore === "yes" ||
+                      sourceOfInformation?.workedBefore === "Yes"
+                        ? "Yes, Previously Employed"
+                        : "No"
+                    }
+                  />
+                </div>
+
+                <div className="pt-5 border-t border-border/50 space-y-3.5">
+                  <Typography
+                    variant="body5"
+                    weight="black"
+                    className="text-muted-foreground uppercase tracking-wider text-xs"
+                  >
+                    Discovery & Application Channels
+                  </Typography>
+
+                  <div className="flex flex-wrap gap-2.5">
+                    {sourceOfInformation?.source &&
+                    Object.entries(sourceOfInformation.source).filter(
+                      ([key, value]) =>
+                        key !== "otherDetails" && Boolean(value),
+                    ).length > 0 ? (
+                      Object.entries(sourceOfInformation.source)
+                        .filter(
+                          ([key, value]) =>
+                            key !== "otherDetails" && Boolean(value),
+                        )
+                        .map(([key]) => {
+                          let label = key.replace(/([A-Z])/g, " $1");
+                          if (
+                            key.toLowerCase() === "others" ||
+                            key.toLowerCase() === "other"
+                          ) {
+                            const otherText =
+                              sourceOfInformation?.source?.otherDetails;
+                            label = otherText
+                              ? `Others: ${otherText}`
+                              : "Others";
+                          }
+                          return (
+                            <span
+                              key={key}
+                              className="px-4 py-2 bg-teal-500/10 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/30 rounded-xl text-xs font-bold uppercase tracking-wider"
+                            >
+                              {label}
+                            </span>
+                          );
+                        })
+                    ) : (
+                      <span className="text-base font-bold text-muted-foreground">
+                        N/A
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 5: EDUCATION DETAILS
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-education"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={5}
+            isReached={activeSteps.includes(5)}
+            icon={GraduationCap}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={5}
+              title="Education Details"
+              subtitle="Academic qualifications, school / college credentials, and scores"
+              badge="Step 05"
+            />
+
+            <TimelineCard>
+              {educationDetails.filter((e) => e.school || e.type).length ===
+              0 ? (
+                <EmptyState message="No academic records submitted" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm md:text-base">
+                    <thead>
+                      <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
+                        <th className="pb-3.5 font-bold">Qualification</th>
+                        <th className="pb-3.5 font-bold">Institute / School</th>
+                        <th className="pb-3.5 font-bold">Board / University</th>
+                        <th className="pb-3.5 text-center font-bold">Year</th>
+                        <th className="pb-3.5 text-center font-bold">
+                          Percentage / CGPA
+                        </th>
+                        <th className="pb-3.5 text-right font-bold">
+                          Division / Grade
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {educationDetails
+                        .filter((e) => e.school || e.type)
+                        .map((edu, idx) => (
+                          <tr
+                            key={idx}
+                            className="hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="py-4 font-bold text-amber-500 uppercase">
+                              {edu.type || "N/A"}
+                            </td>
+                            <td className="py-4 font-bold text-foreground">
+                              {edu.school || "N/A"}
+                            </td>
+                            <td className="py-4 text-muted-foreground">
+                              {edu.board || "N/A"}
+                            </td>
+                            <td className="py-4 text-center font-bold text-foreground">
+                              {edu.year || "N/A"}
+                            </td>
+                            <td className="py-4 text-center font-bold text-brand-primary">
+                              {formatEducationScore(edu)}
+                            </td>
+                            <td className="py-4 text-right font-bold text-foreground">
+                              {edu.division ? (
+                                <span className="px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-bold">
+                                  {edu.division}
+                                </span>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 6: WORK EXPERIENCE
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-experience"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={6}
+            isReached={activeSteps.includes(6)}
+            icon={Briefcase}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={6}
+              title="Work Experience"
+              subtitle="Prior employment history, career tenure, and salary breakdown"
+              badge="Step 06"
+            />
+
+            <TimelineCard>
+              {workExperienceDetails.filter((w) => w.company).length === 0 ? (
+                <EmptyState message="No previous employment history recorded (Fresher Candidate)" />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm md:text-base">
+                    <thead>
+                      <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
+                        <th className="pb-3.5 font-bold">Company & Role</th>
+                        <th className="pb-3.5 font-bold">Type</th>
+                        <th className="pb-3.5 text-center font-bold">
+                          Tenure / Duration
+                        </th>
+                        <th className="pb-3.5 text-center font-bold">
+                          Previous CTC
+                        </th>
+                        <th className="pb-3.5 text-right font-bold">
+                          Reason for Leaving
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {workExperienceDetails
+                        .filter((w) => w.company)
+                        .map((work, idx) => (
+                          <tr
+                            key={idx}
+                            className="hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="py-4">
+                              <div className="font-bold text-foreground">
+                                {work.company}
+                              </div>
+                              <div className="text-xs text-muted-foreground font-medium pt-0.5">
+                                {work.designation || "N/A"}
+                              </div>
+                            </td>
+                            <td className="py-4 font-semibold text-blue-500 uppercase text-xs">
+                              {work.employmentType ? (
+                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">
+                                  {work.employmentType.replace("_", " ")}
+                                </span>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                            <td className="py-4 text-center font-semibold text-muted-foreground text-xs md:text-sm">
+                              {work.joinDate || "N/A"} -{" "}
+                              {work.isPresent || !work.relieveDate
+                                ? "Present"
+                                : work.relieveDate}
+                            </td>
+                            <td className="py-4 text-center font-bold text-brand-primary">
+                              {work.salary ? `₹${work.salary}` : "N/A"}
+                            </td>
+                            <td className="py-4 text-right font-medium text-muted-foreground">
+                              {work.reason || "N/A"}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </TimelineCard>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════
+            STEP 7: OTHER DETAILS & PREFERENCES
+        ══════════════════════════════════════════ */}
+        <div
+          id="timeline-section-others"
+          className="relative flex gap-6 md:gap-10 scroll-mt-6"
+        >
+          <TimelineNode
+            step={7}
+            isReached={activeSteps.includes(7)}
+            icon={FileText}
+          />
+
+          <div className="flex-1 space-y-4 min-w-0">
+            <TimelineHeader
+              stepNumber={7}
+              title="Other Details & Preferences"
+              subtitle="Service commitments, shift preferences, and salary expectations"
+              badge="Step 07"
+            />
+
+            <TimelineCard>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailItem
+                    label="Service Commitment"
+                    value={otherDetails?.serviceCommitment}
+                    icon={<Shield size={16} />}
+                  />
+                  <DetailItem
+                    label="Security Deposit"
+                    value={otherDetails?.securityDeposit}
+                    icon={<Shield size={16} />}
+                  />
+                  <DetailItem
+                    label="Shift Preference"
+                    value={otherDetails?.shiftTime}
+                    icon={<Calendar size={16} />}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-border/50">
+                  <DetailItem
+                    label="Expected Joining Date"
+                    value={otherDetails?.expectedJoiningDate}
+                    icon={<Calendar size={16} />}
+                  />
+                  <DetailItem
+                    label="Expected Salary"
+                    value={
+                      otherDetails?.expectedSalary
+                        ? `₹${otherDetails.expectedSalary}`
+                        : "N/A"
+                    }
+                  />
+                </div>
+              </div>
+            </TimelineCard>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function SectionCard({
-  title,
-  icon,
-  children,
-  accentColor,
-  bgIcon: BgIcon,
+/* ─────────────────────────────────────────────────────────────
+   HELPER SUB-COMPONENTS
+───────────────────────────────────────────────────────────── */
+
+function TimelineNode({
+  step,
+  isReached,
+  icon: Icon,
 }: {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  accentColor: string;
-  bgIcon?: React.ElementType;
+  step: number;
+  isReached: boolean;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <Card className="h-full bg-white dark:bg-zinc-900/50 backdrop-blur-sm border border-slate-200 dark:border-zinc-800 p-8 rounded-[2rem] shadow-sm dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] dark:ring-1 dark:ring-zinc-800/50 hover:shadow-md dark:hover:shadow-[0_25px_60px_rgba(0,0,0,0.6)] transition-all duration-500 relative overflow-hidden group">
+    <div className="relative z-10 flex flex-col items-center shrink-0">
       <div
-        className={`absolute top-0 left-0 w-1.5 h-full ${accentColor} opacity-20`}
-      />
-
-      {BgIcon && (
-        <div className="absolute -top-12 -right-12 p-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity rotate-12 -z-0 pointer-events-none">
-          <BgIcon size={220} strokeWidth={1} />
+        className={cn(
+          "w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-3xl border-2 flex items-center justify-center transition-all duration-300",
+          isReached
+            ? "bg-gradient-to-br from-brand-primary to-orange-500 border-brand-primary text-white shadow-xl shadow-brand-primary/35 scale-105"
+            : "bg-card border-slate-300 dark:border-zinc-700 text-muted-foreground shadow-sm",
+        )}
+      >
+        <div className="flex flex-col items-center justify-center">
+          <Icon
+            size={18}
+            className={cn(
+              "hidden md:block transition-colors",
+              isReached ? "text-white" : "text-muted-foreground",
+            )}
+          />
+          <span
+            className={cn(
+              "text-xs md:text-[11px] font-black leading-none mt-0.5 transition-colors",
+              isReached ? "text-white" : "text-muted-foreground",
+            )}
+          >
+            {step}
+          </span>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      <div className="flex items-center gap-4 mb-8 relative z-10">
-        <div
-          className={`h-10 w-10 rounded-xl ${accentColor}/10 flex items-center justify-center text-slate-600 dark:text-zinc-400`}
-        >
-          {icon}
-        </div>
+function TimelineHeader({
+  stepNumber,
+  title,
+  subtitle,
+  badge,
+}: {
+  stepNumber: number;
+  title: string;
+  subtitle: string;
+  badge: string;
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
+      <div className="space-y-1">
         <Typography
-          variant="h4"
+          variant="h3"
           weight="black"
-          className="uppercase tracking-widest text-[13px] text-slate-800 dark:text-zinc-200"
+          className="text-xl md:text-2xl text-foreground tracking-tight flex items-center gap-2"
         >
           {title}
         </Typography>
+        <Typography
+          variant="body4"
+          className="text-muted-foreground text-sm leading-relaxed"
+        >
+          {subtitle}
+        </Typography>
       </div>
-      <div className="relative z-10">{children}</div>
-    </Card>
+      <span className="w-fit px-3.5 py-1.5 rounded-xl bg-brand-primary/10 text-brand-primary border border-brand-primary/20 text-xs font-black uppercase tracking-wider shrink-0">
+        {badge}
+      </span>
+    </div>
+  );
+}
+
+function TimelineCard({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -656,26 +1146,31 @@ function DetailItem({
   icon,
 }: {
   label: string;
-  value: string;
+  value: unknown;
   icon?: React.ReactNode;
 }) {
+  const displayVal =
+    value !== null && value !== undefined && String(value).trim() !== ""
+      ? String(value)
+      : "N/A";
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <Typography
         variant="body5"
         weight="black"
-        className="text-slate-400 uppercase tracking-tighter text-[9px]"
+        className="text-muted-foreground uppercase tracking-wider text-xs"
       >
         {label}
       </Typography>
       <div className="flex items-center gap-2">
-        {icon && <span className="text-slate-300">{icon}</span>}
+        {icon && <span className="text-brand-primary">{icon}</span>}
         <Typography
           variant="body3"
           weight="bold"
-          className="text-slate-900 dark:text-zinc-100"
+          className="text-foreground text-sm sm:text-base font-bold"
         >
-          {value || "—"}
+          {displayVal}
         </Typography>
       </div>
     </div>
@@ -684,13 +1179,14 @@ function DetailItem({
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 opacity-40">
-      <div className="h-12 w-12 rounded-full border-2 border-dashed border-slate-300 mb-3 flex items-center justify-center">
-        <Typography variant="body1" className="text-slate-300">
-          ?
-        </Typography>
+    <div className="flex flex-col items-center justify-center py-8 text-center opacity-60">
+      <div className="h-11 w-11 rounded-full border-2 border-dashed border-border mb-2 flex items-center justify-center text-muted-foreground text-sm font-bold">
+        ?
       </div>
-      <Typography variant="body4" className="italic">
+      <Typography
+        variant="body4"
+        className="italic text-muted-foreground text-xs md:text-sm"
+      >
         {message}
       </Typography>
     </div>
