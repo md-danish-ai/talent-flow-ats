@@ -7,13 +7,8 @@ import {
   BookOpen,
   Layers,
   Trophy,
-  Building2,
-  User,
-  Phone,
-  MapPin,
   Keyboard,
   FileText,
-  Info,
   ListChecks,
 } from "lucide-react";
 import { cn } from "@lib/utils";

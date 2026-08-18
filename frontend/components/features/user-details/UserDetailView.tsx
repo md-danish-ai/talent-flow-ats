@@ -12,12 +12,11 @@ import {
   Pencil,
   FileText,
   Calendar,
-  Clock,
   Shield,
   Fingerprint,
   CreditCard,
-  Building2,
   Compass,
+  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@components/ui-elements/Typography";
@@ -30,6 +29,7 @@ interface UserDetailViewProps {
   details: UserDetails;
   userId: string | number;
   hideHeader?: boolean;
+  backUrl?: string;
 }
 
 const TIMELINE_STEPS = [
@@ -88,6 +88,7 @@ export function UserDetailView({
   details,
   userId,
   hideHeader = false,
+  backUrl,
 }: UserDetailViewProps) {
   const {
     personalDetails,
@@ -109,7 +110,6 @@ export function UserDetailView({
   const [totalSpanPx, setTotalSpanPx] = useState<number>(0);
   const [node1OffsetTop, setNode1OffsetTop] = useState<number>(24);
   const [activeSteps, setActiveSteps] = useState<number[]>([1]);
-  const [activeSectionId, setActiveSectionId] = useState<string>("personal");
 
   // 60/120fps Smooth Physics Interpolation Loop (RAF + LERP)
   useEffect(() => {
@@ -201,7 +201,6 @@ export function UserDetailView({
 
       // Detect reached steps
       const reached: number[] = [1];
-      let currentActiveId = "personal";
 
       TIMELINE_STEPS.forEach((s) => {
         const el = document.getElementById(`timeline-section-${s.id}`);
@@ -210,13 +209,11 @@ export function UserDetailView({
           const nodeDist = elTop - node1Top;
           if (calculatedTargetHeight >= nodeDist - 20 || isAtBottom) {
             reached.push(s.step);
-            currentActiveId = s.id;
           }
         }
       });
 
       setActiveSteps(reached);
-      setActiveSectionId(currentActiveId);
     };
 
     scrollParent.addEventListener("scroll", handleScroll, { passive: true });
@@ -265,13 +262,6 @@ export function UserDetailView({
   };
 
   if (!personalDetails) return null;
-
-  const scrollToStep = (id: string) => {
-    const el = document.getElementById(`timeline-section-${id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
 
   return (
     <div className="flex flex-col gap-8 w-full mx-auto">
@@ -352,40 +342,17 @@ export function UserDetailView({
         </div>
       )}
 
-      {/* Non-Sticky Horizontal Quick Step Navigation Pill Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {TIMELINE_STEPS.map((step) => {
-          const Icon = step.icon;
-          const isActive = activeSectionId === step.id;
-          return (
-            <button
-              key={step.id}
-              onClick={() => scrollToStep(step.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all text-xs font-bold shrink-0 shadow-sm cursor-pointer active:scale-95",
-                isActive
-                  ? "bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/20"
-                  : "bg-card border-border hover:border-brand-primary/40 hover:bg-brand-primary/5 text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <span
-                className={cn(
-                  "flex h-5 w-5 rounded-lg items-center justify-center text-[11px] font-black",
-                  isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-brand-primary/10 text-brand-primary",
-                )}
-              >
-                {step.step}
-              </span>
-              <Icon
-                size={15}
-                className={isActive ? "text-white" : step.color}
-              />
-              <span className="inline">{step.title}</span>
-            </button>
-          );
-        })}
+      {/* Top Back Action Button */}
+      <div className="flex items-center">
+        <Link href={backUrl || "/user/dashboard"}>
+          <button
+            type="button"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-border bg-card hover:bg-muted/80 text-foreground transition-all text-xs font-bold shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/40"
+          >
+            <ArrowLeft size={15} className="text-brand-primary" />
+            <span>Back to Dashboard</span>
+          </button>
+        </Link>
       </div>
 
       {/* ─── VERTICAL TIMELINE CONTAINER WITH ULTRA-SMOOTH RAF GLIDE ─── */}
@@ -1093,12 +1060,11 @@ function TimelineNode({
 }
 
 function TimelineHeader({
-  stepNumber,
   title,
   subtitle,
   badge,
 }: {
-  stepNumber: number;
+  stepNumber?: number;
   title: string;
   subtitle: string;
   badge: string;

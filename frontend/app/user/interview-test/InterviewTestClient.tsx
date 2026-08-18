@@ -16,6 +16,7 @@ import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
+import { Alert } from "@components/ui-elements/Alert";
 import { interviewAttemptsApi } from "@lib/api/interview-attempts";
 import { type AttemptSummaryResponse } from "@types";
 import {
@@ -707,11 +708,9 @@ export function InterviewTestClient() {
 
   return (
     <PageContainer className="select-none">
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0 items-start">
         <div className="xl:col-span-8 2xl:col-span-9 space-y-4 sm:space-y-5 min-w-0">
           <QuestionWorkspace
-            message={message}
-            onCloseMessage={() => setMessage(null)}
             currentSection={currentSection}
             questionIndex={questionIndex}
             timerZone={timerZone}
@@ -729,17 +728,23 @@ export function InterviewTestClient() {
 
         <div className="xl:col-span-4 2xl:col-span-3 min-w-0">
           <div className="xl:sticky xl:top-4 space-y-4">
+            {message && (
+              <Alert
+                variant="info"
+                description={message}
+                onClose={() => setMessage(null)}
+                className="shadow-md animate-in fade-in slide-in-from-top-2 duration-300"
+              />
+            )}
             <InterviewProgressCard
-              sectionIndex={sectionIndex}
-              totalSections={totalSections}
-              currentSection={currentSection}
-              progressPercent={progressPercent}
               timerZone={timerZone}
               remainingTimeText={formatSecondsToTime(sectionRemainingSeconds)}
             />
             <InterviewStatusCard
               sections={sections}
               sectionIndex={sectionIndex}
+              totalSections={totalSections}
+              progressPercent={progressPercent}
               lockedSections={lockedSections}
               timerZone={timerZone}
               answeredCount={answeredCount}

@@ -24,12 +24,12 @@ export const QuestionImage = memo(function QuestionImage({
 
   return (
     <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm group/img-block">
-      <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
-        <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/40 animate-pulse" />
+      <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border border-border shadow-sm">
+        <div className="w-2 h-2 rounded-full bg-brand-primary/40 animate-pulse" />
         <Typography
-          variant="body5"
-          weight="black"
-          className="text-muted-foreground uppercase tracking-widest mr-1"
+          variant="body4"
+          weight="bold"
+          className="uppercase tracking-wider text-xs font-bold text-foreground"
         >
           Question Reference Image
         </Typography>

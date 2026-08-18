@@ -11,13 +11,12 @@ import {
   Lock,
   HelpCircle,
   Clock,
-  Check,
   AlertCircle,
   Sparkles,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import Link from "next/link";
-import { Card } from "@components/ui-cards/Card";
+import { cn } from "@lib/utils";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { useUserTour } from "@lib/tour";
 
@@ -206,18 +205,22 @@ export function DashboardClient({
               ============================================================ */}
           <motion.div id="step-card-personal-details" variants={itemVariants}>
             <div
-              className={`h-full relative group ${
-                !isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"
-              }`}
-              onMouseEnter={() => setHoveredCard("personal")}
+              className={cn(
+                "h-full relative group",
+                !isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed",
+              )}
+              onMouseEnter={() =>
+                !isDetailsComplete && setHoveredCard("personal")
+              }
               onMouseLeave={() => setHoveredCard(null)}
             >
-              <Card
-                className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+              <div
+                className={cn(
+                  "h-full relative overflow-hidden flex flex-col p-6 sm:p-7 rounded-3xl transition-all duration-300 border bg-card dark:bg-zinc-900/90 shadow-sm",
                   !isDetailsComplete
-                    ? "border-emerald-500/40 shadow-md shadow-emerald-500/5 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer"
-                    : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
-                }`}
+                    ? "border-emerald-500/50 dark:border-emerald-500/60 shadow-md shadow-emerald-500/10 hover:shadow-xl dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+                    : "border-slate-200/90 dark:border-zinc-800",
+                )}
               >
                 {/* Animated Border on Hover */}
                 <AnimatedBorder
@@ -226,17 +229,17 @@ export function DashboardClient({
                 />
 
                 {/* Step Header & Badge */}
-                <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <div className="flex items-center justify-between gap-3 mb-5 relative z-10">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                     Step 1
                   </span>
                   {isDetailsComplete ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60">
                       <Lock className="h-3 w-3" />
                       Locked
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 animate-pulse">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60 animate-pulse">
                       Action Required
                     </span>
                   )}
@@ -245,16 +248,17 @@ export function DashboardClient({
                 {/* Icon & Title */}
                 <div className="flex items-start gap-4 mb-4 relative z-10">
                   <div
-                    className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 ${
+                    className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300",
                       !isDetailsComplete
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-105"
-                        : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
-                    }`}
+                        ? "bg-emerald-500/10 dark:bg-emerald-950/60 border-emerald-500/30 dark:border-emerald-500/50 text-emerald-600 dark:text-emerald-400 group-hover:scale-105"
+                        : "bg-emerald-500/10 dark:bg-emerald-950/50 border-emerald-500/20 dark:border-emerald-700/40 text-emerald-600 dark:text-emerald-400",
+                    )}
                   >
                     {isDetailsComplete ? (
-                      <CheckCircle2 className="h-7 w-7 text-emerald-500/80" />
+                      <CheckCircle2 className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <FileText className="h-7 w-7" />
+                      <FileText className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                     )}
                   </div>
                   <div>
@@ -265,27 +269,27 @@ export function DashboardClient({
                     >
                       Personal Details
                     </Typography>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
                       Personal, Education & Experience
                     </p>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
+                <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed mb-6 font-normal relative z-10">
                   {isDetailsComplete
                     ? "Your personal information, educational background, and work history have been saved and locked."
                     : "Fill out your personal information, contact details, educational background, and work experience."}
                 </p>
 
                 {/* Card Action CTA */}
-                <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10">
+                <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/80 relative z-10">
                   {!isDetailsComplete ? (
                     <Link
                       href="/user/personal-details"
                       className="w-full block"
                     >
-                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] cursor-pointer">
+                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] cursor-pointer">
                         <span>Fill Application Details</span>
                         <ArrowRight className="h-4 w-4" />
                       </button>
@@ -293,14 +297,14 @@ export function DashboardClient({
                   ) : (
                     <button
                       disabled
-                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
+                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 font-medium text-sm cursor-not-allowed"
                     >
                       <Lock className="h-4 w-4" />
                       <span>Details Submitted & Locked</span>
                     </button>
                   )}
                 </div>
-              </Card>
+              </div>
             </div>
           </motion.div>
 
@@ -309,18 +313,22 @@ export function DashboardClient({
               ============================================================ */}
           <motion.div id="step-card-profile" variants={itemVariants}>
             <div
-              className={`h-full relative group ${
-                isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed"
-              }`}
-              onMouseEnter={() => setHoveredCard("identity")}
+              className={cn(
+                "h-full relative group",
+                isDetailsComplete ? "cursor-pointer" : "cursor-not-allowed",
+              )}
+              onMouseEnter={() =>
+                isDetailsComplete && setHoveredCard("identity")
+              }
               onMouseLeave={() => setHoveredCard(null)}
             >
-              <Card
-                className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+              <div
+                className={cn(
+                  "h-full relative overflow-hidden flex flex-col p-6 sm:p-7 rounded-3xl transition-all duration-300 border bg-card dark:bg-zinc-900/90 shadow-sm",
                   isDetailsComplete
-                    ? "border-brand-primary/30 dark:border-brand-primary/30 shadow-sm hover:border-brand-primary/60 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-                    : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
-                }`}
+                    ? "border-brand-primary/40 dark:border-brand-primary/50 shadow-md hover:border-brand-primary hover:shadow-xl dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)] hover:dark:border-brand-primary/90"
+                    : "border-slate-200/90 dark:border-zinc-800 opacity-60 cursor-not-allowed",
+                )}
               >
                 {/* Animated Border on Hover (Primary Brand Color) */}
                 <AnimatedBorder
@@ -329,16 +337,16 @@ export function DashboardClient({
                 />
 
                 {/* Step Header & Badge */}
-                <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <div className="flex items-center justify-between gap-3 mb-5 relative z-10">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                     Step 2
                   </span>
                   {isDetailsComplete ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-primary/10 dark:bg-brand-primary/15 text-brand-primary border border-brand-primary/20 dark:border-brand-primary/30">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-primary/15 dark:bg-brand-primary/25 text-brand-primary dark:text-rose-300 border border-brand-primary/30 dark:border-brand-primary/50">
                       Available
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700">
                       <Lock className="h-3 w-3" />
                       Locked
                     </span>
@@ -348,11 +356,12 @@ export function DashboardClient({
                 {/* Icon & Title */}
                 <div className="flex items-start gap-4 mb-4 relative z-10">
                   <div
-                    className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 ${
+                    className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105",
                       isDetailsComplete
-                        ? "bg-brand-primary/10 dark:bg-brand-primary/15 border-brand-primary/30 text-brand-primary"
-                        : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
-                    }`}
+                        ? "bg-brand-primary/10 dark:bg-brand-primary/20 border-brand-primary/30 dark:border-brand-primary/50 text-brand-primary dark:text-rose-400"
+                        : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500",
+                    )}
                   >
                     <User className="h-7 w-7" />
                   </div>
@@ -364,14 +373,14 @@ export function DashboardClient({
                     >
                       Review Profile
                     </Typography>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
                       View Submitted Information
                     </p>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
+                <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed mb-6 font-normal relative z-10">
                   {isDetailsComplete
                     ? "Cross-check and review your submitted candidate details, education, experience, and profile summary anytime."
                     : "This section unlocks after you submit your Personal Details form in Step 1."}
@@ -380,11 +389,11 @@ export function DashboardClient({
                 {/* Card Action CTA */}
                 <div
                   id="step-submission-button"
-                  className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10"
+                  className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/80 relative z-10"
                 >
                   {isDetailsComplete ? (
                     <Link href="/user/profile" className="w-full block">
-                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl border border-brand-primary/30 hover:border-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-semibold text-sm transition-all shadow-sm active:scale-[0.98] cursor-pointer">
+                      <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-brand-primary/40 dark:border-brand-primary/60 hover:border-brand-primary bg-brand-primary/10 dark:bg-brand-primary/20 hover:bg-brand-primary/20 dark:hover:bg-brand-primary/35 text-brand-primary dark:text-rose-200 font-bold text-sm transition-all shadow-sm active:scale-[0.98] cursor-pointer">
                         <span>View Submitted Details</span>
                         <ArrowRight className="h-4 w-4" />
                       </button>
@@ -392,14 +401,14 @@ export function DashboardClient({
                   ) : (
                     <button
                       disabled
-                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
+                      className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
                     >
                       <Lock className="h-4 w-4" />
                       <span>Locked (Complete Step 1)</span>
                     </button>
                   )}
                 </div>
-              </Card>
+              </div>
             </div>
           </motion.div>
 
@@ -409,24 +418,22 @@ export function DashboardClient({
           {requiresInterview && (
             <motion.div id="step-card-interview-test" variants={itemVariants}>
               <div
-                className={`h-full relative group ${
-                  isInterviewEnabled
-                    ? "cursor-pointer"
-                    : isInterviewSubmitted
-                      ? "cursor-default"
-                      : "cursor-not-allowed"
-                }`}
-                onMouseEnter={() => setHoveredCard("interview")}
+                className={cn(
+                  "h-full relative group",
+                  isInterviewEnabled ? "cursor-pointer" : "cursor-not-allowed",
+                )}
+                onMouseEnter={() =>
+                  isInterviewEnabled && setHoveredCard("interview")
+                }
                 onMouseLeave={() => setHoveredCard(null)}
               >
-                <Card
-                  className={`h-full relative overflow-hidden flex flex-col p-6 sm:p-8 rounded-3xl transition-all duration-300 border bg-white dark:bg-zinc-900/80 backdrop-blur-xl ${
+                <div
+                  className={cn(
+                    "h-full relative overflow-hidden flex flex-col p-6 sm:p-7 rounded-3xl transition-all duration-300 border bg-card dark:bg-zinc-900/90 shadow-sm",
                     isInterviewEnabled
-                      ? "border-blue-500/40 shadow-md shadow-blue-500/5 hover:shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-                      : isInterviewSubmitted
-                        ? "border-slate-200 dark:border-zinc-800/80 shadow-sm hover:shadow-md cursor-default"
-                        : "border-slate-200/60 dark:border-zinc-800/50 opacity-80 cursor-not-allowed"
-                  }`}
+                      ? "border-blue-500/40 dark:border-blue-500/60 shadow-md shadow-blue-500/10 hover:shadow-xl dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+                      : "border-slate-200/90 dark:border-zinc-800",
+                  )}
                 >
                   {/* Animated Border on Hover */}
                   <AnimatedBorder
@@ -435,30 +442,30 @@ export function DashboardClient({
                   />
 
                   {/* Step Header & Badge */}
-                  <div className="flex items-center justify-between gap-3 mb-6 relative z-10">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                  <div className="flex items-center justify-between gap-3 mb-5 relative z-10">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                       Step 3
                     </span>
                     {isInterviewSubmitted ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
-                        <Check className="h-3.5 w-3.5" />
-                        Completed
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60">
+                        <Lock className="h-3 w-3" />
+                        Locked
                       </span>
                     ) : isExpired ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700">
                         Expired
                       </span>
                     ) : isResuming ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 animate-pulse">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 animate-pulse">
                         In Progress
                       </span>
                     ) : isInterviewEnabled ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40 animate-pulse">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 animate-pulse">
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-ping inline-block" />
                         Ready to Start
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700">
                         <Lock className="h-3 w-3" />
                         Locked
                       </span>
@@ -468,16 +475,17 @@ export function DashboardClient({
                   {/* Icon & Title */}
                   <div className="flex items-start gap-4 mb-4 relative z-10">
                     <div
-                      className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 ${
+                      className={cn(
+                        "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105",
                         isInterviewSubmitted
-                          ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400"
+                          ? "bg-emerald-500/10 dark:bg-emerald-950/50 border-emerald-500/20 dark:border-emerald-700/40 text-emerald-600 dark:text-emerald-400"
                           : isInterviewEnabled
-                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40 text-blue-600 dark:text-blue-400"
-                            : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
-                      }`}
+                            ? "bg-blue-500/10 dark:bg-blue-950/60 border-blue-500/30 dark:border-blue-700/60 text-blue-600 dark:text-blue-400"
+                            : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500",
+                      )}
                     >
                       {isInterviewSubmitted ? (
-                        <CheckCircle2 className="h-7 w-7" />
+                        <CheckCircle2 className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                       ) : (
                         <PlayCircle className="h-7 w-7" />
                       )}
@@ -490,14 +498,14 @@ export function DashboardClient({
                       >
                         Online Assessment
                       </Typography>
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
                         Technical Evaluation
                       </p>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed mb-6 font-normal relative z-10">
+                  <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed mb-6 font-normal relative z-10">
                     {isInterviewSubmitted
                       ? "You have successfully completed and submitted your online assessment."
                       : isExpired
@@ -510,13 +518,13 @@ export function DashboardClient({
                   </p>
 
                   {/* Card Action CTA */}
-                  <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/60 relative z-10">
+                  <div className="mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/80 relative z-10">
                     {isInterviewEnabled ? (
                       <Link
                         href="/user/interview-test"
                         className="w-full block"
                       >
-                        <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] cursor-pointer">
+                        <button className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] cursor-pointer">
                           <span>
                             {isResuming
                               ? "Resume Assessment"
@@ -526,26 +534,29 @@ export function DashboardClient({
                         </button>
                       </Link>
                     ) : isInterviewSubmitted ? (
-                      <div className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 font-medium text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        <span>Assessment Completed</span>
-                      </div>
+                      <button
+                        disabled
+                        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 font-medium text-sm cursor-not-allowed"
+                      >
+                        <Lock className="h-4 w-4" />
+                        <span>Assessment Submitted & Locked</span>
+                      </button>
                     ) : isExpired ? (
-                      <div className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 font-medium text-sm">
+                      <div className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 font-medium text-sm">
                         <Lock className="h-4 w-4" />
                         <span>Assessment Closed</span>
                       </div>
                     ) : (
                       <button
                         disabled
-                        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-zinc-800/30 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
+                        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-medium text-sm cursor-not-allowed"
                       >
                         <Lock className="h-4 w-4" />
                         <span>Locked (Complete Step 1)</span>
                       </button>
                     )}
                   </div>
-                </Card>
+                </div>
               </div>
             </motion.div>
           )}

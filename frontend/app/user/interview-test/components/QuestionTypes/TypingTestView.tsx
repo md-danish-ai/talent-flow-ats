@@ -257,16 +257,16 @@ export const TypingTestView = memo(function TypingTestView({
           >
             <stat.icon size={16} className={`${stat.color} mb-1`} />
             <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest text-[9px] text-muted-foreground"
+              variant="body4"
+              weight="bold"
+              className="uppercase tracking-wider text-xs text-muted-foreground"
             >
               {stat.label}
             </Typography>
             <Typography
               variant="body3"
               weight="bold"
-              className="tracking-tight"
+              className="tracking-tight text-sm font-bold"
             >
               {stat.value}
             </Typography>
@@ -275,48 +275,26 @@ export const TypingTestView = memo(function TypingTestView({
       </div>
 
       <div className="space-y-5">
-        {/* Question Section */}
+        {/* Typing Source card with Title */}
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
-          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border border-border shadow-sm max-w-[90%]">
+            <div className="w-2 h-2 rounded-full bg-brand-primary shrink-0" />
             <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest mr-1"
+              variant="body4"
+              weight="bold"
+              className="uppercase tracking-wider truncate text-xs font-bold text-foreground"
             >
-              Instructions
+              {questionText
+                ? `Typing Source — ${questionText}`
+                : "Typing Source"}
             </Typography>
           </div>
-          <div className="p-5">
-            <Typography
-              variant="body2"
-              weight="semibold"
-              color="text-foreground"
-              className="leading-relaxed tracking-tight"
-            >
-              {questionText}
-            </Typography>
-          </div>
-        </div>
-
-        {/* Typing Source card */}
-        <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
-          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary" />
-            <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest mr-1"
-            >
-              Typing Source
-            </Typography>
-          </div>
-          <div className="p-7">
+          <div className="p-6 sm:p-7">
             <Typography
               variant="body1"
               color="text-foreground"
               weight="semibold"
-              className="font-mono leading-relaxed select-none antialiased tracking-wide whitespace-pre-wrap text-xl"
+              className="font-mono leading-relaxed select-none antialiased tracking-wide whitespace-pre-wrap text-lg sm:text-xl"
             >
               {renderedPassage}
             </Typography>
@@ -330,7 +308,8 @@ export const TypingTestView = memo(function TypingTestView({
           <div className="flex items-center gap-2">
             <Typography
               variant="body4"
-              className={`font-black uppercase tracking-widest text-[11px] ${
+              weight="bold"
+              className={`uppercase tracking-wider text-xs font-bold ${
                 isFinished
                   ? "text-emerald-600"
                   : targetReached
@@ -345,13 +324,13 @@ export const TypingTestView = memo(function TypingTestView({
                   : "Start Typing Below"}
             </Typography>
             {!isFinished && !targetReached && (
-              <div className="h-1 w-1 rounded-full bg-brand-primary animate-ping" />
+              <div className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-ping" />
             )}
           </div>
           <div className="flex items-center gap-3">
             <Typography
-              variant="body5"
-              className={`font-mono text-[11px] font-bold px-3 py-1 rounded-lg border transition-all duration-300 ${
+              variant="body4"
+              className={`font-mono text-xs font-bold px-3 py-1 rounded-lg border transition-all duration-300 ${
                 isFinished
                   ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/30"
                   : targetReached

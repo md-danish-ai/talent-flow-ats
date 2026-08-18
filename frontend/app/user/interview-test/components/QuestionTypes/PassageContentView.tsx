@@ -31,12 +31,12 @@ export const PassageContentView = memo(function PassageContentView({
       <div className="space-y-5">
         {/* Passage Section */}
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
-          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
-            <FileText size={10} className="text-orange-500" />
+          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border border-border shadow-sm">
+            <FileText size={14} className="text-orange-500" />
             <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest mr-1"
+              variant="body4"
+              weight="bold"
+              className="uppercase tracking-wider text-xs font-bold text-foreground"
             >
               Passage Paragraph
             </Typography>
@@ -56,12 +56,12 @@ export const PassageContentView = memo(function PassageContentView({
 
         {/* Question Section */}
         <div className="rounded-2xl border border-border bg-muted/10 p-1 relative pt-5 shadow-sm">
-          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+          <div className="absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border border-border shadow-sm">
+            <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
             <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest mr-1"
+              variant="body4"
+              weight="bold"
+              className="uppercase tracking-wider text-xs font-bold text-foreground"
             >
               Question Text
             </Typography>

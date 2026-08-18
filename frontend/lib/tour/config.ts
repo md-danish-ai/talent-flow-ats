@@ -329,54 +329,21 @@ export const INTERVIEW_OVERVIEW_TOUR_STEPS: DriveStep[] = [
 
 /**
  * 5. Active Test Screen Tour Steps
+ * 1. Subject & Question Type
+ * 2. Question Instructions
+ * 3. Answering Workspace
+ * 4. Save & Next Navigation
+ * 5. Section Timer
+ * 6. Section Progress & Overview
+ * 7. Quick Guide Button
  */
 export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
   {
-    element: "#interview-active-timer",
-    popover: {
-      title: "⏳ Section Countdown Timer",
-      description:
-        "Shows the remaining time for your active section. Responses will automatically submit when this timer expires.",
-      side: "left",
-      align: "center",
-    },
-  },
-  {
-    element: "#interview-active-progress",
-    popover: {
-      title: "📊 Section Progress",
-      description:
-        "Track which section you are currently completing and your overall exam completion progress.",
-      side: "left",
-      align: "center",
-    },
-  },
-  {
-    element: "#interview-active-status",
-    popover: {
-      title: "🔒 Section Locking Status",
-      description:
-        "Shows active, completed, and pending sections. Submitted sections are permanently locked.",
-      side: "left",
-      align: "start",
-    },
-  },
-  {
-    element: "#interview-active-question-badge",
-    popover: {
-      title: "🔢 Current Question",
-      description:
-        "Displays your active question number out of the total questions in this section.",
-      side: "bottom",
-      align: "start",
-    },
-  },
-  {
     element: "#interview-active-question-type",
     popover: {
-      title: "🏷️ Question Mode & Subject",
+      title: "🏷️ Subject & Question Type",
       description:
-        "Indicates the question category (e.g. Passage Content, MCQ, Typing) and corresponding subject area.",
+        "Shows the current subject, question format (e.g. Multiple Choice, Typing, or Subjective), and question number.",
       side: "bottom",
       align: "start",
     },
@@ -386,7 +353,7 @@ export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "📋 Question Instructions",
       description:
-        "Review any section-specific instructions or criteria before submitting your answer.",
+        "Read instructions and guidance carefully here before answering your question.",
       side: "bottom",
       align: "start",
     },
@@ -396,7 +363,7 @@ export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "✍️ Answering Workspace",
       description:
-        "Select choices, type text, or complete tasks in this dedicated workspace.",
+        "Select your choice, type your text response, or complete the task in this dedicated workspace.",
       side: "top",
       align: "center",
     },
@@ -404,11 +371,31 @@ export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
   {
     element: "#interview-active-nav-actions",
     popover: {
-      title: "💾 Save & Next Navigation",
+      title: "💾 Save & Next",
       description:
-        "Use 'Previous' to revisit earlier questions within this section, or 'Save & Next' to record your response and proceed.",
+        "Use 'Previous' to go back, or click 'Save & Next' to save your answer and move to the next question.",
       side: "top",
       align: "end",
+    },
+  },
+  {
+    element: "#interview-active-timer",
+    popover: {
+      title: "⏳ Section Timer",
+      description:
+        "Shows the time left for your active section. When time expires, your answers will auto-save and the section will lock.",
+      side: "left",
+      align: "center",
+    },
+  },
+  {
+    element: "#interview-active-status",
+    popover: {
+      title: "📊 Section Progress",
+      description:
+        "Track your progress across all test sections and view live answered counts. Submitted sections are permanently locked.",
+      side: "left",
+      align: "start",
     },
   },
   {
@@ -416,7 +403,7 @@ export const ACTIVE_TEST_TOUR_STEPS: DriveStep[] = [
     popover: {
       title: "💡 Quick Guide",
       description:
-        "Need a quick reminder on how the test workspace works? Click this guide button anytime during the exam.",
+        "Need a quick reminder on how the test workspace works? Click this button anytime to replay the guide.",
       side: "bottom",
       align: "end",
     },

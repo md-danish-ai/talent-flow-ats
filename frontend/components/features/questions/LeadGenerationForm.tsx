@@ -9,7 +9,6 @@ import {
 import { Button } from "@components/ui-elements/Button";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Typography } from "@components/ui-elements/Typography";
-import { Textarea } from "@components/ui-elements/Textarea";
 import { Input } from "@components/ui-elements/Input";
 import { getErrorMessage } from "@lib/utils";
 import { HelpCircle, Loader2 } from "lucide-react";
