@@ -24,6 +24,7 @@ import {
   TableHead,
   TableCell,
 } from "@components/ui-elements/Table";
+import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { useListing } from "@hooks/useListing";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -162,26 +163,40 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
           >
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
               <div className="flex flex-col space-y-2">
-                {tasks.length === 0 ? (
-                  <EmptyState
-                    variant="database"
-                    title="No users found"
-                    description="You don't have any assigned users in this category."
-                  />
-                ) : (
-                  <Table>
-                    <TableHeader className="bg-muted/30">
-                      <TableRow>
-                        <TableHead>Candidate</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-center">Grade</TableHead>
-                        <TableHead>Result</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tasks.map((task) => (
+                <Table>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead>Candidate</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Grade</TableHead>
+                      <TableHead>Result</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <SimpleTableSkeleton
+                        rowCount={pageSize}
+                        columnCount={6}
+                        columnWidths={[
+                          "py-4",
+                          "text-center py-4",
+                          "text-center py-4",
+                          "py-4",
+                          "py-4",
+                          "text-right py-4",
+                        ]}
+                      />
+                    ) : tasks.length === 0 ? (
+                      <EmptyState
+                        colSpan={6}
+                        variant="database"
+                        title="No users found"
+                        description="You don't have any assigned users in this category."
+                      />
+                    ) : (
+                      tasks.map((task) => (
                         <TableRow
                           key={task.id}
                           className="hover:bg-muted/20 transition-colors"
@@ -274,10 +289,10 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </div>
 
