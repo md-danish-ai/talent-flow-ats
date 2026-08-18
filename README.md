@@ -105,10 +105,13 @@ NEXT_PUBLIC_APP_ENV=prod
 NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR=false
 
 # -------------------------------------------------------------
-# AI / External Services
+# AI / External Services & Integrations
 # -------------------------------------------------------------
 # Hugging Face token (required for AI features)
 HF_TOKEN=your_hugging_face_token_here
+
+# Google Chat Incoming Webhook URL (optional: for instant interview evaluation notifications)
+GOOGLE_CHAT_WEBHOOK_URL=https://chat.googleapis.com/v1/spaces/XXXX/messages?key=YYYY&token=ZZZZ
 
 # -------------------------------------------------------------
 # Database Backup & Upload Settings
