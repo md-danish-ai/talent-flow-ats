@@ -183,7 +183,7 @@ export function InterviewOverview({
                 variant="h1"
                 className="tracking-tight text-3xl md:text-4xl font-black relative z-10"
               >
-                {paper.paper_name}
+                Paper Description
               </Typography>
               <div className="absolute bottom-1 left-0 w-full h-3 bg-brand-primary/20 -z-0 rounded-full" />
             </div>
