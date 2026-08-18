@@ -32,8 +32,28 @@ export function SignInForm() {
     const urlParams = new URLSearchParams(window.location.search);
     const clearAuth =
       searchParams.get("clear_auth") || urlParams.get("clear_auth");
+    const isInactive =
+      searchParams.get("inactive") === "1" || urlParams.get("inactive") === "1";
 
-    if (clearAuth === "1") {
+    if (isInactive) {
+      const timer = setTimeout(() => {
+        toast.error(
+          "Your account is currently inactive. Please contact the administrator.",
+          {
+            title: "Account Inactive",
+            duration: 10000,
+          },
+        );
+
+        // Clean up URL without refreshing
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        url.searchParams.delete("inactive");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else if (clearAuth === "1") {
       console.log("Session expiration detected via URL flag");
 
       // Small delay to ensure ToastProvider is ready and portal is mounted

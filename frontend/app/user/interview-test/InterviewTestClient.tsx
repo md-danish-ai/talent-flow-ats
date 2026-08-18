@@ -10,6 +10,7 @@ import {
   formatSecondsToTime,
 } from "@lib/utils";
 import { InterviewOverview } from "./components/InterviewOverview";
+import { InterviewOverviewSkeleton } from "@components/ui-skeleton/InterviewOverviewSkeleton";
 import { InterviewCompleted } from "./components/InterviewCompleted";
 import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
@@ -21,9 +22,12 @@ import {
   paperAssignmentsApi,
   type AssignedInterviewPaperResponse,
 } from "@lib/api/paper-assignments";
+import { useMe } from "@hooks/api/user/use-me";
+import { useActiveTestTour } from "@lib/tour";
 import type { InterviewQuestion, InterviewSection } from "./types";
 
 export function InterviewTestClient() {
+  const { data: currentUser } = useMe();
   const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
   const [loadedSections, setLoadedSections] =
     useState<InterviewSection[]>(DUMMY_SECTIONS);
@@ -66,6 +70,10 @@ export function InterviewTestClient() {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [finalSummary, setFinalSummary] =
     useState<AttemptSummaryResponse | null>(null);
+
+  const { runTourManually: runActiveTestTour } = useActiveTestTour(
+    hasStarted && !isCompleted ? currentUser || null : null,
+  );
 
   const currentSection = sections[sectionIndex] ?? sections[0];
   const currentQuestion =
@@ -676,7 +684,7 @@ export function InterviewTestClient() {
   if (isLoadingPaper && !hasStarted) {
     return (
       <PageContainer className="py-2 sm:py-3 lg:py-4">
-        Loading assigned paper...
+        <InterviewOverviewSkeleton />
       </PageContainer>
     );
   }
@@ -715,6 +723,7 @@ export function InterviewTestClient() {
             onAnswerChange={setCurrentAnswer}
             onPrevious={handlePrevious}
             onSaveAndNext={handleSaveAndNext}
+            onRunTour={runActiveTestTour}
           />
         </div>
 

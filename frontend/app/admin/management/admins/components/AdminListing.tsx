@@ -11,14 +11,11 @@ import {
   TableRow,
 } from "@components/ui-elements/Table";
 import { Plus, Users } from "lucide-react";
-import { toast } from "@lib/toast";
-import { cn } from "@lib/utils";
 import { MainCard } from "@components/ui-cards/MainCard";
+import { cn } from "@lib/utils";
 import { AddAdminModal } from "./AddAdminModal";
-import { getUsersByRole, toggleUserStatus } from "@lib/api/auth";
+import { getUsersByRole } from "@lib/api/auth";
 import { UserListResponse } from "@types";
-import { Badge } from "@components/ui-elements/Badge";
-import { Switch } from "@components/ui-elements/Switch";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { useListing } from "@hooks/useListing";
@@ -27,6 +24,7 @@ import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { CopyableText } from "@components/ui-elements/CopyableText";
 
 interface AdminListingProps {
   initialData?: {
@@ -45,7 +43,6 @@ interface AdminListingProps {
 export function AdminListing({ initialData }: AdminListingProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const {
     data: users,
@@ -69,19 +66,6 @@ export function AdminListing({ initialData }: AdminListingProps) {
     initialTotalItems: initialData?.pagination?.total_records,
     toastMessage: "Admin list refreshed successfully",
   });
-
-  const handleToggleStatus = async (user: UserListResponse) => {
-    setTogglingId(user.id);
-    try {
-      await toggleUserStatus(user.id, !user.is_active);
-      void refresh();
-      toast.success("Status updated successfully");
-    } catch (error) {
-      console.error("Toggle failed:", error);
-    } finally {
-      setTogglingId(null);
-    }
-  };
 
   return (
     <>
@@ -149,17 +133,14 @@ export function AdminListing({ initialData }: AdminListingProps) {
                     <TableHead className="font-bold text-slate-500 text-xs uppercase">
                       Email
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <SimpleTableSkeleton columnCount={5} rowCount={pageSize} />
+                    <SimpleTableSkeleton columnCount={4} rowCount={pageSize} />
                   ) : !Array.isArray(users) || users.length === 0 ? (
                     <EmptyState
-                      colSpan={5}
+                      colSpan={4}
                       title="No admins found"
                       description="There are currently no administrative accounts registered in the system."
                     />
@@ -172,26 +153,31 @@ export function AdminListing({ initialData }: AdminListingProps) {
                         <TableCell className="font-semibold">
                           {row.username || "-"}
                         </TableCell>
-                        <TableCell>{row.mobile}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {row.email || "-"}
-                        </TableCell>
                         <TableCell>
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <Switch
-                              checked={row.is_active}
-                              onChange={() => handleToggleStatus(row)}
-                              size="sm"
-                              disabled={togglingId === row.id}
-                            />
-                            <Badge
-                              variant="outline"
-                              shape="square"
-                              color={row.is_active ? "success" : "error"}
+                          {row.mobile ? (
+                            <CopyableText
+                              value={row.mobile}
+                              className="inline-flex text-[12px] font-medium tracking-tight text-slate-800 dark:text-slate-200"
+                              title="Copy Mobile Number"
                             >
-                              {row.is_active ? "ACTIVE" : "INACTIVE"}
-                            </Badge>
-                          </div>
+                              <span>{row.mobile}</span>
+                            </CopyableText>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.email ? (
+                            <CopyableText
+                              value={row.email}
+                              className="inline-flex text-xs text-muted-foreground"
+                              title="Copy Email"
+                            >
+                              <span>{row.email}</span>
+                            </CopyableText>
+                          ) : (
+                            "-"
+                          )}
                         </TableCell>
                       </TableRow>
                     ))

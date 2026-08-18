@@ -15,6 +15,7 @@ from app.auth.schemas import (
     SignInSchema,
     CreateAdminSchema,
     ChangePasswordSchema,
+    UpdateUserSchema,
 )
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import require_roles, authenticate_user
@@ -147,7 +148,7 @@ async def toggle_status(user_id: int, payload: dict):
 @router.put(
     "/update-user-profile/{user_id}", dependencies=[Depends(require_roles(["admin"]))]
 )
-async def update_basic_info(user_id: int, data: SignUpSchema):
+async def update_basic_info(user_id: int, data: UpdateUserSchema):
     """
     Update basic user info (username, mobile, email, testlevel, department_id).
     We reuse SignUpSchema fields for this.

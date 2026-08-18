@@ -12,11 +12,14 @@ import {
   BarChart,
   Award,
   CalendarX,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@components/ui-elements/Button";
 import { Badge } from "@components/ui-elements/Badge";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
+import { useMe } from "@hooks/api/user/use-me";
+import { useInterviewOverviewTour } from "@lib/tour";
 import type { InterviewSection } from "../types";
 import type { InterviewPaperMetaResponse } from "@lib/api/paper-assignments";
 
@@ -35,6 +38,9 @@ export function InterviewOverview({
   paper,
   onStart,
 }: InterviewOverviewProps) {
+  const { data: currentUser } = useMe();
+  const { runTourManually } = useInterviewOverviewTour(currentUser || null);
+
   const formatDuration = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
@@ -110,22 +116,34 @@ export function InterviewOverview({
                 Back
               </Button>
             </Link>
-            <Button
-              size="md"
-              color="primary"
-              animate="scale"
-              startIcon={
-                <PlayCircle
-                  size={18}
-                  className="transition-all duration-300 group-hover:scale-125 group-hover:rotate-[15deg] ease-out"
-                />
-              }
-              onClick={onStart}
-              disabled={!!startError || !paper}
-              className="flex-1 sm:flex-none group"
+            <div id="interview-start-btn" className="flex-1 sm:flex-none">
+              <Button
+                size="md"
+                color="primary"
+                animate="scale"
+                startIcon={
+                  <PlayCircle
+                    size={18}
+                    className="transition-all duration-300 group-hover:scale-125 group-hover:rotate-[15deg] ease-out"
+                  />
+                }
+                onClick={onStart}
+                disabled={!!startError || !paper}
+                className="w-full sm:w-auto group"
+              >
+                Start Interview
+              </Button>
+            </div>
+            <button
+              id="interview-help-trigger"
+              type="button"
+              onClick={() => runTourManually()}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50 shrink-0"
+              title="Quick Guide"
             >
-              Start Interview
-            </Button>
+              <HelpCircle className="h-4 w-4 text-brand-primary" />
+              <span className="hidden sm:inline">Quick Guide</span>
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 order-1 sm:order-2">
@@ -158,7 +176,7 @@ export function InterviewOverview({
         </div>
 
         {paper && (
-          <div className="space-y-4">
+          <div id="interview-overview-title" className="space-y-4">
             {/* Creative Title with Marker Highlight */}
             <div className="relative inline-block">
               <Typography
@@ -184,7 +202,10 @@ export function InterviewOverview({
             {/* Pill-shaped Meta Badges */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {paper.department_name && (
-                <div className="flex items-center gap-3 rounded-2xl border border-orange-500/30 bg-card px-4 py-2 shadow-sm hover:border-orange-500/60 hover:shadow-md transition-all">
+                <div
+                  id="interview-overview-department"
+                  className="flex items-center gap-3 rounded-2xl border border-orange-500/30 bg-card px-4 py-2 shadow-sm hover:border-orange-500/60 hover:shadow-md transition-all"
+                >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFEDD5] text-[#EA580C] dark:bg-[#EA580C]/20 dark:text-[#FB923C]">
                     <Briefcase size={16} strokeWidth={2.5} />
                   </div>
@@ -199,7 +220,10 @@ export function InterviewOverview({
                 </div>
               )}
               {paper.test_level_name && (
-                <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-card px-4 py-2 shadow-sm hover:border-emerald-500/60 hover:shadow-md transition-all">
+                <div
+                  id="interview-overview-level"
+                  className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-card px-4 py-2 shadow-sm hover:border-emerald-500/60 hover:shadow-md transition-all"
+                >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D1FAE5] text-[#059669] dark:bg-[#059669]/20 dark:text-[#10B981]">
                     <BarChart size={16} strokeWidth={2.5} />
                   </div>
@@ -213,7 +237,10 @@ export function InterviewOverview({
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-card px-4 py-2 shadow-sm hover:border-amber-500/60 hover:shadow-md transition-all">
+              <div
+                id="interview-overview-marks"
+                className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-card px-4 py-2 shadow-sm hover:border-amber-500/60 hover:shadow-md transition-all"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FEF3C7] text-[#D97706] dark:bg-[#D97706]/20 dark:text-[#F59E0B]">
                   <Award size={16} strokeWidth={2.5} />
                 </div>
@@ -226,7 +253,10 @@ export function InterviewOverview({
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-blue-500/30 bg-card px-4 py-2 shadow-sm hover:border-blue-500/60 hover:shadow-md transition-all">
+              <div
+                id="interview-overview-duration"
+                className="flex items-center gap-3 rounded-2xl border border-blue-500/30 bg-card px-4 py-2 shadow-sm hover:border-blue-500/60 hover:shadow-md transition-all"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#DBEAFE] text-[#2563EB] dark:bg-[#2563EB]/20 dark:text-[#3B82F6]">
                   <Clock3 size={16} strokeWidth={2.5} />
                 </div>
@@ -283,7 +313,7 @@ export function InterviewOverview({
 
         {/* Sections Grid Redesign */}
         {paper && (
-          <div className="space-y-3">
+          <div id="interview-overview-sections" className="space-y-3">
             <div className="flex items-center gap-2">
               <Typography variant="body1" weight="bold">
                 Assessment Structure
@@ -383,7 +413,10 @@ export function InterviewOverview({
         )}
 
         {/* Instructions Redesign */}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.03] via-background to-brand-primary/[0.03] p-1 md:p-1.5">
+        <div
+          id="interview-overview-rules"
+          className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.03] via-background to-brand-primary/[0.03] p-1 md:p-1.5"
+        >
           <div className="rounded-[calc(1rem-2px)] border border-amber-500/10 bg-background/40 backdrop-blur-sm p-5 md:p-6">
             <div className="mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">

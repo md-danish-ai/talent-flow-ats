@@ -27,10 +27,15 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     });
     return user;
   } catch (error: unknown) {
-    const apiError = error as { status?: number };
+    const apiError = error as { status?: number; message?: string };
     if (apiError && apiError.status === 401) {
-      // Token expired or invalid — redirect to sign-in with clear_auth flag
-      redirect("/sign-in?clear_auth=1");
+      const isInactive =
+        apiError.message?.toLowerCase().includes("inactive") || false;
+      redirect(
+        isInactive
+          ? "/sign-in?clear_auth=1&inactive=1"
+          : "/sign-in?clear_auth=1",
+      );
     }
     console.error("Error fetching current user:", error);
     return null;

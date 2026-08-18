@@ -63,6 +63,7 @@ function StepNode({
     <div className="flex flex-col">
       {/* ── Step row: icon + label ── */}
       <div
+        id={`timeline-step-${step}`}
         role={onClick ? "button" : undefined}
         tabIndex={onClick ? 0 : undefined}
         onClick={onClick}
@@ -72,7 +73,7 @@ function StepNode({
           }
         }}
         className={cn(
-          "flex items-center gap-3 rounded-lg p-1 transition-all select-none",
+          "flex items-center gap-3 rounded-xl p-1.5 transition-all select-none",
           onClick ? "cursor-pointer hover:bg-muted/40" : "",
         )}
       >

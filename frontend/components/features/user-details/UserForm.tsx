@@ -15,7 +15,9 @@ import {
   GraduationCap,
   Briefcase,
   FileText,
+  HelpCircle,
 } from "lucide-react";
+import { usePersonalDetailsTour } from "@lib/tour";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import {
@@ -308,6 +310,10 @@ export function UserForm({
   // When admin edits another user's form, do NOT pull admin's own mobile/email
   const registeredMobile = isAdmin ? "" : (currentUser?.mobile ?? "");
   const registeredEmail = isAdmin ? "" : (currentUser?.email ?? "");
+
+  const { runTourManually } = usePersonalDetailsTour(
+    !isAdmin && currentUser ? currentUser : null,
+  );
 
   // Choose data source: Prop initialData -> SSR data -> Client-side fetch "me"
   const existingDetails = initialData || selfDetails;
@@ -878,7 +884,10 @@ export function UserForm({
       {/* Single card containing Timeline (left) + Form (right) */}
       <div className="bg-card/90 backdrop-blur-2xl rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-border/50 border-t-[6px] border-t-brand-primary flex relative overflow-hidden">
         {/* ── Left: Timeline sidebar inside the card ── */}
-        <div className="hidden md:flex flex-col shrink-0 border-r border-border/40 bg-brand-primary/[0.03] px-5 py-8 sticky top-0 self-start min-h-full">
+        <div
+          id="personal-details-timeline"
+          className="hidden md:flex flex-col shrink-0 border-r border-border/40 bg-brand-primary/[0.03] px-5 py-8 sticky top-0 self-start min-h-full"
+        >
           <Timeline
             totalSteps={totalSteps}
             currentStep={currentStep}
@@ -930,10 +939,26 @@ export function UserForm({
                   </Typography>
                 </div>
               </div>
+
+              {!isAdmin && (
+                <button
+                  id="personal-details-help-trigger"
+                  type="button"
+                  onClick={() => runTourManually()}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-2xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50 shrink-0"
+                  title="Quick Guide"
+                >
+                  <HelpCircle className="h-4 w-4 text-brand-primary" />
+                  <span className="hidden sm:inline">Quick Guide</span>
+                </button>
+              )}
             </div>
 
             {/* Step content */}
-            <div className="flex-1 w-full relative">
+            <div
+              id="personal-details-form-content"
+              className="flex-1 w-full relative"
+            >
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <PersonalDetailsStep
@@ -965,7 +990,10 @@ export function UserForm({
             </div>
 
             {/* Navigation Buttons (Bottom Right) */}
-            <div className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-border/50">
+            <div
+              id="personal-details-nav-actions"
+              className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-border/50"
+            >
               {currentStep > 1 && (
                 <Button
                   type="button"
