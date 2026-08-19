@@ -14,11 +14,8 @@ import {
   LayoutDashboard,
   FileCheck,
   UserCheck,
-  Award,
   BellRing,
-  CheckCircle,
   TrendingUp,
-  User,
 } from "lucide-react";
 import { Button } from "@components/ui-elements/Button";
 import { Badge } from "@components/ui-elements/Badge";
@@ -32,7 +29,7 @@ interface InterviewCompletedProps {
   answeredCount: number;
   notAttemptedCount: number;
   completionReason: "manual" | "time_over" | null;
-  overallExamDurationMinutes: number;
+  overallExamDurationMinutes?: number;
 }
 
 export function InterviewCompleted({
@@ -41,7 +38,6 @@ export function InterviewCompleted({
   answeredCount,
   notAttemptedCount,
   completionReason,
-  overallExamDurationMinutes,
 }: InterviewCompletedProps) {
   const isTimeout = completionReason === "time_over";
   const completionRate =

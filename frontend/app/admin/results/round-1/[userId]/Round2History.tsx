@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  UserCheck,
   Clock,
   MessageSquareQuote,
   ShieldCheck,
@@ -17,7 +16,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { Avatar } from "@components/ui-elements/Avatar";
 import { evaluationsApi } from "@lib/api";
-import { cn, formatDate, formatTime, humanizeString } from "@lib/utils";
+import { cn, formatDate, formatTime } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { toast } from "@lib/toast";
 
