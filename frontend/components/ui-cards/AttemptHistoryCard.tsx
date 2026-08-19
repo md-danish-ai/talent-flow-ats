@@ -141,16 +141,27 @@ export const AttemptHistoryCard = ({
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {statusBadge}
 
-              <Badge
-                variant="outline"
-                color={isAutoSubmitted ? "warning" : "secondary"}
-                shape="square"
-                className="font-black"
-              >
-                {isAutoSubmitted
-                  ? "AUTO-SUBMIT"
-                  : (completionReason || "Manual").toUpperCase()}
-              </Badge>
+              {(completionReason || isAutoSubmitted) && (
+                <Badge
+                  variant="outline"
+                  color={
+                    completionReason === "time_over" || isAutoSubmitted
+                      ? "warning"
+                      : "secondary"
+                  }
+                  shape="square"
+                  className="font-black uppercase"
+                >
+                  {completionReason === "time_over"
+                    ? "TIME OVER"
+                    : completionReason === "manual"
+                      ? "MANUAL"
+                      : (
+                          completionReason ||
+                          (isAutoSubmitted ? "TIME OVER" : "MANUAL")
+                        ).toUpperCase()}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

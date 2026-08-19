@@ -171,11 +171,12 @@ export function ResultTableView({
 
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
-  // Only submitted results can be assigned a lead
+  // Only submitted / auto_submitted results can be assigned a lead
   const selectableItems = useMemo(() => {
     return items.filter(
       (item) =>
         item.latest_attempt?.status === "submitted" ||
+        item.latest_attempt?.status === "auto_submitted" ||
         item.latest_attempt?.status === "completed",
     );
   }, [items]);
@@ -348,6 +349,7 @@ export function ResultTableView({
               const detailHref = `/admin/results/round-1/${item.user_id}`;
               const isSelectable =
                 latest?.status === "submitted" ||
+                latest?.status === "auto_submitted" ||
                 latest?.status === "completed";
               return (
                 <TableCollapsibleRow
@@ -602,26 +604,30 @@ export function ResultTableView({
                         color={
                           latest?.status === "started"
                             ? "violet"
-                            : item.process_status === "ready"
+                            : latest?.status === "submitted" ||
+                                latest?.status === "completed"
                               ? "success"
-                              : latest?.status === "submitted" ||
-                                  latest?.status === "completed"
-                                ? "success"
-                                : latest?.status === "auto_submitted"
-                                  ? "blue"
-                                  : latest?.status === "expired"
-                                    ? "error"
+                              : latest?.status === "auto_submitted"
+                                ? "blue"
+                                : latest?.status === "expired"
+                                  ? "error"
+                                  : item.process_status === "ready"
+                                    ? "success"
                                     : "default"
                         }
                         shape="square"
                       >
                         {latest?.status === "started"
                           ? "STARTED"
-                          : item.process_status === "ready"
-                            ? "READY"
-                            : latest?.status
-                              ? humanizeString(latest.status)
-                              : "NOT STARTED"}
+                          : latest?.status === "auto_submitted"
+                            ? "AUTO SUBMITTED"
+                            : latest?.status === "submitted"
+                              ? "SUBMITTED"
+                              : latest?.status
+                                ? humanizeString(latest.status).toUpperCase()
+                                : item.process_status === "ready"
+                                  ? "READY"
+                                  : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}
@@ -728,7 +734,9 @@ export function ResultTableView({
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         {!onlyDownloadAction &&
-                          latest?.status === "submitted" && (
+                          (latest?.status === "submitted" ||
+                            latest?.status === "auto_submitted" ||
+                            latest?.status === "completed") && (
                             <TableIconButton
                               iconColor="green"
                               animate="scale"

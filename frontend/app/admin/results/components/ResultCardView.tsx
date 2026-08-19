@@ -36,9 +36,16 @@ export function ResultCardView({ items }: ResultCardViewProps) {
               status={
                 latest?.status === "started"
                   ? "started"
-                  : item.process_status === "ready"
-                    ? "not_started"
-                    : latest?.status || "not_started"
+                  : latest?.status === "auto_submitted"
+                    ? "auto_submitted"
+                    : latest?.status === "submitted" ||
+                        latest?.status === "completed"
+                      ? "submitted"
+                      : latest?.status === "expired"
+                        ? "expired"
+                        : item.process_status === "ready"
+                          ? "not_started"
+                          : latest?.status || "not_started"
               }
               subtitle={
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">

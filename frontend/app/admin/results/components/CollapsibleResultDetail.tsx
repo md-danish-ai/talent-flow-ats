@@ -1,10 +1,10 @@
 "use client";
 
-import { Gauge, Target, AlertCircle, Timer } from "lucide-react";
+import { Gauge, Target, AlertCircle, Timer, Radio } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { cn, getGradeConfig } from "@lib/utils";
-import { type AdminUserLatestAttempt } from "@types";
+import { type AdminUserLatestAttempt, type SubjectResult } from "@types";
 
 interface CollapsibleResultDetailProps {
   latest?: AdminUserLatestAttempt | null;
@@ -15,16 +15,30 @@ export function CollapsibleResultDetail({
   latest,
   attempts_count,
 }: CollapsibleResultDetailProps) {
+  const isInProgress = latest?.is_in_progress;
+  const subjectResults = latest?.subject_results ?? [];
+
   return (
     <div className="p-8 bg-muted/5 space-y-8">
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <Typography
-            variant="body4"
-            className="font-bold border-l-4 border-brand-primary pl-3"
-          >
-            Detailed Subject Performance
-          </Typography>
+          <div className="flex items-center gap-3">
+            <Typography
+              variant="body4"
+              className="font-bold border-l-4 border-brand-primary pl-3"
+            >
+              {isInProgress
+                ? "Live Subject Preview"
+                : "Detailed Subject Performance"}
+            </Typography>
+            {isInProgress && (
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[10px] font-black uppercase tracking-widest animate-pulse">
+                <Radio size={9} className="shrink-0" />
+                Live
+              </span>
+            )}
+          </div>
           <div className="flex flex-col items-end">
             <Typography variant="body5" className="text-muted-foreground">
               Attempt ID: #{latest?.attempt_id}
@@ -37,52 +51,143 @@ export function CollapsibleResultDetail({
             </Typography>
           </div>
         </div>
+
+        {/* In-progress info banner */}
+        {isInProgress && (
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-orange-500/5 border border-orange-500/20 text-orange-600 dark:text-orange-400">
+            <Radio size={14} className="shrink-0 mt-0.5 animate-pulse" />
+            <Typography variant="body5" className="text-[11px] leading-relaxed">
+              Interview is currently in progress. Showing subjects answered so
+              far — results will finalise after submission.
+            </Typography>
+          </div>
+        )}
+
+        {/* Subject cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {latest?.subject_results?.map((res, ridx) => (
-            <div
-              key={ridx}
-              className="group relative bg-card p-5 rounded-2xl border border-border/50 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-brand-primary/30 transition-all duration-300"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <Typography
-                  variant="body4"
-                  className="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-2"
-                >
-                  {res.section_name}
-                </Typography>
-                <Badge
-                  variant="fill"
-                  shape="square"
-                  color={getGradeConfig(res.grade).badgeColor}
-                >
-                  {res.grade}
-                </Badge>
-              </div>
+          {subjectResults.map((res: SubjectResult, ridx: number) => {
+            const inProgress = res.is_in_progress;
+            const progressPct =
+              res.total_questions > 0
+                ? Math.round((res.attempted_count / res.total_questions) * 100)
+                : 0;
 
-              <div className="flex flex-col gap-2 mt-auto">
-                <div className="flex items-center justify-center">
-                  <span className="text-xl font-black text-brand-primary leading-none flex items-baseline gap-1.5">
-                    {res.obtained_marks}
-                    <span className="text-muted-foreground/30 font-bold text-sm">
-                      /
-                    </span>
-                    {res.total_marks}
+            return (
+              <div
+                key={ridx}
+                className={cn(
+                  "group relative bg-card p-5 rounded-2xl border flex flex-col gap-4 shadow-sm transition-all duration-300",
+                  inProgress
+                    ? "border-orange-400/40 hover:border-orange-500/50 hover:shadow-orange-500/10 hover:shadow-md"
+                    : "border-border/50 hover:shadow-md hover:border-brand-primary/30",
+                )}
+              >
+                {/* Pulse dot for in-progress */}
+                {inProgress && (
+                  <span className="absolute top-3 right-3 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
                   </span>
+                )}
+
+                {/* Section name + badge */}
+                <div className="flex items-start justify-between gap-3 pr-4">
+                  <Typography
+                    variant="body4"
+                    className="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-2"
+                  >
+                    {res.section_name}
+                  </Typography>
+                  {inProgress ? (
+                    <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-orange-500/10 border border-orange-400/30 text-orange-500 text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                      In Progress
+                    </span>
+                  ) : (
+                    <Badge
+                      variant="fill"
+                      shape="square"
+                      color={getGradeConfig(res.grade).badgeColor}
+                    >
+                      {res.grade}
+                    </Badge>
+                  )}
                 </div>
 
-                {/* Mini Progress Bar */}
-                <div className="w-full h-1.5 bg-slate-200/60 dark:bg-slate-700/50 rounded-full overflow-hidden shrink-0">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-1000",
-                      getGradeConfig(res.grade).barBg,
-                    )}
-                    style={{ width: `${Math.min(res.percentage || 0, 100)}%` }}
-                  />
+                <div className="flex flex-col gap-2 mt-auto">
+                  {inProgress ? (
+                    /* Live preview: show attempted / total questions */
+                    <>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-xl font-black text-orange-500 leading-none">
+                          {res.attempted_count}
+                        </span>
+                        <span className="text-muted-foreground/40 font-bold text-sm">
+                          /
+                        </span>
+                        <span className="text-base font-bold text-muted-foreground">
+                          {res.total_questions}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/60 font-medium ml-0.5">
+                          Qs
+                        </span>
+                      </div>
+
+                      {/* Animated progress bar */}
+                      <div className="w-full h-1.5 bg-slate-200/60 dark:bg-slate-700/50 rounded-full overflow-hidden shrink-0">
+                        <div
+                          className="h-full rounded-full bg-orange-400 transition-all duration-1000 animate-pulse"
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                      <Typography
+                        variant="body5"
+                        className="text-center text-[10px] text-muted-foreground/60"
+                      >
+                        {progressPct}% attempted
+                      </Typography>
+                    </>
+                  ) : (
+                    /* Final result: show obtained / total marks */
+                    <>
+                      <div className="flex items-center justify-center">
+                        <span className="text-xl font-black text-brand-primary leading-none flex items-baseline gap-1.5">
+                          {res.obtained_marks}
+                          <span className="text-muted-foreground/30 font-bold text-sm">
+                            /
+                          </span>
+                          {res.total_marks}
+                        </span>
+                      </div>
+
+                      {/* Mini Progress Bar */}
+                      <div className="w-full h-1.5 bg-slate-200/60 dark:bg-slate-700/50 rounded-full overflow-hidden shrink-0">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-1000",
+                            getGradeConfig(res.grade).barBg,
+                          )}
+                          style={{
+                            width: `${Math.min(res.percentage || 0, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
+            );
+          })}
+
+          {/* Empty state when interview is live but no responses yet */}
+          {isInProgress && subjectResults.length === 0 && (
+            <div className="col-span-full flex flex-col items-center gap-2 py-8 text-muted-foreground/50">
+              <Radio size={22} className="animate-pulse text-orange-400" />
+              <Typography variant="body5" className="text-center text-xs">
+                No subjects attempted yet. Results will appear as the candidate
+                answers questions.
+              </Typography>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

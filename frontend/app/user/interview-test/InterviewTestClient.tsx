@@ -170,37 +170,85 @@ export function InterviewTestClient() {
     const loadAssignedPaper = async () => {
       try {
         setIsLoadingPaper(true);
-        const response = await paperAssignmentsApi.getMyInterviewPaper();
-        const mappedSections: InterviewSection[] = response.sections.map(
-          (section) => ({
-            id: section.id,
-            title: section.title,
-            durationMinutes: section.duration_minutes,
-            questions: section.questions.map((question) => ({
-              id: question.id,
-              type: question.type as InterviewQuestion["type"],
-              questionText: question.question_text,
-              subjectName: question.subject_name ?? undefined,
-              typeName: question.type_name ?? undefined,
-              description: undefined,
-              passage: question.passage || undefined,
-              imageUrl: question.image_url || undefined,
-              marks: question.marks || 0,
-              options: question.options,
-            })),
-          }),
-        );
-        const resolvedDuration =
-          response.overall_duration_minutes > 0
-            ? response.overall_duration_minutes
-            : OVERALL_EXAM_DURATION_MINUTES;
 
-        setAssignedPaper(response);
-        setLoadedSections(mappedSections);
-        setSections(mappedSections);
-        setLockedSections(mappedSections.map(() => false));
-        setOverallExamDurationMinutes(resolvedDuration);
-        setExamRemainingSeconds(resolvedDuration * 60);
+        // 1. Fetch assigned paper first so sections, question counts, and duration are always accurate
+        try {
+          const response = await paperAssignmentsApi.getMyInterviewPaper();
+          if (response?.sections?.length) {
+            const mappedSections: InterviewSection[] = response.sections.map(
+              (section) => ({
+                id: section.id,
+                title: section.title,
+                durationMinutes: section.duration_minutes,
+                questions: section.questions.map((question) => ({
+                  id: question.id,
+                  type: question.type as InterviewQuestion["type"],
+                  questionText: question.question_text,
+                  subjectName: question.subject_name ?? undefined,
+                  typeName: question.type_name ?? undefined,
+                  description: undefined,
+                  passage: question.passage || undefined,
+                  imageUrl: question.image_url || undefined,
+                  marks: question.marks || 0,
+                  options: question.options,
+                })),
+              }),
+            );
+            const resolvedDuration =
+              response.overall_duration_minutes > 0
+                ? response.overall_duration_minutes
+                : OVERALL_EXAM_DURATION_MINUTES;
+
+            setAssignedPaper(response);
+            setLoadedSections(mappedSections);
+            setSections(mappedSections);
+            setLockedSections(mappedSections.map(() => false));
+            setOverallExamDurationMinutes(resolvedDuration);
+            setExamRemainingSeconds(resolvedDuration * 60);
+          }
+        } catch (paperErr) {
+          console.warn("Could not load assigned paper:", paperErr);
+        }
+
+        // 2. Check if the candidate has an existing attempt that was submitted or auto-submitted
+        try {
+          const statusRes = await interviewAttemptsApi.getActiveStatus();
+          if (
+            statusRes.has_attempt &&
+            (statusRes.status === "submitted" ||
+              statusRes.status === "auto_submitted" ||
+              statusRes.status === "completed")
+          ) {
+            if (statusRes.attempt_id) {
+              try {
+                const summary = await interviewAttemptsApi.getSummary(
+                  statusRes.attempt_id,
+                );
+                setFinalSummary(summary);
+              } catch {
+                // Ignore summary fetch error
+              }
+            }
+            setCompletionReason(
+              statusRes.status === "auto_submitted" || statusRes.is_expired
+                ? "time_over"
+                : "manual",
+            );
+            setIsCompleted(true);
+            setIsLoadingPaper(false);
+            return;
+          }
+        } catch (statusErr) {
+          console.warn("Could not check active status:", statusErr);
+        }
+
+        // 3. Also check if user flag marks interview as already submitted (and not in reinterview)
+        if (currentUser?.is_interview_submitted) {
+          setIsCompleted(true);
+          setIsLoadingPaper(false);
+          return;
+        }
+
         setStartError(null);
       } catch {
         setAssignedPaper(null);
@@ -216,7 +264,7 @@ export function InterviewTestClient() {
     };
 
     void loadAssignedPaper();
-  }, []);
+  }, [currentUser]);
 
   // Disable Right Click & Inspect Element Shortcuts during interview test
   useEffect(() => {

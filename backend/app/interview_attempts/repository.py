@@ -1376,6 +1376,72 @@ def get_admin_user_results(
                 db.query(UserDetail).filter(UserDetail.user_id == user.id).first()
             )
 
+            # --- Live subject preview for in-progress (started) records ---
+            is_in_progress = record.status == InterviewStatus.STARTED.value
+            subject_results_to_show = record.subject_grades or []
+
+            if is_in_progress and not subject_results_to_show and record.responses:
+                # Build a lightweight section breakdown from saved responses only
+                _section_order: list[str] = []
+                _section_stats: dict[str, dict] = {}
+                _resp_qids = [r["question_id"] for r in (record.responses or [])]
+                _resp_questions = (
+                    db.query(Question).filter(Question.id.in_(_resp_qids)).all()
+                    if _resp_qids
+                    else []
+                )
+                _q_map = {q.id: q for q in _resp_questions}
+
+                for _resp in record.responses or []:
+                    _qid = _resp.get("question_id")
+                    _q = _q_map.get(_qid)
+                    if not _q:
+                        continue
+                    _s_name = _resp.get("section_name") or "General"
+                    _s_code = _resp.get("section_code") or "GENERAL"
+                    if _s_name not in _section_stats:
+                        _section_order.append(_s_name)
+                        _section_stats[_s_name] = {
+                            "section_code": _s_code,
+                            "section_name": _s_name,
+                            "total_marks": 0.0,
+                            "obtained_marks": 0.0,
+                            "total_questions": 0,
+                            "attempted_count": 0,
+                            "unattempted_count": 0,
+                            "is_in_progress": True,
+                        }
+                    _st = _section_stats[_s_name]
+                    _st["total_marks"] += float(_q.marks or 0)
+                    _st["total_questions"] += 1
+                    if _resp.get("is_attempted"):
+                        _st["attempted_count"] += 1
+                    else:
+                        _st["unattempted_count"] += 1
+
+                _paper_obj_live = (
+                    db.query(Paper).filter(Paper.id == record.paper_id).first()
+                )
+                _grade_settings_live = (
+                    (_paper_obj_live.grade_settings or []) if _paper_obj_live else []
+                )
+
+                subject_results_to_show = []
+                for _s_name in _section_order:
+                    _st = _section_stats[_s_name]
+                    _pct = (
+                        round((_st["obtained_marks"] / _st["total_marks"] * 100), 2)
+                        if _st["total_marks"] > 0
+                        else 0.0
+                    )
+                    subject_results_to_show.append(
+                        {
+                            **_st,
+                            "percentage": _pct,
+                            "grade": "In Progress",
+                        }
+                    )
+
             results.append(
                 {
                     "user_id": user.id,
@@ -1405,7 +1471,8 @@ def get_admin_user_results(
                         "overall_grade": record.overall_grade,
                         "active_duration_seconds": record.active_duration_seconds,
                         "typing_stats": typing_stats,
-                        "subject_results": record.subject_grades,
+                        "is_in_progress": is_in_progress,
+                        "subject_results": subject_results_to_show,
                         "interviewers": [
                             {"name": row[0], "status": row[1]}
                             for row in (
@@ -1863,7 +1930,7 @@ def reset_user_today_attempt(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                InterviewRecord.created_at >= today_start,
+                InterviewRecord.started_at >= today_start,
             )
             .order_by(desc(InterviewRecord.id))
             .first()
@@ -1879,6 +1946,10 @@ def reset_user_today_attempt(user_id: int) -> dict:
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.READY.value
 
         today = datetime.utcnow().date()
         assignment = (
@@ -2229,7 +2300,7 @@ def get_active_attempt_status(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                func.date(InterviewRecord.created_at) == today,
+                func.date(InterviewRecord.started_at) == today,
             )
             .order_by(desc(InterviewRecord.id))
             .first()
