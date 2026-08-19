@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Trophy,
-  ChevronUp,
-  Target,
-  Activity,
-  FileCheck2,
-  BookOpen,
-  Star,
-} from "lucide-react";
+import { ArrowLeft, ChevronUp, FileCheck2, BookOpen, Star } from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
@@ -25,8 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AttemptDetailSkeleton } from "@components/ui-skeleton/AttemptDetailSkeleton";
 
 // Components
-import { ProfileSummaryStrip } from "./components/ProfileSummaryStrip";
-import { PerformanceGrid } from "./components/PerformanceGrid";
+import { AttemptSummaryCard } from "./components/AttemptSummaryCard";
 import { QuestionResultCard } from "./components/QuestionResultCard";
 
 // Utils
@@ -193,200 +183,44 @@ export function AttemptDetailClient({
     0,
   );
 
-  const scoreStats = [
-    {
-      label: "Total Score",
-      value: data.summary.total_marks_obtained.toFixed(2),
-      sub: `/ ${totalMaxMarks}`,
-      icon: <Trophy size={20} />,
-      color: "text-brand-primary",
-      bg: "bg-brand-primary/10",
-      border: "border-brand-primary/20",
-    },
-    {
-      label: "Accuracy Rate",
-      value: `${((data.summary.correct_count / data.attempt.attempted_count) * 100 || 0).toFixed(0)}%`,
-      sub: "of attempted",
-      icon: <Target size={20} />,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/20",
-    },
-    {
-      label: "Completion",
-      value: `${data.attempt.attempted_count}/${data.attempt.total_questions}`,
-      sub: "Questions answered",
-      icon: <Activity size={20} />,
-      color: "text-amber-600",
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/20",
-    },
-    {
-      label: "Final Grade",
-      value: data.summary.overall_grade.toUpperCase() || "N/A",
-      sub: `Performance: ${data.summary.overall_percentage}%`,
-      icon: <Star size={20} />,
-      color:
-        data.summary.overall_grade === "Excellent"
-          ? "text-emerald-600"
-          : data.summary.overall_grade === "Good"
-            ? "text-brand-primary"
-            : data.summary.overall_grade === "Average"
-              ? "text-amber-600"
-              : data.summary.overall_grade === "Poor"
-                ? "text-rose-600"
-                : "text-indigo-600",
-      bg:
-        data.summary.overall_grade === "Excellent"
-          ? "bg-emerald-500/10"
-          : data.summary.overall_grade === "Good"
-            ? "bg-brand-primary/10"
-            : data.summary.overall_grade === "Average"
-              ? "bg-amber-500/10"
-              : data.summary.overall_grade === "Poor"
-                ? "bg-rose-500/10"
-                : "bg-indigo-500/10",
-      border:
-        data.summary.overall_grade === "Excellent"
-          ? "border-emerald-500/20"
-          : data.summary.overall_grade === "Good"
-            ? "border-brand-primary/20"
-            : data.summary.overall_grade === "Average"
-              ? "border-amber-500/20"
-              : data.summary.overall_grade === "Poor"
-                ? "border-rose-500/20"
-                : "border-indigo-500/20",
-    },
-  ];
-
   return (
-    <PageContainer className="py-8 space-y-6">
-      {/* Dynamic Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+    <PageContainer className="py-6 space-y-6">
+      {/* Back to Attempt History link */}
+      <Link
+        href={`/admin/results/round-1/${userId}`}
+        className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all w-fit"
       >
-        <div className="space-y-4">
-          <Link
-            href={`/admin/results/round-1/${userId}`}
-            className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all mb-4 w-fit"
-          >
-            <div
-              className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
-            >
-              <ArrowLeft size={16} />
-            </div>
-            <Typography
-              variant="body5"
-              className="font-black uppercase tracking-widest text-[10px]"
-            >
-              Back to Attempt History
-            </Typography>
-          </Link>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative">
-              <Typography
-                variant="h1"
-                className="tracking-tight font-black sm:text-5xl"
-              >
-                Attempt{" "}
-                <span className="text-brand-primary">
-                  #{data.attempt.attempt_number}
-                </span>
-              </Typography>
-              <div className="absolute -bottom-2 left-0 w-24 h-1.5 bg-brand-primary rounded-full opacity-20" />
-            </div>
-            <div className="flex flex-col gap-1 sm:ml-4">
-              <Badge color={statusColor} variant="fill" shape="square">
-                {data.attempt.status.toUpperCase()}
-              </Badge>
-            </div>
-          </div>
+        <div
+          className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
+        >
+          <ArrowLeft size={16} />
         </div>
-      </motion.div>
+        <Typography
+          variant="body5"
+          className="font-black uppercase tracking-widest text-[10px]"
+        >
+          Back to Attempt History
+        </Typography>
+      </Link>
 
-      {/* Profile Summary Strip */}
-      <ProfileSummaryStrip
+      {/* Unified Attempt Summary Card (with Profile, Metrics & Grade Scale Matrix) */}
+      <AttemptSummaryCard
+        attemptNumber={data.attempt.attempt_number}
+        status={data.attempt.status}
         username={data.user.username}
         mobile={data.user.mobile}
         paperName={data.attempt.paper_name}
         startedAt={data.attempt.started_at}
         submittedAt={data.attempt.submitted_at}
+        totalScore={data.summary.total_marks_obtained}
+        totalMaxMarks={totalMaxMarks}
+        correctCount={data.summary.correct_count}
+        attemptedCount={data.attempt.attempted_count}
+        totalQuestions={data.attempt.total_questions}
+        overallGrade={data.summary.overall_grade}
+        overallPercentage={data.summary.overall_percentage}
+        gradeSettings={data.grade_settings}
       />
-
-      {/* Performance Grid */}
-      <PerformanceGrid scoreStats={scoreStats} />
-
-      {/* Grade Scale Reference */}
-      {data.grade_settings &&
-        data.grade_settings.length > 0 &&
-        (() => {
-          const sorted = [...data.grade_settings].sort((a, b) => a.min - b.min);
-          return (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className={`bg-card px-5 pt-5 pb-8 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none font-sans`}
-            >
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-4">
-                <Star size={18} className="text-brand-primary" />
-                <Typography
-                  variant="h4"
-                  className="font-black uppercase tracking-widest text-muted-foreground"
-                >
-                  Grade Scale Matrix
-                </Typography>
-              </div>
-
-              {/* Single segmented bar — range text inside each segment */}
-              <div className="relative w-full h-7 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                {sorted.map((g, i) => {
-                  const cfg =
-                    GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
-                  const width = g.max - g.min;
-                  return (
-                    <div
-                      key={i}
-                      className={`absolute top-0 h-full ${cfg.barBg} flex items-center justify-center`}
-                      style={{ left: `${g.min}%`, width: `${width}%` }}
-                    >
-                      {width >= 8 && (
-                        <span className="text-[10px] font-black text-white leading-none drop-shadow-sm whitespace-nowrap tabular-nums">
-                          {g.min} – {g.max}%
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Grade name labels below — only name, no range */}
-              <div className="relative w-full mt-2" style={{ height: "20px" }}>
-                {sorted.map((g, i) => {
-                  const cfg =
-                    GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
-                  const midPoint = g.min + (g.max - g.min) / 2;
-                  const clampedLeft = Math.min(Math.max(midPoint, 0), 100);
-                  return (
-                    <span
-                      key={i}
-                      className={`absolute text-[11px] font-bold ${cfg.color} whitespace-nowrap leading-tight`}
-                      style={{
-                        left: `${clampedLeft}%`,
-                        transform: "translateX(-50%)",
-                      }}
-                    >
-                      {g.grade_label}
-                    </span>
-                  );
-                })}
-              </div>
-            </motion.div>
-          );
-        })()}
 
       {/* Detailed Result Breakdown */}
       <motion.div

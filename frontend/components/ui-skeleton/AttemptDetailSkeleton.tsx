@@ -1,101 +1,127 @@
 import React from "react";
 import { Skeleton } from "@components/ui-elements/Skeleton";
+import { STYLE_CONFIG } from "@lib/config/style";
+import { cn } from "@lib/utils";
 
 export function AttemptDetailSkeleton() {
   return (
-    <div className="flex flex-col gap-10 animate-pulse">
-      {/* Header Skeleton */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-xl" />
-          <Skeleton className="h-4 w-40 rounded" />
-        </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <Skeleton className="h-14 w-64 rounded-lg" />
-          <Skeleton className="h-8 w-32 rounded-full" />
-        </div>
+    <div className="flex flex-col gap-6 animate-pulse">
+      {/* Back to Attempt History link Skeleton */}
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-7 w-7 rounded-lg" />
+        <Skeleton className="h-4 w-36 rounded" />
       </div>
 
-      {/* Profile Summary Strip Skeleton */}
-      <div className="min-h-[5rem] w-full bg-muted/40 rounded-3xl border border-border/50 p-6 flex flex-wrap items-center justify-between gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="min-w-[120px] flex flex-col gap-2">
-            <Skeleton className="h-3 w-16 rounded opacity-60" />
-            <Skeleton className="h-5 w-32 rounded" />
-          </div>
-        ))}
-      </div>
-
-      {/* Performance Grid Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="min-h-[9rem] bg-muted/30 rounded-2xl border border-border/50 p-6 flex flex-col gap-4"
-          >
-            <Skeleton className="h-10 w-10 rounded-xl" />
-            <div className="space-y-3">
-              <Skeleton className="h-3 w-20 rounded opacity-60" />
-              <div className="flex flex-wrap items-baseline gap-2 mt-1">
-                <Skeleton className="h-8 w-16 rounded" />
-                <Skeleton className="h-4 w-20 rounded opacity-40" />
+      {/* Unified Attempt Summary Card Skeleton */}
+      <div
+        className={cn(
+          "bg-card border border-border/70 p-5 md:p-6 shadow-sm space-y-5",
+          STYLE_CONFIG.cardRadius,
+        )}
+      >
+        {/* Top Section: Profile + Metadata Pills */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
+          {/* Left: Avatar + Name + Badges */}
+          <div className="flex items-center gap-3.5">
+            <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Skeleton className="h-5 w-32 rounded" />
+                <Skeleton className="h-4 w-20 rounded-md" />
+                <Skeleton className="h-4 w-16 rounded-md" />
               </div>
+              <Skeleton className="h-3 w-24 rounded opacity-60" />
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Grade Scale Skeleton */}
-      <div className="min-h-[6rem] w-full bg-card rounded-3xl border border-border/50 p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-        <Skeleton className="h-6 w-48 rounded shrink-0" />
-        <div className="flex flex-wrap gap-3 w-full">
+          {/* Right: Metadata Pills */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-8 w-36 rounded-lg" />
+            <Skeleton className="h-8 w-28 rounded-lg" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Middle Section: 4 Integrated Metric Tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton
+            <div
               key={i}
-              className="h-10 flex-1 min-w-[140px] rounded-xl"
-            />
+              className="p-4 rounded-xl bg-muted/20 border border-border/40 flex flex-col justify-between gap-3 min-h-[5.5rem]"
+            >
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-20 rounded opacity-60" />
+                <Skeleton className="h-6 w-6 rounded-lg" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <Skeleton className="h-8 w-16 rounded" />
+                <Skeleton className="h-4 w-12 rounded opacity-40" />
+              </div>
+            </div>
           ))}
+        </div>
+
+        {/* Bottom Section: Grade Scale Matrix */}
+        <div className="pt-4 border-t border-border/40 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3.5 w-3.5 rounded" />
+            <Skeleton className="h-3 w-32 rounded" />
+          </div>
+          <Skeleton className="h-6 w-full rounded-full" />
+          <div className="flex justify-between gap-2 px-2">
+            <Skeleton className="h-3 w-10 rounded opacity-50" />
+            <Skeleton className="h-3 w-14 rounded opacity-50" />
+            <Skeleton className="h-3 w-12 rounded opacity-50" />
+            <Skeleton className="h-3 w-14 rounded opacity-50" />
+          </div>
         </div>
       </div>
 
       {/* Result Breakdown Banner Skeleton */}
-      <div className="space-y-6">
-        <div className="min-h-[5rem] w-full bg-card rounded-3xl border border-border/50 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-12 w-12 rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-40 rounded" />
+      <div className="space-y-5">
+        <div
+          className={cn(
+            "flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-5 border border-border/50 shadow-sm",
+            STYLE_CONFIG.cardRadius,
+          )}
+        >
+          <div className="flex items-center gap-3.5">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-5 w-36 rounded" />
               <Skeleton className="h-3 w-48 rounded opacity-60" />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-8 w-24 rounded-xl" />
-            <Skeleton className="h-8 w-24 rounded-xl" />
-            <Skeleton className="h-8 w-24 rounded-xl" />
+            <Skeleton className="h-7 w-20 rounded-md" />
+            <Skeleton className="h-7 w-20 rounded-md" />
+            <Skeleton className="h-7 w-20 rounded-md" />
           </div>
         </div>
 
         {/* Section Accordions Skeleton */}
-        <div className="space-y-5">
+        <div className="space-y-4">
           {[1, 2].map((i) => (
             <div
               key={i}
-              className="min-h-[6rem] bg-card rounded-3xl border border-border/50 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6"
+              className={cn(
+                "bg-card border border-border/50 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm",
+                STYLE_CONFIG.cardRadius,
+              )}
             >
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-2xl" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-48 rounded" />
-                  <Skeleton className="h-4 w-24 rounded opacity-40" />
+              <div className="flex items-center gap-3.5">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-5 w-44 rounded" />
+                  <Skeleton className="h-3 w-20 rounded opacity-40" />
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="flex gap-4">
-                  <Skeleton className="h-10 w-16 rounded" />
-                  <Skeleton className="h-10 w-16 rounded" />
-                </div>
-                <Skeleton className="h-12 w-44 rounded-xl" />
-                <Skeleton className="h-8 w-8 rounded-lg outline-none" />
+              <div className="flex flex-wrap items-center gap-4">
+                <Skeleton className="h-8 w-28 rounded-lg" />
+                <Skeleton className="h-8 w-28 rounded-lg" />
+                <Skeleton className="h-6 w-6 rounded-md" />
               </div>
             </div>
           ))}
