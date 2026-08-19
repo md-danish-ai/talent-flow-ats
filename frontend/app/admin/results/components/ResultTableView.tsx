@@ -171,11 +171,12 @@ export function ResultTableView({
 
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
-  // Only submitted results can be assigned a lead
+  // Only submitted / auto_submitted results can be assigned a lead
   const selectableItems = useMemo(() => {
     return items.filter(
       (item) =>
         item.latest_attempt?.status === "submitted" ||
+        item.latest_attempt?.status === "auto_submitted" ||
         item.latest_attempt?.status === "completed",
     );
   }, [items]);
@@ -348,6 +349,7 @@ export function ResultTableView({
               const detailHref = `/admin/results/round-1/${item.user_id}`;
               const isSelectable =
                 latest?.status === "submitted" ||
+                latest?.status === "auto_submitted" ||
                 latest?.status === "completed";
               return (
                 <TableCollapsibleRow
@@ -728,7 +730,9 @@ export function ResultTableView({
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         {!onlyDownloadAction &&
-                          latest?.status === "submitted" && (
+                          (latest?.status === "submitted" ||
+                            latest?.status === "auto_submitted" ||
+                            latest?.status === "completed") && (
                             <TableIconButton
                               iconColor="green"
                               animate="scale"
