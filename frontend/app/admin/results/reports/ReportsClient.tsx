@@ -62,9 +62,6 @@ export function ReportsClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
-    "department",
-    "test_level",
-    "paper",
     "grade",
     "status",
     "project_lead",
