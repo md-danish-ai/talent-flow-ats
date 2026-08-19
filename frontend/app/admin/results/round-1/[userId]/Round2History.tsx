@@ -190,7 +190,10 @@ export function Round2History({ userId }: Round2HistoryProps) {
 
                   <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={13} className="text-orange-500 shrink-0" />
+                      <Calendar
+                        size={13}
+                        className="text-orange-500 shrink-0"
+                      />
                       <span>{formatDate(item.created_at)}</span>
                     </div>
                     <span className="text-border">•</span>
@@ -239,7 +242,9 @@ export function Round2History({ userId }: Round2HistoryProps) {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                   {EVALUATION_METRICS.map((metric) => {
-                    const ratingStr = (item.evaluation_data?.[metric] || "").trim();
+                    const ratingStr = (
+                      item.evaluation_data?.[metric] || ""
+                    ).trim();
                     const colors =
                       ratingColors[ratingStr] || ratingColors.Average;
                     const hasRating = ratingStr.length > 0;
@@ -250,7 +255,9 @@ export function Round2History({ userId }: Round2HistoryProps) {
                         className={cn(
                           "p-3 rounded-xl border transition-all duration-200",
                           hasRating
-                            ? cn("bg-muted/20 border-border/60 hover:bg-muted/30")
+                            ? cn(
+                                "bg-muted/20 border-border/60 hover:bg-muted/30",
+                              )
                             : "bg-muted/10 border-border/30 opacity-60",
                         )}
                       >
@@ -313,11 +320,16 @@ export function Round2History({ userId }: Round2HistoryProps) {
                   <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
-                        <MessageSquareQuote size={16} className="text-brand-primary" />
+                        <MessageSquareQuote
+                          size={16}
+                          className="text-brand-primary"
+                        />
                         <span>Interviewer Comments & Feedback</span>
                       </div>
                       <button
-                        onClick={() => handleCopyComments(item.id, item.comments || "")}
+                        onClick={() =>
+                          handleCopyComments(item.id, item.comments || "")
+                        }
                         className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-brand-primary transition-colors px-2 py-1 rounded-md hover:bg-card border border-transparent hover:border-border/50"
                         title="Copy comments"
                       >
