@@ -72,3 +72,48 @@ export const getYesterdayISODate = (): string => {
   d.setDate(d.getDate() - 1);
   return d.toISOString().split("T")[0];
 };
+
+export const formatDateDDMMYYYY = (
+  date: Date | string | number | null | undefined,
+  fallback = "—",
+): string => {
+  try {
+    if (date === null || date === undefined) return fallback;
+
+    if (typeof date === "string") {
+      const trimmed = date.trim();
+      if (
+        !trimmed ||
+        trimmed.toLowerCase() === "n/a" ||
+        trimmed.toLowerCase() === "null" ||
+        trimmed.toLowerCase() === "undefined"
+      ) {
+        return fallback;
+      }
+
+      // 1. Match YYYY-MM-DD pattern (e.g. 2024-08-19 or 2024-08-19T14:30:00.000Z)
+      const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+      if (isoMatch) {
+        const [, y, m, d] = isoMatch;
+        return `${d}-${m}-${y}`;
+      }
+
+      // 2. Match DD-MM-YYYY or DD/MM/YYYY pattern
+      const dmyMatch = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/.exec(trimmed);
+      if (dmyMatch) {
+        const [, d, m, y] = dmyMatch;
+        return `${d.padStart(2, "0")}-${m.padStart(2, "0")}-${y}`;
+      }
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return fallback;
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  } catch {
+    return fallback;
+  }
+};

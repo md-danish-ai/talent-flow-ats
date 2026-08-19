@@ -3,7 +3,7 @@ import {
   isExclusiveClassification,
   filterSubjectsForQuestionType,
   filterQuestionTypesForSubject,
-} from "./exclusivity";
+} from "@lib/utils/exclusivity";
 import { Classification } from "@types";
 
 describe("exclusivity utils", () => {
