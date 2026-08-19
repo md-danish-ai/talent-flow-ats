@@ -156,7 +156,10 @@ export const AttemptHistoryCard = ({
                     ? "TIME OVER"
                     : completionReason === "manual"
                       ? "MANUAL"
-                      : (completionReason || (isAutoSubmitted ? "TIME OVER" : "MANUAL")).toUpperCase()}
+                      : (
+                          completionReason ||
+                          (isAutoSubmitted ? "TIME OVER" : "MANUAL")
+                        ).toUpperCase()}
                 </Badge>
               )}
             </div>
