@@ -604,26 +604,30 @@ export function ResultTableView({
                         color={
                           latest?.status === "started"
                             ? "violet"
-                            : item.process_status === "ready"
+                            : latest?.status === "submitted" ||
+                                latest?.status === "completed"
                               ? "success"
-                              : latest?.status === "submitted" ||
-                                  latest?.status === "completed"
-                                ? "success"
-                                : latest?.status === "auto_submitted"
-                                  ? "blue"
-                                  : latest?.status === "expired"
-                                    ? "error"
+                              : latest?.status === "auto_submitted"
+                                ? "blue"
+                                : latest?.status === "expired"
+                                  ? "error"
+                                  : item.process_status === "ready"
+                                    ? "success"
                                     : "default"
                         }
                         shape="square"
                       >
                         {latest?.status === "started"
                           ? "STARTED"
-                          : item.process_status === "ready"
-                            ? "READY"
-                            : latest?.status
-                              ? humanizeString(latest.status)
-                              : "NOT STARTED"}
+                          : latest?.status === "auto_submitted"
+                            ? "AUTO SUBMITTED"
+                            : latest?.status === "submitted"
+                              ? "SUBMITTED"
+                              : latest?.status
+                                ? humanizeString(latest.status).toUpperCase()
+                                : item.process_status === "ready"
+                                  ? "READY"
+                                  : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}
