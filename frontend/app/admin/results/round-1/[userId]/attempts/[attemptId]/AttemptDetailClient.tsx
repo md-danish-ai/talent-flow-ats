@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronUp, FileCheck2, BookOpen, Star } from "lucide-react";
+import { ArrowLeft, ChevronUp, FileCheck2, BookOpen } from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import { Badge } from "@components/ui-elements/Badge";
 import { GradeBadge } from "@components/ui-elements/GradeBadge";
-import { GRADE_CONFIG } from "@lib/utils/gradeUtils";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { resultsApi } from "@lib/api/results";
 import { type AdminUserResultDetail } from "@types";
@@ -82,13 +81,6 @@ export function AttemptDetailClient({
     setManualMarks(initialMarks);
     setManualMarksApplied(initialApplied);
   }, [data]);
-
-  const statusColor =
-    data?.attempt.status === "auto_submitted"
-      ? "warning"
-      : data?.attempt.status === "submitted"
-        ? "success"
-        : "default";
 
   const handleManualMarksApply = async (questionId: number, index: number) => {
     const key = `${questionId}-${index}`;
