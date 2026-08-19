@@ -171,7 +171,46 @@ export function InterviewTestClient() {
       try {
         setIsLoadingPaper(true);
 
-        // 1. Check if the candidate has an existing attempt that was submitted or auto-submitted
+        // 1. Fetch assigned paper first so sections, question counts, and duration are always accurate
+        try {
+          const response = await paperAssignmentsApi.getMyInterviewPaper();
+          if (response?.sections?.length) {
+            const mappedSections: InterviewSection[] = response.sections.map(
+              (section) => ({
+                id: section.id,
+                title: section.title,
+                durationMinutes: section.duration_minutes,
+                questions: section.questions.map((question) => ({
+                  id: question.id,
+                  type: question.type as InterviewQuestion["type"],
+                  questionText: question.question_text,
+                  subjectName: question.subject_name ?? undefined,
+                  typeName: question.type_name ?? undefined,
+                  description: undefined,
+                  passage: question.passage || undefined,
+                  imageUrl: question.image_url || undefined,
+                  marks: question.marks || 0,
+                  options: question.options,
+                })),
+              }),
+            );
+            const resolvedDuration =
+              response.overall_duration_minutes > 0
+                ? response.overall_duration_minutes
+                : OVERALL_EXAM_DURATION_MINUTES;
+
+            setAssignedPaper(response);
+            setLoadedSections(mappedSections);
+            setSections(mappedSections);
+            setLockedSections(mappedSections.map(() => false));
+            setOverallExamDurationMinutes(resolvedDuration);
+            setExamRemainingSeconds(resolvedDuration * 60);
+          }
+        } catch (paperErr) {
+          console.warn("Could not load assigned paper:", paperErr);
+        }
+
+        // 2. Check if the candidate has an existing attempt that was submitted or auto-submitted
         try {
           const statusRes = await interviewAttemptsApi.getActiveStatus();
           if (
@@ -203,44 +242,13 @@ export function InterviewTestClient() {
           console.warn("Could not check active status:", statusErr);
         }
 
-        // 2. Also check if user flag marks interview as already submitted (and not in reinterview)
+        // 3. Also check if user flag marks interview as already submitted (and not in reinterview)
         if (currentUser?.is_interview_submitted) {
           setIsCompleted(true);
           setIsLoadingPaper(false);
           return;
         }
 
-        const response = await paperAssignmentsApi.getMyInterviewPaper();
-        const mappedSections: InterviewSection[] = response.sections.map(
-          (section) => ({
-            id: section.id,
-            title: section.title,
-            durationMinutes: section.duration_minutes,
-            questions: section.questions.map((question) => ({
-              id: question.id,
-              type: question.type as InterviewQuestion["type"],
-              questionText: question.question_text,
-              subjectName: question.subject_name ?? undefined,
-              typeName: question.type_name ?? undefined,
-              description: undefined,
-              passage: question.passage || undefined,
-              imageUrl: question.image_url || undefined,
-              marks: question.marks || 0,
-              options: question.options,
-            })),
-          }),
-        );
-        const resolvedDuration =
-          response.overall_duration_minutes > 0
-            ? response.overall_duration_minutes
-            : OVERALL_EXAM_DURATION_MINUTES;
-
-        setAssignedPaper(response);
-        setLoadedSections(mappedSections);
-        setSections(mappedSections);
-        setLockedSections(mappedSections.map(() => false));
-        setOverallExamDurationMinutes(resolvedDuration);
-        setExamRemainingSeconds(resolvedDuration * 60);
         setStartError(null);
       } catch {
         setAssignedPaper(null);
