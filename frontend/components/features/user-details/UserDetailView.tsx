@@ -23,7 +23,7 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import type { UserDetails } from "@types";
 import { motion } from "framer-motion";
-import { cn } from "@lib/utils";
+import { cn, formatDateDDMMYYYY } from "@lib/utils";
 
 interface UserDetailViewProps {
   details: UserDetails;
@@ -253,7 +253,7 @@ export function UserDetailView({
     const val = String(edu.percentage).trim();
     if (val.includes("%") || val.toLowerCase().includes("cgpa")) return val;
     const gradingType = (edu as unknown as { gradingType?: string })
-      .gradingType;
+      ?.gradingType;
     if (gradingType === "Percentage") return `${val}%`;
     if (gradingType === "CGPA") return val;
     const num = parseFloat(val);
@@ -418,7 +418,11 @@ export function UserDetailView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-5 border-t border-border/50">
                   <DetailItem
                     label="Date of Birth"
-                    value={personalDetails?.dob}
+                    value={
+                      personalDetails?.dob
+                        ? formatDateDDMMYYYY(personalDetails.dob)
+                        : "N/A"
+                    }
                     icon={<Calendar size={16} />}
                   />
                   <DetailItem
@@ -551,7 +555,13 @@ export function UserDetailView({
                     <div className="pt-5 border-t border-border/50">
                       <DetailItem
                         label="Anniversary Date"
-                        value={additionalPersonalDetails.anniversaryDate}
+                        value={
+                          additionalPersonalDetails.anniversaryDate
+                            ? formatDateDDMMYYYY(
+                                additionalPersonalDetails.anniversaryDate,
+                              )
+                            : "N/A"
+                        }
                         icon={<Calendar size={16} />}
                       />
                     </div>
@@ -807,14 +817,13 @@ export function UserDetailView({
                     <thead>
                       <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
                         <th className="pb-3.5 font-bold">Qualification</th>
+                        <th className="pb-3.5 font-bold">Education Details</th>
                         <th className="pb-3.5 font-bold">Institute / School</th>
                         <th className="pb-3.5 font-bold">Board / University</th>
+                        <th className="pb-3.5 text-center font-bold">Medium</th>
                         <th className="pb-3.5 text-center font-bold">Year</th>
-                        <th className="pb-3.5 text-center font-bold">
-                          Percentage / CGPA
-                        </th>
                         <th className="pb-3.5 text-right font-bold">
-                          Division / Grade
+                          Percentage / CGPA
                         </th>
                       </tr>
                     </thead>
@@ -826,8 +835,11 @@ export function UserDetailView({
                             key={idx}
                             className="hover:bg-muted/20 transition-colors"
                           >
-                            <td className="py-4 font-bold text-amber-500 uppercase">
+                            <td className="py-4 font-bold text-amber-500 uppercase whitespace-nowrap">
                               {edu.type || "N/A"}
+                            </td>
+                            <td className="py-4 font-semibold text-foreground">
+                              {edu.details || "—"}
                             </td>
                             <td className="py-4 font-bold text-foreground">
                               {edu.school || "N/A"}
@@ -835,20 +847,20 @@ export function UserDetailView({
                             <td className="py-4 text-muted-foreground">
                               {edu.board || "N/A"}
                             </td>
-                            <td className="py-4 text-center font-bold text-foreground">
-                              {edu.year || "N/A"}
-                            </td>
-                            <td className="py-4 text-center font-bold text-brand-primary">
-                              {formatEducationScore(edu)}
-                            </td>
-                            <td className="py-4 text-right font-bold text-foreground">
-                              {edu.division ? (
-                                <span className="px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-bold">
-                                  {edu.division}
+                            <td className="py-4 text-center">
+                              {edu.medium ? (
+                                <span className="px-2.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md text-xs font-bold uppercase">
+                                  {edu.medium}
                                 </span>
                               ) : (
-                                "N/A"
+                                "—"
                               )}
+                            </td>
+                            <td className="py-4 text-center font-bold text-foreground whitespace-nowrap">
+                              {edu.year || "N/A"}
+                            </td>
+                            <td className="py-4 text-right font-bold text-brand-primary whitespace-nowrap">
+                              {formatEducationScore(edu)}
                             </td>
                           </tr>
                         ))}
@@ -882,69 +894,108 @@ export function UserDetailView({
             />
 
             <TimelineCard>
-              {workExperienceDetails.filter((w) => w.company).length === 0 ? (
-                <EmptyState message="No previous employment history recorded (Fresher Candidate)" />
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm md:text-base">
-                    <thead>
-                      <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
-                        <th className="pb-3.5 font-bold">Company & Role</th>
-                        <th className="pb-3.5 font-bold">Type</th>
-                        <th className="pb-3.5 text-center font-bold">
-                          Tenure / Duration
-                        </th>
-                        <th className="pb-3.5 text-center font-bold">
-                          Previous CTC
-                        </th>
-                        <th className="pb-3.5 text-right font-bold">
-                          Reason for Leaving
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/30">
-                      {workExperienceDetails
-                        .filter((w) => w.company)
-                        .map((work, idx) => (
-                          <tr
-                            key={idx}
-                            className="hover:bg-muted/20 transition-colors"
-                          >
-                            <td className="py-4">
-                              <div className="font-bold text-foreground">
-                                {work.company}
-                              </div>
-                              <div className="text-xs text-muted-foreground font-medium pt-0.5">
-                                {work.designation || "N/A"}
-                              </div>
-                            </td>
-                            <td className="py-4 font-semibold text-blue-500 uppercase text-xs">
-                              {work.employmentType ? (
-                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">
-                                  {work.employmentType.replace("_", " ")}
-                                </span>
-                              ) : (
-                                "N/A"
-                              )}
-                            </td>
-                            <td className="py-4 text-center font-semibold text-muted-foreground text-xs md:text-sm">
-                              {work.joinDate || "N/A"} -{" "}
-                              {work.isPresent || !work.relieveDate
-                                ? "Present"
-                                : work.relieveDate}
-                            </td>
-                            <td className="py-4 text-center font-bold text-brand-primary">
-                              {work.salary ? `₹${work.salary}` : "N/A"}
-                            </td>
-                            <td className="py-4 text-right font-medium text-muted-foreground">
-                              {work.reason || "N/A"}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              {(() => {
+                const effectiveWorkExp =
+                  workExperienceDetails.length === 0
+                    ? [
+                        {
+                          id: 1,
+                          company: "Fresher",
+                          designation: "No Prior Experience",
+                          employmentType: "",
+                          joinDate: "",
+                          relieveDate: "",
+                          salary: "",
+                          reason: "",
+                          isPresent: false,
+                        },
+                      ]
+                    : workExperienceDetails;
+
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm md:text-base">
+                      <thead>
+                        <tr className="border-b border-border/60 text-muted-foreground text-xs uppercase font-bold tracking-wider">
+                          <th className="pb-3.5 font-bold">Company & Role</th>
+                          <th className="pb-3.5 font-bold">Type</th>
+                          <th className="pb-3.5 text-center font-bold">
+                            Joining Date
+                          </th>
+                          <th className="pb-3.5 text-center font-bold">
+                            Relieving Date
+                          </th>
+                          <th className="pb-3.5 text-center font-bold">
+                            Previous CTC
+                          </th>
+                          <th className="pb-3.5 text-right font-bold">
+                            Reason for Leaving
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30">
+                        {effectiveWorkExp.map((work, idx) => {
+                          const isFresher =
+                            work.company?.toLowerCase() === "fresher";
+
+                          return (
+                            <tr
+                              key={idx}
+                              className="hover:bg-muted/20 transition-colors"
+                            >
+                              <td className="py-4">
+                                <div className="font-bold text-foreground">
+                                  {work.company || "Fresher"}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-medium pt-0.5">
+                                  {isFresher
+                                    ? "No Prior Experience"
+                                    : work.designation || "—"}
+                                </div>
+                              </td>
+                              <td className="py-4 font-semibold text-blue-500 uppercase text-xs">
+                                {!isFresher && work.employmentType ? (
+                                  <span className="px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">
+                                    {work.employmentType.replace(/_/g, " ")}
+                                  </span>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              <td className="py-4 text-center font-semibold text-muted-foreground text-xs md:text-sm whitespace-nowrap">
+                                {!isFresher && work.joinDate
+                                  ? formatDateDDMMYYYY(work.joinDate)
+                                  : "—"}
+                              </td>
+                              <td className="py-4 text-center font-semibold text-muted-foreground text-xs md:text-sm whitespace-nowrap">
+                                {isFresher
+                                  ? "—"
+                                  : work.isPresent
+                                    ? "Present"
+                                    : work.relieveDate
+                                      ? formatDateDDMMYYYY(work.relieveDate)
+                                      : "Present"}
+                              </td>
+                              <td className="py-4 text-center font-bold text-brand-primary whitespace-nowrap">
+                                {!isFresher && work.salary
+                                  ? !isNaN(Number(work.salary))
+                                    ? `₹${Number(work.salary).toLocaleString("en-IN")}`
+                                    : work.salary.startsWith("₹")
+                                      ? work.salary
+                                      : `₹${work.salary}`
+                                  : "—"}
+                              </td>
+                              <td className="py-4 text-right font-medium text-muted-foreground">
+                                {!isFresher && work.reason ? work.reason : "—"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </TimelineCard>
           </div>
         </div>
@@ -993,7 +1044,11 @@ export function UserDetailView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-border/50">
                   <DetailItem
                     label="Expected Joining Date"
-                    value={otherDetails?.expectedJoiningDate}
+                    value={
+                      otherDetails?.expectedJoiningDate
+                        ? formatDateDDMMYYYY(otherDetails.expectedJoiningDate)
+                        : "N/A"
+                    }
                     icon={<Calendar size={16} />}
                   />
                   <DetailItem
