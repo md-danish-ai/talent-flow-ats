@@ -14,10 +14,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      pgbouncer:
-        condition: service_started
     environment:
-      DB_HOST: pgbouncer
+      DB_HOST: db
       DB_PORT: 5432
       DB_NAME: talent_flow_ats
       DB_USER: postgres
@@ -30,12 +28,7 @@ services:
     volumes:
       - ./backend:/backend
       - .env:/backend/.env:ro
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    # 10-core server: workers = 2 × nproc = 20 (using 16 as conservative start)
-    command: gunicorn app.main:app -w 16 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 100
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50
 
   frontend:
     container_name: talent-flow-frontend
@@ -80,30 +73,6 @@ services:
       ]
     command: ["upgrade", "head"]
 
-  pgbouncer:
-    container_name: talent-flow-pgbouncer
-    image: bitnami/pgbouncer:latest
-    restart: always
-    environment:
-      POSTGRESQL_HOST: db
-      POSTGRESQL_PORT: 5432
-      POSTGRESQL_DATABASE: talent_flow_ats
-      POSTGRESQL_USERNAME: postgres
-      POSTGRESQL_PASSWORD: Pass2020NothingSpecial
-      PGBOUNCER_POOL_MODE: transaction
-      PGBOUNCER_MAX_CLIENT_CONN: 500
-      PGBOUNCER_DEFAULT_POOL_SIZE: 50
-      PGBOUNCER_MIN_POOL_SIZE: 10
-      PGBOUNCER_RESERVE_POOL_SIZE: 10
-      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    depends_on:
-      db:
-        condition: service_healthy
-
   db:
     container_name: talent-flow-postgres
     image: postgres:16
@@ -116,18 +85,14 @@ services:
       - "9600:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Performance tuning for 250-300 concurrent candidates (16GB RAM server)
-    # shared_buffers = 16GB × 25% = 4GB
-    # effective_cache_size = 16GB × 50% = 8GB
+    # Performance tuning for 50-100 concurrent candidates
     command: >
       postgres
-      -c max_connections=150
-      -c shared_buffers=4GB
-      -c effective_cache_size=8GB
-      -c work_mem=6MB
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=512MB
+      -c work_mem=4MB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
-      -c random_page_cost=1.1
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -137,10 +102,6 @@ services:
     container_name: talent-flow-redis
     image: redis/redis-stack:latest
     restart: always
-    command: >
-      redis-stack-server
-      --maxmemory 512mb
-      --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
       - "8001:8001"
