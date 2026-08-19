@@ -170,6 +170,46 @@ export function InterviewTestClient() {
     const loadAssignedPaper = async () => {
       try {
         setIsLoadingPaper(true);
+
+        // 1. Check if the candidate has an existing attempt that was submitted or auto-submitted
+        try {
+          const statusRes = await interviewAttemptsApi.getActiveStatus();
+          if (
+            statusRes.has_attempt &&
+            (statusRes.status === "submitted" ||
+              statusRes.status === "auto_submitted" ||
+              statusRes.status === "completed")
+          ) {
+            if (statusRes.attempt_id) {
+              try {
+                const summary = await interviewAttemptsApi.getSummary(
+                  statusRes.attempt_id,
+                );
+                setFinalSummary(summary);
+              } catch {
+                // Ignore summary fetch error
+              }
+            }
+            setCompletionReason(
+              statusRes.status === "auto_submitted" || statusRes.is_expired
+                ? "time_over"
+                : "manual",
+            );
+            setIsCompleted(true);
+            setIsLoadingPaper(false);
+            return;
+          }
+        } catch (statusErr) {
+          console.warn("Could not check active status:", statusErr);
+        }
+
+        // 2. Also check if user flag marks interview as already submitted (and not in reinterview)
+        if (currentUser?.is_interview_submitted) {
+          setIsCompleted(true);
+          setIsLoadingPaper(false);
+          return;
+        }
+
         const response = await paperAssignmentsApi.getMyInterviewPaper();
         const mappedSections: InterviewSection[] = response.sections.map(
           (section) => ({
@@ -216,7 +256,7 @@ export function InterviewTestClient() {
     };
 
     void loadAssignedPaper();
-  }, []);
+  }, [currentUser]);
 
   // Disable Right Click & Inspect Element Shortcuts during interview test
   useEffect(() => {

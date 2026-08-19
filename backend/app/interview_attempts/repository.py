@@ -1930,7 +1930,7 @@ def reset_user_today_attempt(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                InterviewRecord.created_at >= today_start,
+                InterviewRecord.started_at >= today_start,
             )
             .order_by(desc(InterviewRecord.id))
             .first()
@@ -1946,6 +1946,10 @@ def reset_user_today_attempt(user_id: int) -> dict:
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.READY.value
 
         today = datetime.utcnow().date()
         assignment = (
@@ -2296,7 +2300,7 @@ def get_active_attempt_status(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                func.date(InterviewRecord.created_at) == today,
+                func.date(InterviewRecord.started_at) == today,
             )
             .order_by(desc(InterviewRecord.id))
             .first()
