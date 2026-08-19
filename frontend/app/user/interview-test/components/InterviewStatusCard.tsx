@@ -1,16 +1,17 @@
+"use client";
+
 import { useEffect, useRef } from "react";
-import { CheckCircle2, Clock3, Lock } from "lucide-react";
-import { MainCard } from "@components/ui-cards/MainCard";
-import { Alert } from "@components/ui-elements/Alert";
-import { Badge } from "@components/ui-elements/Badge";
+import { CheckCircle2, Clock, Lock, Check } from "lucide-react";
+import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 import type { InterviewSection, TimerZone } from "../types";
 import { cn } from "@lib/utils";
-import { STYLE_CONFIG } from "@lib/config/style";
 
 interface InterviewStatusCardProps {
   sections: InterviewSection[];
   sectionIndex: number;
+  totalSections: number;
+  progressPercent: number;
   lockedSections: boolean[];
   timerZone: TimerZone;
   answeredCount: number;
@@ -21,6 +22,8 @@ interface InterviewStatusCardProps {
 export function InterviewStatusCard({
   sections,
   sectionIndex,
+  totalSections,
+  progressPercent,
   lockedSections,
   timerZone,
   answeredCount,
@@ -39,177 +42,204 @@ export function InterviewStatusCard({
     }
   }, [sectionIndex]);
 
+  const totalQuestionsInSection =
+    sections[sectionIndex]?.questions?.length || 0;
+
   return (
-    <div id="interview-active-status">
-      <MainCard title="Interview Status" bodyClassName="space-y-4">
-        <Alert
-          variant="warning"
-          className="bg-amber-500/10 border-amber-500/20"
-          description={
-            <div className="flex flex-col gap-0.5">
-              <span className="font-semibold text-[11px] uppercase tracking-wider">
-                Mandatory Locking Policy
-              </span>
-              <span className="text-[12px] opacity-90">
-                Completed sections are permanently locked. You cannot revisit
-                them.
-              </span>
-            </div>
-          }
-          showIcon={true}
-        />
+    <div
+      id="interview-active-status"
+      className={cn(
+        "flex flex-col bg-card border border-border/60 shadow-sm p-4 sm:p-5 space-y-3.5 transition-colors overflow-hidden",
+        STYLE_CONFIG.cardRadius,
+      )}
+    >
+      {/* Overall Section Progress Tracker */}
+      <div
+        id="interview-active-progress"
+        className="space-y-2 pb-3 border-b border-border/50"
+      >
+        <div className="flex justify-between items-center text-sm font-semibold">
+          <span className="text-slate-700 dark:text-zinc-300">
+            Exam Progress
+          </span>
+          <span className="text-brand-primary font-bold text-sm">
+            {progressPercent}%
+          </span>
+        </div>
 
-        <div
-          ref={scrollContainerRef}
-          className="space-y-3 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar scroll-smooth"
-        >
-          {sections.map((section, index) => {
-            const isCurrent = index === sectionIndex;
-            const isLocked = lockedSections[index];
+        <div className="h-2 w-full rounded-full bg-muted overflow-hidden shadow-inner">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ease-out ${
+              timerZone === "danger"
+                ? "bg-red-500"
+                : timerZone === "warn"
+                  ? "bg-amber-500"
+                  : "bg-brand-primary"
+            }`}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
 
+        <div className="flex justify-between items-center text-xs text-muted-foreground font-medium">
+          <span>Section 1</span>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide bg-amber-500/10 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Auto-lock on submission
+          </span>
+          <span>Section {totalSections}</span>
+        </div>
+      </div>
+
+      {/* Section Checklist List */}
+      <div
+        ref={scrollContainerRef}
+        className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar scroll-smooth"
+      >
+        {sections.map((section, index) => {
+          const isCurrent = index === sectionIndex;
+          const isLocked = lockedSections[index];
+
+          if (isCurrent) {
             return (
               <div
                 key={section.id}
                 id={`section-${index}`}
                 className={cn(
-                  "group flex flex-col gap-2 rounded-lg border transition-all duration-300",
-                  isCurrent
-                    ? timerZone === "danger"
-                      ? "border-red-500 bg-red-500/10 shadow-sm animate-[pulse_0.8s_infinite] p-3"
-                      : timerZone === "warn"
-                        ? "border-yellow-500 bg-yellow-500/10 shadow-sm animate-pulse p-3"
-                        : "border-brand-primary bg-brand-primary/10 shadow-sm p-3"
-                    : isLocked
-                      ? "border-emerald-500/50 bg-emerald-500/10 p-2.5"
-                      : "border-border bg-muted/5 opacity-60 p-2.5",
+                  "flex flex-col gap-2 rounded-lg border p-3 transition-all duration-300",
+                  timerZone === "danger"
+                    ? "border-red-500/70 bg-red-500/10 shadow-sm ring-1 ring-red-500/30"
+                    : timerZone === "warn"
+                      ? "border-amber-500/70 bg-amber-500/10 shadow-sm ring-1 ring-amber-500/30"
+                      : "border-brand-primary/60 bg-brand-primary/5 dark:bg-brand-primary/10 shadow-sm ring-1 ring-brand-primary/20",
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-md text-xs font-bold bg-brand-primary text-white shrink-0">
+                      {index + 1}
+                    </span>
                     <Typography
-                      variant={isCurrent ? "body4" : "body5"}
-                      weight={isCurrent ? "bold" : "semibold"}
+                      variant="body4"
+                      weight="bold"
                       className={cn(
-                        "transition-all duration-300",
-                        isCurrent
-                          ? timerZone === "danger"
-                            ? "text-red-600"
-                            : timerZone === "warn"
-                              ? "text-yellow-600"
-                              : "text-brand-primary"
-                          : "text-foreground opacity-90",
+                        "text-sm sm:text-base leading-snug break-words",
+                        timerZone === "danger"
+                          ? "text-red-600 dark:text-red-400"
+                          : timerZone === "warn"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-brand-primary font-bold",
                       )}
                     >
                       {section.title}
                     </Typography>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color={isLocked ? "success" : "warning"}
-                        icon={<Clock3 size={11} />}
-                        className={cn(!isCurrent && "opacity-70")}
-                        animate={isLocked ? "none" : "pulse"}
-                      >
-                        {section.durationMinutes} Mins Allotted
-                      </Badge>
-
-                      {isCurrent && (
-                        <Badge
-                          variant="outline"
-                          shape="square"
-                          color="violet"
-                          animate="pulse"
-                        >
-                          QUESTION {questionIndex + 1}/
-                          {section.questions.length}
-                        </Badge>
-                      )}
-                    </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1.5">
-                    {isCurrent && (
-                      <Badge
-                        variant="outline"
-                        color="primary"
-                        shape="square"
-                        animate="pulse"
-                      >
-                        ACTIVE
-                      </Badge>
-                    )}
-                    {isLocked && (
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color="success"
-                        icon={<CheckCircle2 size={12} />}
-                        animate="pulse"
-                      >
-                        LOCKED
-                      </Badge>
-                    )}
-                    {!isCurrent && !isLocked && (
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color="secondary"
-                        icon={<Lock size={12} />}
-                      >
-                        PENDING
-                      </Badge>
-                    )}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/30 shrink-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-ping" />
+                    In Progress
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400 pt-2 border-t border-slate-200/60 dark:border-zinc-800/60">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
+                    <span>{section.durationMinutes} mins</span>
                   </div>
+                  <span className="font-semibold text-brand-primary">
+                    Question {questionIndex + 1} of {totalQuestionsInSection}
+                  </span>
                 </div>
               </div>
             );
-          })}
-        </div>
+          }
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div
-            className={cn(
-              "border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.04] via-emerald-500/[0.01] to-transparent px-3.5 py-3 shadow-[0_4px_12px_rgba(16,185,129,0.03)]",
-              STYLE_CONFIG.innerCardRadius,
-            )}
-          >
-            <Typography
-              variant="body5"
-              className="text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider text-[10px]"
+          if (isLocked) {
+            return (
+              <div
+                key={section.id}
+                id={`section-${index}`}
+                className="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 px-3 py-2 transition-all duration-200"
+              >
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span className="inline-flex items-center justify-center h-5 w-5 rounded-md text-xs font-bold bg-emerald-500 text-white shrink-0">
+                    <Check className="h-3 w-3" />
+                  </span>
+                  <Typography
+                    variant="body4"
+                    weight="medium"
+                    className="text-sm text-slate-800 dark:text-zinc-200 leading-snug break-words"
+                  >
+                    {section.title}
+                  </Typography>
+                </div>
+
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 shrink-0">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Completed
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={section.id}
+              id={`section-${index}`}
+              className="flex flex-col gap-1.5 rounded-lg border border-slate-200/80 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-900/30 p-2.5 opacity-70 transition-all duration-200"
             >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span className="inline-flex items-center justify-center h-5 w-5 rounded-md text-xs font-semibold bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 shrink-0">
+                    {index + 1}
+                  </span>
+                  <Typography
+                    variant="body4"
+                    className="text-sm text-slate-700 dark:text-zinc-300 font-medium leading-snug break-words"
+                  >
+                    {section.title}
+                  </Typography>
+                </div>
+
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 text-xs shrink-0">
+                  <Lock className="h-3 w-3" />
+                  Upcoming
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-1.5 border-t border-slate-200/60 dark:border-zinc-800/60">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
+                  <span>{section.durationMinutes} mins</span>
+                </div>
+                <span>{section.questions.length} questions</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Live Answered Stats Summary */}
+      <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40">
+            <span className="text-xs uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
               Answered
-            </Typography>
-            <Typography
-              variant="h3"
-              weight="black"
-              className="text-emerald-500 mt-1"
-            >
+            </span>
+            <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">
               {answeredCount}
-            </Typography>
+            </span>
           </div>
-          <div
-            className={cn(
-              "border border-rose-500/20 bg-gradient-to-br from-rose-500/[0.04] via-rose-500/[0.01] to-transparent px-3.5 py-3 shadow-[0_4px_12px_rgba(244,63,94,0.03)]",
-              STYLE_CONFIG.innerCardRadius,
-            )}
-          >
-            <Typography
-              variant="body5"
-              className="text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider text-[10px]"
-            >
-              Not Attempted
-            </Typography>
-            <Typography
-              variant="h3"
-              weight="black"
-              className="text-rose-500 mt-1"
-            >
+
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-rose-50/80 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/40">
+            <span className="text-xs uppercase font-bold text-rose-600 dark:text-rose-400 tracking-wider">
+              Unattempted
+            </span>
+            <span className="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400">
               {notAttemptedCount}
-            </Typography>
+            </span>
           </div>
         </div>
-      </MainCard>
+      </div>
     </div>
   );
 }
