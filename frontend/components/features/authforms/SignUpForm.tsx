@@ -2,9 +2,10 @@
 
 import { ChevronRight, Loader2, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "@lib/toast";
 import { Input } from "@components/ui-elements/Input";
 import { signUpSchema, type SignUpFormValues } from "@lib/validations/auth";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -20,6 +21,43 @@ import { getErrorMessage } from "@lib/utils";
 export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clearAuth =
+      searchParams.get("clear_auth") || urlParams.get("clear_auth");
+    const isInactive =
+      searchParams.get("inactive") === "1" || urlParams.get("inactive") === "1";
+
+    if (isInactive) {
+      const timer = setTimeout(() => {
+        toast.error(
+          "Your account is currently inactive. Please contact the administrator.",
+          {
+            title: "Account Inactive",
+            duration: 3000,
+          },
+        );
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        url.searchParams.delete("inactive");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (clearAuth === "1") {
+      const timer = setTimeout(() => {
+        toast.error("Session expired. Please sign up or sign in again.", {
+          title: "Auth Alert",
+          duration: 3000,
+        });
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const signUpMutation = useSignUp();
   const { data: departments, isLoading: isLoadingDepts } = useDepartments({

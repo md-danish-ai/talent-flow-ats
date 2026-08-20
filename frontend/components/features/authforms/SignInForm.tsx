@@ -41,7 +41,7 @@ export function SignInForm() {
           "Your account is currently inactive. Please contact the administrator.",
           {
             title: "Account Inactive",
-            duration: 10000,
+            duration: 3000,
           },
         );
 
@@ -60,7 +60,7 @@ export function SignInForm() {
       const timer = setTimeout(() => {
         toast.error("Session expired. Please sign in again.", {
           title: "Auth Alert",
-          duration: 20000,
+          duration: 3000,
         });
 
         // Clean up URL without refreshing

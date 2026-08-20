@@ -8,14 +8,14 @@ export function proxy(request: NextRequest) {
 
   // Handle explicit auth clearing via URL flag.
   // Always delete cookies when clear_auth=1 is present.
-  // KEY FIX: If already on /sign-in, use NextResponse.next() (NOT redirect)
-  // so the page renders and we break the loop.
-  // If on any other page, redirect to /sign-in?clear_auth=1.
+  // KEY FIX: If already on the correct auth page, use NextResponse.next() (NOT redirect)
+  // so the page renders and we break any redirect loop.
+  // Admin/Project-Lead land on /sign-in, Users land on / (sign-up).
   if (isClearingAuth) {
     const response =
-      pathname === "/sign-in"
-        ? NextResponse.next() // Already on sign-in → just clear cookies & let page render
-        : NextResponse.redirect(new URL("/sign-in?clear_auth=1", request.url));
+      pathname === "/sign-in" || pathname === "/"
+        ? NextResponse.next() // Already on correct auth page → clear cookies & render
+        : NextResponse.redirect(new URL("/?clear_auth=1", request.url)); // fallback
     response.cookies.delete("auth_token");
     response.cookies.delete("role");
     response.cookies.delete("user_info");
@@ -25,17 +25,19 @@ export function proxy(request: NextRequest) {
   const authToken = request.cookies.get("auth_token")?.value;
   const role = request.cookies.get("role")?.value;
 
-  // 1. Redirect to login if accessing protected routes without token
-  if (
-    !authToken &&
-    (pathname.startsWith("/admin") ||
-      pathname.startsWith("/user") ||
-      pathname.startsWith("/project-lead"))
-  ) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  // 1. Redirect to correct auth page if accessing protected routes without token
+  //    Admin/Project-Lead routes → /sign-in
+  //    User routes → / (sign-up)
+  if (!authToken) {
+    if (pathname.startsWith("/admin") || pathname.startsWith("/project-lead")) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+    if (pathname.startsWith("/user")) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
-  // 2. If logged in, prevent accessing login/root page
+  // 2. If logged in, prevent accessing sign-in/sign-up (root) page
   if (authToken && (pathname === "/sign-in" || pathname === "/")) {
     if (role === "admin") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
