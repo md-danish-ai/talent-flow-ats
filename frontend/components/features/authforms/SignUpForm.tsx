@@ -3,7 +3,7 @@
 import { ChevronRight, Loader2, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "@lib/toast";
 import { Input } from "@components/ui-elements/Input";
@@ -27,6 +27,8 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const isDeptInitializedRef = useRef(false);
+  const isLevelInitializedRef = useRef(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -148,6 +150,56 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       }
     },
   });
+
+  // Set default Department (KPO & BPO) on initial load
+  useEffect(() => {
+    if (
+      !isDeptInitializedRef.current &&
+      departments &&
+      departments.length > 0
+    ) {
+      const defaultDept =
+        departments.find(
+          (d) =>
+            d.name?.toLowerCase().trim() === "kpo & bpo" ||
+            d.name?.toLowerCase().includes("kpo"),
+        ) || departments[0];
+
+      if (defaultDept && !form.getFieldValue("department_id")) {
+        form.setFieldValue("department_id", String(defaultDept.id));
+        isDeptInitializedRef.current = true;
+      }
+    }
+  }, [departments, form]);
+
+  // Set default Exam Level (Fresher) on initial load if department requires interview
+  useEffect(() => {
+    if (
+      !isLevelInitializedRef.current &&
+      classificationRes?.data &&
+      classificationRes.data.length > 0
+    ) {
+      const fresherLevel = classificationRes.data.find(
+        (c) =>
+          c.name?.toLowerCase().trim() === "fresher" ||
+          c.code?.toLowerCase().trim() === "fresher",
+      );
+
+      if (fresherLevel && !form.getFieldValue("test_level_id")) {
+        const currentDeptId = form.getFieldValue("department_id");
+        const currentDept = departments?.find(
+          (d) => String(d.id) === String(currentDeptId),
+        );
+        const needsInterview = currentDept
+          ? currentDept.requires_interview
+          : true;
+        if (needsInterview) {
+          form.setFieldValue("test_level_id", String(fresherLevel.id));
+          isLevelInitializedRef.current = true;
+        }
+      }
+    }
+  }, [classificationRes, departments, form]);
 
   return (
     <div className="w-full">
@@ -304,13 +356,8 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                         value={field.state.value}
                         onChange={(val) => {
                           field.handleChange(String(val));
-                          // Clear test_level_id when dept doesn't require interview
-                          const dept = departments?.find(
-                            (d) => String(d.id) === String(val),
-                          );
-                          if (!dept?.requires_interview) {
-                            form.setFieldValue("test_level_id", "");
-                          }
+                          // Reset test level to blank whenever department changes
+                          form.setFieldValue("test_level_id", "");
                         }}
                         placeholder="Department"
                         isLoading={isLoadingDepts}
