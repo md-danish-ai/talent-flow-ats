@@ -244,9 +244,10 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   size="sm"
                                 />
                                 {/* Status Dot Indicators */}
-                                {row.process_status === "submitted" ||
-                                row.is_interview_submitted ||
-                                row.assignment?.is_attempted ? (
+                                {row.is_interview_submitted ||
+                                row.assignment?.is_attempted ||
+                                (row.process_status === "submitted" &&
+                                  !row.assignment?.has_started) ? (
                                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                                 ) : row.process_status === "inprogress" ||
                                   row.assignment?.has_started ? (
@@ -338,9 +339,10 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                           </TableCell>
                           <TableCell className="text-center align-middle py-3">
                             <div className="flex flex-col items-center justify-center gap-1">
-                              {row.process_status === "submitted" ||
-                              row.is_interview_submitted ||
-                              row.assignment?.is_attempted ? (
+                              {row.is_interview_submitted ||
+                              row.assignment?.is_attempted ||
+                              (row.process_status === "submitted" &&
+                                !row.assignment?.has_started) ? (
                                 <Badge
                                   color="success"
                                   variant="outline"
@@ -385,11 +387,13 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                 </Badge>
                               )}
                               <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
-                                {row.process_status === "submitted" ||
-                                row.is_interview_submitted ||
-                                row.assignment?.is_attempted
+                                {row.is_interview_submitted ||
+                                row.assignment?.is_attempted ||
+                                (row.process_status === "submitted" &&
+                                  !row.assignment?.has_started)
                                   ? "Process complete"
-                                  : row.process_status === "inprogress"
+                                  : row.process_status === "inprogress" ||
+                                      row.assignment?.has_started
                                     ? "Attempt Active"
                                     : row.process_status === "ready"
                                       ? "Awaiting Login"

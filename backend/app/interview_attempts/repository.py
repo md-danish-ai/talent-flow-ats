@@ -830,6 +830,12 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
         )
 
         if existing:
+            # Update user process status to inprogress if started
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.process_status != ProcessStatus.INPROGRESS.value:
+                user.process_status = ProcessStatus.INPROGRESS.value
+                db.commit()
+
             # Server-side timer enforcement
             if total_dur > 0 and existing.status == InterviewStatus.STARTED.value:
                 started_utc = existing.started_at
@@ -982,6 +988,10 @@ def save_answer(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
+
         db.commit()
 
         return {
@@ -1076,6 +1086,10 @@ def save_answers_batch(
         attempted_count = sum(1 for r in responses if r.get("is_attempted"))
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         db.commit()
 
@@ -2196,10 +2210,14 @@ def reset_subject_responses(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
-        # Reset UserDetail + PaperAssignment
+        # Reset UserDetail + PaperAssignment + User process_status
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         today = datetime.utcnow().date()
         assignment = (
