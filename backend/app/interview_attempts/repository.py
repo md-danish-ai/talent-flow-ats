@@ -2194,7 +2194,8 @@ def reset_subject_responses(
         flag_modified(record, "responses")
 
         # Reset attempt status
-        record.started_at = datetime.now(timezone.utc)
+        if record.status != InterviewStatus.STARTED.value:
+            record.started_at = datetime.now(timezone.utc)
         record.status = InterviewStatus.STARTED.value
         record.submitted_at = None
         record.completion_reason = None
