@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.reports.report_builder import build_report_data
-from app.reports.pdf_service import build_report_html, generate_report_pdf
+from app.reports.pdf_service import build_report_html, generate_report_pdf, _sanitize
 from app.utils.status_codes import StatusCode
 from app.reports import repository
 
@@ -19,9 +19,15 @@ def generate_report_pdf_file(
     html = build_report_html(data)
     pdf_bytes = generate_report_pdf(html)
 
-    username = data.get("username", "").strip()
+    username = _sanitize(data.get("username", "").strip())
     mobile = str(data.get("mobile", "")).strip()
-    safe_name = username.replace(" ", "_") if username else "Candidate"
+    # Replace spaces and strip any remaining non-filename-safe chars
+    safe_name = (
+        "".join(c if c.isalnum() or c in "_-" else "_" for c in username)
+        if username
+        else "Candidate"
+    )
+    safe_name = safe_name.strip("_") or "Candidate"
     if mobile:
         filename = f"{safe_name}_{mobile}.pdf"
     else:
