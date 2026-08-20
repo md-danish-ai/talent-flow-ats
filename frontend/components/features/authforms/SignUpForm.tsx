@@ -16,7 +16,12 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
-import { getErrorMessage } from "@lib/utils";
+import {
+  getErrorMessage,
+  normalizeWhitespace,
+  normalizeMobile,
+  normalizeEmail,
+} from "@lib/utils";
 
 export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
@@ -111,13 +116,20 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     onSubmit: async ({ value }) => {
       setServerError(null);
 
-      const submitValue = { ...value };
+      const submitValue: Record<string, unknown> = {
+        ...value,
+        name: normalizeWhitespace(value.name),
+        email: normalizeEmail(value.email) || undefined,
+        mobile: normalizeMobile(value.mobile),
+      };
       if (!submitValue.test_level_id) {
         delete submitValue.test_level_id;
       }
 
       try {
-        const response = await signUpMutation.mutateAsync(submitValue);
+        const response = await signUpMutation.mutateAsync(
+          submitValue as unknown as SignUpFormValues,
+        );
 
         if (onSuccess) {
           onSuccess();
