@@ -16,6 +16,7 @@ import { useClassifications } from "@hooks/api/classifications/use-classificatio
 import {
   getErrorMessage,
   normalizeWhitespace,
+  normalizeProperCase,
   normalizeMobile,
   normalizeEmail,
 } from "@lib/utils";
@@ -100,7 +101,7 @@ export function UpdateAccountInfoForm({
 
       const submitValue: Record<string, unknown> = {
         ...value,
-        name: normalizeWhitespace(value.name),
+        name: normalizeProperCase(value.name),
         email: normalizeEmail(value.email) || undefined,
         mobile: normalizeMobile(value.mobile),
       };

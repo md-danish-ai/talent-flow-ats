@@ -21,6 +21,22 @@ export const titleCase = (str?: string): string => {
 };
 
 /**
+ * Trims leading/trailing whitespace, collapses multiple consecutive spaces,
+ * and capitalizes the first letter of each word (Title/Proper Case).
+ * Example: "   mohammed    danish   " -> "Mohammed Danish"
+ * Example: "b.tech in computer science" -> "B.Tech In Computer Science"
+ * Example: "house no 124, street 5" -> "House No 124, Street 5"
+ */
+export const normalizeProperCase = (val: unknown, fallback = ""): string => {
+  if (val === null || val === undefined) return fallback;
+  const s = String(val).trim().replace(/\s+/g, " ");
+  if (!s) return fallback;
+  return s
+    .toLowerCase()
+    .replace(/(?:^|[\s\-/.([{'"`])([a-z])/g, (match) => match.toUpperCase());
+};
+
+/**
  * Trims leading/trailing whitespace and collapses multiple consecutive spaces into a single space.
  * Ideal for names, addresses, descriptions, designations, etc.
  * Example: "   Mohammed    Danish   " -> "Mohammed Danish"
@@ -91,3 +107,5 @@ export const cleanEmail = normalizeEmail;
 export const cleanPan = normalizePan;
 export const cleanAadhaar = normalizeAadhaar;
 export const cleanBoolean = parseBoolean;
+export const cleanProperCase = normalizeProperCase;
+export const toProperCase = normalizeProperCase;

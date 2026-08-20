@@ -19,6 +19,7 @@ import { Alert } from "@components/ui-elements/Alert";
 import {
   getErrorMessage,
   normalizeWhitespace,
+  normalizeProperCase,
   normalizeMobile,
   normalizeEmail,
 } from "@lib/utils";
@@ -120,7 +121,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
 
       const submitValue: Record<string, unknown> = {
         ...value,
-        name: normalizeWhitespace(value.name),
+        name: normalizeProperCase(value.name),
         email: normalizeEmail(value.email) || undefined,
         mobile: normalizeMobile(value.mobile),
       };

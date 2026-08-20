@@ -88,6 +88,7 @@ const STEP_CONTENT = [
 
 import {
   normalizeWhitespace,
+  normalizeProperCase,
   parseBoolean,
   normalizeMobile,
   normalizeEmail,
@@ -102,8 +103,8 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
     return {
       ...member,
       relation: normalizeWhitespace(member.relation),
-      name: normalizeWhitespace(member.name),
-      occupation: normalizeWhitespace(member.occupation),
+      name: normalizeProperCase(member.name),
+      occupation: normalizeProperCase(member.occupation),
       dependent: depStr || "No",
       contactNo: normalizeWhitespace(member.contactNo),
     };
@@ -156,14 +157,14 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
     return {
       ...item,
       type: normalizeWhitespace(item.type),
-      school: normalizeWhitespace(item.school),
-      board: normalizeWhitespace(item.board),
+      school: normalizeProperCase(item.school),
+      board: normalizeProperCase(item.board),
       startYear,
       endYear: isPursuing ? "" : endYear,
       division: normalizeWhitespace(item.division),
       percentage: normalizeWhitespace(item.percentage),
       medium: normalizeWhitespace(item.medium),
-      details: normalizeWhitespace(item.details),
+      details: normalizeProperCase(item.details),
       isPursuing,
     };
   }) as Education[];
@@ -260,13 +261,17 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
     return {
       ...item,
       id: Number(item.id) || index + 1,
-      company: companyStr || (index === 0 ? "Fresher" : ""),
+      company: companyStr
+        ? normalizeProperCase(companyStr)
+        : index === 0
+          ? "Fresher"
+          : "",
       employmentType: normalizeWhitespace(item.employmentType),
-      designation: normalizeWhitespace(item.designation),
+      designation: normalizeProperCase(item.designation),
       joinDate: normalizeWhitespace(item.joinDate),
       relieveDate:
         relieveDateStr.toLowerCase() === "present" ? "" : relieveDateStr,
-      reason: normalizeWhitespace(item.reason),
+      reason: normalizeProperCase(item.reason),
       salary: normalizeWhitespace(item.salary),
       isPresent,
     };
@@ -439,25 +444,25 @@ export function UserForm({
         is_interview_submitted:
           existingDetails?.is_interview_submitted ?? false,
         personalDetails: {
-          firstName: normalizeWhitespace(value.firstName),
-          lastName: normalizeWhitespace(value.lastName),
+          firstName: normalizeProperCase(value.firstName),
+          lastName: normalizeProperCase(value.lastName),
           gender: normalizeWhitespace(value.gender),
           dob: normalizeWhitespace(value.dob),
           primaryMobile: normalizeMobile(value.primaryMobile),
           alternateMobile: normalizeMobile(value.alternateMobile),
           email: normalizeEmail(value.email) || null,
-          presentAddressLine1: normalizeWhitespace(value.presentAddressLine1),
-          presentAddressLine2: normalizeWhitespace(value.presentAddressLine2),
+          presentAddressLine1: normalizeProperCase(value.presentAddressLine1),
+          presentAddressLine2: normalizeProperCase(value.presentAddressLine2),
           presentState: normalizeWhitespace(value.presentState),
           presentDistrict: normalizeWhitespace(value.presentDistrict),
-          presentCity: normalizeWhitespace(value.presentCity),
+          presentCity: normalizeProperCase(value.presentCity),
           presentPincode: normalizeWhitespace(value.presentPincode),
           permanentAddressLine1: value.sameAddress
-            ? normalizeWhitespace(value.presentAddressLine1)
-            : normalizeWhitespace(value.permanentAddressLine1),
+            ? normalizeProperCase(value.presentAddressLine1)
+            : normalizeProperCase(value.permanentAddressLine1),
           permanentAddressLine2: value.sameAddress
-            ? normalizeWhitespace(value.presentAddressLine2)
-            : normalizeWhitespace(value.permanentAddressLine2),
+            ? normalizeProperCase(value.presentAddressLine2)
+            : normalizeProperCase(value.permanentAddressLine2),
           permanentState: value.sameAddress
             ? normalizeWhitespace(value.presentState)
             : normalizeWhitespace(value.permanentState),
@@ -465,8 +470,8 @@ export function UserForm({
             ? normalizeWhitespace(value.presentDistrict)
             : normalizeWhitespace(value.permanentDistrict),
           permanentCity: value.sameAddress
-            ? normalizeWhitespace(value.presentCity)
-            : normalizeWhitespace(value.permanentCity),
+            ? normalizeProperCase(value.presentCity)
+            : normalizeProperCase(value.permanentCity),
           permanentPincode: value.sameAddress
             ? normalizeWhitespace(value.presentPincode)
             : normalizeWhitespace(value.permanentPincode),
@@ -475,9 +480,9 @@ export function UserForm({
         additionalPersonalDetails: {
           bloodGroup: normalizeWhitespace(value.bloodGroup),
           aadhaarNo: normalizeAadhaar(value.aadhaarNo),
-          nameAsPerAadhaar: normalizeWhitespace(value.nameAsPerAadhaar),
+          nameAsPerAadhaar: normalizeProperCase(value.nameAsPerAadhaar),
           panNo: normalizePan(value.panNo),
-          nameAsPerPan: normalizeWhitespace(value.nameAsPerPan),
+          nameAsPerPan: normalizeProperCase(value.nameAsPerPan),
           religion: normalizeWhitespace(value.religion),
           category: normalizeWhitespace(value.category),
           maritalStatus: normalizeWhitespace(value.maritalStatus),
@@ -487,8 +492,8 @@ export function UserForm({
           ...fam,
           relation: normalizeWhitespace(fam.relation),
           relationLabel: normalizeWhitespace(fam.relationLabel),
-          name: normalizeWhitespace(fam.name),
-          occupation: normalizeWhitespace(fam.occupation),
+          name: normalizeProperCase(fam.name),
+          occupation: normalizeProperCase(fam.occupation),
           dependent: normalizeWhitespace(fam.dependent) || "No",
           contactNo: normalizeWhitespace(fam.contactNo),
         })),
@@ -497,7 +502,7 @@ export function UserForm({
           workedBefore: parseBoolean(value.workedBefore),
           source: {
             ...value.source,
-            otherDetails: normalizeWhitespace(value.source?.otherDetails),
+            otherDetails: normalizeProperCase(value.source?.otherDetails),
           },
         },
         educationDetails: value.education.map((edu, index) => {
@@ -507,8 +512,8 @@ export function UserForm({
           return {
             id: edu.id ?? index + 1,
             type: normalizeWhitespace(edu.type),
-            school: normalizeWhitespace(edu.school),
-            board: normalizeWhitespace(edu.board),
+            school: normalizeProperCase(edu.school),
+            board: normalizeProperCase(edu.board),
             year: isPursuing
               ? startYear
                 ? `${startYear}-Pursuing`
@@ -517,19 +522,19 @@ export function UserForm({
             division: normalizeWhitespace(edu.division),
             percentage: normalizeWhitespace(edu.percentage),
             medium: normalizeWhitespace(edu.medium),
-            details: normalizeWhitespace(edu.details),
+            details: normalizeProperCase(edu.details),
             isPursuing,
           };
         }),
         workExperienceDetails: value.workExp.map((exp, index) => ({
           ...exp,
           id: exp.id ?? index + 1,
-          company: normalizeWhitespace(exp.company),
+          company: normalizeProperCase(exp.company),
           employmentType: normalizeWhitespace(exp.employmentType),
-          designation: normalizeWhitespace(exp.designation),
+          designation: normalizeProperCase(exp.designation),
           joinDate: normalizeWhitespace(exp.joinDate),
           relieveDate: normalizeWhitespace(exp.relieveDate),
-          reason: normalizeWhitespace(exp.reason),
+          reason: normalizeProperCase(exp.reason),
           salary: normalizeWhitespace(exp.salary),
           isPresent: Boolean(exp.isPresent),
         })),
@@ -537,7 +542,7 @@ export function UserForm({
           serviceCommitment: normalizeWhitespace(value.serviceCommitment),
           securityDeposit: normalizeWhitespace(value.securityDeposit),
           shiftTime: normalizeWhitespace(value.shiftTime),
-          expectedJoiningDate: normalizeWhitespace(value.expectedJoiningDate),
+          expectedJoiningDate: normalizeProperCase(value.expectedJoiningDate),
           expectedSalary: normalizeWhitespace(value.expectedSalary),
         },
         emergency_contact_relation: normalizeWhitespace(
