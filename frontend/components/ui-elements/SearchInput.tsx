@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@lib/utils";
 
 interface SearchInputProps {
@@ -23,23 +23,30 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   delay = 500,
 }) => {
   const [internalValue, setInternalValue] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
+  const onSearchRef = useRef(onSearch);
 
-  // Sync internal value with external value prop
   useEffect(() => {
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  // Sync internal value when external value prop changes (e.g. filter reset)
+  if (value !== prevValue) {
+    setPrevValue(value);
     setInternalValue(value);
-  }, [value]);
+  }
 
   // Handle debounced search
   useEffect(() => {
-    // Skip if it's an initial empty search to avoid double fetching on mount
-    if (!onSearch) return;
+    if (!onSearchRef.current) return;
+    if (internalValue === value) return;
 
     const handler = setTimeout(() => {
-      onSearch(internalValue);
+      onSearchRef.current?.(internalValue);
     }, delay);
 
     return () => clearTimeout(handler);
-  }, [internalValue, onSearch, delay]);
+  }, [internalValue, value, delay]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInternalValue(e.target.value);
@@ -60,8 +67,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     }
 
     // Immediately trigger onSearch if provided, without waiting for debounce
-    if (onSearch) {
-      onSearch("");
+    if (onSearchRef.current) {
+      onSearchRef.current("");
     }
   };
 
