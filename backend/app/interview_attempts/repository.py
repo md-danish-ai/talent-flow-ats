@@ -44,8 +44,18 @@ def _normalize_text(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
+def _normalize_answer_text(value: str) -> str:
+    if not value:
+        return ""
+    text = str(value).strip().lower().rstrip(".!?,;")
+    return " ".join(text.split())
+
+
 def _extract_option_key(value: str) -> str | None:
-    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\)\:\-]?", value.strip(), flags=re.I)
+    val = str(value).strip()
+    if len(val.split()) > 1:
+        return None
+    match = re.match(r"^([a-z0-9]{1,4})[\.\)\:\-]?$", val, flags=re.I)
     if not match:
         return None
     return match.group(1).lower()
@@ -56,16 +66,20 @@ def _split_answer_values(raw_value: str) -> list[str]:
 
 
 def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
-    normalized_user = _normalize_text(user_answer)
-    normalized_correct = _normalize_text(correct_answer)
+    normalized_user = _normalize_answer_text(user_answer)
+    normalized_correct = _normalize_answer_text(correct_answer)
     if not normalized_user or not normalized_correct:
         return False
     if normalized_user == normalized_correct:
         return True
     user_parts = _split_answer_values(user_answer)
     correct_parts = _split_answer_values(correct_answer)
-    user_keys = {_extract_option_key(p) or _normalize_text(p) for p in user_parts}
-    correct_keys = {_extract_option_key(p) or _normalize_text(p) for p in correct_parts}
+    user_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in user_parts
+    }
+    correct_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in correct_parts
+    }
     return user_keys == correct_keys
 
 
