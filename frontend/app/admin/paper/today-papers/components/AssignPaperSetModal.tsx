@@ -224,7 +224,7 @@ export const AssignPaperModal: React.FC<AssignPaperModalProps> = ({
                   <Typography
                     variant="h5"
                     weight="black"
-                    className="text-slate-800 dark:text-white capitalize leading-tight"
+                    className="text-slate-800 dark:text-white leading-tight"
                   >
                     {user.username}
                   </Typography>

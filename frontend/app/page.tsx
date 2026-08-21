@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
@@ -62,7 +63,11 @@ export default function RegisterPage() {
               </Typography>
             </div>
 
-            <SignUpForm />
+            <Suspense
+              fallback={<div className="h-64 animate-pulse bg-muted/20" />}
+            >
+              <SignUpForm />
+            </Suspense>
           </div>
         </div>
 

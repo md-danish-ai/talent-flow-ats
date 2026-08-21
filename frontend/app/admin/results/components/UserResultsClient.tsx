@@ -43,10 +43,14 @@ type ResultsFilters = {
 
 import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
 
+import { useSearchParams } from "next/navigation";
+
 export function UserResultsClient() {
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+
+  const searchParams = useSearchParams();
 
   // Column Visibility
   const availableColumns = useMemo(
@@ -109,7 +113,7 @@ export function UserResultsClient() {
       fetchFn: resultsApi.getUserResults,
       initialFilters: {
         search: "",
-        date: { label: "All Time" },
+        date: { label: "Today" },
         status: "all",
         completionReason: "all",
         overallGrade: "all",
@@ -120,12 +124,18 @@ export function UserResultsClient() {
         let dateTo = f.date?.range?.to;
 
         if (!dateFrom && !dateTo) {
-          if (f.date?.label === "Today") {
+          if (
+            f.date?.label === "Today" ||
+            (!f.date?.label && !searchParams.get("startDate"))
+          ) {
             dateFrom = getTodayISODate();
             dateTo = getTodayISODate();
           } else if (f.date?.label === "Yesterday") {
             dateFrom = getYesterdayISODate();
             dateTo = getYesterdayISODate();
+          } else {
+            dateFrom = searchParams.get("startDate") || undefined;
+            dateTo = searchParams.get("endDate") || undefined;
           }
         }
 
@@ -267,6 +277,8 @@ export function UserResultsClient() {
                   visibleColumns={visibleColumns}
                   isLoading={loading}
                   limit={pageSize}
+                  currentPage={currentPage}
+                  pageSize={pageSize}
                   onRefresh={refresh}
                 />
               )}

@@ -8,6 +8,7 @@ import { resultsApi, evaluationsApi, classificationsApi } from "@lib/api";
 import { toast } from "@lib/toast";
 import { EvaluationForm } from "@components/features/evaluation/EvaluationForm";
 import { EvaluationFormValues } from "@lib/validations/evaluation";
+import { formatDate } from "@lib/utils";
 
 import {
   AdminUserResultDetail,
@@ -114,14 +115,9 @@ export const EvaluationModal = React.memo(
       if (!evaluation) return false;
       if (evaluation.status !== "completed") return false;
 
-      // Check if assigned date (created_at) matches today's date
-      const assignedDate = new Date(evaluation.created_at);
-      const today = new Date();
-
+      // Check if assigned date (created_at) matches today's date in IST
       const isSameDay =
-        assignedDate.getDate() === today.getDate() &&
-        assignedDate.getMonth() === today.getMonth() &&
-        assignedDate.getFullYear() === today.getFullYear();
+        formatDate(evaluation.created_at) === formatDate(new Date());
 
       // If assigned today, stays unlocked (isCompleted = false).
       // If assigned in previous days, it locks (isCompleted = true).

@@ -52,7 +52,8 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       const currentExp = form.getFieldValue("workExp") || [];
       if (
         currentExp.length === 0 ||
-        (currentExp.length === 1 && currentExp[0]?.company === "Fresher")
+        (currentExp.length === 1 &&
+          (currentExp[0]?.company || "").trim().toLowerCase() === "fresher")
       ) {
         form.setFieldValue("workExp", [
           {
@@ -81,8 +82,10 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
       <form.Subscribe selector={(state) => [state.values.workExp]}>
         {([workExp]) => {
           const isFresher =
+            !workExp ||
             workExp.length === 0 ||
-            (workExp.length === 1 && workExp[0]?.company === "Fresher");
+            (workExp.length === 1 &&
+              (workExp[0]?.company || "").trim().toLowerCase() === "fresher");
 
           return (
             <React.Fragment>

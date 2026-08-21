@@ -28,6 +28,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { formatDate } from "@lib/utils";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { EvaluationModal } from "./EvaluationModal";
 import { getGradeConfig } from "@lib/utils";
@@ -209,7 +210,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                                 size="sm"
                               />
                               <div className="flex flex-col">
-                                <span className="font-bold text-[13px] uppercase tracking-tight">
+                                <span className="font-bold text-[13px] tracking-tight">
                                   {task.candidate_name}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -263,7 +264,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                           <TableCell className="text-muted-foreground text-xs">
                             <div className="flex items-center gap-1">
                               <Calendar size={12} />
-                              {new Date(task.created_at).toLocaleDateString()}
+                              {formatDate(task.created_at)}
                             </div>
                           </TableCell>
                           <TableCell className="text-right">

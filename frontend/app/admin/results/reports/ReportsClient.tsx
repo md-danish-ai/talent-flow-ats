@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FileText } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
@@ -44,26 +45,30 @@ type ResultsFilters = {
 
 export function ReportsClient() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   // Column Visibility
   const availableColumns = useMemo(
     () => [
       { id: "candidate", label: "Candidate", pinned: true },
-      { id: "department", label: "Department" },
-      { id: "test_level", label: "Exam Level" },
       { id: "paper", label: "Assigned Paper" },
+      { id: "attempts", label: "Attempts" },
       { id: "grade", label: "Grade" },
-      { id: "status", label: "Status" },
+      { id: "typing_wpm", label: "Typing WPM" },
+      { id: "typing_acc", label: "Accuracy" },
+      { id: "status", label: "Interview Progress" },
       { id: "project_lead", label: "Project Lead" },
-      { id: "actions", label: "Action", pinned: true },
+      { id: "date", label: "Interview Date" },
+      { id: "actions", label: "Actions", pinned: true },
     ],
     [],
   );
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
+    "paper",
     "grade",
-    "status",
+    "date",
     "project_lead",
     "actions",
   ];
@@ -72,7 +77,9 @@ export function ReportsClient() {
   );
 
   const [leadsOptions, setLeadsOptions] = useState<FilterOption[]>([]);
-  const [deptOptions, setDeptOptions] = useState<FilterOption[]>([]);
+  const [departmentOptions, setDepartmentOptions] = useState<FilterOption[]>(
+    [],
+  );
   const [levelOptions, setLevelOptions] = useState<FilterOption[]>([]);
 
   useEffect(() => {
@@ -91,11 +98,14 @@ export function ReportsClient() {
           label: d.name,
         }),
       );
-      setDeptOptions([{ id: "all", label: "All Departments" }, ...options]);
+      setDepartmentOptions([
+        { id: "all", label: "All Departments" },
+        ...options,
+      ]);
     });
 
     classificationsApi
-      .getClassifications({ type: "exam_level", limit: 100 })
+      .getClassifications({ type: "exam_level", is_active: true, limit: 100 })
       .then((res) => {
         const options = (res.data || []).map(
           (c: { id: number; name: string; code?: string }) => ({
@@ -126,7 +136,7 @@ export function ReportsClient() {
     fetchFn: reportsApi.getAllReports,
     initialFilters: {
       search: "",
-      date: { label: "All Time" },
+      date: { label: "Today" },
       status: "all",
       completionReason: "all",
       overallGrade: "all",
@@ -139,12 +149,18 @@ export function ReportsClient() {
       let dateTo = f.date?.range?.to;
 
       if (!dateFrom && !dateTo) {
-        if (f.date?.label === "Today") {
+        if (
+          f.date?.label === "Today" ||
+          (!f.date?.label && !searchParams.get("startDate"))
+        ) {
           dateFrom = getTodayISODate();
           dateTo = getTodayISODate();
         } else if (f.date?.label === "Yesterday") {
           dateFrom = getYesterdayISODate();
           dateTo = getYesterdayISODate();
+        } else {
+          dateFrom = searchParams.get("startDate") || undefined;
+          dateTo = searchParams.get("endDate") || undefined;
         }
       }
 
@@ -234,6 +250,8 @@ export function ReportsClient() {
                 visibleColumns={visibleColumns}
                 isLoading={loading}
                 limit={pageSize}
+                currentPage={currentPage}
+                pageSize={pageSize}
                 onRefresh={refresh}
                 onlyDownloadAction={true}
               />
@@ -263,7 +281,7 @@ export function ReportsClient() {
           isLoading={loading}
           dynamicOptions={{
             project_lead_id: leadsOptions,
-            department_id: deptOptions,
+            department_id: departmentOptions,
             test_level_id: levelOptions,
           }}
         />

@@ -320,10 +320,10 @@ export function UserListing({ initialData }: UserListingProps) {
                                 variant="brand"
                                 size="sm"
                               />
-                              {/* Status Dot Indicators */}
-                              {row.process_status === "submitted" ||
-                              row.is_interview_submitted ||
-                              row.assignment?.is_attempted ? (
+                              {row.is_interview_submitted ||
+                              row.assignment?.is_attempted ||
+                              (row.process_status === "submitted" &&
+                                !row.assignment?.has_started) ? (
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                               ) : row.process_status === "inprogress" ||
                                 row.assignment?.has_started ? (
@@ -339,8 +339,8 @@ export function UserListing({ initialData }: UserListingProps) {
                             </div>
                             <div className="flex flex-col">
                               <div className="flex items-center gap-3">
-                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                                  {row.username || "Unnamed"}
+                                <span className="font-bold text-slate-950 dark:text-white tracking-tight text-[13px] whitespace-nowrap">
+                                  {row.username || "Unknown Candidate"}
                                 </span>
                                 {row.is_reinterview ? (
                                   <Badge
@@ -405,9 +405,10 @@ export function UserListing({ initialData }: UserListingProps) {
                           </div>
                         </TableCell>
                         <TableCell className="align-middle py-3 text-center">
-                          {row.process_status === "submitted" ||
-                          row.is_interview_submitted ||
-                          row.assignment?.is_attempted ? (
+                          {row.is_interview_submitted ||
+                          row.assignment?.is_attempted ||
+                          (row.process_status === "submitted" &&
+                            !row.assignment?.has_started) ? (
                             <Badge
                               variant="outline"
                               color="success"

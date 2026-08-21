@@ -23,6 +23,7 @@ import {
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import { parseUTCDate } from "@lib/utils";
 
 import { MainCard } from "@components/ui-cards/MainCard";
 import { StatCard } from "@components/ui-cards/StatCard";
@@ -401,7 +402,7 @@ export default function DashboardPage() {
                                 />
                               }
                               time={formatDistanceToNow(
-                                new Date(notif.created_at),
+                                parseUTCDate(notif.created_at) || new Date(),
                                 { addSuffix: true },
                               )}
                               color={colorClass}

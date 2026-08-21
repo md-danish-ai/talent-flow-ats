@@ -7,8 +7,22 @@ import { AttemptStatusLegend } from "@components/ui-elements/StatusLegend";
 
 export const dynamic = "force-dynamic";
 
-export default async function ResetStatusPage() {
+interface PageProps {
+  searchParams: Promise<{
+    date?: string;
+    date_from?: string;
+    date_to?: string;
+    label?: string;
+  }>;
+}
+
+export default async function ResetStatusPage({ searchParams }: PageProps) {
   const cookieStore = await cookies();
+  const params = await searchParams;
+
+  const date_from = params.date_from;
+  const date_to = params.date_to;
+  const initialLabel = params.label || "Today";
 
   // Forward the cookies string so the API client can pass auth header
   const cookieString = cookieStore
@@ -18,9 +32,17 @@ export default async function ResetStatusPage() {
 
   let initialData = null;
   try {
-    initialData = await getUsersByRole("user", {
+    const todayDate = new Date().toISOString().split("T")[0];
+
+    const fetchOptions = {
       cookies: cookieString,
-    });
+      date_from: date_from || (!date_to ? todayDate : undefined),
+      date_to: date_to || (!date_from ? todayDate : undefined),
+      page: 1,
+      limit: 10,
+    };
+
+    initialData = await getUsersByRole("user", fetchOptions);
   } catch (error) {
     console.error("Failed to fetch users:", error);
   }
@@ -31,7 +53,10 @@ export default async function ResetStatusPage() {
         title="Reset User Status"
         subtitle="Manage daily interview progress and application details for all candidates."
       />
-      <ResetUserListing initialData={initialData || undefined} />
+      <ResetUserListing
+        initialData={initialData || undefined}
+        initialLabel={initialLabel}
+      />
     </PageContainer>
   );
 }

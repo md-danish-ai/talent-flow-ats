@@ -20,6 +20,7 @@ import {
 } from "@lib/api/paper-assignments";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { formatDate } from "@lib/utils";
 
 interface RuleTableProps {
   rules: AutoAssignmentRuleResponse[];
@@ -137,14 +138,7 @@ export function RuleTable({
                         weight="bold"
                         className="text-slate-700 dark:text-slate-300 tracking-wide font-mono"
                       >
-                        {new Date(row.assigned_date).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}
+                        {formatDate(row.assigned_date)}
                       </Typography>
                     </div>
                   </TableCell>

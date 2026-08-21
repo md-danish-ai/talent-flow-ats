@@ -46,9 +46,11 @@ import { toast } from "@lib/toast";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { useSearchParams } from "next/navigation";
 
 interface ResetUserListingProps {
   initialData?: PaginatedResponse<UserListResponse>;
+  initialLabel?: string;
 }
 
 type UserListingFilters = {
@@ -59,7 +61,10 @@ type UserListingFilters = {
   date: { range?: { from?: string; to?: string }; label?: string } | null;
 };
 
-export function ResetUserListing({ initialData }: ResetUserListingProps) {
+export function ResetUserListing({
+  initialData,
+  initialLabel = "Today",
+}: ResetUserListingProps) {
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
     null,
   );
@@ -70,6 +75,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
   const [togglingStatusIds, setTogglingStatusIds] = useState<number[]>([]);
+
+  const searchParams = useSearchParams();
 
   const handleToggleStatus = async (userId: number, currentStatus: boolean) => {
     setTogglingStatusIds((prev) => [...prev, userId]);
@@ -108,7 +115,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
       department: "all",
       level: "all",
       status: "all",
-      date: { label: "All Time" },
+      date: { label: initialLabel },
     },
     initialData: initialData?.data,
     initialTotalItems: initialData?.pagination?.total_records,
@@ -117,12 +124,18 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
       let dateTo = f.date?.range?.to;
 
       if (!dateFrom && !dateTo) {
-        if (f.date?.label === "Today") {
+        if (
+          f.date?.label === "Today" ||
+          (!f.date?.label && !searchParams.get("date_from"))
+        ) {
           dateFrom = getTodayISODate();
           dateTo = getTodayISODate();
         } else if (f.date?.label === "Yesterday") {
           dateFrom = getYesterdayISODate();
           dateTo = getYesterdayISODate();
+        } else {
+          dateFrom = searchParams.get("date_from") || undefined;
+          dateTo = searchParams.get("date_to") || undefined;
         }
       }
 
@@ -244,9 +257,10 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                   size="sm"
                                 />
                                 {/* Status Dot Indicators */}
-                                {row.process_status === "submitted" ||
-                                row.is_interview_submitted ||
-                                row.assignment?.is_attempted ? (
+                                {row.is_interview_submitted ||
+                                row.assignment?.is_attempted ||
+                                (row.process_status === "submitted" &&
+                                  !row.assignment?.has_started) ? (
                                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-950 rounded-full shadow-sm" />
                                 ) : row.process_status === "inprogress" ||
                                   row.assignment?.has_started ? (
@@ -262,8 +276,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                               </div>
                               <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
-                                  <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                                    {row.username || "Unnamed Candidate"}
+                                  <span className="font-bold text-slate-950 dark:text-white tracking-tight text-[13px] whitespace-nowrap">
+                                    {row.username || "Unknown Candidate"}
                                   </span>
                                   {row.is_reinterview ? (
                                     <Badge
@@ -338,9 +352,10 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                           </TableCell>
                           <TableCell className="text-center align-middle py-3">
                             <div className="flex flex-col items-center justify-center gap-1">
-                              {row.process_status === "submitted" ||
-                              row.is_interview_submitted ||
-                              row.assignment?.is_attempted ? (
+                              {row.is_interview_submitted ||
+                              row.assignment?.is_attempted ||
+                              (row.process_status === "submitted" &&
+                                !row.assignment?.has_started) ? (
                                 <Badge
                                   color="success"
                                   variant="outline"
@@ -385,11 +400,13 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
                                 </Badge>
                               )}
                               <span className="text-[9px] text-slate-600 dark:text-slate-300 font-bold italic opacity-80 uppercase tracking-tighter">
-                                {row.process_status === "submitted" ||
-                                row.is_interview_submitted ||
-                                row.assignment?.is_attempted
+                                {row.is_interview_submitted ||
+                                row.assignment?.is_attempted ||
+                                (row.process_status === "submitted" &&
+                                  !row.assignment?.has_started)
                                   ? "Process complete"
-                                  : row.process_status === "inprogress"
+                                  : row.process_status === "inprogress" ||
+                                      row.assignment?.has_started
                                     ? "Attempt Active"
                                     : row.process_status === "ready"
                                       ? "Awaiting Login"

@@ -10,6 +10,7 @@ import { NotificationFormatter } from "./NotificationFormatter";
 
 import { markNotificationsRead } from "@lib/api";
 import { type NotificationItem } from "@types";
+import { formatDateTime } from "@lib/utils";
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -240,8 +241,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                             variant="body5"
                             className="text-muted-foreground/60"
                           >
-                            {new Date(notif.created_at).toLocaleDateString()}{" "}
-                            {new Date(notif.created_at).toLocaleTimeString()}
+                            {formatDateTime(notif.created_at)}
                           </Typography>
                         </div>
                       </div>

@@ -12,9 +12,16 @@ import {
 } from "@components/ui-elements/Table";
 import { Button } from "@components/ui-elements/Button";
 import { TableIconButton } from "@components/ui-elements/TableIconButton";
-import { Plus, Edit, Building2, UserCheck } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Building2,
+  UserCheck,
+  Calendar,
+  Clock,
+} from "lucide-react";
 import { toast } from "@lib/toast";
-import { cn } from "@lib/utils";
+import { cn, formatLongDate, formatTime } from "@lib/utils";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
 import { Pagination } from "@components/ui-elements/Pagination";
@@ -178,10 +185,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                         Requires Interview
                       </div>
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
                       Created At
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
                       Updated At
                     </TableHead>
                     <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
@@ -199,8 +206,8 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                         "font-semibold text-foreground",
                         "text-center",
                         "text-center",
-                        "text-muted-foreground text-sm",
-                        "text-muted-foreground text-sm",
+                        "whitespace-nowrap py-3",
+                        "whitespace-nowrap py-3",
                         "text-center w-[100px]",
                       ]}
                     />
@@ -263,33 +270,53 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                           </div>
                         </TableCell>
 
-                        <TableCell className="text-muted-foreground text-sm">
-                          {dept.created_at
-                            ? new Date(dept.created_at).toLocaleString(
-                                "en-GB",
-                                {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )
-                            : "-"}
+                        <TableCell className="align-middle py-3 whitespace-nowrap">
+                          {dept.created_at ? (
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-[13px]">
+                                <Calendar
+                                  size={12}
+                                  className="text-brand-primary shrink-0"
+                                />
+                                <span>{formatLongDate(dept.created_at)}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-medium pl-4 mt-0.5">
+                                <Clock
+                                  size={11}
+                                  className="text-muted-foreground/60 shrink-0"
+                                />
+                                <span>{formatTime(dept.created_at)}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground/60 text-xs font-medium">
+                              —
+                            </span>
+                          )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {dept.updated_at
-                            ? new Date(dept.updated_at).toLocaleString(
-                                "en-GB",
-                                {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )
-                            : "-"}
+                        <TableCell className="align-middle py-3 whitespace-nowrap">
+                          {dept.updated_at ? (
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 text-[13px]">
+                                <Calendar
+                                  size={12}
+                                  className="text-brand-primary shrink-0"
+                                />
+                                <span>{formatLongDate(dept.updated_at)}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-medium pl-4 mt-0.5">
+                                <Clock
+                                  size={11}
+                                  className="text-muted-foreground/60 shrink-0"
+                                />
+                                <span>{formatTime(dept.updated_at)}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground/60 text-xs font-medium">
+                              —
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">

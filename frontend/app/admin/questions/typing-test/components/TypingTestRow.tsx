@@ -8,6 +8,7 @@ import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@types";
 
 import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
+import { formatDate } from "@lib/utils";
 
 interface TypingTestRowProps {
   row: Question;
@@ -96,13 +97,7 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
       )}
       {visibleColumns.includes("createdDate") && (
         <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+          {row.created_at ? formatDate(row.created_at) : "N/A"}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (

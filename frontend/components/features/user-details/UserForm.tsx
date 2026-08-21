@@ -23,6 +23,7 @@ import { zodValidator } from "@tanstack/zod-form-adapter";
 import {
   personalDetailsSchema,
   type PersonalDetailsFormValues,
+  type PersonalDetailsForm,
   type FamilyMember,
   type Education,
   type WorkExperience,
@@ -85,33 +86,27 @@ const STEP_CONTENT = [
   },
 ];
 
-const sanitizeStr = (val: unknown, fallback = ""): string => {
-  if (val === null || val === undefined) return fallback;
-  const s = String(val).trim();
-  return s || fallback;
-};
-
-const sanitizeBool = (val: unknown, fallback = false): boolean => {
-  if (typeof val === "boolean") return val;
-  if (typeof val === "string") {
-    const s = val.trim().toLowerCase();
-    if (s === "yes" || s === "true" || s === "1") return true;
-    if (s === "no" || s === "false" || s === "0") return false;
-  }
-  return fallback;
-};
+import {
+  normalizeWhitespace,
+  normalizeProperCase,
+  parseBoolean,
+  normalizeMobile,
+  normalizeEmail,
+  normalizePan,
+  normalizeAadhaar,
+} from "@lib/utils";
 
 const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
   const sanitized = (familyArr || []).map((m) => {
     const member = m as Record<string, unknown>;
-    const depStr = sanitizeStr(member.dependent);
+    const depStr = normalizeWhitespace(member.dependent);
     return {
       ...member,
-      relation: sanitizeStr(member.relation),
-      name: sanitizeStr(member.name),
-      occupation: sanitizeStr(member.occupation),
+      relation: normalizeWhitespace(member.relation),
+      name: normalizeProperCase(member.name),
+      occupation: normalizeProperCase(member.occupation),
       dependent: depStr || "No",
-      contactNo: sanitizeStr(member.contactNo),
+      contactNo: normalizeWhitespace(member.contactNo),
     };
   }) as FamilyMember[];
 
@@ -133,12 +128,12 @@ const sanitizeFamily = (familyArr: unknown[]): FamilyMember[] => {
 const sanitizeEducation = (arr: unknown[]): Education[] => {
   const sanitized = (arr || []).map((e) => {
     const item = e as Record<string, unknown>;
-    let startYear = sanitizeStr(item.startYear);
-    let endYear = sanitizeStr(item.endYear);
+    let startYear = normalizeWhitespace(item.startYear);
+    let endYear = normalizeWhitespace(item.endYear);
     let isPursuing = Boolean(item.isPursuing);
 
     // Fallback: parse from 'year' if missing or contains Pursuing
-    const yearStr = sanitizeStr(item.year);
+    const yearStr = normalizeWhitespace(item.year);
     if (yearStr) {
       if (yearStr.toLowerCase().includes("pursuing")) {
         isPursuing = true;
@@ -161,15 +156,15 @@ const sanitizeEducation = (arr: unknown[]): Education[] => {
 
     return {
       ...item,
-      type: sanitizeStr(item.type),
-      school: sanitizeStr(item.school),
-      board: sanitizeStr(item.board),
+      type: normalizeWhitespace(item.type),
+      school: normalizeProperCase(item.school),
+      board: normalizeProperCase(item.board),
       startYear,
       endYear: isPursuing ? "" : endYear,
-      division: sanitizeStr(item.division),
-      percentage: sanitizeStr(item.percentage),
-      medium: sanitizeStr(item.medium),
-      details: sanitizeStr(item.details),
+      division: normalizeWhitespace(item.division),
+      percentage: normalizeWhitespace(item.percentage),
+      medium: normalizeWhitespace(item.medium),
+      details: normalizeProperCase(item.details),
       isPursuing,
     };
   }) as Education[];
@@ -247,13 +242,14 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
   }
   const isFresherRecord =
     arr.length === 1 &&
-    sanitizeStr((arr[0] as Record<string, unknown>).company).toLowerCase() ===
-      "fresher";
+    normalizeWhitespace(
+      (arr[0] as Record<string, unknown>).company,
+    ).toLowerCase() === "fresher";
 
   return arr.map((i, index) => {
     const item = i as Record<string, unknown>;
-    const companyStr = sanitizeStr(item.company);
-    const relieveDateStr = sanitizeStr(item.relieveDate);
+    const companyStr = normalizeWhitespace(item.company);
+    const relieveDateStr = normalizeWhitespace(item.relieveDate);
     const isLastCompany = index === arr.length - 1;
     const isPresent =
       Boolean(item.isPresent) ||
@@ -265,14 +261,18 @@ const sanitizeWorkExp = (arr: unknown[]): WorkExperience[] => {
     return {
       ...item,
       id: Number(item.id) || index + 1,
-      company: companyStr || (index === 0 ? "Fresher" : ""),
-      employmentType: sanitizeStr(item.employmentType),
-      designation: sanitizeStr(item.designation),
-      joinDate: sanitizeStr(item.joinDate),
+      company: companyStr
+        ? normalizeProperCase(companyStr)
+        : index === 0
+          ? "Fresher"
+          : "",
+      employmentType: normalizeWhitespace(item.employmentType),
+      designation: normalizeProperCase(item.designation),
+      joinDate: normalizeWhitespace(item.joinDate),
       relieveDate:
         relieveDateStr.toLowerCase() === "present" ? "" : relieveDateStr,
-      reason: sanitizeStr(item.reason),
-      salary: sanitizeStr(item.salary),
+      reason: normalizeProperCase(item.reason),
+      salary: normalizeWhitespace(item.salary),
       isPresent,
     };
   }) as WorkExperience[];
@@ -396,10 +396,10 @@ export function UserForm({
           }
           return defaultFamily;
         })(),
-        interviewedBefore: sanitizeBool(
+        interviewedBefore: parseBoolean(
           details.sourceOfInformation?.interviewedBefore,
         ),
-        workedBefore: sanitizeBool(details.sourceOfInformation?.workedBefore),
+        workedBefore: parseBoolean(details.sourceOfInformation?.workedBefore),
         source: {
           campus: Boolean(details.sourceOfInformation?.source?.campus),
           website: Boolean(details.sourceOfInformation?.source?.website),
@@ -444,85 +444,110 @@ export function UserForm({
         is_interview_submitted:
           existingDetails?.is_interview_submitted ?? false,
         personalDetails: {
-          firstName: value.firstName,
-          lastName: value.lastName,
-          gender: value.gender,
-          dob: value.dob,
-          primaryMobile: value.primaryMobile,
-          alternateMobile: value.alternateMobile,
-          email: value.email || null,
-          presentAddressLine1: value.presentAddressLine1,
-          presentAddressLine2: value.presentAddressLine2,
-          presentState: value.presentState,
-          presentDistrict: value.presentDistrict,
-          presentCity: value.presentCity,
-          presentPincode: value.presentPincode,
+          firstName: normalizeProperCase(value.firstName),
+          lastName: normalizeProperCase(value.lastName),
+          gender: normalizeWhitespace(value.gender),
+          dob: normalizeWhitespace(value.dob),
+          primaryMobile: normalizeMobile(value.primaryMobile),
+          alternateMobile: normalizeMobile(value.alternateMobile),
+          email: normalizeEmail(value.email) || null,
+          presentAddressLine1: normalizeProperCase(value.presentAddressLine1),
+          presentAddressLine2: normalizeProperCase(value.presentAddressLine2),
+          presentState: normalizeWhitespace(value.presentState),
+          presentDistrict: normalizeWhitespace(value.presentDistrict),
+          presentCity: normalizeProperCase(value.presentCity),
+          presentPincode: normalizeWhitespace(value.presentPincode),
           permanentAddressLine1: value.sameAddress
-            ? value.presentAddressLine1
-            : value.permanentAddressLine1,
+            ? normalizeProperCase(value.presentAddressLine1)
+            : normalizeProperCase(value.permanentAddressLine1),
           permanentAddressLine2: value.sameAddress
-            ? value.presentAddressLine2
-            : value.permanentAddressLine2,
+            ? normalizeProperCase(value.presentAddressLine2)
+            : normalizeProperCase(value.permanentAddressLine2),
           permanentState: value.sameAddress
-            ? value.presentState
-            : value.permanentState,
+            ? normalizeWhitespace(value.presentState)
+            : normalizeWhitespace(value.permanentState),
           permanentDistrict: value.sameAddress
-            ? value.presentDistrict
-            : value.permanentDistrict,
+            ? normalizeWhitespace(value.presentDistrict)
+            : normalizeWhitespace(value.permanentDistrict),
           permanentCity: value.sameAddress
-            ? value.presentCity
-            : value.permanentCity,
+            ? normalizeProperCase(value.presentCity)
+            : normalizeProperCase(value.permanentCity),
           permanentPincode: value.sameAddress
-            ? value.presentPincode
-            : value.permanentPincode,
-          sameAddress: value.sameAddress,
+            ? normalizeWhitespace(value.presentPincode)
+            : normalizeWhitespace(value.permanentPincode),
+          sameAddress: Boolean(value.sameAddress),
         },
         additionalPersonalDetails: {
-          bloodGroup: value.bloodGroup,
-          aadhaarNo: value.aadhaarNo,
-          nameAsPerAadhaar: value.nameAsPerAadhaar,
-          panNo: value.panNo,
-          nameAsPerPan: value.nameAsPerPan,
-          religion: value.religion,
-          category: value.category,
-          maritalStatus: value.maritalStatus,
-          anniversaryDate: value.anniversaryDate,
+          bloodGroup: normalizeWhitespace(value.bloodGroup),
+          aadhaarNo: normalizeAadhaar(value.aadhaarNo),
+          nameAsPerAadhaar: normalizeProperCase(value.nameAsPerAadhaar),
+          panNo: normalizePan(value.panNo),
+          nameAsPerPan: normalizeProperCase(value.nameAsPerPan),
+          religion: normalizeWhitespace(value.religion),
+          category: normalizeWhitespace(value.category),
+          maritalStatus: normalizeWhitespace(value.maritalStatus),
+          anniversaryDate: normalizeWhitespace(value.anniversaryDate),
         },
-        familyDetails: value.family,
-        sourceOfInformation: {
-          interviewedBefore: value.interviewedBefore,
-          workedBefore: value.workedBefore,
-          source: value.source,
-        },
-        educationDetails: value.education.map((edu, index) => ({
-          id: edu.id ?? index + 1,
-          type: edu.type,
-          school: edu.school,
-          board: edu.board,
-          year: edu.isPursuing
-            ? edu.startYear
-              ? `${edu.startYear}-Pursuing`
-              : "Pursuing"
-            : `${edu.startYear}-${edu.endYear}`,
-          division: edu.division,
-          percentage: edu.percentage,
-          medium: edu.medium,
-          details: edu.details,
-          isPursuing: Boolean(edu.isPursuing),
+        familyDetails: value.family.map((fam) => ({
+          ...fam,
+          relation: normalizeWhitespace(fam.relation),
+          relationLabel: normalizeWhitespace(fam.relationLabel),
+          name: normalizeProperCase(fam.name),
+          occupation: normalizeProperCase(fam.occupation),
+          dependent: normalizeWhitespace(fam.dependent) || "No",
+          contactNo: normalizeWhitespace(fam.contactNo),
         })),
+        sourceOfInformation: {
+          interviewedBefore: parseBoolean(value.interviewedBefore),
+          workedBefore: parseBoolean(value.workedBefore),
+          source: {
+            ...value.source,
+            otherDetails: normalizeProperCase(value.source?.otherDetails),
+          },
+        },
+        educationDetails: value.education.map((edu, index) => {
+          const startYear = normalizeWhitespace(edu.startYear);
+          const endYear = normalizeWhitespace(edu.endYear);
+          const isPursuing = Boolean(edu.isPursuing);
+          return {
+            id: edu.id ?? index + 1,
+            type: normalizeWhitespace(edu.type),
+            school: normalizeProperCase(edu.school),
+            board: normalizeProperCase(edu.board),
+            year: isPursuing
+              ? startYear
+                ? `${startYear}-Pursuing`
+                : "Pursuing"
+              : `${startYear}-${endYear}`,
+            division: normalizeWhitespace(edu.division),
+            percentage: normalizeWhitespace(edu.percentage),
+            medium: normalizeWhitespace(edu.medium),
+            details: normalizeProperCase(edu.details),
+            isPursuing,
+          };
+        }),
         workExperienceDetails: value.workExp.map((exp, index) => ({
           ...exp,
           id: exp.id ?? index + 1,
+          company: normalizeProperCase(exp.company),
+          employmentType: normalizeWhitespace(exp.employmentType),
+          designation: normalizeProperCase(exp.designation),
+          joinDate: normalizeWhitespace(exp.joinDate),
+          relieveDate: normalizeWhitespace(exp.relieveDate),
+          reason: normalizeProperCase(exp.reason),
+          salary: normalizeWhitespace(exp.salary),
           isPresent: Boolean(exp.isPresent),
         })),
         otherDetails: {
-          serviceCommitment: value.serviceCommitment,
-          securityDeposit: value.securityDeposit,
-          shiftTime: value.shiftTime,
-          expectedJoiningDate: value.expectedJoiningDate,
-          expectedSalary: value.expectedSalary,
+          serviceCommitment: normalizeWhitespace(value.serviceCommitment),
+          securityDeposit: normalizeWhitespace(value.securityDeposit),
+          shiftTime: normalizeWhitespace(value.shiftTime),
+          expectedJoiningDate: normalizeProperCase(value.expectedJoiningDate),
+          expectedSalary: normalizeWhitespace(value.expectedSalary),
         },
-        emergency_contact_relation: value.emergencyContactRelation,
+        emergency_contact_relation: normalizeWhitespace(
+          value.emergencyContactRelation,
+        ),
       };
 
       if (existingDetails) {
@@ -601,7 +626,8 @@ export function UserForm({
           const currentFamily = form.getFieldValue("family") || [];
           if (
             !currentFamily.some(
-              (f) => f.relation?.toUpperCase() === assignedCode.toUpperCase(),
+              (f: FamilyMember) =>
+                f.relation?.toUpperCase() === assignedCode.toUpperCase(),
             )
           ) {
             form.pushFieldValue("family", {
@@ -684,7 +710,8 @@ export function UserForm({
           if (
             emergencyCode &&
             !defaultFamily.some(
-              (f) => f.relation?.toUpperCase() === emergencyCode.toUpperCase(),
+              (f: FamilyMember) =>
+                f.relation?.toUpperCase() === emergencyCode.toUpperCase(),
             )
           ) {
             defaultFamily.push({
@@ -701,10 +728,10 @@ export function UserForm({
           }
           return defaultFamily;
         })(),
-        interviewedBefore: sanitizeBool(
+        interviewedBefore: parseBoolean(
           details.sourceOfInformation?.interviewedBefore,
         ),
-        workedBefore: sanitizeBool(details.sourceOfInformation?.workedBefore),
+        workedBefore: parseBoolean(details.sourceOfInformation?.workedBefore),
         source: mappedSource,
         education:
           details.educationDetails?.length > 0
@@ -963,28 +990,46 @@ export function UserForm({
                 {currentStep === 1 && (
                   <PersonalDetailsStep
                     key="step1"
-                    form={form}
+                    form={form as unknown as PersonalDetailsForm}
                     registeredMobile={registeredMobile}
                     registeredEmail={registeredEmail}
                   />
                 )}
                 {currentStep === 2 && (
-                  <PersonalDetailsPart2Step key="step2" form={form} />
+                  <PersonalDetailsPart2Step
+                    key="step2"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
                 {currentStep === 3 && (
-                  <FamilyDetailsStep key="step3" form={form} />
+                  <FamilyDetailsStep
+                    key="step3"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
                 {currentStep === 4 && (
-                  <SourceOfInformationStep key="step4" form={form} />
+                  <SourceOfInformationStep
+                    key="step4"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
                 {currentStep === 5 && (
-                  <EducationDetailsStep key="step5" form={form} />
+                  <EducationDetailsStep
+                    key="step5"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
                 {currentStep === 6 && (
-                  <WorkExperienceStep key="step6" form={form} />
+                  <WorkExperienceStep
+                    key="step6"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
                 {currentStep === 7 && (
-                  <OtherDetailsStep key="step7" form={form} />
+                  <OtherDetailsStep
+                    key="step7"
+                    form={form as unknown as PersonalDetailsForm}
+                  />
                 )}
               </AnimatePresence>
             </div>

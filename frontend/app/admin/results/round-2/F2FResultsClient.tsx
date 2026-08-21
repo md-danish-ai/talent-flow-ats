@@ -189,7 +189,7 @@ export default function F2FResultsClient() {
                               size="sm"
                             />
                             <div className="flex flex-col">
-                              <span className="font-bold text-[13px] uppercase tracking-tight">
+                              <span className="font-bold text-[13px] tracking-tight">
                                 {item.candidate_name}
                               </span>
                               <span className="text-[11px] text-muted-foreground flex items-center gap-1">
