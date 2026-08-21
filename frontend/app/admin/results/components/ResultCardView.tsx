@@ -12,7 +12,7 @@ import {
 import { Badge } from "@components/ui-elements/Badge";
 import { ResultCard } from "@components/ui-cards/ResultCard";
 import { type AdminUserResultListItem } from "@types";
-import { getGradeConfig } from "@lib/utils";
+import { getGradeConfig, formatLongDate } from "@lib/utils";
 
 interface ResultCardViewProps {
   items: AdminUserResultListItem[];
@@ -61,11 +61,7 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                           size={13}
                           className="text-brand-primary/60"
                         />
-                        {new Date(interviewDate).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {formatLongDate(interviewDate)}
                       </div>
                     </>
                   )}

@@ -1,12 +1,13 @@
 import React from "react";
 import { type MatchDetails } from "@types";
+import { formatDate } from "@lib/utils";
 
 interface DuplicateUserCardsProps {
   matchDetails: MatchDetails;
 }
 
 const getDateStr = (val: string | undefined | null) => {
-  return val ? new Date(val).toLocaleDateString() : "-";
+  return formatDate(val, "-");
 };
 
 export const DuplicateUserCards: React.FC<DuplicateUserCardsProps> = ({
