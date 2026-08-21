@@ -16,9 +16,14 @@ from app.reports.html_template import REPORT_HTML_TEMPLATE
 from app.reports.report_builder import _fmt_date
 
 
+def _sanitize(s: str) -> str:
+    """Remove characters that xhtml2pdf (latin-1) cannot encode (e.g. U+FFFC Object Replacement Character)."""
+    return "".join(ch for ch in s if ord(ch) < 256)
+
+
 def _esc(val: Any) -> str:
-    """HTML-escape a value safely."""
-    s = str(val or "")
+    """HTML-escape a value safely, stripping non-latin-1 characters."""
+    s = _sanitize(str(val or ""))
     return (
         s.replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -31,14 +36,14 @@ def _edu_rows_html(rows: list[dict]) -> str:
     if rows:
         return "".join(
             f"""<tr>
-              <td style="width: 13%;">{_esc(r.get("education", ""))}</td>
-              <td style="width: 13%;">{_esc(r.get("details", ""))}</td>
-              <td style="width: 18%;">{_esc(r.get("school", ""))}</td>
-              <td style="width: 15%; text-align: center;">{_esc(r.get("board", ""))}</td>
-              <td style="width: 8%; text-align: center;">{_esc(r.get("medium", ""))}</td>
-              <td style="width: 13%; text-align: center;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
-              <td style="width: 10%; text-align: center;">{_esc(r.get("division", ""))}</td>
-              <td style="width: 10%; text-align: center;">{_esc(r.get("percentage", ""))}</td>
+              <td style="width: 13%; word-wrap: break-word;">{_esc(r.get("education", ""))}</td>
+              <td style="width: 13%; word-wrap: break-word;">{_esc(r.get("details", ""))}</td>
+              <td style="width: 18%; word-wrap: break-word; overflow-wrap: break-word;">{_esc(r.get("school", ""))}</td>
+              <td style="width: 15%; text-align: center; word-wrap: break-word;">{_esc(r.get("board", ""))}</td>
+              <td style="width: 8%; text-align: center; word-wrap: break-word;">{_esc(r.get("medium", ""))}</td>
+              <td style="width: 13%; text-align: center; word-wrap: break-word;">{_esc(str(r.get("year", "")).replace(" ", "").replace("-", " - "))}</td>
+              <td style="width: 10%; text-align: center; word-wrap: break-word;">{_esc(r.get("division", ""))}</td>
+              <td style="width: 10%; text-align: center; word-wrap: break-word;">{_esc(r.get("percentage", ""))}</td>
             </tr>"""
             for r in rows
         )
@@ -197,8 +202,10 @@ def build_report_html(data: dict) -> str:
 
 def generate_report_pdf(html: str) -> bytes:
     """Convert HTML string to PDF bytes using xhtml2pdf."""
+    # xhtml2pdf processes HTML as latin-1 internally; ensure the string is clean.
+    safe_html = _sanitize(html)
     buffer = io.BytesIO()
-    result = pisa.CreatePDF(html, dest=buffer)
+    result = pisa.CreatePDF(safe_html, dest=buffer)
     if result.err:
         raise RuntimeError(f"xhtml2pdf error: {result.err}")
     return buffer.getvalue()

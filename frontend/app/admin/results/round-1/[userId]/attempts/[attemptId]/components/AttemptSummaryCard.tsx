@@ -57,8 +57,9 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
 }) => {
   const calculateDuration = (start: string, end?: string | null) => {
     if (!start || !end) return "N/A";
-    const s = parseUTCDate(start).getTime();
-    const e = parseUTCDate(end).getTime();
+    const s = parseUTCDate(start)?.getTime();
+    const e = parseUTCDate(end)?.getTime();
+    if (!s || !e) return "N/A";
     const diff = Math.max(0, e - s);
     const mins = Math.floor(diff / 60000);
     const secs = Math.floor((diff % 60000) / 1000);

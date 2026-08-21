@@ -134,8 +134,7 @@ export const NotificationRow = React.memo<NotificationRowProps>(
         )}
         <TableCell>
           <Typography variant="body5" className="text-muted-foreground">
-            {formatDateShort(parseUTCDate(notif.created_at))}{" "}
-            {formatTime(parseUTCDate(notif.created_at))}
+            {formatDateShort(notif.created_at)} {formatTime(notif.created_at)}
           </Typography>
         </TableCell>
         <TableCell>

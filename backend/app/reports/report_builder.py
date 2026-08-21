@@ -31,6 +31,20 @@ from app.utils.education_utils import (
 # ---------------------------------------------------------------------------
 
 
+def _to_title_case(val: Any) -> str:
+    """Capitalize each word properly while handling hyphens, slashes, and spaces."""
+    if not val:
+        return ""
+    s = str(val).strip()
+    if not s:
+        return ""
+    import re
+
+    return re.sub(
+        r"(?:^|[\s\-/.([{'\"`])([a-z])", lambda m: m.group(0).upper(), s.lower()
+    )
+
+
 def _get_answer(answers: list[dict], keywords: list[str]) -> str:
     """Return the user_answer of the first answer whose question_text contains any keyword."""
     for ans in answers:
@@ -221,7 +235,14 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         dob = _fmt_date(pd_info.get("dob")) or dob
 
         def _build_addr(l1, l2, c, d, s, p):
-            parts = [l1, l2, c, d, s, p]
+            parts = [
+                _to_title_case(l1),
+                _to_title_case(l2),
+                _to_title_case(c),
+                str(d or "").strip(),
+                str(s or "").strip(),
+                str(p or "").strip(),
+            ]
             return ", ".join(
                 filter(None, [str(x).strip() for x in parts if x and str(x).strip()])
             )
@@ -299,7 +320,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
 
             if src_val.get("others") or src_val.get("other"):
                 if other_text:
-                    sources.append(f"Others - {other_text}")
+                    sources.append(f"Others - {_to_title_case(other_text)}")
                 else:
                     sources.append("Others")
         elif isinstance(src_val, str) and src_val:
@@ -320,7 +341,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             "friends": bool(raw_src.get("friends")),
             "newspaper": bool(raw_src.get("newspaper")),
             "others": bool(raw_src.get("others")),
-            "otherDetails": other_text_for_pdf,
+            "otherDetails": _to_title_case(other_text_for_pdf),
         }
 
         # Tables
@@ -329,11 +350,15 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
             education_rows = [
                 {
                     "education": item.get("type", "") if isinstance(item, dict) else "",
-                    "details": item.get("details", "")
+                    "details": _to_title_case(item.get("details", ""))
                     if isinstance(item, dict)
                     else "",
-                    "school": item.get("school", "") if isinstance(item, dict) else "",
-                    "board": item.get("board", "") if isinstance(item, dict) else "",
+                    "school": _to_title_case(item.get("school", ""))
+                    if isinstance(item, dict)
+                    else "",
+                    "board": _to_title_case(item.get("board", ""))
+                    if isinstance(item, dict)
+                    else "",
                     "medium": item.get("medium", "") if isinstance(item, dict) else "",
                     "year": str(
                         item.get("year", "") if isinstance(item, dict) else ""
@@ -370,8 +395,8 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                 family_rows.append(
                     {
                         "relation": relation_label,
-                        "name": item.get("name", ""),
-                        "occupation": item.get("occupation", ""),
+                        "name": _to_title_case(item.get("name", "")),
+                        "occupation": _to_title_case(item.get("occupation", "")),
                         "dependent": item.get("dependent", ""),
                     }
                 )
@@ -380,10 +405,10 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         if work_list:
             work_exp_rows = [
                 {
-                    "company": item.get("company", "")
+                    "company": _to_title_case(item.get("company", ""))
                     if isinstance(item, dict)
                     else "",
-                    "designation": item.get("designation", "")
+                    "designation": _to_title_case(item.get("designation", ""))
                     if isinstance(item, dict)
                     else "",
                     "joinDate": _fmt_date(item.get("joinDate", ""))
@@ -394,7 +419,9 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
                     )
                     if isinstance(item, dict)
                     else "",
-                    "reason": item.get("reason", "") if isinstance(item, dict) else "",
+                    "reason": _to_title_case(item.get("reason", ""))
+                    if isinstance(item, dict)
+                    else "",
                     "salary": item.get("salary", "") if isinstance(item, dict) else "",
                 }
                 for item in work_list
@@ -518,7 +545,7 @@ def build_report_data(db: Session, user_id: int, attempt_id: int) -> dict:
         # Meta
         "today": today_str,
         # User
-        "username": user_info.get("username", ""),
+        "username": _to_title_case(user_info.get("username", "")),
         "mobile": user_info.get("mobile", ""),
         "email": user_info.get("email", "") or "",
         # Attempt

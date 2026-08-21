@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { DUMMY_SECTIONS, OVERALL_EXAM_DURATION_MINUTES } from "./data";
 import {
   buildSavedAnswersMap,
   getResumePosition,
@@ -29,15 +28,13 @@ import type { InterviewQuestion, InterviewSection } from "./types";
 
 export function InterviewTestClient() {
   const { data: currentUser } = useMe();
-  const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
-  const [loadedSections, setLoadedSections] =
-    useState<InterviewSection[]>(DUMMY_SECTIONS);
+  const [sections, setSections] = useState<InterviewSection[]>([]);
+  const [loadedSections, setLoadedSections] = useState<InterviewSection[]>([]);
   const [assignedPaper, setAssignedPaper] =
     useState<AssignedInterviewPaperResponse | null>(null);
   const [isLoadingPaper, setIsLoadingPaper] = useState(true);
-  const [overallExamDurationMinutes, setOverallExamDurationMinutes] = useState(
-    OVERALL_EXAM_DURATION_MINUTES,
-  );
+  const [overallExamDurationMinutes, setOverallExamDurationMinutes] =
+    useState(0);
   const totalSections = sections.length;
   const emptyLockedSections = useMemo(
     () => sections.map(() => false),
@@ -58,9 +55,7 @@ export function InterviewTestClient() {
     useState(false);
   const [lockedSections, setLockedSections] =
     useState<boolean[]>(emptyLockedSections);
-  const [, setExamRemainingSeconds] = useState(
-    OVERALL_EXAM_DURATION_MINUTES * 60,
-  );
+  const [, setExamRemainingSeconds] = useState(0);
   const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
   const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] =
     useState(0);
@@ -76,21 +71,26 @@ export function InterviewTestClient() {
     hasStarted && !isCompleted ? currentUser || null : null,
   );
 
-  const currentSection = sections[sectionIndex] ?? sections[0];
+  const currentSection = sections[sectionIndex] ?? sections[0] ?? null;
   const currentQuestion =
-    currentSection?.questions[questionIndex] ?? currentSection?.questions[0];
+    currentSection?.questions?.[questionIndex] ??
+    currentSection?.questions?.[0] ??
+    null;
   const currentAnswer = currentQuestion
     ? answers[currentQuestion.id] || ""
     : "";
 
   const totalQuestions = useMemo(
     () =>
-      sections.reduce((total, section) => total + section.questions.length, 0),
+      sections.reduce(
+        (total, section) => total + (section.questions?.length || 0),
+        0,
+      ),
     [sections],
   );
 
   const allQuestions = useMemo(
-    () => sections.flatMap((section) => section.questions),
+    () => sections.flatMap((section) => section.questions || []),
     [sections],
   );
 
@@ -107,7 +107,7 @@ export function InterviewTestClient() {
 
   const completedBeforeCurrentSection = sections
     .slice(0, sectionIndex)
-    .reduce((sum, section) => sum + section.questions.length, 0);
+    .reduce((sum, section) => sum + (section.questions?.length || 0), 0);
 
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
   const progressPercent = Math.min(
@@ -130,8 +130,10 @@ export function InterviewTestClient() {
         ? "warn"
         : "safe";
 
-  const isLastQuestionInSection =
-    questionIndex === currentSection.questions.length - 1;
+  const isLastQuestionInSection = Boolean(
+    currentSection?.questions?.length &&
+    questionIndex === currentSection.questions.length - 1,
+  );
   const isLastSection = useMemo(() => {
     // A section is effectively the last one if no future sections are available (unlocked)
     for (let i = sectionIndex + 1; i < sections.length; i++) {
@@ -194,10 +196,14 @@ export function InterviewTestClient() {
                 })),
               }),
             );
+            const dynamicTotalMinutes = mappedSections.reduce(
+              (sum, sec) => sum + (sec.durationMinutes || 0),
+              0,
+            );
             const resolvedDuration =
               response.overall_duration_minutes > 0
                 ? response.overall_duration_minutes
-                : OVERALL_EXAM_DURATION_MINUTES;
+                : dynamicTotalMinutes;
 
             setAssignedPaper(response);
             setLoadedSections(mappedSections);
@@ -252,11 +258,11 @@ export function InterviewTestClient() {
         setStartError(null);
       } catch {
         setAssignedPaper(null);
-        setLoadedSections(DUMMY_SECTIONS);
-        setSections(DUMMY_SECTIONS);
-        setLockedSections(DUMMY_SECTIONS.map(() => false));
-        setOverallExamDurationMinutes(OVERALL_EXAM_DURATION_MINUTES);
-        setExamRemainingSeconds(OVERALL_EXAM_DURATION_MINUTES * 60);
+        setLoadedSections([]);
+        setSections([]);
+        setLockedSections([]);
+        setOverallExamDurationMinutes(0);
+        setExamRemainingSeconds(0);
         setStartError("No paper is assigned for today. Please contact admin.");
       } finally {
         setIsLoadingPaper(false);
@@ -396,7 +402,7 @@ export function InterviewTestClient() {
 
       // Find the next section that is NOT locked
       let nextUnlockedIndex = -1;
-      for (let i = currentIndex + 1; i < totalSections; i++) {
+      for (let i = currentIndex + 1; i < sections.length; i++) {
         if (!lockedSections[i]) {
           nextUnlockedIndex = i;
           break;
@@ -445,7 +451,7 @@ export function InterviewTestClient() {
       attemptId,
       currentSection,
       lockedSections,
-      totalSections,
+      sections,
       finalizeInterview,
       persistSubjectAnswers,
     ],
@@ -514,7 +520,7 @@ export function InterviewTestClient() {
       await new Promise((resolve) => setTimeout(resolve, jitterMs));
       lockAndMoveToNextSection(
         sectionIndex,
-        `Time is up for ${currentSection.title}. Section auto-locked.`,
+        `Time is up for ${currentSection?.title || "section"}. Section auto-locked.`,
       );
     };
 
@@ -689,16 +695,20 @@ export function InterviewTestClient() {
           : null,
       );
 
-      // Handle server-synced timer resumption
+      // Handle server-synced timer
+      const totalDurationMinutes =
+        startResponse.total_duration_minutes &&
+        startResponse.total_duration_minutes > 0
+          ? startResponse.total_duration_minutes
+          : overallExamDurationMinutes;
+
       if (startResponse.is_resumed && startResponse.started_at) {
         const startedAt = new Date(startResponse.started_at);
         const now = new Date();
         const secondsElapsed = Math.floor(
           (now.getTime() - startedAt.getTime()) / 1000,
         );
-        const totalDurationSeconds =
-          (startResponse.total_duration_minutes ?? overallExamDurationMinutes) *
-          60;
+        const totalDurationSeconds = totalDurationMinutes * 60;
         const remainingSeconds = Math.max(
           0,
           totalDurationSeconds - secondsElapsed,
@@ -709,6 +719,8 @@ export function InterviewTestClient() {
         if (remainingSeconds <= 0) {
           void handleOverallTimeOver();
         }
+      } else if (totalDurationMinutes > 0) {
+        setExamRemainingSeconds(totalDurationMinutes * 60);
       }
 
       setHasStarted(true);
@@ -756,6 +768,14 @@ export function InterviewTestClient() {
             void handleStartInterview();
           }}
         />
+      </PageContainer>
+    );
+  }
+
+  if (!currentSection || !currentQuestion) {
+    return (
+      <PageContainer>
+        <InterviewOverviewSkeleton />
       </PageContainer>
     );
   }

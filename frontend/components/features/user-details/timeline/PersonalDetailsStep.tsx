@@ -312,12 +312,16 @@ export function PersonalDetailsStep({
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
                     Address Line 1 <span className="text-red-500">*</span>
+                    <span className="text-xs font-normal text-muted-foreground/80 block mt-0.5">
+                      (Flat No., House No., Building Name, Street — Do not add
+                      State, City, District, or Pincode)
+                    </span>
                   </label>
                   <Input
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Enter address line 1"
+                    placeholder="Flat No., House No., Building Name, Street"
                     error={
                       field.state.meta.isTouched &&
                       field.state.meta.errors.length > 0
@@ -337,17 +341,32 @@ export function PersonalDetailsStep({
               {(field) => (
                 <div>
                   <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                    Address Line 2
+                    Address Line 2{" "}
+                    <span className="text-xs font-normal text-muted-foreground/80">
+                      (Optional)
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground/80 block mt-0.5">
+                      (Area, Landmark, Sector, Colony — Do not add State, City,
+                      District, or Pincode)
+                    </span>
                   </label>
                   <Input
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Enter address line 2"
+                    placeholder="Area, Landmark, Sector"
                   />
                 </div>
               )}
             </form.Field>
+
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              <span className="font-semibold">Note:</span> Please do not include
+              State, City, District, or Pincode in{" "}
+              <strong>Address Line 1</strong> and{" "}
+              <strong>Address Line 2</strong>. Fill them in their respective
+              fields below.
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <form.Field name="presentState">
@@ -487,12 +506,16 @@ export function PersonalDetailsStep({
                       <div>
                         <label className="text-sm font-semibold text-muted-foreground mb-1 block">
                           Address Line 1
+                          <span className="text-xs font-normal text-muted-foreground/80 block mt-0.5">
+                            (Flat No., House No., Building Name, Street — Do not
+                            add State, City, District, or Pincode)
+                          </span>
                         </label>
                         <Input
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="Enter address line 1"
+                          placeholder="Flat No., House No., Building Name, Street"
                           error={
                             field.state.meta.isTouched &&
                             field.state.meta.errors.length > 0
@@ -512,17 +535,32 @@ export function PersonalDetailsStep({
                     {(field) => (
                       <div>
                         <label className="text-sm font-semibold text-muted-foreground mb-1 block">
-                          Address Line 2
+                          Address Line 2{" "}
+                          <span className="text-xs font-normal text-muted-foreground/80">
+                            (Optional)
+                          </span>
+                          <span className="text-xs font-normal text-muted-foreground/80 block mt-0.5">
+                            (Area, Landmark, Sector, Colony — Do not add State,
+                            City, District, or Pincode)
+                          </span>
                         </label>
                         <Input
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder="Enter address line 2"
+                          placeholder="Area, Landmark, Sector"
                         />
                       </div>
                     )}
                   </form.Field>
+
+                  <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                    <span className="font-semibold">Note:</span> Please do not
+                    include State, City, District, or Pincode in{" "}
+                    <strong>Address Line 1</strong> and{" "}
+                    <strong>Address Line 2</strong>. Fill them in their
+                    respective fields below.
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <form.Field name="permanentState">

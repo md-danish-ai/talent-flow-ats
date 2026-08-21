@@ -171,14 +171,23 @@ export function useListing<
   }, [fetchItems]);
 
   const handleFilterChange = useCallback((newFilters: Partial<F>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-    setCurrentPage(1);
+    setFilters((prev) => {
+      const hasChanged = Object.entries(newFilters).some(
+        ([key, val]) => prev[key as keyof F] !== val,
+      );
+      if (!hasChanged) return prev;
+      setCurrentPage(1);
+      return { ...prev, ...newFilters };
+    });
   }, []);
 
   const handleSingleFilterChange = useCallback(
     (key: string, value: unknown) => {
-      setFilters((prev) => ({ ...prev, [key]: value }) as F);
-      setCurrentPage(1);
+      setFilters((prev) => {
+        if (prev[key as keyof F] === value) return prev;
+        setCurrentPage(1);
+        return { ...prev, [key]: value } as F;
+      });
     },
     [],
   );

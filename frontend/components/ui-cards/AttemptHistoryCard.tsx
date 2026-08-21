@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { STYLE_CONFIG } from "@lib/config/style";
-import { cn } from "@lib/utils";
+import { cn, formatDate, formatTime, parseUTCDate } from "@lib/utils";
 import { useMe } from "@hooks/api/user/use-me";
 import { getGradeConfig } from "@lib/utils/gradeUtils";
 
@@ -70,8 +70,6 @@ export const AttemptHistoryCard = ({
   const { data: user } = useMe();
   const isProjectLead = user?.role === "project_lead";
 
-  const parseUTC = (d: string) => new Date(d.endsWith("Z") ? d : d + "Z");
-
   // Calculate Duration
   const getDuration = () => {
     // Prefer cumulative active seconds recorded by backend
@@ -83,8 +81,9 @@ export const AttemptHistoryCard = ({
 
     // Fallback for legacy attempts or in-progress states
     if (!startedAt || !submittedAt) return "--:--";
-    const start = parseUTC(startedAt).getTime();
-    const end = parseUTC(submittedAt).getTime();
+    const start = parseUTCDate(startedAt)?.getTime();
+    const end = parseUTCDate(submittedAt)?.getTime();
+    if (!start || !end) return "--:--";
     const diff = Math.max(0, Math.floor((end - start) / 1000));
     const mins = Math.floor(diff / 60);
     const secs = diff % 60;
@@ -180,13 +179,7 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
               <HistoryIcon size={12} className="text-brand-primary" />
-              <span>
-                {parseUTC(startedAt).toLocaleDateString([], {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
+              <span>{formatDate(startedAt)}</span>
             </div>
           </div>
 
@@ -199,13 +192,7 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
               <Clock3 size={12} className="text-brand-primary" />
-              <span>
-                {parseUTC(startedAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
-              </span>
+              <span>{formatTime(startedAt)}</span>
             </div>
           </div>
 
@@ -218,15 +205,7 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
               <CheckCircle2 size={12} className={`text-emerald-500`} />
-              <span>
-                {submittedAt
-                  ? parseUTC(submittedAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  : "--:--"}
-              </span>
+              <span>{submittedAt ? formatTime(submittedAt) : "--:--"}</span>
             </div>
           </div>
 
@@ -350,21 +329,17 @@ export const AttemptHistoryCard = ({
             </span>
             <div className="flex items-center gap-1.5 text-brand-primary font-bold">
               <CheckCircle2 size={14} />
-              <span>
-                {interviewDate
-                  ? parseUTC(interviewDate).toLocaleDateString([], {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "N/A"}
-              </span>
+              <span>{formatDate(interviewDate, "N/A")}</span>
             </div>
           </div>
         </div>
 
         {!isProjectLead && (
-          <Link href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}>
+          <Link
+            href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
               size="sm"
               variant="primary"

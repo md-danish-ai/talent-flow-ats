@@ -13,7 +13,13 @@ import { zodValidator } from "@tanstack/zod-form-adapter";
 import { useUpdateBasicInfo } from "@hooks/api/user/use-auth";
 import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
-import { getErrorMessage } from "@lib/utils";
+import {
+  getErrorMessage,
+  normalizeWhitespace,
+  normalizeProperCase,
+  normalizeMobile,
+  normalizeEmail,
+} from "@lib/utils";
 
 interface UpdateAccountInfoFormProps {
   userId: string | number;
@@ -93,13 +99,20 @@ export function UpdateAccountInfoForm({
       setServerError(null);
       setServerSuccess(null);
 
-      const submitValue = { ...value };
+      const submitValue: Record<string, unknown> = {
+        ...value,
+        name: normalizeProperCase(value.name),
+        email: normalizeEmail(value.email) || undefined,
+        mobile: normalizeMobile(value.mobile),
+      };
       if (!submitValue.test_level_id) {
         delete submitValue.test_level_id;
       }
 
       try {
-        await updateMutation.mutateAsync(submitValue);
+        await updateMutation.mutateAsync(
+          submitValue as unknown as SignUpFormValues,
+        );
         setServerSuccess("Account information updated successfully!");
         if (onSuccess) onSuccess();
       } catch (err: unknown) {

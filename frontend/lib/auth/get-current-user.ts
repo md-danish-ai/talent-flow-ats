@@ -31,10 +31,17 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     if (apiError && apiError.status === 401) {
       const isInactive =
         apiError.message?.toLowerCase().includes("inactive") || false;
+
+      // Admin / Project-Lead → sign-in, User → sign-up (root)
+      const roleCookie = cookieStore.get("role")?.value;
+      const isAdminOrLead =
+        roleCookie === "admin" || roleCookie === "project_lead";
+      const baseRedirect = isAdminOrLead ? "/sign-in" : "/";
+
       redirect(
         isInactive
-          ? "/sign-in?clear_auth=1&inactive=1"
-          : "/sign-in?clear_auth=1",
+          ? `${baseRedirect}?clear_auth=1&inactive=1`
+          : `${baseRedirect}?clear_auth=1`,
       );
     }
     console.error("Error fetching current user:", error);

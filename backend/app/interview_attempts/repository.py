@@ -44,8 +44,18 @@ def _normalize_text(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
+def _normalize_answer_text(value: str) -> str:
+    if not value:
+        return ""
+    text = str(value).strip().lower().rstrip(".!?,;")
+    return " ".join(text.split())
+
+
 def _extract_option_key(value: str) -> str | None:
-    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\)\:\-]?", value.strip(), flags=re.I)
+    val = str(value).strip()
+    if len(val.split()) > 1:
+        return None
+    match = re.match(r"^([a-z0-9]{1,4})[\.\)\:\-]?$", val, flags=re.I)
     if not match:
         return None
     return match.group(1).lower()
@@ -56,16 +66,20 @@ def _split_answer_values(raw_value: str) -> list[str]:
 
 
 def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
-    normalized_user = _normalize_text(user_answer)
-    normalized_correct = _normalize_text(correct_answer)
+    normalized_user = _normalize_answer_text(user_answer)
+    normalized_correct = _normalize_answer_text(correct_answer)
     if not normalized_user or not normalized_correct:
         return False
     if normalized_user == normalized_correct:
         return True
     user_parts = _split_answer_values(user_answer)
     correct_parts = _split_answer_values(correct_answer)
-    user_keys = {_extract_option_key(p) or _normalize_text(p) for p in user_parts}
-    correct_keys = {_extract_option_key(p) or _normalize_text(p) for p in correct_parts}
+    user_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in user_parts
+    }
+    correct_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in correct_parts
+    }
     return user_keys == correct_keys
 
 
@@ -830,6 +844,12 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
         )
 
         if existing:
+            # Update user process status to inprogress if started
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.process_status != ProcessStatus.INPROGRESS.value:
+                user.process_status = ProcessStatus.INPROGRESS.value
+                db.commit()
+
             # Server-side timer enforcement
             if total_dur > 0 and existing.status == InterviewStatus.STARTED.value:
                 started_utc = existing.started_at
@@ -982,6 +1002,10 @@ def save_answer(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
+
         db.commit()
 
         return {
@@ -1076,6 +1100,10 @@ def save_answers_batch(
         attempted_count = sum(1 for r in responses if r.get("is_attempted"))
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         db.commit()
 
@@ -2180,7 +2208,8 @@ def reset_subject_responses(
         flag_modified(record, "responses")
 
         # Reset attempt status
-        record.started_at = datetime.now(timezone.utc)
+        if record.status != InterviewStatus.STARTED.value:
+            record.started_at = datetime.now(timezone.utc)
         record.status = InterviewStatus.STARTED.value
         record.submitted_at = None
         record.completion_reason = None
@@ -2196,10 +2225,14 @@ def reset_subject_responses(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
-        # Reset UserDetail + PaperAssignment
+        # Reset UserDetail + PaperAssignment + User process_status
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         today = datetime.utcnow().date()
         assignment = (
