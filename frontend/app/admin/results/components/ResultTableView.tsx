@@ -430,7 +430,7 @@ export function ResultTableView({
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                            <span className="font-bold text-slate-950 dark:text-white tracking-tight text-[13px] whitespace-nowrap">
                               {item.username || "Anonymous"}
                             </span>
                             {item.is_reattempt ? (
@@ -662,7 +662,7 @@ export function ResultTableView({
                                         )}
                                       />
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 tracking-tight">
                                       {lead.name}
                                     </span>
                                   </div>
@@ -689,7 +689,7 @@ export function ResultTableView({
                                 />
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
+                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
                                   {latest.interviewers[0].name}
                                 </span>
                                 {latest.interviewers.length > 1 && (

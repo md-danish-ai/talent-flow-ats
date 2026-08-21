@@ -339,8 +339,8 @@ export function UserListing({ initialData }: UserListingProps) {
                             </div>
                             <div className="flex flex-col">
                               <div className="flex items-center gap-3">
-                                <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
-                                  {row.username || "Unnamed"}
+                                <span className="font-bold text-slate-950 dark:text-white tracking-tight text-[13px] whitespace-nowrap">
+                                  {row.username || "Unknown Candidate"}
                                 </span>
                                 {row.is_reinterview ? (
                                   <Badge
