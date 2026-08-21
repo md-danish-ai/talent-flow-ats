@@ -82,20 +82,21 @@ services:
 
   pgbouncer:
     container_name: talent-flow-pgbouncer
-    image: bitnami/pgbouncer:latest
+    image: edoburu/pgbouncer:latest
     restart: always
     environment:
-      POSTGRESQL_HOST: db
-      POSTGRESQL_PORT: 5432
-      POSTGRESQL_DATABASE: talent_flow_ats
-      POSTGRESQL_USERNAME: postgres
-      POSTGRESQL_PASSWORD: Pass2020NothingSpecial
-      PGBOUNCER_POOL_MODE: transaction
-      PGBOUNCER_MAX_CLIENT_CONN: 500
-      PGBOUNCER_DEFAULT_POOL_SIZE: 50
-      PGBOUNCER_MIN_POOL_SIZE: 10
-      PGBOUNCER_RESERVE_POOL_SIZE: 10
-      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: Pass2020NothingSpecial
+      DB_NAME: talent_flow_ats
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 500
+      DEFAULT_POOL_SIZE: 50
+      MIN_POOL_SIZE: 10
+      RESERVE_POOL_SIZE: 10
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits
+      AUTH_TYPE: scram-sha-256
     ulimits:
       nofile:
         soft: 65536
