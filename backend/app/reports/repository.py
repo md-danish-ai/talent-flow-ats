@@ -28,28 +28,46 @@ def get_report_user_list(
     """
     User-centric report listing (for the Reports tab).
     Returns non-software users with dept, exam level, re-attempt flag,
-    and latest attempt info: status, overall_grade, assigned paper, interviewers.
+    and latest attempt info. Correctly applies date and status filters in SQL.
     """
     db = SessionLocal()
     try:
         TestLevel = Classification
 
-        # Base query — join dept + exam level directly (no lazy loading)
-        users_query = (
+        # Subquery to get max InterviewRecord ID for each user
+        latest_attempt_subquery = (
+            db.query(
+                InterviewRecord.user_id,
+                func.max(InterviewRecord.id).label("max_id"),
+            )
+            .group_by(InterviewRecord.user_id)
+            .subquery()
+        )
+
+        query = (
             db.query(
                 User,
                 Department.name.label("dept_name"),
                 TestLevel.name.label("level_name"),
+                InterviewRecord,
             )
             .outerjoin(Department, Department.id == User.department_id)
             .outerjoin(TestLevel, TestLevel.id == User.test_level_id)
+            .outerjoin(
+                latest_attempt_subquery,
+                latest_attempt_subquery.c.user_id == User.id,
+            )
+            .outerjoin(
+                InterviewRecord,
+                InterviewRecord.id == latest_attempt_subquery.c.max_id,
+            )
             .filter(User.role == RoleType.USER.value)
         )
 
         # Search by name / mobile / email
         if search:
             pattern = f"%{search.strip()}%"
-            users_query = users_query.filter(
+            query = query.filter(
                 (User.username.ilike(pattern))
                 | (User.mobile.ilike(pattern))
                 | (User.email.ilike(pattern))
@@ -57,17 +75,49 @@ def get_report_user_list(
 
         # Department filter
         if department_id:
-            users_query = users_query.filter(User.department_id == int(department_id))
+            query = query.filter(User.department_id == int(department_id))
 
         # Exam level filter
         if test_level_id:
-            users_query = users_query.filter(User.test_level_id == int(test_level_id))
+            query = query.filter(User.test_level_id == int(test_level_id))
 
-        total_items = users_query.count()
+        # Status filter
+        if status and status != "all":
+            query = query.filter(InterviewRecord.status == status)
+
+        # Completion reason filter
+        if completion_reason and completion_reason != "all":
+            query = query.filter(InterviewRecord.completion_reason == completion_reason)
+
+        # Overall grade filter
+        if overall_grade and overall_grade != "all":
+            query = query.filter(InterviewRecord.overall_grade == overall_grade)
+
+        # Date filter on attempt date (submitted_at or started_at)
+        attempt_date = func.coalesce(
+            InterviewRecord.submitted_at,
+            InterviewRecord.started_at,
+            User.created_at,
+        )
+
+        if start_date:
+            query = query.filter(func.date(attempt_date) >= start_date)
+
+        if end_date:
+            query = query.filter(func.date(attempt_date) <= end_date)
+
+        # Project lead filter
+        if project_lead_id:
+            query = query.join(
+                InterviewEvaluation,
+                InterviewEvaluation.attempt_id == InterviewRecord.id,
+            ).filter(InterviewEvaluation.project_lead_id == int(project_lead_id))
+
+        total_items = query.count()
         total_pages = math.ceil(total_items / limit) if limit > 0 else 0
 
         user_rows = (
-            users_query.order_by(User.id.desc())
+            query.order_by(desc(attempt_date), desc(User.id))
             .limit(limit)
             .offset((page - 1) * limit)
             .all()
@@ -75,71 +125,19 @@ def get_report_user_list(
 
         results: list[dict] = []
 
-        for user, dept_name, level_name in user_rows:
+        for user, dept_name, level_name, latest_record in user_rows:
             attempts_count = (
                 db.query(InterviewRecord)
                 .filter(InterviewRecord.user_id == user.id)
                 .count()
             )
 
-            # Latest attempt for this user
-            latest_record = (
-                db.query(InterviewRecord)
-                .filter(InterviewRecord.user_id == user.id)
-                .order_by(desc(InterviewRecord.id))
-                .first()
-            )
-
             latest_attempt = None
             if latest_record:
-                # Filter by attempt status
-                if status and status != "all" and latest_record.status != status:
-                    continue
-                if (
-                    completion_reason
-                    and completion_reason != "all"
-                    and latest_record.completion_reason != completion_reason
-                ):
-                    continue
-                if (
-                    overall_grade
-                    and overall_grade != "all"
-                    and latest_record.overall_grade != overall_grade
-                ):
-                    continue
-
-                # Date filter on latest attempt
-                if start_date or end_date:
-                    date_val = (
-                        latest_record.submitted_at
-                        if latest_record.status in ["submitted", "auto_submitted"]
-                        else latest_record.started_at
-                    )
-                    if date_val:
-                        date_str = str(date_val)[:10]  # YYYY-MM-DD
-                        if start_date and date_str < start_date:
-                            continue
-                        if end_date and date_str > end_date:
-                            continue
-                    else:
-                        if start_date or end_date:
-                            continue
-
                 # Paper info
                 paper = (
                     db.query(Paper).filter(Paper.id == latest_record.paper_id).first()
                 )
-
-                # Project lead / interviewer filter
-                if project_lead_id:
-                    lead_ids = [
-                        row[0]
-                        for row in db.query(InterviewEvaluation.project_lead_id)
-                        .filter(InterviewEvaluation.attempt_id == latest_record.id)
-                        .all()
-                    ]
-                    if int(project_lead_id) not in lead_ids:
-                        continue
 
                 # Interviewers list
                 interviewers = [
@@ -166,25 +164,71 @@ def get_report_user_list(
                     )
                 ]
 
+                typing_stats = getattr(latest_record, "typing_stats", None)
+                if isinstance(typing_stats, str):
+                    try:
+                        typing_stats = json.loads(typing_stats)
+                    except Exception:
+                        typing_stats = None
+
+                if not typing_stats and latest_record.responses:
+                    responses = (
+                        latest_record.responses
+                        if isinstance(latest_record.responses, list)
+                        else []
+                    )
+                    for r in responses:
+                        if not isinstance(r, dict):
+                            continue
+                        if r.get("typing_stats") and isinstance(
+                            r["typing_stats"], dict
+                        ):
+                            typing_stats = r["typing_stats"]
+                            break
+                        section_code = str(r.get("section_code") or "").upper()
+                        section_name = str(r.get("section_name") or "").upper()
+                        if "TYPING" in section_code or "TYPING" in section_name:
+                            ans_text = r.get("answer_text") or ""
+                            if isinstance(
+                                ans_text, str
+                            ) and ans_text.strip().startswith("{"):
+                                try:
+                                    parsed = json.loads(ans_text)
+                                    stats = parsed.get("stats") or parsed.get(
+                                        "typing_stats"
+                                    )
+                                    if stats and isinstance(stats, dict):
+                                        typing_stats = stats
+                                        break
+                                except Exception:
+                                    pass
+
                 latest_attempt = {
                     "attempt_id": latest_record.id,
                     "paper_id": latest_record.paper_id,
                     "paper_name": paper.paper_name if paper else "N/A",
                     "status": latest_record.status,
+                    "completion_reason": latest_record.completion_reason,
+                    "started_at": latest_record.started_at,
+                    "submitted_at": latest_record.submitted_at,
+                    "total_questions": latest_record.total_questions,
+                    "attempted_count": latest_record.attempted_count,
+                    "unattempted_count": latest_record.unattempted_count,
+                    "total_marks": (
+                        float(latest_record.total_marks)
+                        if latest_record.total_marks is not None
+                        else 0.0
+                    ),
+                    "obtained_marks": (
+                        float(latest_record.obtained_marks)
+                        if latest_record.obtained_marks is not None
+                        else 0.0
+                    ),
                     "overall_grade": latest_record.overall_grade,
+                    "active_duration_seconds": latest_record.active_duration_seconds,
+                    "typing_stats": typing_stats,
                     "interviewers": interviewers,
                 }
-            else:
-                # Candidate has no attempt. If any attempt-specific filter is active, skip them.
-                if (
-                    (status and status != "all")
-                    or (completion_reason and completion_reason != "all")
-                    or (overall_grade and overall_grade != "all")
-                    or start_date
-                    or end_date
-                    or project_lead_id
-                ):
-                    continue
 
             results.append(
                 {

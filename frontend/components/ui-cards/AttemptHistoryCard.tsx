@@ -335,7 +335,11 @@ export const AttemptHistoryCard = ({
         </div>
 
         {!isProjectLead && (
-          <Link href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}>
+          <Link
+            href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
               size="sm"
               variant="primary"

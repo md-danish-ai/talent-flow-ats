@@ -141,6 +141,8 @@ interface ResultTableViewProps {
   isLoading?: boolean;
   limit?: number;
   onlyDownloadAction?: boolean;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 export function ResultTableView({
@@ -149,6 +151,8 @@ export function ResultTableView({
   isLoading,
   limit = 10,
   onlyDownloadAction = false,
+  currentPage = 1,
+  pageSize = 10,
   onRefresh,
 }: ResultTableViewProps & { onRefresh?: (silent?: boolean) => void }) {
   const [assignModal, setAssignModal] = useState<{
@@ -318,8 +322,8 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("date") && (
-              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
-                Date
+              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80">
+                Interview Date
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
@@ -377,7 +381,7 @@ export function ResultTableView({
                 >
                   {onlyDownloadAction ? (
                     <TableCell className="w-[50px] text-center font-medium text-slate-500">
-                      {idx + 1}
+                      {(currentPage - 1) * pageSize + idx + 1}
                     </TableCell>
                   ) : (
                     <TableCell className="w-[100px]">

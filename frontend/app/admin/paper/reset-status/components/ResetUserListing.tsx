@@ -46,9 +46,11 @@ import { toast } from "@lib/toast";
 import { useListing } from "@hooks/useListing";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import { useSearchParams } from "next/navigation";
 
 interface ResetUserListingProps {
   initialData?: PaginatedResponse<UserListResponse>;
+  initialLabel?: string;
 }
 
 type UserListingFilters = {
@@ -59,7 +61,10 @@ type UserListingFilters = {
   date: { range?: { from?: string; to?: string }; label?: string } | null;
 };
 
-export function ResetUserListing({ initialData }: ResetUserListingProps) {
+export function ResetUserListing({
+  initialData,
+  initialLabel = "Today",
+}: ResetUserListingProps) {
   const [selectedUser, setSelectedUser] = useState<UserListResponse | null>(
     null,
   );
@@ -70,6 +75,8 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
   const [isResetSubjectsModalOpen, setIsResetSubjectsModalOpen] =
     useState(false);
   const [togglingStatusIds, setTogglingStatusIds] = useState<number[]>([]);
+
+  const searchParams = useSearchParams();
 
   const handleToggleStatus = async (userId: number, currentStatus: boolean) => {
     setTogglingStatusIds((prev) => [...prev, userId]);
@@ -108,7 +115,7 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
       department: "all",
       level: "all",
       status: "all",
-      date: { label: "All Time" },
+      date: { label: initialLabel },
     },
     initialData: initialData?.data,
     initialTotalItems: initialData?.pagination?.total_records,
@@ -117,12 +124,18 @@ export function ResetUserListing({ initialData }: ResetUserListingProps) {
       let dateTo = f.date?.range?.to;
 
       if (!dateFrom && !dateTo) {
-        if (f.date?.label === "Today") {
+        if (
+          f.date?.label === "Today" ||
+          (!f.date?.label && !searchParams.get("date_from"))
+        ) {
           dateFrom = getTodayISODate();
           dateTo = getTodayISODate();
         } else if (f.date?.label === "Yesterday") {
           dateFrom = getYesterdayISODate();
           dateTo = getYesterdayISODate();
+        } else {
+          dateFrom = searchParams.get("date_from") || undefined;
+          dateTo = searchParams.get("date_to") || undefined;
         }
       }
 
