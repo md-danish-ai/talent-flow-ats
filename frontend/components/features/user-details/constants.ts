@@ -152,7 +152,7 @@ export const defaultPersonalDetailsValues: PersonalDetailsFormValues = {
   workExp: [
     {
       id: 1,
-      company: "",
+      company: "Fresher",
       employmentType: "",
       designation: "",
       joinDate: "",
