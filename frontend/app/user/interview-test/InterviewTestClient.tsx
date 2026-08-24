@@ -477,8 +477,8 @@ export function InterviewTestClient() {
     const submitOnTimeout = async () => {
       try {
         if (attemptId) {
-          // Thundering herd prevent — sab candidates ek saath submit na karein
-          const jitterMs = Math.random() * 3000;
+          // Thundering herd prevent — 0 to 1.5s spread
+          const jitterMs = Math.random() * 1500;
           await new Promise((resolve) => setTimeout(resolve, jitterMs));
           // Batch save everything
           const allBatchRequests = sections.map((sec) =>
@@ -515,8 +515,8 @@ export function InterviewTestClient() {
     hasHandledSectionTimeoutRef.current = true;
 
     const advanceSection = async () => {
-      // Thundering herd prevent — sab candidates ek saath submit na karein
-      const jitterMs = Math.random() * 3000;
+      // Thundering herd prevent — 0 to 1.5s spread
+      const jitterMs = Math.random() * 1500;
       await new Promise((resolve) => setTimeout(resolve, jitterMs));
       lockAndMoveToNextSection(
         sectionIndex,
