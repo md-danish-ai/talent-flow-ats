@@ -1,17 +1,14 @@
-#!/bin/sh
-set -e
+#!/usr/bin/env python3
+import os
+import sys
 
-DB_HOST="${DB_HOST:-talent-flow-postgres}"
-DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${DB_NAME:-talent_flow_ats}"
-DB_USER="${DB_USER:-postgres}"
-DB_PASSWORD="${DB_PASSWORD:-Pass2020NothingSpecial}"
+# Add backend directory to sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-export PGPASSWORD="$DB_PASSWORD"
+from sqlalchemy import text
+from app.database.db import engine
 
-echo "Synchronizing sequences on $DB_NAME ($DB_HOST)..."
-
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" << 'EOF'
+SYNC_SQL = """
 DO $$
 DECLARE
     r RECORD;
@@ -52,6 +49,16 @@ BEGIN
     END LOOP;
     RAISE NOTICE 'Successfully synchronized % sequence(s).', updated_count;
 END $$;
-EOF
+"""
 
-echo "All sequences synchronized successfully!"
+def main():
+    print("=" * 60)
+    print("🔄 Synchronizing PostgreSQL Sequences...")
+    print("=" * 60)
+    with engine.connect() as conn:
+        conn.execute(text(SYNC_SQL))
+        conn.commit()
+    print("✅ All PostgreSQL sequences synchronized successfully!")
+
+if __name__ == "__main__":
+    main()
