@@ -51,6 +51,7 @@ BEGIN
 END $$;
 """
 
+
 def main():
     print("=" * 60)
     print("🔄 Synchronizing PostgreSQL Sequences...")
@@ -59,6 +60,7 @@ def main():
         conn.execute(text(SYNC_SQL))
         conn.commit()
     print("✅ All PostgreSQL sequences synchronized successfully!")
+
 
 if __name__ == "__main__":
     main()

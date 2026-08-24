@@ -15,7 +15,6 @@ import { useDepartments } from "@hooks/api/departments/use-departments";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import {
   getErrorMessage,
-  normalizeWhitespace,
   normalizeProperCase,
   normalizeMobile,
   normalizeEmail,

@@ -18,7 +18,6 @@ import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
 import {
   getErrorMessage,
-  normalizeWhitespace,
   normalizeProperCase,
   normalizeMobile,
   normalizeEmail,
