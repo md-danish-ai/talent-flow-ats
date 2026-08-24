@@ -23,7 +23,7 @@ from .schemas import (
 )
 from app.departments.models import Department
 
-PAPER_CACHE_TTL = 15 * 3600  # 15 Hours in seconds (54,000s)
+PAPER_CACHE_TTL = 8 * 3600  # 8 Hours in seconds (28,800s)
 
 
 def create_auto_assignment_rule(
@@ -699,7 +699,7 @@ def get_my_interview_paper(
             detail=f"Active paper {assignment.paper_id} not found or missing questions",
         )
 
-    # Store in Redis (15 Hours TTL cache)
+    # Store in Redis (8 Hours TTL cache)
     set_cached_data(cache_key, paper_details, expire_seconds=PAPER_CACHE_TTL)
 
     return {
