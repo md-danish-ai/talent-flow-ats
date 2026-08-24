@@ -53,8 +53,9 @@ export const ENDPOINTS = {
     GET_BY_ID: (id: string | number) => `/papers/paper-details/${id}`,
     CREATE: "/papers/create-paper",
     UPDATE: (id: string | number) => `/papers/update-paper/${id}`,
-
     GRADE_SETTINGS: (id: string | number) => `/papers/grade-settings/${id}`,
+    PDF: (id: string | number, showAnswers: boolean = true) =>
+      `/papers/paper-details/${id}/pdf?show_answers=${showAnswers}`,
   },
 
   PAPER_ASSIGNMENTS: {

@@ -24,6 +24,7 @@ import {
   Trophy,
   Clock,
   Trash2,
+  Eye,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
 import { papersApi } from "@lib/api/papers";
@@ -242,6 +243,21 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                 Configured Assessment Structure
               </Typography>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              animate="scale"
+              onClick={() =>
+                window.open(`/admin/paper/setup/preview/${paper.id}`, "_blank")
+              }
+              className="font-bold text-xs gap-1.5 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 transition-all shadow-sm"
+              startIcon={<Eye size={15} />}
+            >
+              Preview Paper
+            </Button>
           </div>
         </div>
 
