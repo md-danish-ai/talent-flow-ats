@@ -71,4 +71,55 @@ export const papersApi = {
       ...options,
     });
   },
+
+  downloadPaperPdf: async (
+    paperId: number,
+    paperName?: string,
+    showAnswers: boolean = true,
+  ): Promise<void> => {
+    const authRow = document.cookie
+      .split(";")
+      .find((r) => r.trim().startsWith("auth_token="));
+    let token = authRow ? authRow.trim().substring("auth_token=".length) : "";
+    token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+    try {
+      token = decodeURIComponent(token);
+    } catch {
+      /* keep raw */
+    }
+
+    const { BASE_URL } = await import("./client");
+    const res = await fetch(
+      `${BASE_URL}${ENDPOINTS.PAPERS.PDF(paperId, showAnswers)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!res.ok) throw new Error("Paper PDF generation failed");
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    const contentDisposition = res.headers.get("content-disposition");
+    let filename = "";
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+
+    if (!filename) {
+      const safeName = paperName
+        ? paperName.replace(/[^a-zA-Z0-9_-]/g, "_")
+        : `Paper_${paperId}`;
+      filename = `${safeName}_${showAnswers ? "With_Answers" : "Question_Paper"}.pdf`;
+    }
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
 };
