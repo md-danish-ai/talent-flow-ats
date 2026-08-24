@@ -1,3 +1,6 @@
+#!/bin/sh
+set -e
+
 #!/usr/bin/env bash
 # ===============================================================================================================
 # sync_db_sequences.sh - Standalone script to synchronize PostgreSQL sequences with MAX(id)
@@ -14,22 +17,22 @@
 #   DB_HOST="localhost" DB_PORT="5432" DB_USER="postgres" DB_PASSWORD="secretpassword" DB_NAME="talent_flow_ats" ./backend/scripts/sync_db_sequences.sh
 # ===============================================================================================================
 
-set -e
+set -euo pipefail
 
 # Detect OS
 OS_TYPE="$(uname -s 2>/dev/null || echo 'Windows')"
 case "$OS_TYPE" in
-    Darwin*)              OS="mac"     ;;
-    Linux*)               OS="linux"   ;;
-    MINGW*|MSYS*|CYGWIN*) OS="windows" ;;
-    *)                    OS="windows" ;;
+  Darwin*)              OS="mac"     ;;
+  Linux*)               OS="linux"   ;;
+  MINGW*|MSYS*|CYGWIN*) OS="windows" ;;
+  *)                    OS="windows" ;;
 esac
 
-# Extend PATH
+# Extend PATH for common locations (kept minimal)
 if [ "$OS" = "mac" ]; then
-    export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
+  export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
 elif [ "$OS" = "linux" ]; then
-    export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+  export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 fi
 
 # Configuration Defaults
@@ -40,7 +43,7 @@ fi
 : "${DB_PASSWORD:=Pass2020NothingSpecial}"
 : "${DB_CONTAINER:=talent-flow-postgres}"
 
-SQL_QUERY=$(cat << 'EOF'
+SQL_QUERY=$(cat <<'EOF'
 DO $$
 DECLARE
     r RECORD;
@@ -94,22 +97,23 @@ echo "  Container : $DB_CONTAINER"
 echo "  Platform  : $OS"
 echo "==================================================================================================="
 
-if command -v psql &> /dev/null && PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" &> /dev/null; then
-    echo "⚡ Running via local psql client..."
-    export PGPASSWORD="$DB_PASSWORD"
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$SQL_QUERY"
-elif command -v docker &> /dev/null; then
-    if docker ps --filter "name=$DB_CONTAINER" --format "{{.Names}}" | grep -q "$DB_CONTAINER"; then
-        echo "🐳 Running via Docker container '$DB_CONTAINER'..."
-        docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -c "$SQL_QUERY"
-    else
-        echo "❌ ERROR: Local psql failed to connect and Docker container '$DB_CONTAINER' is not running."
-        echo "   Please start the database or check your connection settings."
-        exit 1
-    fi
-else
-    echo "❌ ERROR: Neither local 'psql' nor 'docker' is accessible."
+# Try local psql first
+if command -v psql >/dev/null 2>&1 && PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" >/dev/null 2>&1; then
+  echo "⚡ Running via local psql client..."
+  export PGPASSWORD="$DB_PASSWORD"
+  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$SQL_QUERY"
+elif command -v docker >/dev/null 2>&1; then
+  if docker ps --filter "name=$DB_CONTAINER" --format "{{.Names}}" | grep -q "$DB_CONTAINER"; then
+    echo "🐳 Running via Docker container '$DB_CONTAINER'..."
+    docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -c "$SQL_QUERY"
+  else
+    echo "❌ ERROR: Local psql failed to connect and Docker container '$DB_CONTAINER' is not running."
+    echo "   Please start the database or check your connection settings."
     exit 1
+  fi
+else
+  echo "❌ ERROR: Neither local 'psql' nor 'docker' is accessible."
+  exit 1
 fi
 
 echo "==================================================================================================="
