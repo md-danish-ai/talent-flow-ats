@@ -41,7 +41,7 @@ type ResultsFilters = {
   project_lead_id: string;
 };
 
-import { ResultStatusLegend } from "@components/ui-elements/ResultStatusLegend";
+import { ResultStatusLegendBar } from "@components/ui-elements/ResultStatusLegend";
 
 import { useSearchParams } from "next/navigation";
 
@@ -163,10 +163,6 @@ export function UserResultsClient() {
 
   return (
     <PageContainer className="space-y-4">
-      <ResultStatusLegend
-        title="Round 1 Results"
-        subtitle="Detailed interview results and performance metrics for all candidates."
-      />
       <MainCard
         title={
           <div className="flex items-center gap-3">
@@ -177,7 +173,7 @@ export function UserResultsClient() {
           </div>
         }
         className="mb-6 flex flex-col"
-        bodyClassName="p-0 flex flex-row items-stretch w-full"
+        bodyClassName="p-0 flex flex-col w-full"
         action={
           <div className="flex items-center gap-3">
             <ListingBadge
@@ -248,68 +244,72 @@ export function UserResultsClient() {
           </div>
         }
       >
-        <div
-          className={cn(
-            "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
-            isFilterOpen && "border-r border-border/50",
-          )}
-        >
-          <ListingTransition
-            isLoading={loading}
-            isBackgroundLoading={isBackgroundLoading}
+        <ResultStatusLegendBar />
+
+        <div className="flex flex-row items-stretch w-full flex-1">
+          <div
+            className={cn(
+              "flex-1 w-full flex flex-col min-w-0 overflow-hidden relative",
+              isFilterOpen && "border-r border-border/50",
+            )}
           >
-            <div className="flex-1 overflow-x-auto w-full min-h-0">
-              {viewMode === "card" ? (
-                loading ? (
-                  <ResultCardSkeleton rowCount={pageSize} />
-                ) : items.length === 0 ? (
-                  <EmptyState
-                    variant="search"
-                    title="No results found"
-                    description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
-                  />
+            <ListingTransition
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+            >
+              <div className="flex-1 overflow-x-auto w-full min-h-0">
+                {viewMode === "card" ? (
+                  loading ? (
+                    <ResultCardSkeleton rowCount={pageSize} />
+                  ) : items.length === 0 ? (
+                    <EmptyState
+                      variant="search"
+                      title="No results found"
+                      description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
+                    />
+                  ) : (
+                    <ResultCardView items={items} />
+                  )
                 ) : (
-                  <ResultCardView items={items} />
-                )
-              ) : (
-                <ResultTableView
-                  items={items}
-                  visibleColumns={visibleColumns}
-                  isLoading={loading}
-                  limit={pageSize}
+                  <ResultTableView
+                    items={items}
+                    visibleColumns={visibleColumns}
+                    isLoading={loading}
+                    limit={pageSize}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    onRefresh={refresh}
+                  />
+                )}
+              </div>
+
+              {!loading && items.length > 0 && (
+                <Pagination
                   currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
                   pageSize={pageSize}
-                  onRefresh={refresh}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  className="mt-auto shrink-0 border-t"
                 />
               )}
-            </div>
+            </ListingTransition>
+          </div>
 
-            {!loading && items.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                className="mt-auto shrink-0 border-t"
-              />
-            )}
-          </ListingTransition>
+          <ListingFiltersDrawer
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            registryKey="results-filters"
+            filters={filters}
+            onFilterChange={handleSingleFilterChange}
+            onReset={resetFilters}
+            isLoading={loading}
+            dynamicOptions={{
+              project_lead_id: leadsOptions,
+            }}
+          />
         </div>
-
-        <ListingFiltersDrawer
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          registryKey="results-filters"
-          filters={filters}
-          onFilterChange={handleSingleFilterChange}
-          onReset={resetFilters}
-          isLoading={loading}
-          dynamicOptions={{
-            project_lead_id: leadsOptions,
-          }}
-        />
 
         <ExportResultsModal
           isOpen={isExportOpen}

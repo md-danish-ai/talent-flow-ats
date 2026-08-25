@@ -69,8 +69,8 @@ const LegendItem = ({
     </div>
     <p
       className={cn(
-        "text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic opacity-70",
-        compact ? "text-[8px]" : "text-[9px]",
+        "text-slate-600 dark:text-white font-medium leading-snug italic",
+        compact ? "text-[8px]" : "text-[11px]",
       )}
     >
       {description}
@@ -78,54 +78,71 @@ const LegendItem = ({
   </div>
 );
 
+export const RESULT_STATUS_CONFIG: {
+  label: string;
+  description: string;
+  dotColor: string;
+  badgeColor: BadgeColor;
+}[] = [
+  {
+    label: "Not Started",
+    description: "Candidate has not initiated the assessment yet.",
+    dotColor: "bg-slate-400",
+    badgeColor: "default",
+  },
+  {
+    label: "Started",
+    description: "Assessment is active and currently in progress.",
+    dotColor: "bg-violet-500",
+    badgeColor: "violet",
+  },
+  {
+    label: "Submitted",
+    description: "Assessment completed and results generated.",
+    dotColor: "bg-green-500",
+    badgeColor: "success",
+  },
+  {
+    label: "Auto Submitted",
+    description: "Automatically closed due to time limit.",
+    dotColor: "bg-blue-500",
+    badgeColor: "blue",
+  },
+  {
+    label: "Expired",
+    description: "Session timed out or link became invalid.",
+    dotColor: "bg-red-500",
+    badgeColor: "error",
+  },
+];
+
+export function ResultStatusLegendBar({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "px-4 py-3 bg-slate-50/50 dark:bg-slate-900/30 border-b border-border/50 overflow-x-auto",
+        className,
+      )}
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 min-w-[650px] md:min-w-0">
+        {RESULT_STATUS_CONFIG.map((status) => (
+          <LegendItem key={status.label} {...status} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ResultStatusLegend({
   title,
   subtitle,
   action,
   compact = false,
 }: StatusLegendHeaderProps) {
-  const statuses: {
-    label: string;
-    description: string;
-    dotColor: string;
-    badgeColor: BadgeColor;
-  }[] = [
-    {
-      label: "Not Started",
-      description: "Candidate has not initiated the assessment yet.",
-      dotColor: "bg-slate-400",
-      badgeColor: "default",
-    },
-    {
-      label: "Started",
-      description: "Assessment is active and currently in progress.",
-      dotColor: "bg-violet-500",
-      badgeColor: "violet",
-    },
-    {
-      label: "Submitted",
-      description: "Assessment completed and results generated.",
-      dotColor: "bg-green-500",
-      badgeColor: "success",
-    },
-    {
-      label: "Auto Submitted",
-      description: "Automatically closed due to time limit.",
-      dotColor: "bg-blue-500",
-      badgeColor: "blue",
-    },
-    {
-      label: "Expired",
-      description: "Session timed out or link became invalid.",
-      dotColor: "bg-red-500",
-      badgeColor: "error",
-    },
-  ];
-
   if (compact) {
     return (
       <div className="flex flex-col w-[240px] p-2 bg-white dark:bg-slate-900/95 rounded-xl shadow-2xl border border-slate-200 dark:border-white/10">
-        {statuses.map((status) => (
+        {RESULT_STATUS_CONFIG.map((status) => (
           <LegendItem key={status.label} {...status} compact={true} />
         ))}
       </div>
@@ -133,36 +150,29 @@ export function ResultStatusLegend({
   }
 
   return (
-    <div
-      className={cn(
-        "relative w-full mb-4 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
-        STYLE_CONFIG.cardRadius,
-      )}
-    >
-      <div className="relative p-4 md:p-5 flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
-                {title}
-              </h1>
-            </div>
-            {subtitle && (
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] ml-3 uppercase tracking-wider opacity-80">
-                {subtitle}
-              </p>
-            )}
+    <div className="w-full mb-6 flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+              {title}
+            </h1>
           </div>
-
-          {action && <div className="shrink-0">{action}</div>}
+          {subtitle && (
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-xs ml-3 uppercase tracking-wider opacity-80">
+              {subtitle}
+            </p>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2">
-          {statuses.map((status) => (
-            <LegendItem key={status.label} {...status} />
-          ))}
-        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+        {RESULT_STATUS_CONFIG.map((status) => (
+          <LegendItem key={status.label} {...status} />
+        ))}
       </div>
     </div>
   );

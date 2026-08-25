@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { Button } from "@components/ui-elements/Button";
@@ -116,19 +115,22 @@ export function PaperSetupClient() {
   };
 
   return (
-    <PageContainer animate>
-      <PageHeader
-        title="Paper Management System"
-        description="Configure and manage test papers, subject-wise weightage, and evaluation criteria with ease."
-      />
-
+    <PageContainer animate className="pt-0">
       <MainCard
         title={
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <FileText size={18} />
             </div>
-            Paper Setup
+            <div className="flex flex-col">
+              <span className="font-bold text-slate-900 dark:text-white leading-tight">
+                Paper Setup
+              </span>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Configure and manage test papers, subject-wise weightage, and
+                evaluation criteria with ease.
+              </p>
+            </div>
           </div>
         }
         action={
