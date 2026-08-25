@@ -287,7 +287,7 @@ export default function DashboardPage() {
                   <Typography
                     variant="h4"
                     weight="black"
-                    className="uppercase tracking-widest pt-0.5 text-foreground"
+                    className="pt-0.5 text-foreground"
                   >
                     Dashboard Pulse
                   </Typography>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                   <Typography
                     variant="h4"
                     weight="black"
-                    className="uppercase tracking-widest pt-0.5 text-foreground"
+                    className="pt-0.5 text-foreground"
                   >
                     Activity & Focus
                   </Typography>
@@ -442,7 +442,7 @@ export default function DashboardPage() {
               <Typography
                 variant="h4"
                 weight="black"
-                className="uppercase tracking-widest pt-0.5 text-foreground"
+                className="pt-0.5 text-foreground"
               >
                 Performance Insights
               </Typography>

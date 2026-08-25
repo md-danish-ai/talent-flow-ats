@@ -297,7 +297,7 @@ export function UpdateAccountInfoForm({
                           variant="h6"
                           className="mb-1.5 block uppercase tracking-wider text-slate-500 font-bold text-[10px]"
                         >
-                          Test Level
+                          Exam Level
                         </Typography>
                         <SelectDropdown
                           options={levels}

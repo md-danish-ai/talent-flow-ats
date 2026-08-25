@@ -329,7 +329,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </form.Field>
 
-        {/* Row 3: Department and Test Level */}
+        {/* Row 3: Department and Exam Level */}
         <form.Subscribe selector={(state) => [state.values.department_id]}>
           {([departmentId]) => {
             const selectedDept = departments?.find(

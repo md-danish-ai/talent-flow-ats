@@ -164,15 +164,16 @@ export function ResetUserListing({
       <MainCard
         title={
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 shrink-0">
-              <RefreshCw size={22} className="animate-spin-slow" />
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              <RotateCcw size={18} />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">
+            <div className="flex flex-col">
+              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
                 Reset User Status
-              </h2>
-              <p className="text-[11px] text-muted-foreground dark:text-slate-300 -mt-1 font-medium italic">
-                Registered candidates listed from newest to oldest
+              </span>
+              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
+                Manage daily interview progress and application details for all
+                candidates.
               </p>
             </div>
           </div>

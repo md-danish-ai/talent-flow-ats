@@ -195,10 +195,10 @@ export function ReportsClient() {
               <FileText size={18} />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-slate-900 dark:text-white leading-tight">
+              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
                 Result Reports
               </span>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
                 View candidate results and download individual test evaluation
                 reports.
               </p>

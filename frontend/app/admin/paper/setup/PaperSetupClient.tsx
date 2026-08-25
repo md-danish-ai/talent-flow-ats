@@ -87,7 +87,7 @@ export function PaperSetupClient() {
     { id: "sr_no", label: "Sr. No.", pinned: true },
     { id: "paper_name", label: "Test Paper", pinned: true },
     { id: "department", label: "Department" },
-    { id: "test_level", label: "Test Level" },
+    { id: "test_level", label: "Exam Level" },
     { id: "description", label: "Description" },
     { id: "timing", label: "Timing" },
     { id: "total_marks", label: "Total Marks" },
@@ -123,10 +123,10 @@ export function PaperSetupClient() {
               <FileText size={18} />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-slate-900 dark:text-white leading-tight">
+              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
                 Paper Setup
               </span>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
                 Configure and manage test papers, subject-wise weightage, and
                 evaluation criteria with ease.
               </p>

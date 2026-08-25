@@ -320,10 +320,10 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                   weight="bold"
                   className="text-muted-foreground uppercase tracking-wider"
                 >
-                  Please Select Test Level
+                  Please Select Exam Level
                 </Typography>
                 <SelectDropdown
-                  placeholder="Please Select Test Level"
+                  placeholder="Please Select Exam Level"
                   value={field.state.value || ""}
                   options={testLevels.map((l) => ({
                     id: l.code,

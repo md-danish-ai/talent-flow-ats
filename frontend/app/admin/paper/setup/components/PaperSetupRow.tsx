@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Loader2,
   Pencil,
@@ -6,6 +5,7 @@ import {
   Wand2,
   SlidersHorizontal,
   Calendar,
+  Target,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
@@ -72,14 +72,24 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
       )}
       {isVisible("department") && (
         <TableCell>
-          <Badge variant="outline" color="secondary" shape="square">
+          <Badge
+            variant="outline"
+            color="secondary"
+            shape="square"
+            className="px-3 py-1.5 font-bold tracking-tight"
+          >
             {row.department_name ?? "N/A"}
           </Badge>
         </TableCell>
       )}
       {isVisible("test_level") && (
         <TableCell>
-          <Badge variant="outline" color="primary" shape="square">
+          <Badge
+            variant="outline"
+            color="primary"
+            shape="square"
+            className="px-3 py-1.5 font-bold tracking-tight"
+          >
             {row.test_level_name ?? "N/A"}
           </Badge>
         </TableCell>
@@ -100,8 +110,16 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
         </TableCell>
       )}
       {isVisible("total_marks") && (
-        <TableCell className="font-bold text-brand-primary">
-          {row.total_marks ?? 0}
+        <TableCell>
+          <Badge
+            variant="outline"
+            color="violet"
+            shape="square"
+            icon={<Target size={13} className="shrink-0" />}
+            className="font-bold text-[12px] px-3 py-1.5 tracking-tight whitespace-nowrap"
+          >
+            {row.total_marks ?? 0} Marks
+          </Badge>
         </TableCell>
       )}
       {isVisible("created_at") && (
