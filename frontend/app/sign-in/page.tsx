@@ -48,13 +48,13 @@ export default function LoginPage() {
               <Typography
                 variant="h2"
                 weight="bold"
-                className="text-2xl sm:text-3xl text-slate-800 dark:text-foreground tracking-tight"
+                className="text-2xl sm:text-3xl text-black dark:text-white tracking-tight"
               >
                 Welcome Back
               </Typography>
               <Typography
                 variant="body3"
-                className="mt-1 text-slate-500 dark:text-muted-foreground font-medium"
+                className="mt-1 text-black/80 dark:text-white/80 font-medium"
               >
                 Please enter your details to sign in
               </Typography>
