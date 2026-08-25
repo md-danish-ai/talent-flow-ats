@@ -108,7 +108,7 @@ export default function TableDemo() {
         <Table className="border border-border rounded-xl overflow-hidden shadow-sm">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="w-[50px] text-center">#</TableHead>
               <TableHead>Resource Item</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>

@@ -291,7 +291,7 @@ export function ImageMCQClient({
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px] text-center">#</TableHead>
                     {visibleColumns.includes("srNo") && (
                       <TableHead className="w-[80px] text-center">
                         Sr. No.

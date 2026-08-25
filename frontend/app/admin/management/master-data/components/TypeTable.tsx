@@ -143,7 +143,7 @@ export function TypeTable({
   return (
     <div className="overflow-x-auto w-full h-full flex flex-col">
       <Table aria-label={`${activeTab} table`} className="h-full">
-        <TableHeader className="bg-muted/30">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[48px] text-center">
               <Tooltip content="Drag rows to reorder" side="top">
@@ -152,31 +152,15 @@ export function TypeTable({
                 </div>
               </Tooltip>
             </TableHead>
-            <TableHead className="w-[70px] text-center font-bold text-slate-500 text-xs uppercase">
-              Sr. No.
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Name
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Code
-            </TableHead>
-            {hasDescription && (
-              <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                Description
-              </TableHead>
-            )}
+            <TableHead className="w-[70px] text-center">Sr. No.</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Code</TableHead>
+            {hasDescription && <TableHead>Description</TableHead>}
             {isSubject && (
-              <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                Exclusive
-              </TableHead>
+              <TableHead className="text-center">Exclusive</TableHead>
             )}
-            <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-              Status
-            </TableHead>
-            <TableHead className="text-center w-[120px] font-bold text-slate-500 text-xs uppercase">
-              Action
-            </TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center w-[120px]">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

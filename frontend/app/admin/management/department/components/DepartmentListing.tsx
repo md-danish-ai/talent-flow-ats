@@ -170,28 +170,24 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Department Name
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead>Department Name</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <UserCheck size={13} />
                         Requires Interview
                       </div>
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
+                    <TableHead className="whitespace-nowrap">
                       Created At
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
+                    <TableHead className="whitespace-nowrap">
                       Updated At
                     </TableHead>
-                    <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="text-center w-[100px]">
                       Action
                     </TableHead>
                   </TableRow>

@@ -144,8 +144,8 @@ export default function F2FResultsClient() {
             isBackgroundLoading={isBackgroundLoading}
           >
             <div className="flex-1 overflow-x-auto w-full min-h-0">
-              <Table>
-                <TableHeader className="bg-muted/30">
+              <Table className="h-full">
+                <TableHeader>
                   <TableRow>
                     <TableHead>Candidate</TableHead>
                     <TableHead>Project Lead</TableHead>

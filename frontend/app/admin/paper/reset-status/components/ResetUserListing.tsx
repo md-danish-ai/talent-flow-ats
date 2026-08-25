@@ -204,29 +204,21 @@ export function ResetUserListing({
             >
               <div className="flex-1 overflow-x-auto w-full">
                 <Table>
-                  <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+                  <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
+                      <TableHead className="w-[80px] text-center">
                         Sr. No.
                       </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                        Candidate Profile
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-                        Contact Info
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                      <TableHead>Candidate Profile</TableHead>
+                      <TableHead>Contact Info</TableHead>
+                      <TableHead className="text-center">
                         Department / Exam Level
                       </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                        Attempt Status
+                      <TableHead className="text-center">Exam Status</TableHead>
+                      <TableHead className="text-center">
+                        Reset Status
                       </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-                        Account Access
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-                        Action
-                      </TableHead>
+                      <TableHead className="text-center">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -241,10 +233,7 @@ export function ResetUserListing({
                       />
                     ) : (
                       users.map((row, idx) => (
-                        <TableRow
-                          key={row.id}
-                          className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors group"
-                        >
+                        <TableRow key={row.id} className="group">
                           <TableCell className="font-medium text-center align-middle">
                             {(currentPage - 1) * pageSize + idx + 1}
                           </TableCell>

@@ -378,7 +378,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-10"></TableHead>
+                <TableHead className="w-10 text-center">#</TableHead>
                 <TableHead className="w-20">Sr. No.</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Total Selected Questions</TableHead>
@@ -480,10 +480,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                               <TableBody>
                                 {subjectQuestions.length > 0 ? (
                                   subjectQuestions.map((q, qIndex) => (
-                                    <TableRow
-                                      key={q.id}
-                                      className="border-b border-border/40 hover:bg-brand-primary/[0.02] dark:hover:bg-brand-primary/[0.04] transition-colors"
-                                    >
+                                    <TableRow key={q.id}>
                                       <TableCell className="text-center text-slate-500 dark:text-slate-400 font-bold text-sm pl-8 font-mono">
                                         {String(qIndex + 1).padStart(2, "0")}
                                       </TableCell>

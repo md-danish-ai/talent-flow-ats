@@ -247,15 +247,13 @@ export function ResultTableView({
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
         <TableHeader>
-          <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
+          <TableRow>
             {onlyDownloadAction ? (
-              <TableHead className="w-[50px] text-center font-bold text-foreground/80">
-                #
-              </TableHead>
+              <TableHead className="w-[50px] text-center">#</TableHead>
             ) : (
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-2">
-                  <span className="w-[40px] shrink-0"></span>
+                  <span className="w-[40px] shrink-0 text-center">#</span>
                   <Checkbox
                     checked={allSelected}
                     onChange={toggleSelectAll}
@@ -266,58 +264,58 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("candidate") && (
-              <TableHead className="min-w-[200px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[200px] whitespace-nowrap">
                 Candidate
               </TableHead>
             )}
             {visibleColumns.includes("department") && (
-              <TableHead className="min-w-[130px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[130px] whitespace-nowrap text-left">
                 Department
               </TableHead>
             )}
             {visibleColumns.includes("test_level") && (
-              <TableHead className="min-w-[110px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[110px] whitespace-nowrap text-left">
                 Exam Level
               </TableHead>
             )}
             {visibleColumns.includes("paper") && (
-              <TableHead className="min-w-[140px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[140px] whitespace-nowrap text-left">
                 Assigned Paper
               </TableHead>
             )}
             {visibleColumns.includes("attempts") && (
-              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap">
                 Total Attempts
               </TableHead>
             )}
             {visibleColumns.includes("marks") && (
-              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap">
                 Marks
               </TableHead>
             )}
             {visibleColumns.includes("grade") && (
-              <TableHead className="text-center min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[100px] whitespace-nowrap">
                 Overall Grade
               </TableHead>
             )}
 
             {visibleColumns.includes("typing_wpm") && (
-              <TableHead className="text-center min-w-[110px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Typing WPM
               </TableHead>
             )}
             {visibleColumns.includes("typing_acc") && (
-              <TableHead className="text-center min-w-[110px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Accuracy
               </TableHead>
             )}
             {visibleColumns.includes("status") && (
-              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80 text-center">
+              <TableHead className="min-w-[120px] whitespace-nowrap text-center">
                 Interview Progress
               </TableHead>
             )}
             {visibleColumns.includes("project_lead") && (
-              <TableHead className="min-w-[150px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[150px] whitespace-nowrap">
                 Project Lead
               </TableHead>
             )}

@@ -255,30 +255,24 @@ export function UserListing({ initialData }: UserListingProps) {
             isBackgroundLoading={isBackgroundLoading}
           >
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
-              <Table className="h-full">
-                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-border">
+              <Table aria-label="Candidates list table">
+                <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Candidate Profile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Mobile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                    <TableHead>Candidate Profile</TableHead>
+                    <TableHead>Mobile</TableHead>
+                    <TableHead className="text-center">
                       Department / Exam Level
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+                    <TableHead className="text-center">
                       Attempt Status
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="text-center">
                       Account Status
                     </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Action
-                    </TableHead>
+                    <TableHead className="text-center">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -305,10 +299,7 @@ export function UserListing({ initialData }: UserListingProps) {
                     />
                   ) : (
                     users.map((row, idx) => (
-                      <TableRow
-                        key={row.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
-                      >
+                      <TableRow key={row.id}>
                         <TableCell className="font-bold text-center align-middle py-3 text-slate-500">
                           {(currentPage - 1) * pageSize + idx + 1}
                         </TableCell>

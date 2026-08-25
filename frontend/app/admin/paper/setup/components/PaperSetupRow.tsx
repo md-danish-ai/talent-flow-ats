@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Wand2,
   SlidersHorizontal,
+  Calendar,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
@@ -45,7 +46,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
 
   return (
-    <TableRow className="group/row border-b border-border transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+    <TableRow className="group/row">
       {isVisible("sr_no") && (
         <TableCell className="text-center font-bold text-muted-foreground/60">
           {((currentPage - 1) * pageSize + index + 1)
@@ -104,8 +105,15 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
         </TableCell>
       )}
       {isVisible("created_at") && (
-        <TableCell className="text-muted-foreground/60 text-[13px] font-medium whitespace-nowrap">
-          {row.created_at ? formatDate(row.created_at) : "N/A"}
+        <TableCell className="text-muted-foreground text-[13px] font-medium whitespace-nowrap">
+          {row.created_at ? (
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} className="text-muted-foreground shrink-0" />
+              <span>{formatDate(row.created_at)}</span>
+            </div>
+          ) : (
+            "N/A"
+          )}
         </TableCell>
       )}
       {isVisible("active") && (

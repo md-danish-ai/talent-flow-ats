@@ -138,25 +138,17 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
             isBackgroundLoading={isBackgroundLoading}
           >
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
-              <Table className="h-full">
-                <TableHeader className="bg-muted/30">
+              <Table aria-label="Project Leads list table">
+                <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Name
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Mobile
-                    </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Email
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
-                    <TableHead className="w-[100px] text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Mobile</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="w-[100px] text-center">
                       Actions
                     </TableHead>
                   </TableRow>
