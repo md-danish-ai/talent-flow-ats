@@ -98,7 +98,7 @@ export function SubjectiveClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Question", pinned: true },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -263,7 +263,7 @@ export function SubjectiveClient() {
                       </TableHead>
                     )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
+                      <TableHead>Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>

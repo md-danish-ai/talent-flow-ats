@@ -40,13 +40,21 @@ export function QuestionTableSkeleton({
               );
             }
 
+            if (colId === "passage") {
+              return (
+                <TableCell key={colId} className="w-[300px] max-w-[300px]">
+                  <div className="pl-3 border-l-2 border-border/40 py-0.5">
+                    <Skeleton className="h-4 w-full rounded mb-1" />
+                    <Skeleton className="h-3 w-2/3 rounded opacity-60" />
+                  </div>
+                </TableCell>
+              );
+            }
+
             if (colId === "question") {
               return (
-                <TableCell key={colId} className="min-w-[300px]">
-                  <div className="flex flex-col gap-2">
-                    <Skeleton className="h-6 w-full max-w-[250px] rounded" />
-                    <Skeleton className="h-3 w-1/2 rounded opacity-60" />
-                  </div>
+                <TableCell key={colId} className="w-[300px] max-w-[300px]">
+                  <Skeleton className="h-5 w-full rounded" />
                 </TableCell>
               );
             }
