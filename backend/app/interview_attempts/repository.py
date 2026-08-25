@@ -44,8 +44,18 @@ def _normalize_text(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
+def _normalize_answer_text(value: str) -> str:
+    if not value:
+        return ""
+    text = str(value).strip().lower().rstrip(".!?,;")
+    return " ".join(text.split())
+
+
 def _extract_option_key(value: str) -> str | None:
-    match = re.match(r"^\s*([a-z0-9]+)\s*[\.\)\:\-]?", value.strip(), flags=re.I)
+    val = str(value).strip()
+    if len(val.split()) > 1:
+        return None
+    match = re.match(r"^([a-z0-9]{1,4})[\.\)\:\-]?$", val, flags=re.I)
     if not match:
         return None
     return match.group(1).lower()
@@ -56,16 +66,20 @@ def _split_answer_values(raw_value: str) -> list[str]:
 
 
 def _is_answer_correct(user_answer: str, correct_answer: str) -> bool:
-    normalized_user = _normalize_text(user_answer)
-    normalized_correct = _normalize_text(correct_answer)
+    normalized_user = _normalize_answer_text(user_answer)
+    normalized_correct = _normalize_answer_text(correct_answer)
     if not normalized_user or not normalized_correct:
         return False
     if normalized_user == normalized_correct:
         return True
     user_parts = _split_answer_values(user_answer)
     correct_parts = _split_answer_values(correct_answer)
-    user_keys = {_extract_option_key(p) or _normalize_text(p) for p in user_parts}
-    correct_keys = {_extract_option_key(p) or _normalize_text(p) for p in correct_parts}
+    user_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in user_parts
+    }
+    correct_keys = {
+        _extract_option_key(p) or _normalize_answer_text(p) for p in correct_parts
+    }
     return user_keys == correct_keys
 
 
@@ -830,6 +844,12 @@ def start_attempt(paper_id: int, user_id: int) -> dict:
         )
 
         if existing:
+            # Update user process status to inprogress if started
+            user = db.query(User).filter(User.id == user_id).first()
+            if user and user.process_status != ProcessStatus.INPROGRESS.value:
+                user.process_status = ProcessStatus.INPROGRESS.value
+                db.commit()
+
             # Server-side timer enforcement
             if total_dur > 0 and existing.status == InterviewStatus.STARTED.value:
                 started_utc = existing.started_at
@@ -982,6 +1002,10 @@ def save_answer(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
+
         db.commit()
 
         return {
@@ -1076,6 +1100,10 @@ def save_answers_batch(
         attempted_count = sum(1 for r in responses if r.get("is_attempted"))
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and user.process_status != ProcessStatus.INPROGRESS.value:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         db.commit()
 
@@ -1376,6 +1404,72 @@ def get_admin_user_results(
                 db.query(UserDetail).filter(UserDetail.user_id == user.id).first()
             )
 
+            # --- Live subject preview for in-progress (started) records ---
+            is_in_progress = record.status == InterviewStatus.STARTED.value
+            subject_results_to_show = record.subject_grades or []
+
+            if is_in_progress and not subject_results_to_show and record.responses:
+                # Build a lightweight section breakdown from saved responses only
+                _section_order: list[str] = []
+                _section_stats: dict[str, dict] = {}
+                _resp_qids = [r["question_id"] for r in (record.responses or [])]
+                _resp_questions = (
+                    db.query(Question).filter(Question.id.in_(_resp_qids)).all()
+                    if _resp_qids
+                    else []
+                )
+                _q_map = {q.id: q for q in _resp_questions}
+
+                for _resp in record.responses or []:
+                    _qid = _resp.get("question_id")
+                    _q = _q_map.get(_qid)
+                    if not _q:
+                        continue
+                    _s_name = _resp.get("section_name") or "General"
+                    _s_code = _resp.get("section_code") or "GENERAL"
+                    if _s_name not in _section_stats:
+                        _section_order.append(_s_name)
+                        _section_stats[_s_name] = {
+                            "section_code": _s_code,
+                            "section_name": _s_name,
+                            "total_marks": 0.0,
+                            "obtained_marks": 0.0,
+                            "total_questions": 0,
+                            "attempted_count": 0,
+                            "unattempted_count": 0,
+                            "is_in_progress": True,
+                        }
+                    _st = _section_stats[_s_name]
+                    _st["total_marks"] += float(_q.marks or 0)
+                    _st["total_questions"] += 1
+                    if _resp.get("is_attempted"):
+                        _st["attempted_count"] += 1
+                    else:
+                        _st["unattempted_count"] += 1
+
+                _paper_obj_live = (
+                    db.query(Paper).filter(Paper.id == record.paper_id).first()
+                )
+                _grade_settings_live = (
+                    (_paper_obj_live.grade_settings or []) if _paper_obj_live else []
+                )
+
+                subject_results_to_show = []
+                for _s_name in _section_order:
+                    _st = _section_stats[_s_name]
+                    _pct = (
+                        round((_st["obtained_marks"] / _st["total_marks"] * 100), 2)
+                        if _st["total_marks"] > 0
+                        else 0.0
+                    )
+                    subject_results_to_show.append(
+                        {
+                            **_st,
+                            "percentage": _pct,
+                            "grade": "In Progress",
+                        }
+                    )
+
             results.append(
                 {
                     "user_id": user.id,
@@ -1405,7 +1499,8 @@ def get_admin_user_results(
                         "overall_grade": record.overall_grade,
                         "active_duration_seconds": record.active_duration_seconds,
                         "typing_stats": typing_stats,
-                        "subject_results": record.subject_grades,
+                        "is_in_progress": is_in_progress,
+                        "subject_results": subject_results_to_show,
                         "interviewers": [
                             {"name": row[0], "status": row[1]}
                             for row in (
@@ -1863,7 +1958,7 @@ def reset_user_today_attempt(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                InterviewRecord.created_at >= today_start,
+                InterviewRecord.started_at >= today_start,
             )
             .order_by(desc(InterviewRecord.id))
             .first()
@@ -1879,6 +1974,10 @@ def reset_user_today_attempt(user_id: int) -> dict:
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.READY.value
 
         today = datetime.utcnow().date()
         assignment = (
@@ -2109,7 +2208,8 @@ def reset_subject_responses(
         flag_modified(record, "responses")
 
         # Reset attempt status
-        record.started_at = datetime.now(timezone.utc)
+        if record.status != InterviewStatus.STARTED.value:
+            record.started_at = datetime.now(timezone.utc)
         record.status = InterviewStatus.STARTED.value
         record.submitted_at = None
         record.completion_reason = None
@@ -2125,10 +2225,14 @@ def reset_subject_responses(
         record.attempted_count = attempted_count
         record.unattempted_count = max(record.total_questions - attempted_count, 0)
 
-        # Reset UserDetail + PaperAssignment
+        # Reset UserDetail + PaperAssignment + User process_status
         user_detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
         if user_detail:
             user_detail.is_interview_submitted = False
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.process_status = ProcessStatus.INPROGRESS.value
 
         today = datetime.utcnow().date()
         assignment = (
@@ -2229,7 +2333,7 @@ def get_active_attempt_status(user_id: int) -> dict:
             db.query(InterviewRecord)
             .filter(
                 InterviewRecord.user_id == user_id,
-                func.date(InterviewRecord.created_at) == today,
+                func.date(InterviewRecord.started_at) == today,
             )
             .order_by(desc(InterviewRecord.id))
             .first()

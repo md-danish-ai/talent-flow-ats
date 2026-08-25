@@ -98,7 +98,7 @@ export function SubjectiveClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Question", pinned: true },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -254,16 +254,16 @@ export function SubjectiveClient() {
           >
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
               <Table className="h-full">
-                <TableHeader className="bg-muted/30">
+                <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px] text-center">#</TableHead>
                     {visibleColumns.includes("srNo") && (
                       <TableHead className="w-[80px] text-center">
                         Sr. No.
                       </TableHead>
                     )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
+                      <TableHead>Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>

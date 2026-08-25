@@ -7,12 +7,13 @@ export interface SubjectResult {
   total_questions: number;
   attempted_count: number;
   unattempted_count: number;
-  correct_count: number;
-  incorrect_count: number;
+  correct_count?: number;
+  incorrect_count?: number;
   obtained_marks: number;
   total_marks: number;
   percentage: number;
   grade: string;
+  is_in_progress?: boolean;
 }
 
 export interface TypingStats {
@@ -38,6 +39,7 @@ export interface AdminUserLatestAttempt {
   overall_grade?: string;
   typing_stats?: TypingStats | null;
   subject_results?: SubjectResult[];
+  is_in_progress?: boolean;
   interviewers?: Array<{ name: string; status: string }>;
 }
 

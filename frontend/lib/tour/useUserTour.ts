@@ -54,34 +54,35 @@ export function useUserTour({
     }
 
     const timer = setTimeout(() => {
-      if (!isDetailsComplete) {
-        const onboardingKey = TOUR_STORAGE_KEYS.ONBOARDING(user.id);
-        const hasSeenOnboarding = localStorage.getItem(onboardingKey);
+      const onboardingKey = TOUR_STORAGE_KEYS.ONBOARDING(user.id);
+      const reinterviewKey = TOUR_STORAGE_KEYS.REINTERVIEW(user.id);
 
-        if (!hasSeenOnboarding) {
-          startTourWithSteps({
-            steps: ONBOARDING_TOUR_STEPS,
-            onDestroyed: () => {
-              localStorage.setItem(onboardingKey, "true");
-            },
-          });
-        }
+      const hasSeenOnboarding = localStorage.getItem(onboardingKey);
+      const hasSeenReinterview = localStorage.getItem(reinterviewKey);
+
+      // If user has already seen any dashboard tour, do not auto-launch again
+      if (hasSeenOnboarding || hasSeenReinterview) {
         return;
       }
 
-      if (isDetailsComplete && !isInterviewSubmitted) {
-        const reinterviewKey = TOUR_STORAGE_KEYS.REINTERVIEW(user.id);
-        const hasSeenReinterview = localStorage.getItem(reinterviewKey);
-
-        if (!hasSeenReinterview) {
-          startTourWithSteps({
-            steps: REINTERVIEW_TOUR_STEPS,
-            onDestroyed: () => {
-              localStorage.setItem(reinterviewKey, "true");
-            },
-          });
-        }
+      if (!isDetailsComplete) {
+        startTourWithSteps({
+          steps: ONBOARDING_TOUR_STEPS,
+          onDestroyed: () => {
+            localStorage.setItem(onboardingKey, "true");
+            localStorage.setItem(reinterviewKey, "true");
+          },
+        });
+        return;
       }
+
+      startTourWithSteps({
+        steps: REINTERVIEW_TOUR_STEPS,
+        onDestroyed: () => {
+          localStorage.setItem(onboardingKey, "true");
+          localStorage.setItem(reinterviewKey, "true");
+        },
+      });
     }, 700);
 
     return () => clearTimeout(timer);

@@ -21,7 +21,7 @@ import { evaluationsApi, getAllNotifications } from "@lib/api";
 import { EvaluationTask, NotificationItem } from "@types";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
-import { cn } from "@lib/utils";
+import { cn, formatDate, formatDateTime, parseUTCDate } from "@lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ActivityItem } from "@components/ui-cards/ActivityItem";
 import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
@@ -254,9 +254,12 @@ export default function ProjectLeadDashboardClient({
                       description={
                         <NotificationFormatter message={notif.message} />
                       }
-                      time={formatDistanceToNow(new Date(notif.created_at), {
-                        addSuffix: true,
-                      })}
+                      time={formatDistanceToNow(
+                        parseUTCDate(notif.created_at) || new Date(),
+                        {
+                          addSuffix: true,
+                        },
+                      )}
                       color={colorClass}
                       bgClassName={bgClass}
                       className="p-3.5 border border-border/30 rounded-xl bg-muted/10 dark:bg-slate-900/40 hover:bg-muted/20 dark:hover:bg-slate-900/60"
@@ -372,10 +375,7 @@ export default function ProjectLeadDashboardClient({
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-                  <span>
-                    Assigned on{" "}
-                    {new Date(selectedTask.created_at).toLocaleDateString()}
-                  </span>
+                  <span>Assigned on {formatDate(selectedTask.created_at)}</span>
                 </div>
               </div>
 
@@ -450,7 +450,7 @@ export default function ProjectLeadDashboardClient({
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
                   <span>
                     Received on{" "}
-                    {new Date(selectedNotification.created_at).toLocaleString()}
+                    {formatDateTime(selectedNotification.created_at)}
                   </span>
                   <span
                     className={cn(

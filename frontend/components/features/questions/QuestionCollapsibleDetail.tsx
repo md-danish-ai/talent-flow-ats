@@ -7,16 +7,12 @@ import {
   BookOpen,
   Layers,
   Trophy,
-  Building2,
-  User,
-  Phone,
-  MapPin,
   Keyboard,
   FileText,
-  Info,
   ListChecks,
+  Calendar,
 } from "lucide-react";
-import { cn } from "@lib/utils";
+import { cn, formatDate } from "@lib/utils";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 import { STYLE_CONFIG } from "@lib/config/style";
 
@@ -456,6 +452,18 @@ export const QuestionCollapsibleDetail: React.FC<
               </Typography>
             </div>
           </div>
+
+          {question.created_at && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+              <Calendar size={13} className="text-brand-primary shrink-0" />
+              <span>
+                Created:{" "}
+                <span className="font-semibold text-foreground">
+                  {formatDate(question.created_at)}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="p-6 space-y-10">

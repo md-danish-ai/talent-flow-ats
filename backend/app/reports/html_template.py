@@ -155,12 +155,12 @@ REPORT_HTML_TEMPLATE = """<!DOCTYPE html>
 
 <!-- 2. EDUCATIONAL QUALIFICATION -->
 <p class="section-title">2. Educational Qualification</p>
-<table border="0.5" bordercolor="#000000" style="width: 100%;">
+<table border="0.5" bordercolor="#000000" style="width: 100%; table-layout: fixed; word-wrap: break-word;">
   <thead>
     <tr>
       <th style="width: 13%; text-align: center;">Education Level</th>
       <th style="width: 13%; text-align: center;">Education Details</th>
-      <th style="width: 18%; text-align: center;">School/College</th>
+      <th style="width: 18%; text-align: center; word-wrap: break-word; overflow-wrap: break-word;">School/College</th>
       <th style="width: 15%; text-align: center;">Board/University</th>
       <th style="width: 8%; text-align: center;">Medium</th>
       <th style="width: 13%; text-align: center;">Passing Year</th>

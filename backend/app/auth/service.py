@@ -549,7 +549,15 @@ def get_users_by_role(
                 "created_at": row.User.created_at.isoformat()
                 if row.User.created_at
                 else None,
-                "process_status": row.User.process_status,
+                "process_status": (
+                    ProcessStatus.INPROGRESS.value
+                    if (
+                        row.attempt_id is not None
+                        and row.attempt_status == InterviewStatus.STARTED.value
+                        and not row.is_interview_submitted
+                    )
+                    else row.User.process_status
+                ),
                 "test_level_id": row.User.test_level_id,
                 "test_level_name": row.User.test_level.name
                 if row.User.test_level

@@ -1,12 +1,12 @@
 import React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Calendar } from "lucide-react";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Checkbox } from "@components/ui-elements/Checkbox";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
 import { type NotificationItem } from "@types";
-import { formatDateShort, formatTime, parseUTCDate } from "@lib/utils";
+import { formatDateShort, formatTime } from "@lib/utils";
 import { DuplicateUserCards } from "./DuplicateUserCards";
 import { MatchBreakdownAnalysis } from "./MatchBreakdownAnalysis";
 import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
@@ -132,11 +132,13 @@ export const NotificationRow = React.memo<NotificationRowProps>(
             </TableCell>
           </>
         )}
-        <TableCell>
-          <Typography variant="body5" className="text-muted-foreground">
-            {formatDateShort(parseUTCDate(notif.created_at))}{" "}
-            {formatTime(parseUTCDate(notif.created_at))}
-          </Typography>
+        <TableCell className="whitespace-nowrap">
+          <div className="flex items-center gap-1.5 text-muted-foreground text-[12px]">
+            <Calendar size={12} className="shrink-0" />
+            <Typography variant="body5" className="text-muted-foreground">
+              {formatDateShort(notif.created_at)} {formatTime(notif.created_at)}
+            </Typography>
+          </div>
         </TableCell>
         <TableCell>
           <Badge

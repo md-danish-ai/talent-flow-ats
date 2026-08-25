@@ -1,8 +1,11 @@
+import io
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database.db import SessionLocal
 from app.papers import repository, schemas
+from app.papers.pdf_service import generate_paper_pdf_file
 from app.utils.status_codes import StatusCode, ResponseMessage, api_response
 from app.utils.dependencies import authenticate_user
 from app.utils.pagination import (
@@ -111,3 +114,34 @@ def update_grade_settings(
         ResponseMessage.UPDATED("Paper"),
         data=schemas.PaperResponse.model_validate(db_paper).model_dump(),
     )
+
+
+@router.get("/paper-details/{paper_id}/pdf")
+def download_paper_pdf(
+    paper_id: int,
+    show_answers: bool = Query(True),
+    db: Session = Depends(get_db),
+):
+    """Generate and stream a clean PDF for the question paper or official answer key."""
+    try:
+        pdf_bytes, filename = generate_paper_pdf_file(
+            db, paper_id=paper_id, show_answers=show_answers
+        )
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=StatusCode.NOT_FOUND,
+            detail=str(ve),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=StatusCode.INTERNAL_SERVER_ERROR,
+            detail=f"Paper PDF generation failed: {str(exc)}",
+        )

@@ -157,7 +157,7 @@ export const AddImageSubjectiveQuestionForm = ({
             <HelpCircle size={18} />
           </div>
           <Typography variant="body3" weight="bold">
-            Question Details
+            Question Text
           </Typography>
         </div>
 

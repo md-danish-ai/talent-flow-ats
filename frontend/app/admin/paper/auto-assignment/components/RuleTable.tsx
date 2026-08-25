@@ -20,6 +20,7 @@ import {
 } from "@lib/api/paper-assignments";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
+import { formatDate } from "@lib/utils";
 
 interface RuleTableProps {
   rules: AutoAssignmentRuleResponse[];
@@ -71,24 +72,12 @@ export function RuleTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-              Sr. No.
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-              Deparment / Exam Level
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-              Active Date
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider">
-              Papers in Pool
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase tracking-wider text-center">
-              Status
-            </TableHead>
-            <TableHead className="w-[100px] text-center font-bold text-slate-500 text-xs uppercase tracking-wider">
-              Actions
-            </TableHead>
+            <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+            <TableHead>Department / Exam Level</TableHead>
+            <TableHead className="text-center">Active Date</TableHead>
+            <TableHead>Papers in Pool</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="w-[100px] text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -105,10 +94,7 @@ export function RuleTable({
             rules.map((row, idx) => {
               const isPast = isPastDate(row.assigned_date);
               return (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
-                >
+                <TableRow key={row.id}>
                   <TableCell className="font-medium text-center align-middle">
                     {idx + 1}
                   </TableCell>
@@ -137,14 +123,7 @@ export function RuleTable({
                         weight="bold"
                         className="text-slate-700 dark:text-slate-300 tracking-wide font-mono"
                       >
-                        {new Date(row.assigned_date).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}
+                        {formatDate(row.assigned_date)}
                       </Typography>
                     </div>
                   </TableCell>

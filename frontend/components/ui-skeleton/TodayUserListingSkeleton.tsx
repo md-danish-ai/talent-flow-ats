@@ -45,7 +45,7 @@ export function TodayUserListingSkeleton({
             <Skeleton className="h-6 w-24 rounded opacity-80" />
           </TableCell>
 
-          {/* Test Level */}
+          {/* Exam Level */}
           <TableCell className="align-middle py-4">
             <Skeleton className="h-6 w-20 rounded opacity-80" />
           </TableCell>

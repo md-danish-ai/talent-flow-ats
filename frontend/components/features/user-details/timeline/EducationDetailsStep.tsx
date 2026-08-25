@@ -85,6 +85,45 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       className="space-y-5 pt-2"
     >
       <div className="flex flex-col gap-5">
+        {/* Simple Guidelines Box for Candidates */}
+        <div className="p-4 rounded-xl bg-card border border-border/80 shadow-sm text-xs">
+          <p className="font-semibold text-foreground mb-2 flex items-center gap-1.5">
+            <span className="text-sm">📌</span>{" "}
+            <strong>How to Fill Education Details / Guidelines:</strong>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-muted-foreground">
+            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
+              <span className="font-semibold text-foreground block mb-0.5">
+                1️⃣ 10th / High School:
+              </span>
+              <span>
+                Enter <strong>General</strong> or <strong>All Subjects</strong>{" "}
+                in Education Details.
+              </span>
+            </div>
+            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
+              <span className="font-semibold text-foreground block mb-0.5">
+                2️⃣ 12th / Intermediate:
+              </span>
+              <span>
+                Enter your stream — <strong>PCM</strong> (Maths),{" "}
+                <strong>PCB</strong> (Biology), <strong>Commerce</strong>,{" "}
+                <strong>Arts</strong>, or <strong>Agriculture</strong>.
+              </span>
+            </div>
+            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
+              <span className="font-semibold text-foreground block mb-0.5">
+                3️⃣ Graduation / Diploma / PG:
+              </span>
+              <span>
+                Enter your course & branch — e.g. <strong>B.Tech (CSE)</strong>,{" "}
+                <strong>BCA</strong>, <strong>B.Com</strong>,{" "}
+                <strong>BA</strong>, <strong>B.Sc</strong>.
+              </span>
+            </div>
+          </div>
+        </div>
+
         <form.Subscribe selector={(state) => [state.values.education]}>
           {([education]) => {
             const lastEligibleIndex = education.reduce(
@@ -125,6 +164,38 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                     item.type === "10th Std" ||
                     item.type === "12th / Intermediate" ||
                     item.type === "12th Std";
+                  const is10th =
+                    item.type === "10th / High School" ||
+                    item.type === "10th Std" ||
+                    item.type === "10th";
+                  const is12th =
+                    item.type === "12th / Intermediate" ||
+                    item.type === "12th Std" ||
+                    item.type === "12th";
+                  const isHigher = !is10th && !is12th && Boolean(item.type);
+
+                  let detailsPlaceholder =
+                    "e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General...";
+                  let detailsNote =
+                    "Enter Stream / Specialization (e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General).";
+
+                  if (is10th) {
+                    detailsPlaceholder =
+                      "e.g. General, All Subjects, Science...";
+                    detailsNote =
+                      "For 10th: Enter 'General' or 'All Subjects'.";
+                  } else if (is12th) {
+                    detailsPlaceholder =
+                      "e.g. PCM (Maths), PCB (Bio), Commerce, Arts, Agriculture...";
+                    detailsNote =
+                      "For 12th: Enter your stream (PCM, PCB, Commerce, Arts, Agriculture).";
+                  } else if (isHigher) {
+                    detailsPlaceholder =
+                      "e.g. B.Tech (CSE), BCA, B.Com, BA, B.Sc, Diploma...";
+                    detailsNote =
+                      "Enter Degree & Branch (e.g. B.Tech CSE, BCA, B.Com, BA, B.Sc).";
+                  }
+
                   const isLastEligible =
                     !isSchool && index === lastEligibleIndex;
                   const isPursuing = isLastEligible && Boolean(item.isPursuing);
@@ -228,7 +299,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* Education Details */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Education Details{" "}
+                            Education Details (Stream / Branch){" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -244,7 +315,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   onBlur={field.handleBlur}
                                   disabled={!isEducationSelected}
                                   className="disabled:opacity-50 disabled:cursor-not-allowed"
-                                  placeholder="e.g. Science, Arts, B.Tech..."
+                                  placeholder={detailsPlaceholder}
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
@@ -258,6 +329,12 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                       )}
                                     </p>
                                   )}
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  <span className="font-semibold text-foreground/80">
+                                    Note:
+                                  </span>{" "}
+                                  {detailsNote}
+                                </p>
                               </div>
                             )}
                           </form.Field>

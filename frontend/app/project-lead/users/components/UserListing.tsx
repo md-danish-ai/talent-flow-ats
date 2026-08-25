@@ -28,6 +28,7 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { Pagination } from "@components/ui-elements/Pagination";
+import { formatDate } from "@lib/utils";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
 import { EvaluationModal } from "./EvaluationModal";
 import { getGradeConfig } from "@lib/utils";
@@ -164,7 +165,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
               <div className="flex flex-col space-y-2">
                 <Table>
-                  <TableHeader className="bg-muted/30">
+                  <TableHeader>
                     <TableRow>
                       <TableHead>Candidate</TableHead>
                       <TableHead className="text-center">Status</TableHead>
@@ -197,10 +198,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                       />
                     ) : (
                       tasks.map((task) => (
-                        <TableRow
-                          key={task.id}
-                          className="hover:bg-muted/20 transition-colors"
-                        >
+                        <TableRow key={task.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar
@@ -209,7 +207,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                                 size="sm"
                               />
                               <div className="flex flex-col">
-                                <span className="font-bold text-[13px] uppercase tracking-tight">
+                                <span className="font-bold text-[13px] tracking-tight">
                                   {task.candidate_name}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -263,7 +261,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                           <TableCell className="text-muted-foreground text-xs">
                             <div className="flex items-center gap-1">
                               <Calendar size={12} />
-                              {new Date(task.created_at).toLocaleDateString()}
+                              {formatDate(task.created_at)}
                             </div>
                           </TableCell>
                           <TableCell className="text-right">

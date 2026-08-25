@@ -187,6 +187,14 @@ export async function apiClient<T>(
         typeof document !== "undefined" &&
         !isAuthRequest
       ) {
+        // Read role BEFORE clearing cookies
+        const roleCookie = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("role="))
+          ?.split("=")[1];
+        const isAdminOrLead =
+          roleCookie === "admin" || roleCookie === "project_lead";
+
         // Clear all auth cookies on 401 Unauthorized
         document.cookie =
           "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
@@ -197,10 +205,12 @@ export async function apiClient<T>(
 
         const isInactive =
           apiErr.message?.toLowerCase().includes("inactive") || false;
-        // Redirect to sign-in page with clear_auth parameter
+
+        // Admin / Project-Lead → sign-in, User → sign-up (root)
+        const baseRedirect = isAdminOrLead ? "/sign-in" : "/";
         window.location.href = isInactive
-          ? "/sign-in?clear_auth=1&inactive=1"
-          : "/sign-in?clear_auth=1";
+          ? `${baseRedirect}?clear_auth=1&inactive=1`
+          : `${baseRedirect}?clear_auth=1`;
       } else if (!silentError && method !== "GET" && !isAuthRequest) {
         // Auto error toast for all non-GET failures
         toast.error(apiErr.message, { title: `Error ${response.status}` });

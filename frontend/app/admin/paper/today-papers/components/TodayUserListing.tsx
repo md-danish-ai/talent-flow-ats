@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Users } from "lucide-react";
+import { Users, Settings } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@components/ui-elements/Button";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { getUsersByRole } from "@lib/api/auth";
 import { UserListResponse, PaginatedResponse } from "@types";
@@ -14,7 +16,11 @@ import { useListing } from "@hooks/useListing";
 import { UserTable } from "./UserTable";
 import { ListingFiltersDrawer } from "@components/ui-elements/ListingFiltersDrawer";
 import { ListingTransition } from "@components/ui-elements/ListingTransition";
-import { ListingHeaderActions } from "@components/ui-elements/ListingHeaderActions";
+import {
+  ListingBadge,
+  ListingIcons,
+} from "@components/ui-elements/ListingHeaderActions";
+import { AttemptStatusLegendBar } from "@components/ui-elements/StatusLegend";
 import { AssignPaperModal as AssignPaperSetModal } from "./AssignPaperSetModal";
 
 interface TodayUserListingProps {
@@ -128,83 +134,106 @@ export function TodayUserListing({
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
               <Users size={18} />
             </div>
-            CANDIDATES LIST
+            Today Candidates List
           </div>
         }
         action={
-          <ListingHeaderActions
-            isLoading={loading}
-            isBackgroundLoading={isBackgroundLoading}
-            totalItems={totalItems}
-            itemLabel="Users"
-            onRefresh={refresh}
-            onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-            isFilterOpen={isFilterOpen}
-            activeFiltersCount={activeFiltersCount}
-          />
-        }
-        className="mb-6 flex flex-col overflow-hidden"
-        bodyClassName="p-0 flex flex-row items-stretch w-full"
-      >
-        <div
-          className={cn(
-            "flex-1 flex flex-col min-w-0",
-            isFilterOpen && "border-r border-border/50",
-          )}
-        >
-          <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
-            <ListingTransition
+          <div className="flex items-center gap-3">
+            <ListingBadge
               isLoading={loading}
               isBackgroundLoading={isBackgroundLoading}
-            >
-              <UserTable
-                users={users}
-                loading={loading}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onAssignPaper={(user) => {
-                  setSelectedUser(user);
-                  setIsModalOpen(true);
-                }}
-              />
-            </ListingTransition>
+              totalItems={totalItems}
+              itemLabel="Users"
+            />
+            <div className="h-6 w-px bg-border/50 mx-0.5" />
+            <Link href="/admin/paper/auto-assignment">
+              <Button
+                variant="outline"
+                color="secondary"
+                animate="scale"
+                size="sm"
+                className="group gap-1.5 font-bold text-xs uppercase"
+              >
+                <Settings className="h-3.5 w-3.5 transition-transform duration-500 group-hover:rotate-180" />
+                Auto-Assignment Rules
+              </Button>
+            </Link>
+            <ListingIcons
+              isLoading={loading}
+              isBackgroundLoading={isBackgroundLoading}
+              onRefresh={refresh}
+              onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+              isFilterOpen={isFilterOpen}
+              activeFiltersCount={activeFiltersCount}
+            />
           </div>
-          {!loading && totalItems > 0 && (
-            <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            </div>
-          )}
-        </div>
+        }
+        className="mb-6 flex flex-col overflow-hidden"
+        bodyClassName="p-0 flex flex-col w-full"
+      >
+        <AttemptStatusLegendBar />
 
-        <ListingFiltersDrawer
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          registryKey="today-users"
-          filters={filters}
-          onFilterChange={handleSingleFilterChange}
-          onReset={resetFilters}
-          isLoading={loading}
-          dynamicOptions={{
-            department: [
-              { id: "all", label: "All Departments" },
-              ...allDepartments.map((dept) => ({
-                id: dept.name,
-                label: dept.name,
-              })),
-            ],
-            level: [
-              { id: "all", label: "All Levels" },
-              ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
-            ],
-          }}
-        />
+        <div className="flex flex-row items-stretch w-full flex-1">
+          <div
+            className={cn(
+              "flex-1 flex flex-col min-w-0",
+              isFilterOpen && "border-r border-border/50",
+            )}
+          >
+            <div className="flex-1 w-full flex flex-col min-w-0 overflow-hidden relative">
+              <ListingTransition
+                isLoading={loading}
+                isBackgroundLoading={isBackgroundLoading}
+              >
+                <UserTable
+                  users={users}
+                  loading={loading}
+                  currentPage={currentPage}
+                  pageSize={pageSize}
+                  onAssignPaper={(user) => {
+                    setSelectedUser(user);
+                    setIsModalOpen(true);
+                  }}
+                />
+              </ListingTransition>
+            </div>
+            {!loading && totalItems > 0 && (
+              <div className="border-t border-border bg-slate-50/30 dark:bg-slate-900/30">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
+          </div>
+
+          <ListingFiltersDrawer
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            registryKey="today-users"
+            filters={filters}
+            onFilterChange={handleSingleFilterChange}
+            onReset={resetFilters}
+            isLoading={loading}
+            dynamicOptions={{
+              department: [
+                { id: "all", label: "All Departments" },
+                ...allDepartments.map((dept) => ({
+                  id: dept.name,
+                  label: dept.name,
+                })),
+              ],
+              level: [
+                { id: "all", label: "All Levels" },
+                ...allLevels.map((lvl) => ({ id: lvl.name, label: lvl.name })),
+              ],
+            }}
+          />
+        </div>
       </MainCard>
 
       {selectedUser && (

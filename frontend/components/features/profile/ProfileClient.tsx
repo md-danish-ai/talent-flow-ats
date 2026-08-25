@@ -15,7 +15,6 @@ import {
   KeyRound,
 } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
-import { Card } from "@components/ui-cards/Card";
 import { Button } from "@components/ui-elements/Button";
 import { Input } from "@components/ui-elements/Input";
 import { Tabs } from "@components/ui-elements/Tabs";

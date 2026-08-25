@@ -24,6 +24,7 @@ import {
   Trophy,
   Clock,
   Trash2,
+  Eye,
 } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
 import { papersApi } from "@lib/api/papers";
@@ -243,6 +244,21 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
               </Typography>
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              animate="scale"
+              onClick={() =>
+                window.open(`/admin/paper/setup/preview/${paper.id}`, "_blank")
+              }
+              className="font-bold text-xs gap-1.5 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 transition-all shadow-sm"
+              startIcon={<Eye size={15} />}
+            >
+              Preview Paper
+            </Button>
+          </div>
         </div>
 
         <div className="p-8 space-y-8">
@@ -326,7 +342,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                 weight="black"
                 className="text-brand-primary/60 uppercase tracking-[0.2em] mb-1 z-10"
               >
-                Test Level
+                Exam Level
               </Typography>
               <Typography
                 variant="h2"
@@ -362,13 +378,13 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead></TableHead>
-                <TableHead>Sr. No.</TableHead>
+                <TableHead className="w-10 text-center">#</TableHead>
+                <TableHead className="w-20">Sr. No.</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Total Selected Questions</TableHead>
                 <TableHead>Question Count</TableHead>
                 <TableHead>Question Marks</TableHead>
-                <TableHead>Order</TableHead>
+                <TableHead className="text-center pr-8 w-24">Order</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -392,9 +408,8 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                       <div className="bg-white dark:bg-slate-950 border-t border-border shadow-inner">
                         <div className="p-4 bg-slate-50/50 dark:bg-slate-900/30 border-b border-border flex justify-between items-center px-8">
                           <Typography
-                            variant="body5"
-                            weight="bold"
-                            className="text-muted-foreground italic"
+                            variant="body4"
+                            className="text-slate-500 dark:text-slate-400 italic"
                           >
                             Select questions from the list below to assign them
                             to this subject.
@@ -405,7 +420,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             size="sm"
                             animate="scale"
                             startIcon={<PlusCircle size={16} />}
-                            className="font-black text-[10px] tracking-widest uppercase border-none px-6"
+                            className="font-bold text-xs px-6"
                             onClick={(e) => {
                               e.stopPropagation();
                               const sInfo = getSubjectNameAndCode(
@@ -429,142 +444,213 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                             )}
                           </Button>
                         </div>
-                        <Table>
-                          <TableHeader className="bg-slate-100 dark:bg-slate-800/50 border-none">
-                            <TableRow className="border-b-0 h-11 hover:bg-transparent">
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[80px] pl-8">
-                                No.
-                              </TableHead>
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px]">
-                                Questions
-                              </TableHead>
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] w-[180px]">
-                                Type
-                              </TableHead>
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[80px]">
-                                Marks
-                              </TableHead>
-                              <TableHead className="text-slate-500 font-black uppercase tracking-wider text-[10px] text-center w-[100px] pr-8">
-                                Action
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {assignedQuestions.filter(
-                              (q) => q.subject?.id === config.subject_id,
-                            ).length > 0 ? (
-                              assignedQuestions
-                                .filter(
-                                  (q) => q.subject?.id === config.subject_id,
-                                )
-                                .map((q, qIndex) => (
-                                  <TableRow key={q.id}>
-                                    <TableCell className="text-center font-bold text-slate-400 pl-8">
-                                      {String(qIndex + 1).padStart(2, "0")}
-                                    </TableCell>
-                                    <TableCell className="max-w-[250px]">
-                                      <Typography
-                                        variant="body5"
-                                        weight="bold"
-                                        className="line-clamp-2"
-                                      >
-                                        {q.question_text}
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge
-                                        variant="outline"
-                                        shape="square"
-                                        color="primary"
-                                      >
-                                        {q.question_type?.name || "N/A"}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                      <Typography
-                                        variant="body5"
-                                        weight="black"
-                                        className="text-brand-primary"
-                                      >
-                                        {q.marks}
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell className="text-center pr-8">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-sm"
-                                        onClick={() =>
-                                          handleRemoveQuestion(q.id)
-                                        }
-                                        className="text-slate-400 hover:text-red-500"
-                                      >
-                                        <Trash2 size={14} />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                ))
-                            ) : (
-                              <EmptyState
-                                colSpan={5}
-                                title="No questions assigned"
-                                description="No questions assigned to this subject yet. Click 'Add Content' to start."
-                              />
-                            )}
-                          </TableBody>
-                        </Table>
+                        {(() => {
+                          const subjectQuestions = assignedQuestions.filter(
+                            (q) => q.subject?.id === config.subject_id,
+                          );
+                          const hasPassage = subjectQuestions.some((q) =>
+                            Boolean(q.passage && q.passage.trim().length > 0),
+                          );
+                          return (
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="text-center w-20 pl-8">
+                                    Sr. No.
+                                  </TableHead>
+                                  {hasPassage && (
+                                    <TableHead className="w-[300px] pl-4">
+                                      Passage
+                                    </TableHead>
+                                  )}
+                                  <TableHead className="pl-4">
+                                    Question Text
+                                  </TableHead>
+                                  <TableHead className="text-center w-[180px]">
+                                    Question Type
+                                  </TableHead>
+                                  <TableHead className="text-center w-24">
+                                    Marks
+                                  </TableHead>
+                                  <TableHead className="text-center w-[100px] pr-8">
+                                    Action
+                                  </TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {subjectQuestions.length > 0 ? (
+                                  subjectQuestions.map((q, qIndex) => (
+                                    <TableRow key={q.id}>
+                                      <TableCell className="text-center text-slate-500 dark:text-slate-400 font-bold text-sm pl-8 font-mono">
+                                        {String(qIndex + 1).padStart(2, "0")}
+                                      </TableCell>
+                                      {hasPassage && (
+                                        <TableCell className="max-w-[300px] pl-4">
+                                          {q.passage ? (
+                                            <div className="pl-3 border-l-2 border-brand-primary/40 dark:border-brand-primary/60 py-0.5">
+                                              <p
+                                                className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed select-text"
+                                                title={q.passage}
+                                              >
+                                                {q.passage}
+                                              </p>
+                                            </div>
+                                          ) : (
+                                            <span className="text-slate-400 text-xs italic">
+                                              -
+                                            </span>
+                                          )}
+                                        </TableCell>
+                                      )}
+                                      <TableCell className="py-5 pl-4">
+                                        <Typography
+                                          variant="body4"
+                                          weight="bold"
+                                          className="text-slate-700 dark:text-slate-200 leading-relaxed line-clamp-2"
+                                        >
+                                          {q.question_text}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell className="text-center w-[180px]">
+                                        <Badge
+                                          variant="outline"
+                                          shape="square"
+                                          color="primary"
+                                        >
+                                          {q.question_type?.name || "N/A"}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-center w-24">
+                                        <Typography
+                                          variant="body4"
+                                          weight="black"
+                                          className="text-brand-primary text-[13px]"
+                                        >
+                                          {q.marks}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell className="text-center w-[100px] pr-8">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon-sm"
+                                          onClick={() =>
+                                            handleRemoveQuestion(q.id)
+                                          }
+                                          className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                                          title="Remove Question"
+                                        >
+                                          <Trash2 size={16} />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))
+                                ) : (
+                                  <EmptyState
+                                    colSpan={hasPassage ? 6 : 5}
+                                    title="No questions assigned"
+                                    description="Click Add Content to select questions."
+                                  />
+                                )}
+                              </TableBody>
+                            </Table>
+                          );
+                        })()}
                       </div>
                     }
                   >
                     <TableCell>
-                      <Typography variant="body5" weight="black">
-                        {String(index + 1).padStart(2, "0")}
-                      </Typography>
-                    </TableCell>
-                    <TableCell className="font-extrabold text-brand-primary hover:text-brand-hover cursor-pointer transition-all">
-                      {getSubjectName(config.subject_id)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        shape="square"
-                        color={
-                          assignedQuestions.filter(
-                            (q) => q.subject?.id === config.subject_id,
-                          ).length === config.question_count
-                            ? "success"
-                            : "primary"
-                        }
-                      >
-                        {
-                          assignedQuestions.filter(
-                            (q) => q.subject?.id === config.subject_id,
-                          ).length
-                        }{" "}
-                        / {config.question_count}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-black text-slate-500">
-                      {config.question_count}
-                    </TableCell>
-                    <TableCell>
                       <Typography
                         variant="body4"
                         weight="bold"
-                        className="text-slate-900 dark:text-slate-100"
+                        className="text-slate-500 dark:text-slate-400 font-mono text-sm"
                       >
-                        {config.total_marks.toFixed(2)}
-                        <span className="ml-1 text-[10px] text-muted-foreground/60 font-medium">
-                          PTS
-                        </span>
+                        {String(index + 1).padStart(2, "0")}
                       </Typography>
                     </TableCell>
+                    <TableCell className="font-bold text-brand-primary text-sm hover:text-brand-hover cursor-pointer transition-all">
+                      {getSubjectName(config.subject_id)}
+                    </TableCell>
+                    {/* Total Selected Questions Badge (Square Shape) */}
+                    <TableCell>
+                      {(() => {
+                        const selectedCount = assignedQuestions.filter(
+                          (q) => q.subject?.id === config.subject_id,
+                        ).length;
+                        const isComplete =
+                          selectedCount === config.question_count;
+                        const isOver = selectedCount > config.question_count;
+                        return (
+                          <div
+                            className={cn(
+                              "inline-flex items-center gap-2 px-2.5 py-1 rounded-md border text-xs font-mono font-bold transition-all shadow-2xs",
+                              isComplete
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                : isOver
+                                  ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "w-2 h-2 rounded-full shrink-0",
+                                isComplete
+                                  ? "bg-emerald-500"
+                                  : isOver
+                                    ? "bg-red-500"
+                                    : "bg-amber-500 animate-pulse",
+                              )}
+                            />
+                            <span className="font-black">
+                              {selectedCount} / {config.question_count}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded",
+                                isComplete
+                                  ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                                  : isOver
+                                    ? "bg-red-500/20 text-red-700 dark:text-red-300"
+                                    : "bg-amber-500/20 text-amber-700 dark:text-amber-300",
+                              )}
+                            >
+                              {isComplete
+                                ? "Done"
+                                : isOver
+                                  ? "Over"
+                                  : `${config.question_count - selectedCount} Left`}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
+
+                    {/* Question Count Chip (Colorful Blue) */}
+                    <TableCell>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/25 text-blue-600 dark:text-blue-400">
+                        <span className="font-mono font-black text-sm">
+                          {config.question_count}
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-blue-500/70 dark:text-blue-400/70 tracking-wider">
+                          Questions
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Question Marks Chip (Colorful Brand Primary) */}
+                    <TableCell>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand-primary/10 dark:bg-brand-primary/15 border border-brand-primary/20 text-brand-primary">
+                        <span className="font-mono font-black text-sm">
+                          {Number(config.total_marks.toFixed(2))}
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-brand-primary/70 tracking-wider">
+                          Marks
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Order Sequence Tag (Colorful Purple) */}
                     <TableCell className="text-center pr-8">
-                      <div
-                        className={cn(
-                          "w-9 h-9 bg-slate-900 dark:bg-brand-primary text-white flex items-center justify-center font-black text-xs shadow-lg shadow-slate-900/20 dark:shadow-brand-primary/20 transition-transform duration-300 group-hover/row:scale-110",
-                          STYLE_CONFIG.badgeRadius,
-                        )}
-                      >
+                      <div className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-400 font-mono font-black text-xs shadow-2xs group-hover/row:bg-purple-500/20 transition-all">
                         {config.order}
                       </div>
                     </TableCell>

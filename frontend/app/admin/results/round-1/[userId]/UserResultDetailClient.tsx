@@ -281,83 +281,81 @@ export function UserResultDetailClient({
         </div>
       </div>
 
-      {/* User Information Profile Card */}
+      {/* User Information Profile Card - Compact & Space Efficient */}
       <div
         className={cn(
-          "relative overflow-hidden border border-border bg-gradient-to-br from-card via-card to-brand-primary/5 p-6 md:p-8 shadow-sm",
+          "bg-card border border-border/70 p-5 md:p-6 shadow-sm space-y-4",
           STYLE_CONFIG.cardRadius,
         )}
       >
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <User size={120} />
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-          <div className="relative">
-            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-tr from-brand-primary to-brand-secondary p-1 shadow-xl">
-              <div className="h-full w-full rounded-full bg-card flex items-center justify-center overflow-hidden">
-                <div className="h-full w-full bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                  <User size={48} className="opacity-80" />
-                </div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          {/* Left: Avatar + Candidate Details */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              <div className="h-14 w-14 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary font-bold text-xl shadow-inner">
+                {attemptData.user.username?.charAt(0).toUpperCase() || (
+                  <User size={24} />
+                )}
               </div>
+              <div
+                className={cn(
+                  "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card",
+                  attemptData.user.is_active === false
+                    ? "bg-rose-500"
+                    : "bg-emerald-500",
+                )}
+              />
             </div>
-            <div
-              className={cn(
-                "absolute bottom-2 right-2 h-6 w-6 rounded-full border-4 border-card transition-colors duration-300",
-                attemptData.user.is_active === false
-                  ? "bg-rose-500"
-                  : "bg-emerald-500",
-              )}
-            />
-          </div>
 
-          <div className="flex-1 text-center md:text-left space-y-4">
-            <div>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-1">
-                <Typography variant="h3" className="font-bold">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Typography
+                  variant="h3"
+                  className="font-bold text-foreground text-lg sm:text-xl"
+                >
                   {attemptData.user.username}
                 </Typography>
                 {attemptData.user.is_active === false ? (
-                  <Badge variant="outline" color="error" shape="square">
+                  <Badge
+                    variant="outline"
+                    color="error"
+                    shape="square"
+                    className="text-[10px] font-bold"
+                  >
                     DEACTIVATED
                   </Badge>
                 ) : (
-                  <Badge variant="outline" color="success" shape="square">
+                  <Badge
+                    variant="outline"
+                    color="success"
+                    shape="square"
+                    className="text-[10px] font-bold"
+                  >
                     ACTIVE
                   </Badge>
                 )}
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/40">
+                  ID: #{userId}
+                </span>
               </div>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
-                    <History size={14} />
-                  </div>
-                  <Typography variant="body5" className="font-bold">
-                    ID: #{userId}
-                  </Typography>
-                </div>
-                <div className="h-4 w-px bg-border/60 hidden md:block" />
 
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-medium pt-0.5">
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(attemptData.user.mobile);
                     toast.success("Mobile number copied!");
                   }}
-                  className="group flex items-center gap-2 hover:text-brand-primary transition-colors duration-200"
+                  className="flex items-center gap-1.5 hover:text-brand-primary transition-colors"
                   title="Click to copy mobile"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-all">
-                    <Smartphone size={14} />
-                  </div>
-                  <Typography variant="body5" className="font-bold">
-                    {attemptData.user.mobile}
-                  </Typography>
-                  <Copy size={12} className="text-brand-primary/40" />
+                  <Smartphone size={13} className="text-orange-500" />
+                  <span>{attemptData.user.mobile}</span>
+                  <Copy size={11} className="opacity-50" />
                 </button>
 
                 {attemptData.user.email && (
                   <>
-                    <div className="h-4 w-px bg-border/60 hidden md:block" />
+                    <span className="text-border">•</span>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(
@@ -365,100 +363,82 @@ export function UserResultDetailClient({
                         );
                         toast.success("Email address copied!");
                       }}
-                      className="group flex items-center gap-2 hover:text-brand-primary transition-colors duration-200"
+                      className="flex items-center gap-1.5 hover:text-brand-primary transition-colors"
                       title="Click to copy email"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all">
-                        <Mail size={14} />
-                      </div>
-                      <Typography
-                        variant="body5"
-                        className="text-muted-foreground font-bold"
-                      >
-                        {attemptData.user.email}
-                      </Typography>
-                      <Copy size={12} className="text-brand-primary/40" />
+                      <Mail size={13} className="text-brand-primary" />
+                      <span>{attemptData.user.email}</span>
+                      <Copy size={11} className="opacity-50" />
                     </button>
                   </>
                 )}
               </div>
             </div>
+          </div>
 
-            <div className="pt-5 flex flex-wrap justify-center md:justify-start gap-4">
-              <div
-                className={cn(
-                  "flex flex-wrap items-center gap-4 px-4 py-3 bg-slate-900/5 dark:bg-white/5 border border-border/40 backdrop-blur-md",
-                  STYLE_CONFIG.cardRadius,
-                )}
-              >
-                {/* Department Pill */}
-                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                  <Briefcase
-                    size={18}
-                    className="text-orange-600 dark:text-orange-400"
-                  />
-                  <div className="flex flex-col -space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-tighter text-orange-600/70 dark:text-orange-400/70">
-                      Department
-                    </span>
-                    <span className="text-[15px] font-black text-orange-700 dark:text-orange-300">
-                      {attemptData.user.department || "N/A"}
-                    </span>
-                  </div>
-                </div>
+          {/* Right: 4 Metadata Chips */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap items-center gap-2 text-xs">
+            {/* Department */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-orange-500/5 border border-orange-500/20 rounded-xl">
+              <Briefcase
+                size={15}
+                className="text-orange-600 dark:text-orange-400 shrink-0"
+              />
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Department
+                </span>
+                <span className="font-bold text-foreground truncate max-w-[120px] block">
+                  {attemptData.user.department || "N/A"}
+                </span>
+              </div>
+            </div>
 
-                {/* Level Pill */}
-                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <Target
-                    size={18}
-                    className="text-blue-600 dark:text-blue-400"
-                  />
-                  <div className="flex flex-col -space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-tighter text-blue-600/70 dark:text-blue-400/70">
-                      Level
-                    </span>
-                    <span className="text-[15px] font-black text-blue-700 dark:text-blue-300">
-                      {attemptData.user.test_level || "N/A"}
-                    </span>
-                  </div>
-                </div>
+            {/* Level */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/5 border border-blue-500/20 rounded-xl">
+              <Target
+                size={15}
+                className="text-blue-600 dark:text-blue-400 shrink-0"
+              />
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Level
+                </span>
+                <span className="font-bold text-foreground truncate max-w-[100px] block">
+                  {attemptData.user.test_level || "N/A"}
+                </span>
+              </div>
+            </div>
 
-                {/* Sessions Pill */}
-                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <Layers
-                    size={18}
-                    className="text-emerald-600 dark:text-emerald-400"
-                  />
-                  <div className="flex flex-col -space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-600/70 dark:text-emerald-400/70">
-                      Total Sessions
-                    </span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[15px] font-black text-emerald-700 dark:text-emerald-300">
-                        {totalAttempts}
-                      </span>
-                      <span className="text-[11px] font-bold text-emerald-600/60 dark:text-emerald-400/60">
-                        ({submittedAttempts} Done)
-                      </span>
-                    </div>
-                  </div>
-                </div>
+            {/* Sessions */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+              <Layers
+                size={15}
+                className="text-emerald-600 dark:text-emerald-400 shrink-0"
+              />
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Sessions
+                </span>
+                <span className="font-bold text-foreground">
+                  {totalAttempts}{" "}
+                  <span className="text-[11px] font-semibold text-muted-foreground">
+                    ({submittedAttempts} Done)
+                  </span>
+                </span>
+              </div>
+            </div>
 
-                {/* Activity Pill */}
-                <div className="flex items-center gap-3.5 px-5 py-2.5 bg-slate-500/10 border border-slate-500/20 rounded-xl">
-                  <Calendar
-                    size={18}
-                    className="text-slate-600 dark:text-slate-400"
-                  />
-                  <div className="flex flex-col -space-y-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-tighter text-slate-600/70 dark:text-slate-400/70">
-                      Last Activity
-                    </span>
-                    <span className="text-[15px] font-black text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                      {lastAttemptDate}
-                    </span>
-                  </div>
-                </div>
+            {/* Last Activity */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border border-border/50 rounded-xl">
+              <Calendar size={15} className="text-brand-primary shrink-0" />
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Last Activity
+                </span>
+                <span className="font-bold text-foreground whitespace-nowrap">
+                  {lastAttemptDate}
+                </span>
               </div>
             </div>
           </div>

@@ -128,7 +128,7 @@ export function ImageMCQClient({
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
     { id: "image", label: "Image" },
-    { id: "question", label: "Question", pinned: true },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -291,7 +291,7 @@ export function ImageMCQClient({
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px] text-center">#</TableHead>
                     {visibleColumns.includes("srNo") && (
                       <TableHead className="w-[80px] text-center">
                         Sr. No.
@@ -303,7 +303,7 @@ export function ImageMCQClient({
                       </TableHead>
                     )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
+                      <TableHead>Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>

@@ -78,7 +78,7 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
               weight="black"
               className="text-brand-primary uppercase tracking-[0.15em] text-[10px]"
             >
-              Test Level
+              Exam Level
             </Typography>
             <Typography
               variant="body4"
@@ -173,7 +173,7 @@ export function PaperHeaderCard({ paper }: PaperHeaderCardProps) {
             weight="black"
             className="text-brand-primary/60 uppercase tracking-[0.2em] mb-1 z-10"
           >
-            Test Level
+            Exam Level
           </Typography>
           <Typography
             variant="h2"

@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit as EditIcon } from "lucide-react";
+import { Edit as EditIcon, Calendar } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -8,6 +8,7 @@ import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@types";
 
 import { QuestionCollapsibleDetail } from "@components/features/questions/QuestionCollapsibleDetail";
+import { formatDate } from "@lib/utils";
 
 interface TypingTestRowProps {
   row: Question;
@@ -40,7 +41,7 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
       isOpen={isExpanded}
       onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
-      className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
+      className="group/row"
       expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
@@ -95,14 +96,15 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("createdDate") && (
-        <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+        <TableCell className="text-muted-foreground text-[13px] font-medium whitespace-nowrap">
+          {row.created_at ? (
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} className="text-muted-foreground shrink-0" />
+              <span>{formatDate(row.created_at)}</span>
+            </div>
+          ) : (
+            "N/A"
+          )}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (
@@ -119,7 +121,7 @@ export const TypingTestRow: React.FC<TypingTestRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Activate" : "Deactivate"}
+              {row.is_active !== false ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </TableCell>

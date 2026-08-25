@@ -144,14 +144,14 @@ export const AddQuestionForm = ({
       }}
       className="space-y-6 p-1"
     >
-      {/* ── Question Details ── */}
+      {/* ── Question Text ── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
             <HelpCircle size={18} />
           </div>
           <Typography variant="body3" weight="bold">
-            Question Details
+            Question Text
           </Typography>
         </div>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit as EditIcon, FileText } from "lucide-react";
+import { Edit as EditIcon, Calendar } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -7,6 +7,7 @@ import { TableIconButton } from "@components/ui-elements/TableIconButton";
 import { TableCell, TableCollapsibleRow } from "@components/ui-elements/Table";
 import { Question } from "@types";
 import { QuestionDetailView } from "@components/ui-cards/QuestionDetailView";
+import { formatDate } from "@lib/utils";
 
 interface PassageRowProps {
   row: Question;
@@ -39,7 +40,7 @@ export const PassageRow: React.FC<PassageRowProps> = ({
       isOpen={isExpanded}
       onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
-      className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
+      className="group/row"
       expandedContent={
         <div className="px-5 py-4 bg-slate-50/20 dark:bg-slate-900/30 border-t border-border/40">
           <QuestionDetailView
@@ -57,25 +58,34 @@ export const PassageRow: React.FC<PassageRowProps> = ({
             .padStart(2, "0")}
         </TableCell>
       )}
+      {visibleColumns.includes("passage") && (
+        <TableCell className="w-[300px] max-w-[300px]">
+          {row.passage ? (
+            <div className="pl-3 border-l-2 border-brand-primary/40 dark:border-brand-primary/60 py-0.5">
+              <p
+                className="text-[13px] font-medium text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed select-text"
+                title={row.passage}
+              >
+                {row.passage}
+              </p>
+            </div>
+          ) : (
+            <span className="text-slate-400 text-xs italic">-</span>
+          )}
+        </TableCell>
+      )}
       {visibleColumns.includes("question") && (
-        <TableCell className="max-w-[250px]">
-          <div className="flex flex-col gap-1">
-            <Typography
-              variant="body4"
-              weight="semibold"
-              className="truncate group-hover/row:text-brand-primary transition-colors"
-            >
-              {row.question_text}
-            </Typography>
-            {row.passage && (
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60 italic">
-                <FileText size={10} />
-                <span className="truncate max-w-[300px]">
-                  Passage: {row.passage.substring(0, 60)}...
-                </span>
-              </div>
-            )}
-          </div>
+        <TableCell
+          className="w-[300px] max-w-[300px]"
+          title={row.question_text}
+        >
+          <Typography
+            variant="body4"
+            weight="semibold"
+            className="text-[13px] line-clamp-2 leading-relaxed text-slate-900 dark:text-slate-100 group-hover/row:text-brand-primary transition-colors select-text"
+          >
+            {row.question_text}
+          </Typography>
         </TableCell>
       )}
       {visibleColumns.includes("subject") && (
@@ -112,14 +122,15 @@ export const PassageRow: React.FC<PassageRowProps> = ({
         </TableCell>
       )}
       {visibleColumns.includes("createdDate") && (
-        <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "N/A"}
+        <TableCell className="text-muted-foreground text-[13px] font-medium whitespace-nowrap">
+          {row.created_at ? (
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} className="text-muted-foreground shrink-0" />
+              <span>{formatDate(row.created_at)}</span>
+            </div>
+          ) : (
+            "N/A"
+          )}
         </TableCell>
       )}
       {visibleColumns.includes("status") && (
@@ -136,7 +147,7 @@ export const PassageRow: React.FC<PassageRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Activate" : "Deactivate"}
+              {row.is_active !== false ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </TableCell>

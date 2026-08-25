@@ -1,19 +1,18 @@
+"use client";
+
 import { memo } from "react";
 import { ArrowLeft, ArrowRight, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { MainCard } from "@components/ui-cards/MainCard";
 import { Alert } from "@components/ui-elements/Alert";
-import { Badge } from "@components/ui-elements/Badge";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { QuestionInput } from "./QuestionInput";
 import { QuestionInstructionBanner } from "./QuestionInstructionBanner";
-import { humanizeString } from "@lib/utils";
+import { humanizeString, cn } from "@lib/utils";
+import { STYLE_CONFIG } from "@lib/config/style";
 import type { InterviewQuestion, InterviewSection, TimerZone } from "../types";
 
 interface QuestionWorkspaceProps {
-  message: string | null;
-  onCloseMessage: () => void;
   currentSection: InterviewSection;
   questionIndex: number;
   timerZone: TimerZone;
@@ -29,8 +28,6 @@ interface QuestionWorkspaceProps {
 }
 
 export const QuestionWorkspace = memo(function QuestionWorkspace({
-  message,
-  onCloseMessage,
   currentSection,
   questionIndex,
   timerZone,
@@ -45,44 +42,12 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
   onRunTour,
 }: QuestionWorkspaceProps) {
   return (
-    <MainCard
-      title="Question Workspace"
-      action={
-        <div className="flex items-center gap-2">
-          <Badge
-            id="interview-active-question-badge"
-            variant="outline"
-            shape="square"
-            color="violet"
-            className="whitespace-nowrap"
-          >
-            <Typography variant="span" className="sm:hidden">
-              Q {questionIndex + 1}/{currentSection.questions.length}
-            </Typography>
-            <Typography variant="span" className="hidden sm:inline">
-              Question {questionIndex + 1}/{currentSection.questions.length}
-            </Typography>
-          </Badge>
-          {onRunTour && (
-            <button
-              id="interview-active-help-trigger"
-              type="button"
-              onClick={onRunTour}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-brand-primary/30 bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-primary font-bold text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95 hover:border-brand-primary/50"
-              title="Quick Guide"
-            >
-              <HelpCircle className="h-3.5 w-3.5 text-brand-primary" />
-              <span className="hidden sm:inline">Quick Guide</span>
-            </button>
-          )}
-        </div>
-      }
-      bodyClassName="space-y-4"
-    >
-      {message && (
-        <Alert variant="info" description={message} onClose={onCloseMessage} />
+    <div
+      className={cn(
+        "flex flex-col bg-card border border-border/60 shadow-sm p-4 sm:p-6 space-y-4 transition-colors overflow-hidden",
+        STYLE_CONFIG.cardRadius,
       )}
-
+    >
       {timerZone !== "safe" && (
         <motion.div
           animate={{ scale: [1, timerZone === "danger" ? 1.02 : 1.01, 1] }}
@@ -106,14 +71,18 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
         </motion.div>
       )}
 
+      {/* Header Row: Subject, Mode, Question Badge & Quick Guide */}
       <div
         id="interview-active-question-type"
-        className="flex items-center justify-between gap-4 pb-2"
+        className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/50"
       >
         <div className="flex items-center gap-3">
-          <div className="h-8 w-1.5 rounded-full bg-brand-primary" />
+          <div className="h-9 w-1.5 rounded-full bg-brand-primary shrink-0" />
           <div>
-            <Typography variant="h4" className="text-foreground font-bold">
+            <Typography
+              variant="h4"
+              className="text-foreground font-bold leading-tight text-base sm:text-lg"
+            >
               {currentQuestion.typeName ||
                 (currentQuestion.type === "MULTIPLE_CHOICE" ||
                 currentQuestion.type === "IMAGE_MULTIPLE_CHOICE"
@@ -122,17 +91,47 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
             </Typography>
             <Typography
               variant="body5"
-              className="text-muted-foreground uppercase tracking-widest font-medium"
+              className="text-muted-foreground uppercase tracking-widest font-medium text-[11px]"
             >
               Mode: {humanizeString(currentQuestion.type)}
             </Typography>
           </div>
         </div>
-        {currentQuestion.subjectName && (
-          <Badge variant="outline" shape="square" color="secondary">
-            {currentQuestion.subjectName}
-          </Badge>
-        )}
+
+        <div className="flex items-center flex-wrap gap-2.5">
+          {currentQuestion.subjectName && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-sky-50 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-xs">
+              {currentQuestion.subjectName}
+            </span>
+          )}
+
+          <span
+            id="interview-active-question-badge"
+            className="inline-flex items-center whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-xs"
+          >
+            <span className="sm:hidden">
+              Q {questionIndex + 1}/{currentSection.questions.length}
+            </span>
+            <span className="hidden sm:inline">
+              Question {questionIndex + 1}/{currentSection.questions.length}
+            </span>
+          </span>
+
+          {onRunTour && (
+            <Button
+              id="interview-active-help-trigger"
+              size="sm"
+              variant="primary"
+              color="primary"
+              animate="scale"
+              startIcon={<HelpCircle size={14} />}
+              onClick={onRunTour}
+              className="h-7 px-2.5 text-xs font-semibold shadow-xs"
+            >
+              Quick Guide
+            </Button>
+          )}
+        </div>
       </div>
 
       <div id="interview-active-instruction">
@@ -182,6 +181,6 @@ export const QuestionWorkspace = memo(function QuestionWorkspace({
             : "Save & Next"}
         </Button>
       </div>
-    </MainCard>
+    </div>
   );
 });

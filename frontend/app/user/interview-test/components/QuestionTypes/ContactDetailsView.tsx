@@ -1,15 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import {
-  Building2,
-  Check,
-  Copy,
-  ExternalLink,
-  Globe,
-  MapPin,
-  Phone,
-} from "lucide-react";
+import { Building2, Check, Copy, ExternalLink, Globe } from "lucide-react";
 import { Input } from "@components/ui-elements/Input";
 import { Typography } from "@components/ui-elements/Typography";
 import { cn } from "@lib/utils";
@@ -168,15 +160,15 @@ export const ContactDetailsView = memo(function ContactDetailsView({
         >
           <div
             className={cn(
-              "absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-3 py-1 border border-border shadow-sm",
+              "absolute top-0 left-6 -translate-y-1/2 flex items-center gap-2 bg-background px-4 py-1.5 border border-border shadow-sm",
               STYLE_CONFIG.badgeRadius,
             )}
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-brand-primary animate-pulse" />
             <Typography
-              variant="body5"
-              weight="black"
-              className="uppercase tracking-widest mr-1"
+              variant="body4"
+              weight="bold"
+              className="uppercase tracking-wider text-xs font-bold text-foreground"
             >
               Target Source / URL
             </Typography>

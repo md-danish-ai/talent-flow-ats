@@ -12,7 +12,7 @@ import {
 import { Badge } from "@components/ui-elements/Badge";
 import { ResultCard } from "@components/ui-cards/ResultCard";
 import { type AdminUserResultListItem } from "@types";
-import { getGradeConfig } from "@lib/utils";
+import { getGradeConfig, formatLongDate } from "@lib/utils";
 
 interface ResultCardViewProps {
   items: AdminUserResultListItem[];
@@ -36,9 +36,16 @@ export function ResultCardView({ items }: ResultCardViewProps) {
               status={
                 latest?.status === "started"
                   ? "started"
-                  : item.process_status === "ready"
-                    ? "not_started"
-                    : latest?.status || "not_started"
+                  : latest?.status === "auto_submitted"
+                    ? "auto_submitted"
+                    : latest?.status === "submitted" ||
+                        latest?.status === "completed"
+                      ? "submitted"
+                      : latest?.status === "expired"
+                        ? "expired"
+                        : item.process_status === "ready"
+                          ? "not_started"
+                          : latest?.status || "not_started"
               }
               subtitle={
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
@@ -54,11 +61,7 @@ export function ResultCardView({ items }: ResultCardViewProps) {
                           size={13}
                           className="text-brand-primary/60"
                         />
-                        {new Date(interviewDate).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {formatLongDate(interviewDate)}
                       </div>
                     </>
                   )}

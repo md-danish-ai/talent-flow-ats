@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { DUMMY_SECTIONS, OVERALL_EXAM_DURATION_MINUTES } from "./data";
 import {
   buildSavedAnswersMap,
   getResumePosition,
@@ -16,6 +15,7 @@ import { InterviewProgressCard } from "./components/InterviewProgressCard";
 import { QuestionWorkspace } from "./components/QuestionWorkspace";
 import { InterviewStatusCard } from "./components/InterviewStatusCard";
 import { SectionChangeModal } from "./components/SectionChangeModal";
+import { Alert } from "@components/ui-elements/Alert";
 import { interviewAttemptsApi } from "@lib/api/interview-attempts";
 import { type AttemptSummaryResponse } from "@types";
 import {
@@ -28,15 +28,13 @@ import type { InterviewQuestion, InterviewSection } from "./types";
 
 export function InterviewTestClient() {
   const { data: currentUser } = useMe();
-  const [sections, setSections] = useState<InterviewSection[]>(DUMMY_SECTIONS);
-  const [loadedSections, setLoadedSections] =
-    useState<InterviewSection[]>(DUMMY_SECTIONS);
+  const [sections, setSections] = useState<InterviewSection[]>([]);
+  const [loadedSections, setLoadedSections] = useState<InterviewSection[]>([]);
   const [assignedPaper, setAssignedPaper] =
     useState<AssignedInterviewPaperResponse | null>(null);
   const [isLoadingPaper, setIsLoadingPaper] = useState(true);
-  const [overallExamDurationMinutes, setOverallExamDurationMinutes] = useState(
-    OVERALL_EXAM_DURATION_MINUTES,
-  );
+  const [overallExamDurationMinutes, setOverallExamDurationMinutes] =
+    useState(0);
   const totalSections = sections.length;
   const emptyLockedSections = useMemo(
     () => sections.map(() => false),
@@ -57,9 +55,7 @@ export function InterviewTestClient() {
     useState(false);
   const [lockedSections, setLockedSections] =
     useState<boolean[]>(emptyLockedSections);
-  const [, setExamRemainingSeconds] = useState(
-    OVERALL_EXAM_DURATION_MINUTES * 60,
-  );
+  const [, setExamRemainingSeconds] = useState(0);
   const [sectionRemainingSeconds, setSectionRemainingSeconds] = useState(0);
   const [currentSectionTotalSeconds, setCurrentSectionTotalSeconds] =
     useState(0);
@@ -75,21 +71,26 @@ export function InterviewTestClient() {
     hasStarted && !isCompleted ? currentUser || null : null,
   );
 
-  const currentSection = sections[sectionIndex] ?? sections[0];
+  const currentSection = sections[sectionIndex] ?? sections[0] ?? null;
   const currentQuestion =
-    currentSection?.questions[questionIndex] ?? currentSection?.questions[0];
+    currentSection?.questions?.[questionIndex] ??
+    currentSection?.questions?.[0] ??
+    null;
   const currentAnswer = currentQuestion
     ? answers[currentQuestion.id] || ""
     : "";
 
   const totalQuestions = useMemo(
     () =>
-      sections.reduce((total, section) => total + section.questions.length, 0),
+      sections.reduce(
+        (total, section) => total + (section.questions?.length || 0),
+        0,
+      ),
     [sections],
   );
 
   const allQuestions = useMemo(
-    () => sections.flatMap((section) => section.questions),
+    () => sections.flatMap((section) => section.questions || []),
     [sections],
   );
 
@@ -106,7 +107,7 @@ export function InterviewTestClient() {
 
   const completedBeforeCurrentSection = sections
     .slice(0, sectionIndex)
-    .reduce((sum, section) => sum + section.questions.length, 0);
+    .reduce((sum, section) => sum + (section.questions?.length || 0), 0);
 
   const completedSteps = completedBeforeCurrentSection + questionIndex + 1;
   const progressPercent = Math.min(
@@ -129,8 +130,10 @@ export function InterviewTestClient() {
         ? "warn"
         : "safe";
 
-  const isLastQuestionInSection =
-    questionIndex === currentSection.questions.length - 1;
+  const isLastQuestionInSection = Boolean(
+    currentSection?.questions?.length &&
+    questionIndex === currentSection.questions.length - 1,
+  );
   const isLastSection = useMemo(() => {
     // A section is effectively the last one if no future sections are available (unlocked)
     for (let i = sectionIndex + 1; i < sections.length; i++) {
@@ -169,45 +172,97 @@ export function InterviewTestClient() {
     const loadAssignedPaper = async () => {
       try {
         setIsLoadingPaper(true);
-        const response = await paperAssignmentsApi.getMyInterviewPaper();
-        const mappedSections: InterviewSection[] = response.sections.map(
-          (section) => ({
-            id: section.id,
-            title: section.title,
-            durationMinutes: section.duration_minutes,
-            questions: section.questions.map((question) => ({
-              id: question.id,
-              type: question.type as InterviewQuestion["type"],
-              questionText: question.question_text,
-              subjectName: question.subject_name ?? undefined,
-              typeName: question.type_name ?? undefined,
-              description: undefined,
-              passage: question.passage || undefined,
-              imageUrl: question.image_url || undefined,
-              marks: question.marks || 0,
-              options: question.options,
-            })),
-          }),
-        );
-        const resolvedDuration =
-          response.overall_duration_minutes > 0
-            ? response.overall_duration_minutes
-            : OVERALL_EXAM_DURATION_MINUTES;
 
-        setAssignedPaper(response);
-        setLoadedSections(mappedSections);
-        setSections(mappedSections);
-        setLockedSections(mappedSections.map(() => false));
-        setOverallExamDurationMinutes(resolvedDuration);
-        setExamRemainingSeconds(resolvedDuration * 60);
+        // 1. Fetch assigned paper first so sections, question counts, and duration are always accurate
+        try {
+          const response = await paperAssignmentsApi.getMyInterviewPaper();
+          if (response?.sections?.length) {
+            const mappedSections: InterviewSection[] = response.sections.map(
+              (section) => ({
+                id: section.id,
+                title: section.title,
+                durationMinutes: section.duration_minutes,
+                questions: section.questions.map((question) => ({
+                  id: question.id,
+                  type: question.type as InterviewQuestion["type"],
+                  questionText: question.question_text,
+                  subjectName: question.subject_name ?? undefined,
+                  typeName: question.type_name ?? undefined,
+                  description: undefined,
+                  passage: question.passage || undefined,
+                  imageUrl: question.image_url || undefined,
+                  marks: question.marks || 0,
+                  options: question.options,
+                })),
+              }),
+            );
+            const dynamicTotalMinutes = mappedSections.reduce(
+              (sum, sec) => sum + (sec.durationMinutes || 0),
+              0,
+            );
+            const resolvedDuration =
+              response.overall_duration_minutes > 0
+                ? response.overall_duration_minutes
+                : dynamicTotalMinutes;
+
+            setAssignedPaper(response);
+            setLoadedSections(mappedSections);
+            setSections(mappedSections);
+            setLockedSections(mappedSections.map(() => false));
+            setOverallExamDurationMinutes(resolvedDuration);
+            setExamRemainingSeconds(resolvedDuration * 60);
+          }
+        } catch (paperErr) {
+          console.warn("Could not load assigned paper:", paperErr);
+        }
+
+        // 2. Check if the candidate has an existing attempt that was submitted or auto-submitted
+        try {
+          const statusRes = await interviewAttemptsApi.getActiveStatus();
+          if (
+            statusRes.has_attempt &&
+            (statusRes.status === "submitted" ||
+              statusRes.status === "auto_submitted" ||
+              statusRes.status === "completed")
+          ) {
+            if (statusRes.attempt_id) {
+              try {
+                const summary = await interviewAttemptsApi.getSummary(
+                  statusRes.attempt_id,
+                );
+                setFinalSummary(summary);
+              } catch {
+                // Ignore summary fetch error
+              }
+            }
+            setCompletionReason(
+              statusRes.status === "auto_submitted" || statusRes.is_expired
+                ? "time_over"
+                : "manual",
+            );
+            setIsCompleted(true);
+            setIsLoadingPaper(false);
+            return;
+          }
+        } catch (statusErr) {
+          console.warn("Could not check active status:", statusErr);
+        }
+
+        // 3. Also check if user flag marks interview as already submitted (and not in reinterview)
+        if (currentUser?.is_interview_submitted) {
+          setIsCompleted(true);
+          setIsLoadingPaper(false);
+          return;
+        }
+
         setStartError(null);
       } catch {
         setAssignedPaper(null);
-        setLoadedSections(DUMMY_SECTIONS);
-        setSections(DUMMY_SECTIONS);
-        setLockedSections(DUMMY_SECTIONS.map(() => false));
-        setOverallExamDurationMinutes(OVERALL_EXAM_DURATION_MINUTES);
-        setExamRemainingSeconds(OVERALL_EXAM_DURATION_MINUTES * 60);
+        setLoadedSections([]);
+        setSections([]);
+        setLockedSections([]);
+        setOverallExamDurationMinutes(0);
+        setExamRemainingSeconds(0);
         setStartError("No paper is assigned for today. Please contact admin.");
       } finally {
         setIsLoadingPaper(false);
@@ -215,7 +270,7 @@ export function InterviewTestClient() {
     };
 
     void loadAssignedPaper();
-  }, []);
+  }, [currentUser]);
 
   // Disable Right Click & Inspect Element Shortcuts during interview test
   useEffect(() => {
@@ -347,7 +402,7 @@ export function InterviewTestClient() {
 
       // Find the next section that is NOT locked
       let nextUnlockedIndex = -1;
-      for (let i = currentIndex + 1; i < totalSections; i++) {
+      for (let i = currentIndex + 1; i < sections.length; i++) {
         if (!lockedSections[i]) {
           nextUnlockedIndex = i;
           break;
@@ -396,7 +451,7 @@ export function InterviewTestClient() {
       attemptId,
       currentSection,
       lockedSections,
-      totalSections,
+      sections,
       finalizeInterview,
       persistSubjectAnswers,
     ],
@@ -459,7 +514,7 @@ export function InterviewTestClient() {
     const advanceSection = async () => {
       lockAndMoveToNextSection(
         sectionIndex,
-        `Time is up for ${currentSection.title}. Section auto-locked.`,
+        `Time is up for ${currentSection?.title || "section"}. Section auto-locked.`,
       );
     };
 
@@ -634,16 +689,20 @@ export function InterviewTestClient() {
           : null,
       );
 
-      // Handle server-synced timer resumption
+      // Handle server-synced timer
+      const totalDurationMinutes =
+        startResponse.total_duration_minutes &&
+        startResponse.total_duration_minutes > 0
+          ? startResponse.total_duration_minutes
+          : overallExamDurationMinutes;
+
       if (startResponse.is_resumed && startResponse.started_at) {
         const startedAt = new Date(startResponse.started_at);
         const now = new Date();
         const secondsElapsed = Math.floor(
           (now.getTime() - startedAt.getTime()) / 1000,
         );
-        const totalDurationSeconds =
-          (startResponse.total_duration_minutes ?? overallExamDurationMinutes) *
-          60;
+        const totalDurationSeconds = totalDurationMinutes * 60;
         const remainingSeconds = Math.max(
           0,
           totalDurationSeconds - secondsElapsed,
@@ -654,6 +713,8 @@ export function InterviewTestClient() {
         if (remainingSeconds <= 0) {
           void handleOverallTimeOver();
         }
+      } else if (totalDurationMinutes > 0) {
+        setExamRemainingSeconds(totalDurationMinutes * 60);
       }
 
       setHasStarted(true);
@@ -666,7 +727,7 @@ export function InterviewTestClient() {
 
   if (isCompleted) {
     return (
-      <PageContainer className="py-3 sm:py-4 lg:py-6">
+      <PageContainer>
         <InterviewCompleted
           totalSections={totalSections}
           totalQuestions={finalSummary?.total_questions ?? totalQuestions}
@@ -683,7 +744,7 @@ export function InterviewTestClient() {
 
   if (isLoadingPaper && !hasStarted) {
     return (
-      <PageContainer className="py-2 sm:py-3 lg:py-4">
+      <PageContainer>
         <InterviewOverviewSkeleton />
       </PageContainer>
     );
@@ -691,7 +752,7 @@ export function InterviewTestClient() {
 
   if (!hasStarted) {
     return (
-      <PageContainer className="py-2 sm:py-3 lg:py-4">
+      <PageContainer>
         <InterviewOverview
           sections={sections}
           overallExamDurationMinutes={overallExamDurationMinutes}
@@ -705,13 +766,19 @@ export function InterviewTestClient() {
     );
   }
 
+  if (!currentSection || !currentQuestion) {
+    return (
+      <PageContainer>
+        <InterviewOverviewSkeleton />
+      </PageContainer>
+    );
+  }
+
   return (
-    <PageContainer className="py-2 sm:py-3 select-none">
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0">
+    <PageContainer className="select-none">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 min-w-0 items-start">
         <div className="xl:col-span-8 2xl:col-span-9 space-y-4 sm:space-y-5 min-w-0">
           <QuestionWorkspace
-            message={message}
-            onCloseMessage={() => setMessage(null)}
             currentSection={currentSection}
             questionIndex={questionIndex}
             timerZone={timerZone}
@@ -729,17 +796,23 @@ export function InterviewTestClient() {
 
         <div className="xl:col-span-4 2xl:col-span-3 min-w-0">
           <div className="xl:sticky xl:top-4 space-y-4">
+            {message && (
+              <Alert
+                variant="info"
+                description={message}
+                onClose={() => setMessage(null)}
+                className="shadow-md animate-in fade-in slide-in-from-top-2 duration-300"
+              />
+            )}
             <InterviewProgressCard
-              sectionIndex={sectionIndex}
-              totalSections={totalSections}
-              currentSection={currentSection}
-              progressPercent={progressPercent}
               timerZone={timerZone}
               remainingTimeText={formatSecondsToTime(sectionRemainingSeconds)}
             />
             <InterviewStatusCard
               sections={sections}
               sectionIndex={sectionIndex}
+              totalSections={totalSections}
+              progressPercent={progressPercent}
               lockedSections={lockedSections}
               timerZone={timerZone}
               answeredCount={answeredCount}

@@ -141,6 +141,8 @@ interface ResultTableViewProps {
   isLoading?: boolean;
   limit?: number;
   onlyDownloadAction?: boolean;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 export function ResultTableView({
@@ -149,6 +151,8 @@ export function ResultTableView({
   isLoading,
   limit = 10,
   onlyDownloadAction = false,
+  currentPage = 1,
+  pageSize = 10,
   onRefresh,
 }: ResultTableViewProps & { onRefresh?: (silent?: boolean) => void }) {
   const [assignModal, setAssignModal] = useState<{
@@ -171,11 +175,12 @@ export function ResultTableView({
 
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
-  // Only submitted results can be assigned a lead
+  // Only submitted / auto_submitted results can be assigned a lead
   const selectableItems = useMemo(() => {
     return items.filter(
       (item) =>
         item.latest_attempt?.status === "submitted" ||
+        item.latest_attempt?.status === "auto_submitted" ||
         item.latest_attempt?.status === "completed",
     );
   }, [items]);
@@ -242,15 +247,13 @@ export function ResultTableView({
     <div className="overflow-x-auto">
       <Table className="w-full border-collapse">
         <TableHeader>
-          <TableRow className="bg-muted/20 hover:bg-muted/20 border-b-2 border-border/50">
+          <TableRow>
             {onlyDownloadAction ? (
-              <TableHead className="w-[50px] text-center font-bold text-foreground/80">
-                #
-              </TableHead>
+              <TableHead className="w-[50px] text-center">#</TableHead>
             ) : (
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-2">
-                  <span className="w-[40px] shrink-0"></span>
+                  <span className="w-[40px] shrink-0 text-center">#</span>
                   <Checkbox
                     checked={allSelected}
                     onChange={toggleSelectAll}
@@ -261,64 +264,64 @@ export function ResultTableView({
               </TableHead>
             )}
             {visibleColumns.includes("candidate") && (
-              <TableHead className="min-w-[200px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[200px] whitespace-nowrap">
                 Candidate
               </TableHead>
             )}
             {visibleColumns.includes("department") && (
-              <TableHead className="min-w-[130px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[130px] whitespace-nowrap text-left">
                 Department
               </TableHead>
             )}
             {visibleColumns.includes("test_level") && (
-              <TableHead className="min-w-[110px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[110px] whitespace-nowrap text-left">
                 Exam Level
               </TableHead>
             )}
             {visibleColumns.includes("paper") && (
-              <TableHead className="min-w-[140px] whitespace-nowrap text-left font-bold text-foreground/80">
+              <TableHead className="min-w-[140px] whitespace-nowrap text-left">
                 Assigned Paper
               </TableHead>
             )}
             {visibleColumns.includes("attempts") && (
-              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap">
                 Total Attempts
               </TableHead>
             )}
             {visibleColumns.includes("marks") && (
-              <TableHead className="text-center min-w-[90px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[90px] whitespace-nowrap">
                 Marks
               </TableHead>
             )}
             {visibleColumns.includes("grade") && (
-              <TableHead className="text-center min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[100px] whitespace-nowrap">
                 Overall Grade
               </TableHead>
             )}
 
             {visibleColumns.includes("typing_wpm") && (
-              <TableHead className="text-center min-w-[110px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Typing WPM
               </TableHead>
             )}
             {visibleColumns.includes("typing_acc") && (
-              <TableHead className="text-center min-w-[110px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Accuracy
               </TableHead>
             )}
             {visibleColumns.includes("status") && (
-              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80 text-center">
+              <TableHead className="min-w-[120px] whitespace-nowrap text-center">
                 Interview Progress
               </TableHead>
             )}
             {visibleColumns.includes("project_lead") && (
-              <TableHead className="min-w-[150px] whitespace-nowrap font-bold text-foreground/80">
+              <TableHead className="min-w-[150px] whitespace-nowrap">
                 Project Lead
               </TableHead>
             )}
             {visibleColumns.includes("date") && (
-              <TableHead className="min-w-[100px] whitespace-nowrap font-bold text-foreground/80">
-                Date
+              <TableHead className="min-w-[120px] whitespace-nowrap font-bold text-foreground/80">
+                Interview Date
               </TableHead>
             )}
             {visibleColumns.includes("actions") && (
@@ -348,6 +351,7 @@ export function ResultTableView({
               const detailHref = `/admin/results/round-1/${item.user_id}`;
               const isSelectable =
                 latest?.status === "submitted" ||
+                latest?.status === "auto_submitted" ||
                 latest?.status === "completed";
               return (
                 <TableCollapsibleRow
@@ -375,7 +379,7 @@ export function ResultTableView({
                 >
                   {onlyDownloadAction ? (
                     <TableCell className="w-[50px] text-center font-medium text-slate-500">
-                      {idx + 1}
+                      {(currentPage - 1) * pageSize + idx + 1}
                     </TableCell>
                   ) : (
                     <TableCell className="w-[100px]">
@@ -428,7 +432,7 @@ export function ResultTableView({
                         </div>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-950 dark:text-white uppercase tracking-tight text-[13px] whitespace-nowrap">
+                            <span className="font-bold text-slate-950 dark:text-white tracking-tight text-[13px] whitespace-nowrap">
                               {item.username || "Anonymous"}
                             </span>
                             {item.is_reattempt ? (
@@ -602,26 +606,30 @@ export function ResultTableView({
                         color={
                           latest?.status === "started"
                             ? "violet"
-                            : item.process_status === "ready"
+                            : latest?.status === "submitted" ||
+                                latest?.status === "completed"
                               ? "success"
-                              : latest?.status === "submitted" ||
-                                  latest?.status === "completed"
-                                ? "success"
-                                : latest?.status === "auto_submitted"
-                                  ? "blue"
-                                  : latest?.status === "expired"
-                                    ? "error"
+                              : latest?.status === "auto_submitted"
+                                ? "blue"
+                                : latest?.status === "expired"
+                                  ? "error"
+                                  : item.process_status === "ready"
+                                    ? "success"
                                     : "default"
                         }
                         shape="square"
                       >
                         {latest?.status === "started"
                           ? "STARTED"
-                          : item.process_status === "ready"
-                            ? "READY"
-                            : latest?.status
-                              ? humanizeString(latest.status)
-                              : "NOT STARTED"}
+                          : latest?.status === "auto_submitted"
+                            ? "AUTO SUBMITTED"
+                            : latest?.status === "submitted"
+                              ? "SUBMITTED"
+                              : latest?.status
+                                ? humanizeString(latest.status).toUpperCase()
+                                : item.process_status === "ready"
+                                  ? "READY"
+                                  : "NOT STARTED"}
                       </Badge>
                     </TableCell>
                   )}
@@ -656,7 +664,7 @@ export function ResultTableView({
                                         )}
                                       />
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">
+                                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 tracking-tight">
                                       {lead.name}
                                     </span>
                                   </div>
@@ -683,7 +691,7 @@ export function ResultTableView({
                                 />
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
+                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 tracking-tight group-hover:text-brand-primary transition-colors whitespace-nowrap">
                                   {latest.interviewers[0].name}
                                 </span>
                                 {latest.interviewers.length > 1 && (
@@ -728,7 +736,9 @@ export function ResultTableView({
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-2">
                         {!onlyDownloadAction &&
-                          latest?.status === "submitted" && (
+                          (latest?.status === "submitted" ||
+                            latest?.status === "auto_submitted" ||
+                            latest?.status === "completed") && (
                             <TableIconButton
                               iconColor="green"
                               animate="scale"

@@ -2,9 +2,10 @@
 
 import { ChevronRight, Loader2, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "@lib/toast";
 import { Input } from "@components/ui-elements/Input";
 import { signUpSchema, type SignUpFormValues } from "@lib/validations/auth";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -15,11 +16,55 @@ import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
-import { getErrorMessage } from "@lib/utils";
+import {
+  getErrorMessage,
+  normalizeProperCase,
+  normalizeMobile,
+  normalizeEmail,
+} from "@lib/utils";
 
 export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const isDeptInitializedRef = useRef(false);
+  const isLevelInitializedRef = useRef(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clearAuth =
+      searchParams.get("clear_auth") || urlParams.get("clear_auth");
+    const isInactive =
+      searchParams.get("inactive") === "1" || urlParams.get("inactive") === "1";
+
+    if (isInactive) {
+      const timer = setTimeout(() => {
+        toast.error(
+          "Your account is currently inactive. Please contact the administrator.",
+          {
+            title: "Account Inactive",
+            duration: 3000,
+          },
+        );
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        url.searchParams.delete("inactive");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (clearAuth === "1") {
+      const timer = setTimeout(() => {
+        toast.error("Session expired. Please sign up or sign in again.", {
+          title: "Auth Alert",
+          duration: 3000,
+        });
+        const url = new URL(window.location.href);
+        url.searchParams.delete("clear_auth");
+        window.history.replaceState({}, "", url.pathname);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const signUpMutation = useSignUp();
   const { data: departments, isLoading: isLoadingDepts } = useDepartments({
@@ -73,13 +118,20 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
     onSubmit: async ({ value }) => {
       setServerError(null);
 
-      const submitValue = { ...value };
+      const submitValue: Record<string, unknown> = {
+        ...value,
+        name: normalizeProperCase(value.name),
+        email: normalizeEmail(value.email) || undefined,
+        mobile: normalizeMobile(value.mobile),
+      };
       if (!submitValue.test_level_id) {
         delete submitValue.test_level_id;
       }
 
       try {
-        const response = await signUpMutation.mutateAsync(submitValue);
+        const response = await signUpMutation.mutateAsync(
+          submitValue as unknown as SignUpFormValues,
+        );
 
         if (onSuccess) {
           onSuccess();
@@ -98,6 +150,56 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       }
     },
   });
+
+  // Set default Department (KPO & BPO) on initial load
+  useEffect(() => {
+    if (
+      !isDeptInitializedRef.current &&
+      departments &&
+      departments.length > 0
+    ) {
+      const defaultDept =
+        departments.find(
+          (d) =>
+            d.name?.toLowerCase().trim() === "kpo & bpo" ||
+            d.name?.toLowerCase().includes("kpo"),
+        ) || departments[0];
+
+      if (defaultDept && !form.getFieldValue("department_id")) {
+        form.setFieldValue("department_id", String(defaultDept.id));
+        isDeptInitializedRef.current = true;
+      }
+    }
+  }, [departments, form]);
+
+  // Set default Exam Level (Fresher) on initial load if department requires interview
+  useEffect(() => {
+    if (
+      !isLevelInitializedRef.current &&
+      classificationRes?.data &&
+      classificationRes.data.length > 0
+    ) {
+      const fresherLevel = classificationRes.data.find(
+        (c) =>
+          c.name?.toLowerCase().trim() === "fresher" ||
+          c.code?.toLowerCase().trim() === "fresher",
+      );
+
+      if (fresherLevel && !form.getFieldValue("test_level_id")) {
+        const currentDeptId = form.getFieldValue("department_id");
+        const currentDept = departments?.find(
+          (d) => String(d.id) === String(currentDeptId),
+        );
+        const needsInterview = currentDept
+          ? currentDept.requires_interview
+          : true;
+        if (needsInterview) {
+          form.setFieldValue("test_level_id", String(fresherLevel.id));
+          isLevelInitializedRef.current = true;
+        }
+      }
+    }
+  }, [classificationRes, departments, form]);
 
   return (
     <div className="w-full">
@@ -227,7 +329,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </form.Field>
 
-        {/* Row 3: Department and Test Level */}
+        {/* Row 3: Department and Exam Level */}
         <form.Subscribe selector={(state) => [state.values.department_id]}>
           {([departmentId]) => {
             const selectedDept = departments?.find(
@@ -254,13 +356,8 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                         value={field.state.value}
                         onChange={(val) => {
                           field.handleChange(String(val));
-                          // Clear test_level_id when dept doesn't require interview
-                          const dept = departments?.find(
-                            (d) => String(d.id) === String(val),
-                          );
-                          if (!dept?.requires_interview) {
-                            form.setFieldValue("test_level_id", "");
-                          }
+                          // Reset test level to blank whenever department changes
+                          form.setFieldValue("test_level_id", "");
                         }}
                         placeholder="Department"
                         isLoading={isLoadingDepts}

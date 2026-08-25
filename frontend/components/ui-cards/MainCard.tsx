@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 interface MainCardProps {
   /** Card heading shown in the header bar */
   title: React.ReactNode;
+  /** Optional subtitle shown under the heading */
+  subtitle?: React.ReactNode;
   /** Optional element rendered on the right side of the header (e.g. a button or link) */
   action?: React.ReactNode;
   /** Main body content of the card (optional if using children) */
@@ -21,6 +23,7 @@ interface MainCardProps {
 
 export const MainCard: React.FC<MainCardProps> = ({
   title,
+  subtitle,
   action,
   children,
   className = "",
@@ -45,19 +48,26 @@ export const MainCard: React.FC<MainCardProps> = ({
       <div
         onClick={onHeaderClick}
         className={cn(
-          "px-6 py-5 border-b border-border flex items-center justify-between gap-3 transition-colors duration-300",
+          "px-6 py-4.5 border-b border-border flex items-center justify-between gap-3 transition-colors duration-300",
           onHeaderClick &&
             "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
         )}
       >
-        <Typography
-          variant="h4"
-          as="h3"
-          weight="extrabold"
-          className="flex items-center gap-2.5 text-foreground tracking-tight"
-        >
-          {title}
-        </Typography>
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <Typography
+            variant="h4"
+            as="h3"
+            weight="extrabold"
+            className="flex items-center gap-2.5 text-foreground tracking-tight text-[17px] sm:text-lg"
+          >
+            {title}
+          </Typography>
+          {subtitle && (
+            <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
+              {subtitle}
+            </p>
+          )}
+        </div>
 
         {action && (
           <div className="shrink-0 text-sm font-semibold text-brand-primary">

@@ -128,7 +128,7 @@ export function MCQClient({
   // Column Visibility State
   const availableColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Question", pinned: true },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -191,7 +191,7 @@ export function MCQClient({
       await questionsApi.toggleQuestionStatus(id);
       void refresh();
       toast.success(
-        `Question ${!currentStatus ? "activated" : "deactivated"} successfully`,
+        `Question ${!currentStatus ? "enabled" : "disabled"} successfully`,
       );
     } catch (error) {
       if (!handleAuthError(error)) {
@@ -290,14 +290,14 @@ export function MCQClient({
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px] text-center">#</TableHead>
                     {visibleColumns.includes("srNo") && (
                       <TableHead className="w-[80px] text-center">
                         Sr. No.
                       </TableHead>
                     )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
+                      <TableHead>Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
