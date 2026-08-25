@@ -48,6 +48,14 @@ export function PaperSetupSkeleton({
               );
             }
 
+            if (colId === "created_at") {
+              return (
+                <TableCell key={colId} className="w-[120px]">
+                  <Skeleton className="h-6 w-24 rounded" />
+                </TableCell>
+              );
+            }
+
             if (colId === "active") {
               return (
                 <TableCell key={colId} className="w-[100px] text-center">

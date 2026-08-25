@@ -1,9 +1,16 @@
 "use client";
 
-import { Gauge, Target, AlertCircle, Timer, Radio } from "lucide-react";
+import {
+  Gauge,
+  Target,
+  AlertCircle,
+  Timer,
+  Radio,
+  Calendar,
+} from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
-import { cn, getGradeConfig } from "@lib/utils";
+import { cn, getGradeConfig, formatDate } from "@lib/utils";
 import { type AdminUserLatestAttempt, type SubjectResult } from "@types";
 
 interface CollapsibleResultDetailProps {
@@ -17,6 +24,7 @@ export function CollapsibleResultDetail({
 }: CollapsibleResultDetailProps) {
   const isInProgress = latest?.is_in_progress;
   const subjectResults = latest?.subject_results ?? [];
+  const interviewDate = latest?.submitted_at || latest?.started_at;
 
   return (
     <div className="p-8 bg-muted/5 space-y-8">
@@ -39,16 +47,29 @@ export function CollapsibleResultDetail({
               </span>
             )}
           </div>
-          <div className="flex flex-col items-end">
-            <Typography variant="body5" className="text-muted-foreground">
-              Attempt ID: #{latest?.attempt_id}
-            </Typography>
-            <Typography
-              variant="body5"
-              className="font-bold text-brand-primary uppercase text-[9px] tracking-widest mt-1"
-            >
-              Total History: {attempts_count} Sessions
-            </Typography>
+          <div className="flex items-center gap-6">
+            {interviewDate && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                <Calendar size={13} className="text-brand-primary shrink-0" />
+                <span>
+                  Interview Date:{" "}
+                  <span className="font-semibold text-foreground">
+                    {formatDate(interviewDate)}
+                  </span>
+                </span>
+              </div>
+            )}
+            <div className="flex flex-col items-end">
+              <Typography variant="body5" className="text-muted-foreground">
+                Attempt ID: #{latest?.attempt_id}
+              </Typography>
+              <Typography
+                variant="body5"
+                className="font-bold text-brand-primary uppercase text-[9px] tracking-widest mt-1"
+              >
+                Total History: {attempts_count} Sessions
+              </Typography>
+            </div>
           </div>
         </div>
 

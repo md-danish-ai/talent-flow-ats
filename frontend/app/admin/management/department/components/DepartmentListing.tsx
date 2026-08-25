@@ -88,7 +88,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       });
       void refresh();
       toast.success(
-        `Department ${!dept.is_active ? "activated" : "deactivated"}`,
+        `Department ${!dept.is_active ? "enabled" : "disabled"} successfully`,
       );
     } catch (error) {
       console.error("Toggle failed:", error);
@@ -170,28 +170,24 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="w-[80px] text-center">
                       Sr. No.
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase">
-                      Department Name
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
+                    <TableHead>Department Name</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <UserCheck size={13} />
                         Requires Interview
                       </div>
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
+                    <TableHead className="whitespace-nowrap">
                       Created At
                     </TableHead>
-                    <TableHead className="font-bold text-slate-500 text-xs uppercase whitespace-nowrap">
+                    <TableHead className="whitespace-nowrap">
                       Updated At
                     </TableHead>
-                    <TableHead className="text-center w-[100px] font-bold text-slate-500 text-xs uppercase">
+                    <TableHead className="text-center w-[100px]">
                       Action
                     </TableHead>
                   </TableRow>
@@ -242,7 +238,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                               shape="square"
                               color={dept.is_active ? "success" : "error"}
                             >
-                              {dept.is_active ? "Active" : "Inactive"}
+                              {dept.is_active ? "Enabled" : "Disabled"}
                             </Badge>
                           </div>
                         </TableCell>

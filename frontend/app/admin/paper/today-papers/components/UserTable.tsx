@@ -39,27 +39,15 @@ export function UserTable({
       <Table aria-label="Candidates list table">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[80px] text-center font-bold text-slate-500 text-xs uppercase">
-              Sr. No.
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Candidate Name
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Contact Info
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
+            <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+            <TableHead>Candidate Name</TableHead>
+            <TableHead>Contact Info</TableHead>
+            <TableHead className="text-center">
               Department / Exam Level
             </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase">
-              Assigned Paper
-            </TableHead>
-            <TableHead className="font-bold text-slate-500 text-xs uppercase text-center">
-              Attempt Status
-            </TableHead>
-            <TableHead className="text-center font-bold text-slate-500 text-xs uppercase">
-              Action
-            </TableHead>
+            <TableHead>Assigned Paper</TableHead>
+            <TableHead className="text-center">Attempt Status</TableHead>
+            <TableHead className="text-center">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

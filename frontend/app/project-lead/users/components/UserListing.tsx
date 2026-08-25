@@ -165,7 +165,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
               <div className="flex flex-col space-y-2">
                 <Table>
-                  <TableHeader className="bg-muted/30">
+                  <TableHeader>
                     <TableRow>
                       <TableHead>Candidate</TableHead>
                       <TableHead className="text-center">Status</TableHead>
@@ -198,10 +198,7 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
                       />
                     ) : (
                       tasks.map((task) => (
-                        <TableRow
-                          key={task.id}
-                          className="hover:bg-muted/20 transition-colors"
-                        >
+                        <TableRow key={task.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar
