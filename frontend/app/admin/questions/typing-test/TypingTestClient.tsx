@@ -239,9 +239,9 @@ export function TypingTestClient() {
           >
             <div className="flex-1 overflow-x-auto w-full h-full flex flex-col">
               <Table className="h-full">
-                <TableHeader className="bg-muted/30">
+                <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px] text-center">#</TableHead>
                     {visibleColumns.includes("srNo") && (
                       <TableHead className="w-[80px] text-center">
                         Sr. No.

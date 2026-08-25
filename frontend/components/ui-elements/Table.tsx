@@ -33,7 +33,7 @@ export const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-b border-border [&_tr]:hover:bg-transparent transition-colors",
+      "bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-white border-b border-border [&_tr]:hover:bg-transparent transition-colors",
       className,
     )}
     {...props}
@@ -56,7 +56,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-border transition-colors hover:bg-brand-primary/5",
+      "border-b border-border transition-colors hover:bg-slate-200/70 dark:hover:bg-slate-700/80 even:bg-slate-100/80 dark:even:bg-slate-700/45",
       className,
     )}
     {...props}
@@ -71,7 +71,7 @@ export const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-[61px] px-4 text-left font-bold align-middle [&:has([role=checkbox])]:pr-0 whitespace-nowrap",
+      "h-[61px] px-4 text-left font-bold align-middle text-slate-700 dark:text-white [&:has([role=checkbox])]:pr-0 whitespace-nowrap",
       className,
     )}
     {...props}
@@ -408,10 +408,10 @@ const TableCollapsibleRowBase = React.forwardRef<
 
           <AnimatePresence initial={false}>
             {isExpanded && (
-              <TableRow className="hover:bg-transparent border-t-0 p-0 overflow-hidden">
+              <tr className="bg-transparent hover:bg-transparent even:bg-transparent dark:even:bg-transparent border-t-0 p-0 overflow-hidden">
                 <TableCell
                   colSpan={colSpan}
-                  className="p-0 border-b border-border overflow-hidden"
+                  className="p-0 border-b border-border overflow-hidden bg-transparent"
                 >
                   <motion.div
                     initial={{ height: 0, opacity: 0, filter: "blur(5px)" }}
@@ -445,7 +445,7 @@ const TableCollapsibleRowBase = React.forwardRef<
                     {expandedContent}
                   </motion.div>
                 </TableCell>
-              </TableRow>
+              </tr>
             )}
           </AnimatePresence>
         </React.Fragment>

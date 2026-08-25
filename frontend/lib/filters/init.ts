@@ -94,8 +94,8 @@ filterRegistry.register("mcq-filters", [
     placeholder: "Filter by Status",
     options: [
       { id: "all", label: "All Status" },
-      { id: "true", label: "Active" },
-      { id: "false", label: "Inactive" },
+      { id: "true", label: "Enabled" },
+      { id: "false", label: "Disabled" },
     ],
   },
 ]);
@@ -349,8 +349,8 @@ filterRegistry.register("type-management-filters", [
     type: "select",
     options: [
       { id: "all", label: "All Status" },
-      { id: "active", label: "Active" },
-      { id: "inactive", label: "Inactive" },
+      { id: "active", label: "Enabled" },
+      { id: "inactive", label: "Disabled" },
     ],
   },
 ]);
@@ -391,8 +391,8 @@ filterRegistry.register("question-bank-filters", [
     placeholder: "Filter by Status",
     options: [
       { id: "all", label: "All Status" },
-      { id: "true", label: "Active" },
-      { id: "false", label: "Inactive" },
+      { id: "true", label: "Enabled" },
+      { id: "false", label: "Disabled" },
     ],
   },
 ]);
@@ -449,8 +449,8 @@ filterRegistry.register("no-subject-question-filters", [
     placeholder: "Filter by Status",
     options: [
       { id: "all", label: "All Status" },
-      { id: "true", label: "Active" },
-      { id: "false", label: "Inactive" },
+      { id: "true", label: "Enabled" },
+      { id: "false", label: "Disabled" },
     ],
   },
 ]);

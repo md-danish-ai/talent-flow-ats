@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit as EditIcon } from "lucide-react";
+import { Edit as EditIcon, Calendar } from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -43,7 +43,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
       isOpen={isExpanded}
       onOpenChange={onExpandChange}
       colSpan={visibleColumns.length + 1}
-      className="group/row hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300"
+      className="group/row"
       expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
@@ -185,8 +185,15 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
       )}
 
       {visibleColumns.includes("createdDate") && (
-        <TableCell className="text-muted-foreground/60 text-[13px] font-medium">
-          {row.created_at ? formatDate(row.created_at) : "N/A"}
+        <TableCell className="text-muted-foreground text-[13px] font-medium whitespace-nowrap">
+          {row.created_at ? (
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} className="text-muted-foreground shrink-0" />
+              <span>{formatDate(row.created_at)}</span>
+            </div>
+          ) : (
+            "N/A"
+          )}
         </TableCell>
       )}
 
@@ -204,7 +211,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Active" : "Deactive"}
+              {row.is_active !== false ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </TableCell>

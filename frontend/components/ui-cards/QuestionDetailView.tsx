@@ -21,9 +21,10 @@ import {
   CheckCircle2,
   FileText,
   MessageSquareText,
+  Calendar,
 } from "lucide-react";
 import Image from "next/image";
-import { cn } from "@lib/utils";
+import { cn, formatDate } from "@lib/utils";
 import { QUESTION_TYPES } from "@lib/constants/questions";
 
 import { ImageLightbox } from "@components/ui-elements/ImageLightbox";
@@ -152,6 +153,18 @@ export const QuestionDetailView: React.FC<QuestionDetailViewProps> = ({
             </Typography>
           </div>
         </div>
+
+        {question.created_at && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+            <Calendar size={13} className="text-brand-primary shrink-0" />
+            <span>
+              Created:{" "}
+              <span className="font-semibold text-foreground">
+                {formatDate(question.created_at)}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-6 space-y-6">

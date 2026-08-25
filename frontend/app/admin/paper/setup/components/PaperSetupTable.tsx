@@ -47,7 +47,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-x-auto h-full flex flex-col">
         <Table className="h-full">
-          <TableHeader className="bg-slate-50 dark:bg-slate-900/50 text-muted-foreground font-bold">
+          <TableHeader>
             <TableRow>
               {isVisible("sr_no") && (
                 <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
@@ -58,6 +58,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
               {isVisible("description") && <TableHead>Description</TableHead>}
               {isVisible("timing") && <TableHead>Timing</TableHead>}
               {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}
+              {isVisible("created_at") && <TableHead>Created Date</TableHead>}
               {isVisible("active") && (
                 <TableHead className="w-[100px] text-center">Status</TableHead>
               )}

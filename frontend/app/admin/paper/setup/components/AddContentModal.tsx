@@ -470,10 +470,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                     </TableRow>
                   ) : (
                     questions.map((q, index) => (
-                      <TableRow
-                        key={q.id}
-                        className="group border-b border-border/40 hover:bg-brand-primary/[0.02] dark:hover:bg-brand-primary/[0.04] transition-colors min-h-16"
-                      >
+                      <TableRow key={q.id} className="group min-h-16">
                         <TableCell className="text-center text-slate-500 dark:text-slate-400 font-bold text-sm pl-6 w-20 font-mono">
                           {((currentPage - 1) * pageSize + index + 1)
                             .toString()
