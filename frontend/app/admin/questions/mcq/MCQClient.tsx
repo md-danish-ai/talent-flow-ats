@@ -128,7 +128,7 @@ export function MCQClient({
   // Column Visibility State
   const availableColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Question", pinned: true },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -297,7 +297,7 @@ export function MCQClient({
                       </TableHead>
                     )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question</TableHead>
+                      <TableHead>Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
