@@ -467,7 +467,7 @@ export function UserListing({ initialData }: UserListingProps) {
                               shape="square"
                               color={row.is_active ? "success" : "error"}
                             >
-                              {row.is_active ? "ACTIVE" : "DISABLED"}
+                              {row.is_active ? "Enabled" : "Disabled"}
                             </Badge>
                           </div>
                         </TableCell>

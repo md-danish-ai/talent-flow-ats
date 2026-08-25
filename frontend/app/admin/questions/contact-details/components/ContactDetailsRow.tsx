@@ -204,7 +204,7 @@ export const ContactDetailsRow: React.FC<ContactDetailsRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Active" : "Deactive"}
+              {row.is_active !== false ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </TableCell>

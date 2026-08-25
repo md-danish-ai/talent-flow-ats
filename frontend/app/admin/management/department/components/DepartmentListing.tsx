@@ -88,7 +88,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
       });
       void refresh();
       toast.success(
-        `Department ${!dept.is_active ? "activated" : "deactivated"}`,
+        `Department ${!dept.is_active ? "enabled" : "disabled"} successfully`,
       );
     } catch (error) {
       console.error("Toggle failed:", error);
@@ -242,7 +242,7 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                               shape="square"
                               color={dept.is_active ? "success" : "error"}
                             >
-                              {dept.is_active ? "Active" : "Inactive"}
+                              {dept.is_active ? "Enabled" : "Disabled"}
                             </Badge>
                           </div>
                         </TableCell>

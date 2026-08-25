@@ -218,7 +218,7 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                               shape="square"
                               color={row.is_active ? "success" : "error"}
                             >
-                              {row.is_active ? "ACTIVE" : "INACTIVE"}
+                              {row.is_active ? "Enabled" : "Disabled"}
                             </Badge>
                           </div>
                         </TableCell>

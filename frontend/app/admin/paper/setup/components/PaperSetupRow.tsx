@@ -1,5 +1,11 @@
 import React from "react";
-import { Loader2, Edit as EditIcon, Settings, Eye, Wand2 } from "lucide-react";
+import {
+  Loader2,
+  Pencil,
+  ClipboardList,
+  Wand2,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Typography } from "@components/ui-elements/Typography";
 import { Badge } from "@components/ui-elements/Badge";
 import { Switch } from "@components/ui-elements/Switch";
@@ -9,6 +15,7 @@ import { PaperSetup } from "@types";
 import { GradeSettingsModal } from "./GradeSettingsModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@lib/utils";
 
 interface PaperSetupRowProps {
   row: Partial<PaperSetup>;
@@ -96,19 +103,36 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
           {row.total_marks ?? 0}
         </TableCell>
       )}
+      {isVisible("created_at") && (
+        <TableCell className="text-muted-foreground/60 text-[13px] font-medium whitespace-nowrap">
+          {row.created_at ? formatDate(row.created_at) : "N/A"}
+        </TableCell>
+      )}
       {isVisible("active") && (
-        <TableCell className="text-center">
-          <div className="flex justify-center">
+        <TableCell>
+          <div className="flex flex-col items-center justify-center gap-1">
             {togglingId === row.id ? (
-              <Loader2 size={18} className="animate-spin text-brand-primary" />
-            ) : (
-              <Switch
-                checked={row.is_active !== false}
-                onChange={() =>
-                  onToggleStatus(row.id!, row.is_active !== false)
-                }
-                size="sm"
+              <Loader2
+                size={18}
+                className="animate-spin text-brand-primary my-2"
               />
+            ) : (
+              <>
+                <Switch
+                  checked={row.is_active !== false}
+                  onChange={() =>
+                    onToggleStatus(row.id!, row.is_active !== false)
+                  }
+                  size="sm"
+                />
+                <Badge
+                  variant="outline"
+                  shape="square"
+                  color={row.is_active !== false ? "success" : "error"}
+                >
+                  {row.is_active !== false ? "Enabled" : "Disabled"}
+                </Badge>
+              </>
             )}
           </div>
         </TableCell>
@@ -119,10 +143,10 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <TableIconButton
               iconColor="slate"
               animate="scale"
-              title="View Details & Manual Question Setup"
+              title="Question Setup & Paper Details"
               onClick={() => onViewDetails(row.id!)}
             >
-              <Eye size={16} />
+              <ClipboardList size={16} />
             </TableIconButton>
 
             <TableIconButton
@@ -137,10 +161,10 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
             <TableIconButton
               iconColor="brand"
               animate="scale"
-              title="Grade Settings"
+              title="Grade & Cutoff Settings"
               onClick={() => setIsGradeModalOpen(true)}
             >
-              <Settings size={16} />
+              <SlidersHorizontal size={16} />
             </TableIconButton>
 
             <TableIconButton
@@ -149,7 +173,7 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
               title="Edit Paper"
               onClick={() => onEdit(row)}
             >
-              <EditIcon size={16} />
+              <Pencil size={16} />
             </TableIconButton>
           </div>
         </TableCell>

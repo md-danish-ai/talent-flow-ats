@@ -191,7 +191,7 @@ export function MCQClient({
       await questionsApi.toggleQuestionStatus(id);
       void refresh();
       toast.success(
-        `Question ${!currentStatus ? "activated" : "deactivated"} successfully`,
+        `Question ${!currentStatus ? "enabled" : "disabled"} successfully`,
       );
     } catch (error) {
       if (!handleAuthError(error)) {

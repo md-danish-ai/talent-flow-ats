@@ -23,20 +23,25 @@ import {
   ListingIcons,
 } from "@components/ui-elements/ListingHeaderActions";
 
+const DEFAULT_VISIBLE_COLUMNS = [
+  "sr_no",
+  "paper_name",
+  "department",
+  "test_level",
+  "timing",
+  "total_marks",
+  "created_at",
+  "active",
+  "actions",
+];
+
 export function PaperSetupClient() {
   const router = useRouter();
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    "sr_no",
-    "paper_name",
-    "department",
-    "test_level",
-    "timing",
-    "total_marks",
-    "active",
-    "actions",
-  ]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    DEFAULT_VISIBLE_COLUMNS,
+  );
 
   // Hook for standardized listing
   const {
@@ -87,7 +92,8 @@ export function PaperSetupClient() {
     { id: "description", label: "Description" },
     { id: "timing", label: "Timing" },
     { id: "total_marks", label: "Total Marks" },
-    { id: "active", label: "Active Status" },
+    { id: "created_at", label: "Created Date" },
+    { id: "active", label: "Status" },
     { id: "actions", label: "Actions", pinned: true },
   ];
 
@@ -139,6 +145,7 @@ export function PaperSetupClient() {
               columns={columns}
               visibleColumns={visibleColumns}
               onToggle={handleToggleColumn}
+              onReset={() => setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)}
             />
             <div className="h-6 w-px bg-border/50 mx-1" />
 

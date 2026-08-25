@@ -432,7 +432,7 @@ export function ResetUserListing({
                                 shape="square"
                                 color={row.is_active ? "success" : "error"}
                               >
-                                {row.is_active ? "Active" : "Disabled"}
+                                {row.is_active ? "Enabled" : "Disabled"}
                               </Badge>
                             </div>
                           </TableCell>

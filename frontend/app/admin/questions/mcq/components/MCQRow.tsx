@@ -124,7 +124,7 @@ export const MCQRow: React.FC<MCQRowProps> = ({
               shape="square"
               color={row.is_active !== false ? "success" : "error"}
             >
-              {row.is_active !== false ? "Activate" : "Deactivate"}
+              {row.is_active !== false ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </TableCell>

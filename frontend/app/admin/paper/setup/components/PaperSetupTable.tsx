@@ -58,6 +58,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
               {isVisible("description") && <TableHead>Description</TableHead>}
               {isVisible("timing") && <TableHead>Timing</TableHead>}
               {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}
+              {isVisible("created_at") && <TableHead>Created Date</TableHead>}
               {isVisible("active") && (
                 <TableHead className="w-[100px] text-center">Status</TableHead>
               )}

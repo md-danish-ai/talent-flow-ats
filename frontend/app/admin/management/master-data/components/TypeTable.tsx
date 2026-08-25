@@ -263,7 +263,7 @@ export function TypeTable({
                         shape="square"
                         color={item.is_active ? "success" : "error"}
                       >
-                        {item.is_active ? "ACTIVE" : "INACTIVE"}
+                        {item.is_active ? "Enabled" : "Disabled"}
                       </Badge>
                     </div>
                   </TableCell>
