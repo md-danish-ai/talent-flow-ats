@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
+import { Logo } from "@components/ui-elements/Logo";
 import { SignInForm } from "@features/authforms/SignInForm";
 
 export default function LoginPage() {
@@ -40,36 +41,20 @@ export default function LoginPage() {
             <div className="absolute right-6 top-6 z-20">
               <ThemeToggle />
             </div>
-            <div className="mb-6">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/logo.svg"
-                  alt="Arcgate Logo"
-                  width={292}
-                  height={54}
-                  className="h-[40px] w-auto"
-                />
+            <div className="mb-5">
+              <div className="mb-3.5">
+                <Logo size="lg" />
               </div>
-              <Typography
-                variant="body3"
-                italic
-                className="ml-1 mt-2 text-slate-400 dark:text-slate-400/80"
-              >
-                Elevating recruitment experiences
-              </Typography>
-            </div>
-
-            <div className="mb-6">
               <Typography
                 variant="h2"
                 weight="bold"
-                className="text-2xl text-slate-800 dark:text-foreground"
+                className="text-2xl sm:text-3xl text-slate-800 dark:text-foreground tracking-tight"
               >
                 Welcome Back
               </Typography>
               <Typography
                 variant="body3"
-                className="mt-1 text-slate-400 dark:text-muted-foreground"
+                className="mt-1 text-slate-500 dark:text-muted-foreground font-medium"
               >
                 Please enter your details to sign in
               </Typography>

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import { Typography } from "@components/ui-elements/Typography";
 import { ThemeToggle } from "@components/ui-elements/ThemeToggle";
+import { Logo } from "@components/ui-elements/Logo";
 import { SignUpForm } from "@features/authforms/SignUpForm";
 
 export default function RegisterPage() {
@@ -40,26 +41,22 @@ export default function RegisterPage() {
             <div className="absolute right-6 top-6 z-20">
               <ThemeToggle />
             </div>
-            <div className="mb-6 flex flex-col items-center text-center">
-              <Image
-                src="/logo.svg"
-                alt="Arcgate Logo"
-                width={200}
-                height={40}
-                className="h-[45px] w-auto mb-6"
-              />
+            <div className="mb-5">
+              <div className="mb-3.5">
+                <Logo size="lg" />
+              </div>
               <Typography
                 variant="h2"
                 weight="bold"
-                className="text-3xl text-slate-800 dark:text-foreground tracking-tight"
+                className="text-2xl sm:text-3xl text-slate-800 dark:text-foreground tracking-tight"
               >
-                Create Account
+                Get Started
               </Typography>
               <Typography
-                variant="body2"
-                className="mt-2 text-slate-500 dark:text-muted-foreground font-medium"
+                variant="body3"
+                className="mt-1 text-slate-500 dark:text-muted-foreground font-medium"
               >
-                Sign up to get started with ArcInterview
+                Please enter your details to sign up
               </Typography>
             </div>
 

@@ -15,49 +15,66 @@ export const Logo: React.FC<LogoProps> = ({
   size = "md",
 }) => {
   const iconSizes = {
-    sm: "w-7 h-7",
-    md: "w-9 h-9",
-    lg: "w-11 h-11",
+    sm: "w-8 h-8 rounded-[9px]",
+    md: "w-10 h-10 rounded-[12px]",
+    lg: "w-12 h-12 rounded-[14px]",
   };
 
   const containerSizes = {
-    sm: "gap-2",
-    md: "gap-2.5",
+    sm: "gap-2.5",
+    md: "gap-3",
     lg: "gap-3.5",
   };
 
   const textSizes = {
-    sm: "text-[13px]",
-    md: "text-[16px]",
-    lg: "text-xl",
+    sm: "text-[17px]",
+    md: "text-[21px]",
+    lg: "text-[26px]",
   };
 
   return (
     <div
       className={cn(
-        "flex items-center select-none group",
+        "flex items-center select-none group cursor-pointer py-1",
         containerSizes[size],
         className,
       )}
     >
-      {/* Solid Icon Container */}
+      {/* Gradient Icon Container */}
       <div
         className={cn(
-          "relative flex items-center justify-center shrink-0 rounded-[1.2rem] bg-brand-primary/10 shadow-[0_0_20px_rgba(var(--color-brand-primary-rgb),0.1)] transition-all duration-300 group-hover:bg-brand-primary/15 group-hover:shadow-[0_0_25px_rgba(var(--color-brand-primary-rgb),0.2)]",
+          "relative flex items-center justify-center shrink-0 overflow-hidden",
+          "bg-gradient-to-br from-[#ff7d4d] via-brand-primary to-[#e24c1e]",
+          "shadow-[0_2px_10px_rgba(249,99,49,0.32)] transition-all duration-300",
+          "group-hover:scale-105 group-hover:shadow-[0_4px_14px_rgba(249,99,49,0.45)] group-hover:brightness-105",
           iconSizes[size],
         )}
       >
-        {/* The Solid Caret "A" SVG */}
+        {/* Subtle Glassmorphic Highlight */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-black/10 pointer-events-none" />
+
+        {/* Creative Stylized Interview Icon */}
         <svg
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-[55%] h-[55%] text-brand-primary drop-shadow-[0_0_10px_rgba(var(--color-brand-primary-rgb),0.4)] transition-transform duration-500 group-hover:scale-110"
+          className="relative z-10 w-[58%] h-[58%] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-300 group-hover:scale-110"
         >
+          {/* Main Chat Bubble Frame */}
           <path
-            d="M3 19L12 5L21 19"
+            d="M7 17.5L3.5 20.5V6C3.5 4.61929 4.61929 3.5 6 3.5H18C19.3807 3.5 20.5 4.61929 20.5 6V15C20.5 16.3807 19.3807 17.5 18 17.5H7Z"
             stroke="currentColor"
-            strokeWidth="4"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="currentColor"
+            fillOpacity="0.15"
+          />
+          {/* Sound / Voice Interview Waves */}
+          <path
+            d="M8.5 10.5V10.51M12 9V12M15.5 10V11"
+            stroke="currentColor"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -67,11 +84,13 @@ export const Logo: React.FC<LogoProps> = ({
       {!iconOnly && (
         <span
           className={cn(
-            "font-extrabold tracking-tighter text-slate-900 dark:text-white uppercase transition-all duration-300 group-hover:text-brand-primary",
+            "font-bold tracking-tight bg-clip-text text-transparent leading-none",
+            "bg-gradient-to-r from-brand-primary via-[#ff6f3d] to-[#ff945e]",
+            "transition-all duration-300 group-hover:brightness-110",
             textSizes[size],
           )}
         >
-          ArcInterview
+          Interview <span className="font-extrabold">App</span>
         </span>
       )}
     </div>
