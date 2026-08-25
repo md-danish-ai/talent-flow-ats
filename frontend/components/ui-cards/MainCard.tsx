@@ -1,12 +1,13 @@
 import React from "react";
 import { cn } from "@lib/utils";
-import { Typography } from "@components/ui-elements/Typography";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { motion } from "framer-motion";
 
 interface MainCardProps {
   /** Card heading shown in the header bar */
   title: React.ReactNode;
+  /** Optional icon shown on the left of the title (with standard container) */
+  icon?: React.ReactNode;
   /** Optional subtitle shown under the heading */
   subtitle?: React.ReactNode;
   /** Optional element rendered on the right side of the header (e.g. a button or link) */
@@ -23,6 +24,7 @@ interface MainCardProps {
 
 export const MainCard: React.FC<MainCardProps> = ({
   title,
+  icon,
   subtitle,
   action,
   children,
@@ -53,20 +55,26 @@ export const MainCard: React.FC<MainCardProps> = ({
             "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
         )}
       >
-        <div className="flex flex-col gap-0.5 min-w-0">
-          <Typography
-            variant="h4"
-            as="h3"
-            weight="extrabold"
-            className="flex items-center gap-2.5 text-foreground tracking-tight text-[17px] sm:text-lg"
-          >
-            {title}
-          </Typography>
-          {subtitle && (
-            <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
-              {subtitle}
-            </p>
+        <div className="flex items-center gap-3 min-w-0">
+          {icon && (
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
+              {icon}
+            </div>
           )}
+          <div className="flex flex-col gap-0.5 min-w-0">
+            {typeof title === "string" ? (
+              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
+                {title}
+              </span>
+            ) : (
+              title
+            )}
+            {subtitle && (
+              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
         {action && (

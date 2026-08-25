@@ -281,18 +281,8 @@ export default function DashboardPage() {
           {/* Top-Left: Dashboard Pulse */}
           <div className="lg:col-span-2">
             <MainCard
-              title={
-                <div className="flex items-center gap-3">
-                  <Zap size={22} className="text-brand-primary" />
-                  <Typography
-                    variant="h4"
-                    weight="black"
-                    className="pt-0.5 text-foreground"
-                  >
-                    Dashboard Pulse
-                  </Typography>
-                </div>
-              }
+              icon={<Zap size={18} />}
+              title="Dashboard Pulse"
               className="h-full"
               bodyClassName="p-4 pb-2"
             >
@@ -314,18 +304,8 @@ export default function DashboardPage() {
           {/* Top-Right: Activity & Focus */}
           <div className="lg:col-span-1">
             <MainCard
-              title={
-                <div className="flex items-center gap-3">
-                  <Bell size={22} className="text-rose-500" />
-                  <Typography
-                    variant="h4"
-                    weight="black"
-                    className="pt-0.5 text-foreground"
-                  >
-                    Activity & Focus
-                  </Typography>
-                </div>
-              }
+              icon={<Bell size={18} />}
+              title="Activity & Focus"
               className="h-full"
               bodyClassName="p-1"
             >
@@ -436,18 +416,8 @@ export default function DashboardPage() {
 
         {/* Bottom: Performance Insights */}
         <MainCard
-          title={
-            <div className="flex items-center gap-3">
-              <Trophy size={22} className="text-emerald-500" />
-              <Typography
-                variant="h4"
-                weight="black"
-                className="pt-0.5 text-foreground"
-              >
-                Performance Insights
-              </Typography>
-            </div>
-          }
+          icon={<Trophy size={18} />}
+          title="Performance Insights"
           className="h-full"
         >
           <motion.div

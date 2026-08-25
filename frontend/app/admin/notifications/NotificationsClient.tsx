@@ -133,19 +133,9 @@ export function NotificationsClient() {
   return (
     <div className="flex flex-col gap-6">
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "w-8 h-8 bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0",
-                STYLE_CONFIG.iconRadius,
-              )}
-            >
-              <Bell size={18} />
-            </div>
-            Recent Notifications
-          </div>
-        }
+        icon={<Bell size={18} />}
+        title="Recent Notifications"
+        subtitle="View system activity, candidate events, and administrative alerts."
         action={
           <div className="flex items-center gap-3">
             {selectedIds.length > 0 && (

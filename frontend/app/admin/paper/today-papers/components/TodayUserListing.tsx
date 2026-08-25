@@ -129,14 +129,9 @@ export function TodayUserListing({
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            Today Candidates List
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Today Candidates List"
+        subtitle="Monitor candidate attendance, scheduled exams, and today's paper assignments."
         action={
           <div className="flex items-center gap-3">
             <ListingBadge

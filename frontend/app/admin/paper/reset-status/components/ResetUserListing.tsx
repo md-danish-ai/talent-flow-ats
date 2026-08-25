@@ -162,22 +162,9 @@ export function ResetUserListing({
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <RotateCcw size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
-                Reset User Status
-              </span>
-              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
-                Manage daily interview progress and application details for all
-                candidates.
-              </p>
-            </div>
-          </div>
-        }
+        icon={<RotateCcw size={18} />}
+        title="Reset User Status"
+        subtitle="Manage daily interview progress and application details for all candidates."
         className="mb-6 flex flex-col overflow-hidden"
         bodyClassName="p-0 flex flex-col w-full"
         action={

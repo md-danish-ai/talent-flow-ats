@@ -90,14 +90,9 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            Project Leads
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Project Leads"
+        subtitle="Manage project lead accounts, team permissions, and project assignments."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
