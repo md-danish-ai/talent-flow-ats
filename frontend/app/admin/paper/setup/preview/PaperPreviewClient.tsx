@@ -3,29 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
-import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { Switch } from "@components/ui-elements/Switch";
-import { Badge } from "@components/ui-elements/Badge";
 import { papersApi } from "@lib/api/papers";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { PaperSetup, Question, Classification } from "@types";
 import { toast } from "@lib/toast";
 import { PaperPreviewSection } from "./components/PaperPreviewSection";
-import {
-  ArrowLeft,
-  Download,
-  Loader2,
-  Eye,
-  EyeOff,
-  Clock,
-  Trophy,
-  Layers,
-  HelpCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Download, Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useMe } from "@hooks/api/user/use-me";
 import { PaperDetailSkeleton } from "@components/ui-skeleton/PaperDetailSkeleton";
 import { PaperOverviewCard } from "@components/features/paper-setup/PaperOverviewCard";

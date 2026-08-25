@@ -26,7 +26,6 @@ import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton
 import { useListing } from "@hooks/useListing";
 import { useMe } from "@hooks/api/user/use-me";
 import { cn } from "@lib/utils";
-import { STYLE_CONFIG } from "@lib/config/style";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 
 type NotificationListingFilters = {
