@@ -658,7 +658,7 @@ def generate_paper_pdf_file(
         db.query(Classification)
         .filter(
             Classification.type == "subject",
-            Classification.is_active == True,
+            Classification.is_active,
         )
         .all()
     )

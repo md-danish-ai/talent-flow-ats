@@ -96,7 +96,8 @@ export function PassageClient() {
   // Column visibility
   const allColumns = [
     { id: "srNo", label: "Sr. No.", pinned: true },
-    { id: "question", label: "Question & Passage", pinned: true },
+    { id: "passage", label: "Passage" },
+    { id: "question", label: "Question Text", pinned: true },
     { id: "subject", label: "Subject" },
     { id: "examLevel", label: "Exam Level" },
     { id: "marks", label: "Marks" },
@@ -107,6 +108,7 @@ export function PassageClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "srNo",
+    "passage",
     "question",
     "subject",
     "examLevel",
@@ -261,8 +263,11 @@ export function PassageClient() {
                         Sr. No.
                       </TableHead>
                     )}
+                    {visibleColumns.includes("passage") && (
+                      <TableHead className="w-[300px]">Passage</TableHead>
+                    )}
                     {visibleColumns.includes("question") && (
-                      <TableHead>Question & Passage</TableHead>
+                      <TableHead className="w-[300px]">Question Text</TableHead>
                     )}
                     {visibleColumns.includes("subject") && (
                       <TableHead>Subject</TableHead>
