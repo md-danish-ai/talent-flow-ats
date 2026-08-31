@@ -291,7 +291,7 @@ export function SignInForm() {
         variant="body4"
         className="mt-6 text-center text-black/80 dark:text-white/80 font-medium"
       >
-        New to TalentFlow?{" "}
+        New to Arc Interview App?{" "}
         <Link
           href="/"
           className="inline-flex items-center gap-1 font-bold text-brand-primary hover:underline"
