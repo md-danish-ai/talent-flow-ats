@@ -18,6 +18,7 @@ import {
   AutoAssignmentRuleResponse,
   paperAssignmentsApi,
 } from "@lib/api/paper-assignments";
+import { Badge } from "@components/ui-elements/Badge";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { SimpleTableSkeleton } from "@components/ui-skeleton/SimpleTableSkeleton";
 import { formatDate } from "@lib/utils";
@@ -147,22 +148,17 @@ export function RuleTable({
                   </TableCell>
                   <TableCell className="align-middle text-center">
                     {isPast ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      <Badge variant="outline" shape="square" color="secondary">
                         Completed
-                      </span>
+                      </Badge>
                     ) : row.is_active ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                        </span>
+                      <Badge variant="outline" shape="square" color="success">
                         Running
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1  bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      <Badge variant="outline" shape="square" color="warning">
                         Paused
-                      </span>
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell className="align-middle text-center">

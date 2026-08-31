@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import {
   ONBOARDING_TOUR_STEPS,
@@ -8,7 +8,6 @@ import {
   PERSONAL_DETAILS_TOUR_STEPS,
   INTERVIEW_OVERVIEW_TOUR_STEPS,
   ACTIVE_TEST_TOUR_STEPS,
-  TOUR_STORAGE_KEYS,
 } from "./config";
 import { startTourWithSteps } from "./driver";
 
@@ -27,11 +26,7 @@ export interface UseUserTourProps {
 /**
  * 1. Hook for User Dashboard Tour
  */
-export function useUserTour({
-  user,
-  isDetailsComplete,
-  isInterviewSubmitted,
-}: UseUserTourProps) {
+export function useUserTour({ user, isDetailsComplete }: UseUserTourProps) {
   const runTourManually = useCallback(
     (forceType?: "onboarding" | "reinterview") => {
       if (!user?.id) return;
@@ -99,33 +94,11 @@ export function useUserTour({
 /**
  * 2. Hook for Personal Details Form Tour
  */
-export function usePersonalDetailsTour(user: CurrentUser | null) {
+export function usePersonalDetailsTour(user?: CurrentUser | null) {
+  void user;
   const runTourManually = useCallback(() => {
     startTourWithSteps({ steps: PERSONAL_DETAILS_TOUR_STEPS });
   }, []);
-
-  // Auto-launch commented out: User will trigger manually via button
-  /*
-  useEffect(() => {
-    if (!user?.id || user.role !== "user") return;
-
-    const timer = setTimeout(() => {
-      const storageKey = TOUR_STORAGE_KEYS.PERSONAL_DETAILS(user.id);
-      const hasSeen = localStorage.getItem(storageKey);
-
-      if (!hasSeen) {
-        startTourWithSteps({
-          steps: PERSONAL_DETAILS_TOUR_STEPS,
-          onDestroyed: () => {
-            localStorage.setItem(storageKey, "true");
-          },
-        });
-      }
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [user?.id, user?.role]);
-  */
 
   return {
     runTourManually,
@@ -135,33 +108,11 @@ export function usePersonalDetailsTour(user: CurrentUser | null) {
 /**
  * 3. Hook for Interview Overview / Pre-Test Tour
  */
-export function useInterviewOverviewTour(user: CurrentUser | null) {
+export function useInterviewOverviewTour(user?: CurrentUser | null) {
+  void user;
   const runTourManually = useCallback(() => {
     startTourWithSteps({ steps: INTERVIEW_OVERVIEW_TOUR_STEPS });
   }, []);
-
-  // Auto-launch commented out: User will trigger manually via button
-  /*
-  useEffect(() => {
-    if (!user?.id || user.role !== "user") return;
-
-    const timer = setTimeout(() => {
-      const storageKey = TOUR_STORAGE_KEYS.INTERVIEW_OVERVIEW(user.id);
-      const hasSeen = localStorage.getItem(storageKey);
-
-      if (!hasSeen) {
-        startTourWithSteps({
-          steps: INTERVIEW_OVERVIEW_TOUR_STEPS,
-          onDestroyed: () => {
-            localStorage.setItem(storageKey, "true");
-          },
-        });
-      }
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [user?.id, user?.role]);
-  */
 
   return {
     runTourManually,
@@ -171,7 +122,8 @@ export function useInterviewOverviewTour(user: CurrentUser | null) {
 /**
  * 4. Hook for Active Test Room Tour
  */
-export function useActiveTestTour(user: CurrentUser | null) {
+export function useActiveTestTour(user?: CurrentUser | null) {
+  void user;
   const runTourManually = useCallback(() => {
     startTourWithSteps({ steps: ACTIVE_TEST_TOUR_STEPS });
   }, []);
