@@ -70,14 +70,9 @@ export function AdminListing({ initialData }: AdminListingProps) {
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            Admins
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Admins"
+        subtitle="Manage system administrators, security roles, and admin permissions."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={

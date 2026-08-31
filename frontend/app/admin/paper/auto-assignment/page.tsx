@@ -80,14 +80,9 @@ export default function AutoAssignmentDashboard() {
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <RefreshCcw size={18} />
-            </div>
-            Auto Assignment
-          </div>
-        }
+        icon={<RefreshCcw size={18} />}
+        title="Auto-Assignment Rules"
+        subtitle="Configure automated test paper assignment rules for incoming candidates."
         action={
           <div className="flex items-center gap-3">
             <DateRangePicker

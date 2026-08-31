@@ -208,14 +208,9 @@ export function UserListing({ initialData }: UserListingProps) {
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            Users
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Users"
+        subtitle="Manage registered users, candidates, account credentials, and roles."
         action={
           <div className="flex items-center gap-3">
             <ListingHeaderActions

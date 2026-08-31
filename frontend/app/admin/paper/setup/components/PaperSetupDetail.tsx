@@ -14,18 +14,7 @@ import {
   TableCollapsibleRow,
 } from "@components/ui-elements/Table";
 import { EmptyState } from "@components/ui-elements/EmptyState";
-import {
-  ArrowLeft,
-  FileText,
-  PlusCircle,
-  Loader2,
-  BookOpen,
-  Layers,
-  Trophy,
-  Clock,
-  Trash2,
-  Eye,
-} from "lucide-react";
+import { PlusCircle, Loader2, Trash2, Eye } from "lucide-react";
 import { AddContentModal } from "./AddContentModal";
 import { papersApi } from "@lib/api/papers";
 import { PaperSetup, Question, Classification } from "@types";
@@ -33,6 +22,7 @@ import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { toast } from "@lib/toast";
 import { PaperDetailSkeleton } from "@components/ui-skeleton/PaperDetailSkeleton";
+import { PaperOverviewCard } from "@components/features/paper-setup/PaperOverviewCard";
 
 interface PaperSetupDetailProps {
   paperId: number;
@@ -208,161 +198,37 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div
-        className={cn(
-          "relative border border-border/60 bg-white dark:bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500",
-          STYLE_CONFIG.cardRadius,
-        )}
-      >
-        <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-slate-50/50 dark:bg-slate-800/30">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={onBack}
-              className={cn(
-                STYLE_CONFIG.iconRadius,
-                "hover:bg-brand-primary/10 hover:text-brand-primary",
-              )}
-            >
-              <ArrowLeft size={18} />
-            </Button>
-            <div className="h-6 w-[1px] bg-border/60 mx-1" />
-            <div>
-              <Typography
-                variant="body2"
-                weight="black"
-                className="tracking-tight text-foreground/90 flex items-center gap-2"
-              >
-                Paper Overview
-              </Typography>
-              <Typography
-                variant="body5"
-                className="text-muted-foreground/70 uppercase tracking-[0.2em] font-black text-[9px]"
-              >
-                Configured Assessment Structure
-              </Typography>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              animate="scale"
-              onClick={() =>
-                window.open(`/admin/paper/setup/preview/${paper.id}`, "_blank")
-              }
-              className="font-bold text-xs gap-1.5 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 transition-all shadow-sm"
-              startIcon={<Eye size={15} />}
-            >
-              Preview Paper
-            </Button>
-          </div>
-        </div>
-
-        <div className="p-8 space-y-8">
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatsCard
-              icon={<Layers className="text-emerald-600" />}
-              label="Department"
-              value={paper.department_name || "N/A"}
-              bgColor="bg-emerald-50/30 dark:bg-emerald-500/5"
-              borderColor="border-emerald-500/10"
-              labelColor="text-emerald-600/60"
-            />
-            <StatsCard
-              icon={<BookOpen className="text-blue-600" />}
-              label="Paper Name"
-              value={paper.paper_name}
-              bgColor="bg-blue-50/30 dark:bg-blue-500/5"
-              borderColor="border-blue-500/10"
-              labelColor="text-blue-600/60"
-            />
-            <StatsCard
-              icon={<Trophy className="text-amber-600" />}
-              label="Total Marks"
-              value={`${Number(paper.total_marks).toFixed(2)} pts`}
-              bgColor="bg-amber-50/30 dark:bg-amber-500/5"
-              borderColor="border-amber-500/10"
-              labelColor="text-amber-600/60"
-            />
-            <StatsCard
-              icon={<Clock className="text-brand-primary" />}
-              label="Duration"
-              value={paper.total_time || "N/A"}
-              bgColor="bg-brand-primary/5 dark:bg-brand-primary/10"
-              borderColor="border-brand-primary/10"
-              labelColor="text-brand-primary/60"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div
-              className={cn(
-                "md:col-span-8 p-6 bg-slate-50 dark:bg-slate-800/10 border border-slate-100 dark:border-slate-800 relative group/desc transition-all duration-300 hover:border-brand-primary/20",
-                STYLE_CONFIG.innerCardRadius,
-              )}
-            >
-              <div
-                className={cn(
-                  "absolute -top-3 left-6 px-3 py-1 bg-white dark:bg-slate-900 border border-border flex items-center gap-2 shadow-sm z-10",
-                  STYLE_CONFIG.badgeRadius,
-                )}
-              >
-                <FileText size={12} className="text-brand-primary" />
-                <Typography
-                  variant="body5"
-                  weight="black"
-                  className="text-muted-foreground uppercase tracking-widest text-[9px]"
-                >
-                  Description of Paper
-                </Typography>
-              </div>
-              <Typography
-                variant="body4"
-                className="leading-relaxed text-foreground/70 font-medium italic"
-              >
-                &quot;{paper.description}&quot;
-              </Typography>
-            </div>
-
-            <div
-              className={cn(
-                "md:col-span-4 p-6 bg-brand-primary/[0.03] border border-brand-primary/10 flex flex-col justify-center items-center text-center relative overflow-hidden group/level",
-                STYLE_CONFIG.innerCardRadius,
-              )}
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
-                <Layers size={80} />
-              </div>
-              <Typography
-                variant="body5"
-                weight="black"
-                className="text-brand-primary/60 uppercase tracking-[0.2em] mb-1 z-10"
-              >
-                Test Level
-              </Typography>
-              <Typography
-                variant="h2"
-                weight="black"
-                className="text-slate-900 dark:text-slate-100 z-10"
-              >
-                {paper.test_level_name || "General"}
-              </Typography>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PaperOverviewCard
+        paper={paper}
+        allClassifications={allClassifications}
+        assignedQuestionsCount={assignedQuestions.length}
+        modeLabel="CONFIGURATION"
+        modeColor="secondary"
+        backLabel="Back to Listing"
+        onBack={onBack}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            animate="scale"
+            onClick={() =>
+              window.open(`/admin/paper/setup/preview/${paper.id}`, "_blank")
+            }
+            className="font-bold text-xs gap-1.5 border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 transition-all shadow-sm"
+            startIcon={<Eye size={15} />}
+          >
+            Preview Paper
+          </Button>
+        }
+      />
 
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3 ml-2">
           <div className="h-6 w-1.5 rounded-full bg-brand-primary shadow-[0_0_10px_theme(colors.brand-primary/40%)]" />
           <Typography
-            variant="body4"
-            weight="black"
-            className="text-slate-900 dark:text-slate-200 uppercase tracking-[0.2em] text-[11px]"
+            variant="h4"
+            weight="bold"
+            className="text-foreground tracking-tight"
           >
             Question Assignment Panel
           </Typography>
@@ -681,53 +547,3 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
     </div>
   );
 };
-
-const StatsCard = ({
-  icon,
-  label,
-  value,
-  bgColor,
-  borderColor,
-  labelColor,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  bgColor: string;
-  borderColor: string;
-  labelColor: string;
-}) => (
-  <div
-    className={cn(
-      "flex items-center gap-4 p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md",
-      STYLE_CONFIG.innerCardRadius,
-      bgColor,
-      borderColor,
-    )}
-  >
-    <div
-      className={cn(
-        "p-2.5 bg-white dark:bg-slate-900 shadow-sm",
-        STYLE_CONFIG.iconRadius,
-      )}
-    >
-      {icon}
-    </div>
-    <div className="flex flex-col">
-      <Typography
-        variant="body5"
-        weight="black"
-        className={cn("uppercase tracking-widest text-[9px]", labelColor)}
-      >
-        {label}
-      </Typography>
-      <Typography
-        variant="body3"
-        weight="black"
-        className="text-slate-900 dark:text-slate-100"
-      >
-        {value}
-      </Typography>
-    </div>
-  </div>
-);
