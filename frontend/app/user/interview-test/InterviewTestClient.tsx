@@ -474,14 +474,33 @@ export function InterviewTestClient() {
     if (hasHandledOverallTimeoutRef.current) return;
     hasHandledOverallTimeoutRef.current = true;
 
+    // STEP 1: Lock UI immediately — before jitter, so candidate cannot interact
+    setLockedSections(allLockedSections);
+    setIsSectionChangeConfirmOpen(false);
+
+    // STEP 2: Capture answer snapshot at the exact moment timer fires
+    // latestAnswersRef always reflects the freshest answers (synced on every keystroke).
+    // Freezing both here ensures the async closure below sends timer-expiry data,
+    // not a potentially stale closure value.
+    const capturedSections = [...sections];
+    const capturedAnswers = { ...latestAnswersRef.current };
+
+    // STEP 3: Show submitting state immediately (before jitter)
+    setMessage("Time is over. Saving and submitting your answers...");
+
     const submitOnTimeout = async () => {
       try {
         if (attemptId) {
-          // Thundering herd prevent — 0 to 1.5s spread
-          const jitterMs = Math.random() * 1500;
+          // Thundering herd prevent — 0 to 3s spread (UI already locked above)
+          const jitterMs = Math.random() * 3000;
           await new Promise((resolve) => setTimeout(resolve, jitterMs));
-          // Batch save everything
-          const allBatchRequests = sections.map((sec) =>
+
+          // Point ref to captured snapshot before saving
+          // (UI is locked so no new answers possible — this is an extra safety measure)
+          latestAnswersRef.current = capturedAnswers;
+
+          // Batch save using captured sections
+          const allBatchRequests = capturedSections.map((sec) =>
             persistSubjectAnswers(sec, true),
           );
           await Promise.allSettled(allBatchRequests);
@@ -495,8 +514,7 @@ export function InterviewTestClient() {
           "Time is over. Local submission completed, but server sync failed.",
         );
       } finally {
-        setLockedSections(allLockedSections);
-        setIsSectionChangeConfirmOpen(false);
+        // setLockedSections + setIsSectionChangeConfirmOpen already called above (before jitter)
         setCompletionReason("time_over");
         setIsCompleted(true);
         setMessage(
@@ -514,10 +532,29 @@ export function InterviewTestClient() {
     if (hasHandledSectionTimeoutRef.current) return;
     hasHandledSectionTimeoutRef.current = true;
 
+    // STEP 1: Lock current section in UI immediately — before jitter
+    setLockedSections((prev) => {
+      const next = [...prev];
+      next[sectionIndex] = true;
+      return next;
+    });
+
+    // STEP 2: Capture answer snapshot at the exact moment section timer fires
+    const capturedAnswers = { ...latestAnswersRef.current };
+
+    // STEP 3: Show saving state immediately (before jitter)
+    setMessage(
+      `Time is up for ${currentSection?.title || "section"}. Saving your answers...`,
+    );
+
     const advanceSection = async () => {
-      // Thundering herd prevent — 0 to 1.5s spread
-      const jitterMs = Math.random() * 1500;
+      // Thundering herd prevent — 0 to 3s spread (section already locked above)
+      const jitterMs = Math.random() * 3000;
       await new Promise((resolve) => setTimeout(resolve, jitterMs));
+
+      // Restore captured snapshot before lockAndMoveToNextSection reads latestAnswersRef
+      latestAnswersRef.current = capturedAnswers;
+
       lockAndMoveToNextSection(
         sectionIndex,
         `Time is up for ${currentSection?.title || "section"}. Section auto-locked.`,
