@@ -45,7 +45,7 @@ export function ResetUserListingSkeleton({
             <Skeleton className="h-6 w-24 mx-auto rounded opacity-80" />
           </TableCell>
 
-          {/* Test Level */}
+          {/* Exam Level */}
           <TableCell className="align-middle py-4 text-center">
             <Skeleton className="h-6 w-20 mx-auto rounded opacity-80" />
           </TableCell>

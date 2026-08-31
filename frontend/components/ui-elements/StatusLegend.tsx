@@ -50,86 +50,96 @@ const LegendItem = ({
         </Badge>
       </div>
     </div>
-    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium italic leading-tight">
+    <p className="text-[11px] text-slate-600 dark:text-white font-medium italic leading-snug">
       {description}
     </p>
   </div>
 );
+
+export const ATTEMPT_STATUS_CONFIG: {
+  label: string;
+  description: string;
+  dotColor: string;
+  badgeColor: BadgeColor;
+}[] = [
+  {
+    label: "Pending",
+    description: "No paper assigned, initial state.",
+    dotColor: "bg-amber-500",
+    badgeColor: "warning",
+  },
+  {
+    label: "Ready",
+    description: "Paper assigned, awaiting login.",
+    dotColor: "bg-blue-500",
+    badgeColor: "blue",
+  },
+  {
+    label: "In Progress",
+    description: "Active attempt, candidate is online.",
+    dotColor: "bg-orange-500",
+    badgeColor: "primary",
+  },
+  {
+    label: "Submitted",
+    description: "Process complete, candidate finished.",
+    dotColor: "bg-green-500",
+    badgeColor: "success",
+  },
+  {
+    label: "Expired",
+    description: "Time limit reached, session locked.",
+    dotColor: "bg-red-500",
+    badgeColor: "error",
+  },
+];
+
+export function AttemptStatusLegendBar({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "px-4 py-3 bg-slate-50/50 dark:bg-slate-900/30 border-b border-border/50 overflow-x-auto",
+        className,
+      )}
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 min-w-[650px] md:min-w-0">
+        {ATTEMPT_STATUS_CONFIG.map((status) => (
+          <LegendItem key={status.label} {...status} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function AttemptStatusLegend({
   title,
   subtitle,
   action,
 }: StatusLegendHeaderProps) {
-  const statuses: {
-    label: string;
-    description: string;
-    dotColor: string;
-    badgeColor: BadgeColor;
-  }[] = [
-    {
-      label: "Pending",
-      description: "No paper assigned, initial state.",
-      dotColor: "bg-amber-500",
-      badgeColor: "warning",
-    },
-    {
-      label: "Ready",
-      description: "Paper assigned, awaiting login.",
-      dotColor: "bg-blue-500",
-      badgeColor: "blue",
-    },
-    {
-      label: "In Progress",
-      description: "Active attempt, candidate is online.",
-      dotColor: "bg-orange-500",
-      badgeColor: "primary",
-    },
-    {
-      label: "Submitted",
-      description: "Process complete, candidate finished.",
-      dotColor: "bg-green-500",
-      badgeColor: "success",
-    },
-    {
-      label: "Expired",
-      description: "Time limit reached, session locked.",
-      dotColor: "bg-red-500",
-      badgeColor: "error",
-    },
-  ];
-
   return (
-    <div
-      className={cn(
-        "relative w-full mb-4 overflow-hidden bg-white/50 dark:bg-card border border-slate-200 dark:border-border transition-all",
-        STYLE_CONFIG.cardRadius,
-      )}
-    >
-      <div className="relative p-4 md:p-5 flex flex-col gap-4">
-        {/* Top Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
-                {title}
-              </h1>
-            </div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium text-[10px] ml-3 uppercase tracking-wider opacity-80">
-              {subtitle}
-            </p>
+    <div className="w-full mb-6 flex flex-col gap-4">
+      {/* Top Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-brand-primary rounded-full shadow-lg shadow-brand-primary/20" />
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+              {title}
+            </h1>
           </div>
-
-          {action && <div className="shrink-0">{action}</div>}
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-xs ml-3 uppercase tracking-wider opacity-80">
+            {subtitle}
+          </p>
         </div>
 
-        {/* Legend Grid Section */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2">
-          {statuses.map((status) => (
-            <LegendItem key={status.label} {...status} />
-          ))}
-        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+
+      {/* Legend Grid Section */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+        {ATTEMPT_STATUS_CONFIG.map((status) => (
+          <LegendItem key={status.label} {...status} />
+        ))}
       </div>
     </div>
   );

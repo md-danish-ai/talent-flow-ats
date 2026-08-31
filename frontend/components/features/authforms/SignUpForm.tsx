@@ -228,7 +228,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                 <Typography
                   as="label"
                   variant="h6"
-                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
                 >
                   Full Name
                 </Typography>
@@ -262,7 +262,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                 <Typography
                   as="label"
                   variant="h6"
-                  className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
                 >
                   Mobile Number
                 </Typography>
@@ -298,11 +298,11 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
               >
                 Email Address{" "}
-                <span className="font-normal normal-case opacity-40">
-                  (optional)
+                <span className="font-normal normal-case text-black dark:text-white font-medium">
+                  (Optional)
                 </span>
               </Typography>
               <Input
@@ -329,7 +329,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </form.Field>
 
-        {/* Row 3: Department and Test Level */}
+        {/* Row 3: Department and Exam Level */}
         <form.Subscribe selector={(state) => [state.values.department_id]}>
           {([departmentId]) => {
             const selectedDept = departments?.find(
@@ -347,7 +347,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                       <Typography
                         as="label"
                         variant="h6"
-                        className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                        className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
                       >
                         Department
                       </Typography>
@@ -385,7 +385,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
                         <Typography
                           as="label"
                           variant="h6"
-                          className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                          className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
                         >
                           Exam Level
                         </Typography>
@@ -450,7 +450,7 @@ export function SignUpForm({ onSuccess }: { onSuccess?: () => void }) {
       <div className="mt-6 text-center">
         <Typography
           variant="body4"
-          className="text-slate-400 dark:text-slate-500 font-medium"
+          className="text-black/80 dark:text-white/80 font-medium"
         >
           Already have an account?{" "}
           <Link

@@ -86,15 +86,15 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background border-b border-transparent h-[73px] flex items-center transition-colors">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="w-full pl-4 pr-4 sm:pr-6 lg:pr-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/admin/dashboard"
-              className="relative overflow-hidden block"
+              className="relative block rounded-lg py-1"
               onClick={createRipple}
             >
-              <Logo size="md" className="px-2" />
+              <Logo size="md" className="px-3" />
               <RippleContainer
                 ripples={ripples}
                 onRemove={removeRipple}

@@ -3,10 +3,6 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { TodayUserListing } from "./components/TodayUserListing";
 import { getUsersByRole } from "@lib/api/auth";
 import { cookies } from "next/headers";
-import { Button } from "@components/ui-elements/Button";
-import Link from "next/link";
-import { Settings } from "lucide-react";
-import { AttemptStatusLegend } from "@components/ui-elements/StatusLegend";
 
 export const dynamic = "force-dynamic";
 
@@ -54,23 +50,6 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer className="py-2">
-      <AttemptStatusLegend
-        title="Daily Papers"
-        subtitle="Overview of papers scheduled and active for today."
-        action={
-          <Link href="/admin/paper/auto-assignment">
-            <Button
-              variant="outline"
-              color="secondary"
-              animate="scale"
-              className="group gap-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm font-bold text-xs uppercase"
-            >
-              <Settings className="h-3.5 w-3.5 transition-transform duration-500 group-hover:rotate-180" />
-              Auto-Assignment Rules
-            </Button>
-          </Link>
-        }
-      />
       <TodayUserListing initialData={initialData} initialLabel={initialLabel} />
     </PageContainer>
   );

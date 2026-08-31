@@ -137,7 +137,7 @@ export function SignInForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
               >
                 Email Address
               </Typography>
@@ -170,7 +170,7 @@ export function SignInForm() {
             <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:bg-card dark:text-slate-500">
+            <span className="bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:bg-card dark:text-slate-300">
               Or
             </span>
           </div>
@@ -182,7 +182,7 @@ export function SignInForm() {
               <Typography
                 as="label"
                 variant="h6"
-                className="mb-1.5 block uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                className="mb-1.5 block uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
               >
                 Mobile Number
               </Typography>
@@ -217,7 +217,7 @@ export function SignInForm() {
                 <Typography
                   as="label"
                   variant="h6"
-                  className="uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  className="uppercase tracking-wider text-slate-900 dark:text-white font-semibold text-xs"
                 >
                   Password
                 </Typography>
@@ -289,7 +289,7 @@ export function SignInForm() {
 
       <Typography
         variant="body4"
-        className="mt-6 text-center text-slate-400 dark:text-slate-500"
+        className="mt-6 text-center text-black/80 dark:text-white/80 font-medium"
       >
         New to TalentFlow?{" "}
         <Link

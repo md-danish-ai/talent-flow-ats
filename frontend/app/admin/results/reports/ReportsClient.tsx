@@ -6,7 +6,6 @@ import { FileText } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { Pagination } from "@components/ui-elements/Pagination";
 import { MainCard } from "@components/ui-cards/MainCard";
 import { TableColumnToggle } from "@components/ui-elements/Table";
@@ -189,20 +188,10 @@ export function ReportsClient() {
 
   return (
     <PageContainer className="space-y-4">
-      <PageHeader
-        title="Candidate Reports"
-        description="View candidate results and download individual test evaluation reports."
-      />
-
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-              <FileText size={18} />
-            </div>
-            <span>Result Reports</span>
-          </div>
-        }
+        icon={<FileText size={18} />}
+        title="Result Reports"
+        subtitle="View candidate results and download individual test evaluation reports."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={

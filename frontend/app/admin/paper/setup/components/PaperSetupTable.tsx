@@ -54,7 +54,7 @@ export const PaperSetupTable: React.FC<PaperSetupTableProps> = ({
               )}
               {isVisible("paper_name") && <TableHead>Test Paper</TableHead>}
               {isVisible("department") && <TableHead>Department</TableHead>}
-              {isVisible("test_level") && <TableHead>Test Level</TableHead>}
+              {isVisible("test_level") && <TableHead>Exam Level</TableHead>}
               {isVisible("description") && <TableHead>Description</TableHead>}
               {isVisible("timing") && <TableHead>Timing</TableHead>}
               {isVisible("total_marks") && <TableHead>Total Marks</TableHead>}

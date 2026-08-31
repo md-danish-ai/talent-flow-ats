@@ -126,18 +126,6 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
 
         <form.Subscribe selector={(state) => [state.values.education]}>
           {([education]) => {
-            const lastEligibleIndex = education.reduce(
-              (lastIdx: number, item: Education, idx: number) => {
-                const isSchool =
-                  item.type === "10th / High School" ||
-                  item.type === "10th Std" ||
-                  item.type === "12th / Intermediate" ||
-                  item.type === "12th Std";
-                return !isSchool ? idx : lastIdx;
-              },
-              -1,
-            );
-
             return (
               <React.Fragment>
                 {education.map((item: Education, index: number) => {
@@ -150,8 +138,14 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           String(opt.id) === String(item.type),
                       )),
                   );
-                  const prevEndYear =
-                    index > 0 ? education[index - 1]?.endYear : undefined;
+                  // Find the end year of the nearest previous completed education for min start year
+                  let prevEndYear: string | undefined;
+                  for (let i = index - 1; i >= 0; i--) {
+                    if (education[i]?.endYear && !education[i]?.isPursuing) {
+                      prevEndYear = education[i]?.endYear;
+                      break;
+                    }
+                  }
                   const selectedLabel = educationOptions.find(
                     (opt: { id: string | number; label: string }) =>
                       String(opt.id) === String(item.type),
@@ -162,8 +156,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   const isSchool =
                     item.type === "10th / High School" ||
                     item.type === "10th Std" ||
+                    item.type === "10th" ||
                     item.type === "12th / Intermediate" ||
-                    item.type === "12th Std";
+                    item.type === "12th Std" ||
+                    item.type === "12th";
                   const is10th =
                     item.type === "10th / High School" ||
                     item.type === "10th Std" ||
@@ -196,9 +192,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                       "Enter Degree & Branch (e.g. B.Tech CSE, BCA, B.Com, BA, B.Sc).";
                   }
 
-                  const isLastEligible =
-                    !isSchool && index === lastEligibleIndex;
-                  const isPursuing = isLastEligible && Boolean(item.isPursuing);
+                  // 10th and 12th cannot be pursuing; any higher education (Graduation, Post-Graduation, etc.) can be pursuing concurrently
+                  const canBePursuing = !isSchool && Boolean(item.type);
+                  const isPursuing = canBePursuing && Boolean(item.isPursuing);
 
                   const currentYear = new Date().getFullYear();
                   const endYrNum = parseInt(item.endYear || "", 10);
@@ -252,7 +248,21 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   options={educationOptions}
                                   value={field.state.value}
                                   onChange={(val) => {
-                                    field.handleChange(val as string);
+                                    const valStr = val as string;
+                                    field.handleChange(valStr);
+                                    const isSelectedSchool =
+                                      valStr === "10th / High School" ||
+                                      valStr === "10th Std" ||
+                                      valStr === "10th" ||
+                                      valStr === "12th / Intermediate" ||
+                                      valStr === "12th Std" ||
+                                      valStr === "12th";
+                                    if (isSelectedSchool) {
+                                      form.setFieldValue(
+                                        `education[${index}].isPursuing`,
+                                        false,
+                                      );
+                                    }
                                     if (val) {
                                       const fieldsToTouch = [
                                         "details",
@@ -329,12 +339,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                       )}
                                     </p>
                                   )}
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  <span className="font-semibold text-foreground/80">
-                                    Note:
-                                  </span>{" "}
+                                <span className="text-[10px] text-muted-foreground mt-0.5">
                                   {detailsNote}
-                                </p>
+                                </span>
                               </div>
                             )}
                           </form.Field>
@@ -494,7 +501,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               </div>
                             )}
                           </form.Field>
-                          {isLastEligible && (
+                          {canBePursuing && (
                             <form.Field name={`education[${index}].isPursuing`}>
                               {(field) => (
                                 <label className="flex items-center gap-2 mt-1 cursor-pointer text-xs font-medium text-foreground select-none">

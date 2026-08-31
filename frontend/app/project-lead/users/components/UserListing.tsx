@@ -106,14 +106,12 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
   return (
     <>
       <MainCard
+        icon={<Users size={18} />}
         title={
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-                <Users size={18} />
-              </div>
-              <span className="font-black text-foreground">Users</span>
-            </div>
+            <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
+              Users
+            </span>
 
             {/* Original Tabs Component for Status */}
             <Tabs

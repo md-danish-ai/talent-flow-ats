@@ -3,7 +3,6 @@ import { PageContainer } from "@components/ui-layout/PageContainer";
 import { ResetUserListing } from "./components/ResetUserListing";
 import { getUsersByRole } from "@lib/api/auth";
 import { cookies } from "next/headers";
-import { AttemptStatusLegend } from "@components/ui-elements/StatusLegend";
 
 export const dynamic = "force-dynamic";
 
@@ -49,10 +48,6 @@ export default async function ResetStatusPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer className="py-2">
-      <AttemptStatusLegend
-        title="Reset User Status"
-        subtitle="Manage daily interview progress and application details for all candidates."
-      />
       <ResetUserListing
         initialData={initialData || undefined}
         initialLabel={initialLabel}

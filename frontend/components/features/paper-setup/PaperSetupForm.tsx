@@ -242,7 +242,9 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
           >
             <ArrowLeft size={18} />
           </Button>
-          {title}
+          <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
+            {title}
+          </span>
         </div>
       }
       className="mb-6 overflow-visible"
@@ -320,10 +322,10 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
                   weight="bold"
                   className="text-muted-foreground uppercase tracking-wider"
                 >
-                  Please Select Test Level
+                  Please Select Exam Level
                 </Typography>
                 <SelectDropdown
-                  placeholder="Please Select Test Level"
+                  placeholder="Please Select Exam Level"
                   value={field.state.value || ""}
                   options={testLevels.map((l) => ({
                     id: l.code,

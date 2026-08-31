@@ -118,6 +118,7 @@ export default function ProjectLeadDashboardClient({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0 overflow-hidden">
         {/* Card 1: Assigned Candidates */}
         <MainCard
+          icon={<Users size={18} />}
           title={`Assigned Candidates (${tasks.length})`}
           className="overflow-hidden flex flex-col h-full min-h-[350px]"
           bodyClassName="p-0 flex-1 overflow-hidden flex flex-col"
@@ -189,6 +190,7 @@ export default function ProjectLeadDashboardClient({
 
         {/* Card 2: Recent Notifications */}
         <MainCard
+          icon={<Bell size={18} />}
           title="Recent Notifications"
           className="overflow-hidden flex flex-col h-full min-h-[350px]"
           bodyClassName="p-0 flex-1 overflow-hidden flex flex-col"

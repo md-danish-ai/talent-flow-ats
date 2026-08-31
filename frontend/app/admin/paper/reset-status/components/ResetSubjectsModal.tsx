@@ -254,8 +254,13 @@ export function ResetSubjectsModal({
                           checked={selectedSubjects.includes(
                             subject.section_name,
                           )}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleToggleSubject(subject.section_name);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
                           id={`subject-${subject.section_name}`}
-                          className="pointer-events-none w-5 h-5"
+                          className="w-5 h-5 cursor-pointer"
                         />
                         <div>
                           <Typography
