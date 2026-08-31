@@ -2,7 +2,7 @@ import React from "react";
 import type { DeepKeys } from "@tanstack/react-form";
 import { motion } from "framer-motion";
 import { Input } from "@components/ui-elements/Input";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, GraduationCap } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { YearPicker } from "@components/ui-elements/YearPicker";
@@ -85,41 +85,99 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       className="space-y-5 pt-2"
     >
       <div className="flex flex-col gap-5">
-        {/* Simple Guidelines Box for Candidates */}
-        <div className="p-4 rounded-xl bg-card border border-border/80 shadow-sm text-xs">
-          <p className="font-semibold text-foreground mb-2 flex items-center gap-1.5">
-            <span className="text-sm">📌</span>{" "}
-            <strong>How to Fill Education Details / Guidelines:</strong>
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-muted-foreground">
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                1️⃣ 10th / High School:
-              </span>
-              <span>
-                Enter <strong>General</strong> or <strong>All Subjects</strong>{" "}
-                in Education Details.
-              </span>
+        {/* Compact & Readable Guidelines Banner */}
+        <div className="rounded-xl border border-border/80 bg-card/60 dark:bg-card/40 p-3 shadow-xs">
+          <div className="flex items-center gap-2 mb-2.5">
+            <GraduationCap className="h-4 w-4 text-brand-primary shrink-0" />
+            <h4 className="text-sm font-bold text-foreground">
+              How to Fill Education Details / Guidelines:
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {/* 10th Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded">
+                  STEP 01
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  10th / High School
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                In{" "}
+                <span className="font-semibold text-foreground">
+                  Education Details
+                </span>
+                , enter:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  General
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  All Subjects
+                </span>
+              </div>
             </div>
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                2️⃣ 12th / Intermediate:
-              </span>
-              <span>
-                Enter your stream — <strong>PCM</strong> (Maths),{" "}
-                <strong>PCB</strong> (Biology), <strong>Commerce</strong>,{" "}
-                <strong>Arts</strong>, or <strong>Agriculture</strong>.
-              </span>
+
+            {/* 12th Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                  STEP 02
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  12th / Intermediate
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter your stream:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  PCM (Maths)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  PCB (Bio)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  Commerce
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  Arts
+                </span>
+              </div>
             </div>
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                3️⃣ Graduation / Diploma / PG:
-              </span>
-              <span>
-                Enter your course & branch — e.g. <strong>B.Tech (CSE)</strong>,{" "}
-                <strong>BCA</strong>, <strong>B.Com</strong>,{" "}
-                <strong>BA</strong>, <strong>B.Sc</strong>.
-              </span>
+
+            {/* Higher Ed Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                  STEP 03
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  Graduation / PG / Diploma
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter course & branch:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  B.Tech (CSE)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  BCA / MCA
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  B.Com
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  BA / B.Sc
+                </span>
+              </div>
             </div>
           </div>
         </div>
