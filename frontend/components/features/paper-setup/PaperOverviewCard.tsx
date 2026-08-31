@@ -207,7 +207,7 @@ export function PaperOverviewCard({
 
       {/* Curriculum Subject Badges */}
       {orderedSubjects.length > 0 && (
-        <div className="py-3 border-y border-border/60 flex flex-wrap items-center gap-2.5 my-0.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           {orderedSubjects.map((s, idx) => {
             const name = getSubjectName(s);
             return (

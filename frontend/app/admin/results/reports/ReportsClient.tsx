@@ -50,6 +50,8 @@ export function ReportsClient() {
   const availableColumns = useMemo(
     () => [
       { id: "candidate", label: "Candidate", pinned: true },
+      { id: "department", label: "Department" },
+      { id: "test_level", label: "Exam Level" },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
       { id: "grade", label: "Grade" },
@@ -65,10 +67,11 @@ export function ReportsClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
-    "paper",
+    "department",
     "grade",
-    "date",
+    "status",
     "project_lead",
+    "date",
     "actions",
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
