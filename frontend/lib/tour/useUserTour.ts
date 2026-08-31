@@ -46,6 +46,8 @@ export function useUserTour({
     [user?.id, isDetailsComplete],
   );
 
+  // Auto-launch commented out: User will trigger manually via button
+  /*
   useEffect(() => {
     if (!user?.id) return;
 
@@ -87,6 +89,7 @@ export function useUserTour({
 
     return () => clearTimeout(timer);
   }, [user?.id, isDetailsComplete, isInterviewSubmitted]);
+  */
 
   return {
     runTourManually,
@@ -101,6 +104,8 @@ export function usePersonalDetailsTour(user: CurrentUser | null) {
     startTourWithSteps({ steps: PERSONAL_DETAILS_TOUR_STEPS });
   }, []);
 
+  // Auto-launch commented out: User will trigger manually via button
+  /*
   useEffect(() => {
     if (!user?.id || user.role !== "user") return;
 
@@ -120,6 +125,7 @@ export function usePersonalDetailsTour(user: CurrentUser | null) {
 
     return () => clearTimeout(timer);
   }, [user?.id, user?.role]);
+  */
 
   return {
     runTourManually,
@@ -134,6 +140,8 @@ export function useInterviewOverviewTour(user: CurrentUser | null) {
     startTourWithSteps({ steps: INTERVIEW_OVERVIEW_TOUR_STEPS });
   }, []);
 
+  // Auto-launch commented out: User will trigger manually via button
+  /*
   useEffect(() => {
     if (!user?.id || user.role !== "user") return;
 
@@ -153,6 +161,7 @@ export function useInterviewOverviewTour(user: CurrentUser | null) {
 
     return () => clearTimeout(timer);
   }, [user?.id, user?.role]);
+  */
 
   return {
     runTourManually,
@@ -167,6 +176,8 @@ export function useActiveTestTour(user: CurrentUser | null) {
     startTourWithSteps({ steps: ACTIVE_TEST_TOUR_STEPS });
   }, []);
 
+  // Auto-launch commented out: User will trigger manually via button
+  /*
   useEffect(() => {
     if (!user?.id || user.role !== "user") return;
 
@@ -186,6 +197,7 @@ export function useActiveTestTour(user: CurrentUser | null) {
 
     return () => clearTimeout(timer);
   }, [user?.id, user?.role]);
+  */
 
   return {
     runTourManually,

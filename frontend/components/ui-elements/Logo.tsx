@@ -90,7 +90,7 @@ export const Logo: React.FC<LogoProps> = ({
             textSizes[size],
           )}
         >
-          Interview <span className="font-extrabold">App</span>
+          Arc Interview <span className="font-extrabold">App</span>
         </span>
       )}
     </div>
