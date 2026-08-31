@@ -26,6 +26,11 @@ export function ResultCardView({ items }: ResultCardViewProps) {
           const latest = item.latest_attempt;
           const interviewDate = latest?.submitted_at || latest?.started_at;
           const detailHref = `/admin/results/round-1/${item.user_id}`;
+          const itemStatus = (
+            item.status ||
+            latest?.status ||
+            (item.requires_interview === false ? "not_required" : "ready")
+          ).toLowerCase();
 
           return (
             <ResultCard
@@ -34,18 +39,68 @@ export function ResultCardView({ items }: ResultCardViewProps) {
               avatarContent={item.username?.[0]?.toUpperCase() || "A"}
               identityIcon={User2}
               status={
-                latest?.status === "started"
-                  ? "started"
-                  : latest?.status === "auto_submitted"
-                    ? "auto_submitted"
-                    : latest?.status === "submitted" ||
-                        latest?.status === "completed"
-                      ? "submitted"
-                      : latest?.status === "expired"
-                        ? "expired"
-                        : item.process_status === "ready"
-                          ? "not_started"
-                          : latest?.status || "not_started"
+                itemStatus === "not_required"
+                  ? "default"
+                  : itemStatus === "started" || itemStatus === "inprogress"
+                    ? "started"
+                    : itemStatus === "auto_submitted"
+                      ? "auto_submitted"
+                      : itemStatus === "submitted" || itemStatus === "completed"
+                        ? "submitted"
+                        : itemStatus === "expired"
+                          ? "expired"
+                          : "not_started"
+              }
+              statusBadge={
+                itemStatus === "not_required" ? (
+                  <Badge variant="outline" shape="square" color="default">
+                    NOT REQUIRED
+                  </Badge>
+                ) : itemStatus === "submitted" || itemStatus === "completed" ? (
+                  <Badge
+                    variant="outline"
+                    color="success"
+                    animate="pulse"
+                    shape="square"
+                  >
+                    SUBMITTED
+                  </Badge>
+                ) : itemStatus === "started" || itemStatus === "inprogress" ? (
+                  <Badge
+                    variant="outline"
+                    color="primary"
+                    animate="pulse"
+                    shape="square"
+                  >
+                    IN PROGRESS
+                  </Badge>
+                ) : itemStatus === "auto_submitted" ? (
+                  <Badge
+                    variant="outline"
+                    color="blue"
+                    animate="pulse"
+                    shape="square"
+                  >
+                    AUTO SUBMITTED
+                  </Badge>
+                ) : itemStatus === "expired" ? (
+                  <Badge variant="outline" color="error" shape="square">
+                    EXPIRED
+                  </Badge>
+                ) : itemStatus === "ready" ? (
+                  <Badge
+                    variant="outline"
+                    color="blue"
+                    animate="pulse"
+                    shape="square"
+                  >
+                    READY
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" shape="square" color="warning">
+                    {itemStatus.toUpperCase()}
+                  </Badge>
+                )
               }
               subtitle={
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
