@@ -249,7 +249,7 @@ export function ResultTableView({
         <TableHeader>
           <TableRow>
             {onlyDownloadAction ? (
-              <TableHead className="w-[50px] text-center">#</TableHead>
+              <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
             ) : (
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-2">
@@ -383,8 +383,11 @@ export function ResultTableView({
                   showToggleCell={false}
                 >
                   {onlyDownloadAction ? (
-                    <TableCell className="w-[50px] text-center font-medium text-slate-500">
-                      {(currentPage - 1) * pageSize + idx + 1}
+                    <TableCell className="w-[80px] text-center font-medium align-middle text-slate-600 dark:text-white">
+                      {String((currentPage - 1) * pageSize + idx + 1).padStart(
+                        2,
+                        "0",
+                      )}
                     </TableCell>
                   ) : (
                     <TableCell className="w-[100px]">

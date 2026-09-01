@@ -45,7 +45,7 @@ export const LeadGenerationRow: React.FC<LeadGenerationRowProps> = ({
       expandedContent={<QuestionCollapsibleDetail question={row} />}
     >
       {visibleColumns.includes("srNo") && (
-        <TableCell className="font-bold text-center text-slate-400 group-hover/row:text-brand-primary transition-colors">
+        <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white group-hover/row:text-brand-primary transition-colors">
           {((currentPage - 1) * pageSize + index + 1)
             .toString()
             .padStart(2, "0")}

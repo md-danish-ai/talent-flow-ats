@@ -347,7 +347,7 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                                 {subjectQuestions.length > 0 ? (
                                   subjectQuestions.map((q, qIndex) => (
                                     <TableRow key={q.id}>
-                                      <TableCell className="text-center text-slate-500 dark:text-slate-400 font-bold text-sm pl-8 font-mono">
+                                      <TableCell className="text-center font-medium align-middle text-slate-600 dark:text-white pl-8">
                                         {String(qIndex + 1).padStart(2, "0")}
                                       </TableCell>
                                       {hasPassage && (
@@ -424,14 +424,8 @@ export const PaperSetupDetail: React.FC<PaperSetupDetailProps> = ({
                       </div>
                     }
                   >
-                    <TableCell>
-                      <Typography
-                        variant="body4"
-                        weight="bold"
-                        className="text-slate-500 dark:text-slate-400 font-mono text-sm"
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </Typography>
+                    <TableCell className="text-center font-medium align-middle text-slate-600 dark:text-white">
+                      {String(index + 1).padStart(2, "0")}
                     </TableCell>
                     <TableCell className="font-bold text-brand-primary text-sm hover:text-brand-hover cursor-pointer transition-all">
                       {getSubjectName(config.subject_id)}

@@ -48,10 +48,8 @@ export const PaperSetupRow: React.FC<PaperSetupRowProps> = ({
   return (
     <TableRow className="group/row">
       {isVisible("sr_no") && (
-        <TableCell className="text-center font-bold text-muted-foreground/60">
-          {((currentPage - 1) * pageSize + index + 1)
-            .toString()
-            .padStart(2, "0")}
+        <TableCell className="text-center font-medium align-middle text-slate-600 dark:text-white">
+          {String((currentPage - 1) * pageSize + index + 1).padStart(2, "0")}
         </TableCell>
       )}
       {isVisible("paper_name") && (

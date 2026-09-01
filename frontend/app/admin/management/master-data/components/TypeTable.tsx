@@ -202,8 +202,11 @@ export function TypeTable({
                       </div>
                     </Tooltip>
                   </TableCell>
-                  <TableCell className="font-medium text-center">
-                    {(currentPage - 1) * pageSize + idx + 1}
+                  <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                    {String((currentPage - 1) * pageSize + idx + 1).padStart(
+                      2,
+                      "0",
+                    )}
                   </TableCell>
                   <TableCell className="font-semibold">{item.name}</TableCell>
                   <TableCell>

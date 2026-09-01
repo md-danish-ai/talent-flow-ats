@@ -4,23 +4,22 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "@components/ui-elements/Modal";
 import { Typography } from "@components/ui-elements/Typography";
-import { resultsApi, evaluationsApi, classificationsApi } from "@lib/api";
+import { evaluationsApi, classificationsApi } from "@lib/api";
 import { toast } from "@lib/toast";
 import { EvaluationForm } from "@components/features/evaluation/EvaluationForm";
 import { EvaluationFormValues } from "@lib/validations/evaluation";
 import { formatDate } from "@lib/utils";
+import { EvaluationFormSkeleton } from "@components/ui-skeleton/EvaluationFormSkeleton";
 
-import {
-  AdminUserResultDetail,
-  Classification,
-  InterviewEvaluation,
-} from "@types";
+import { Classification, InterviewEvaluation } from "@types";
 
 interface EvaluationModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: number;
   evaluationId: number;
+  candidateName?: string;
+  roundType?: string;
   onSuccess?: () => void;
 }
 
@@ -28,11 +27,11 @@ export const EvaluationModal = React.memo(
   ({
     isOpen,
     onClose,
-    userId,
     evaluationId,
+    candidateName,
+    roundType,
     onSuccess,
   }: EvaluationModalProps) => {
-    const [r1Data, setR1Data] = useState<AdminUserResultDetail | null>(null);
     const [results, setResults] = useState<Classification[]>([]);
     const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(
       null,
@@ -57,12 +56,11 @@ export const EvaluationModal = React.memo(
 
     useEffect(() => {
       const fetchData = async () => {
-        if (!isOpen || !userId || !evaluationId) return;
+        if (!isOpen || !evaluationId) return;
 
         try {
           setLoading(true);
-          const [resR1, resResults, resEval] = await Promise.all([
-            resultsApi.getUserResultDetail(userId),
+          const [resResults, resEval] = await Promise.all([
             classificationsApi.getClassifications({
               type: "interview_result",
               is_active: true,
@@ -74,7 +72,6 @@ export const EvaluationModal = React.memo(
           const rawResults = resResults?.data ?? resResults ?? [];
           const resultOptions = Array.isArray(rawResults) ? rawResults : [];
 
-          setR1Data(resR1 as AdminUserResultDetail);
           setResults(resultOptions);
           setEvaluation(evalData);
 
@@ -102,14 +99,14 @@ export const EvaluationModal = React.memo(
           }
         } catch (err) {
           console.error("Failed to fetch evaluation data", err);
-          toast.error("Failed to load candidate data.");
+          toast.error("Failed to load evaluation details.");
         } finally {
           setLoading(false);
         }
       };
 
       fetchData();
-    }, [isOpen, userId, evaluationId]);
+    }, [isOpen, evaluationId]);
 
     const isCompleted = React.useMemo(() => {
       if (!evaluation) return false;
@@ -157,10 +154,10 @@ export const EvaluationModal = React.memo(
                 variant="body1"
                 className="font-black uppercase tracking-tight"
               >
-                Face-to-Face Evaluation
+                {roundType ? `${roundType} Evaluation` : "Interview Evaluation"}
               </Typography>
               <Typography variant="body5" className="text-muted-foreground">
-                Candidate: {r1Data?.user?.username || "Loading..."}
+                Candidate: {candidateName || "Candidate"}
               </Typography>
             </div>
           </div>
@@ -168,15 +165,7 @@ export const EvaluationModal = React.memo(
         className="max-w-3xl"
       >
         {loading ? (
-          <div className="p-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
-            <Typography
-              variant="body4"
-              className="text-muted-foreground font-bold uppercase tracking-widest"
-            >
-              Fetching Candidate Data...
-            </Typography>
-          </div>
+          <EvaluationFormSkeleton />
         ) : (
           <EvaluationForm
             key={JSON.stringify(initialValues)} // Reset form when initialValues change
