@@ -231,7 +231,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   let detailsPlaceholder =
                     "e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General...";
                   let detailsNote =
-                    "Enter Stream / Specialization (e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General).";
+                    "Enter Stream Or Specialization (e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General).";
 
                   if (is10th) {
                     detailsPlaceholder =
@@ -367,7 +367,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* Education Details */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Education Details (Stream / Branch){" "}
+                            Education Details (Stream Or Branch){" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -408,7 +408,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* School/College */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            School/College{" "}
+                            School Or College Name{" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -424,7 +424,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   onBlur={field.handleBlur}
                                   disabled={!isEducationSelected}
                                   className="disabled:opacity-50 disabled:cursor-not-allowed"
-                                  placeholder="Enter school/college..."
+                                  placeholder="Enter school or college name"
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
@@ -446,7 +446,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* Board/University */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Board/University{" "}
+                            Board Or University Name{" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -462,7 +462,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   onBlur={field.handleBlur}
                                   disabled={!isEducationSelected}
                                   className="disabled:opacity-50 disabled:cursor-not-allowed"
-                                  placeholder="Enter board/university..."
+                                  placeholder="Enter board or university name"
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
