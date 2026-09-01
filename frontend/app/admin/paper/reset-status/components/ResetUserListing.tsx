@@ -228,8 +228,10 @@ export function ResetUserListing({
                       ) : (
                         users.map((row, idx) => (
                           <TableRow key={row.id} className="group">
-                            <TableCell className="font-medium text-center align-middle">
-                              {(currentPage - 1) * pageSize + idx + 1}
+                            <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                              {String(
+                                (currentPage - 1) * pageSize + idx + 1,
+                              ).padStart(2, "0")}
                             </TableCell>
                             <TableCell className="align-middle py-3">
                               <div className="flex items-center gap-3">

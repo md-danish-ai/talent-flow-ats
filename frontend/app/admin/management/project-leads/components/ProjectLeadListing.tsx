@@ -160,8 +160,10 @@ export function ProjectLeadListing({ initialData }: ProjectLeadListingProps) {
                   ) : (
                     users.map((row, idx) => (
                       <TableRow key={row.id}>
-                        <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + idx + 1}
+                        <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                          {String(
+                            (currentPage - 1) * pageSize + idx + 1,
+                          ).padStart(2, "0")}
                         </TableCell>
                         <TableCell className="font-semibold">
                           {row.username || "-"}

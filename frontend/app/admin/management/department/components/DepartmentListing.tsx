@@ -212,8 +212,10 @@ export function DepartmentListing({ initialData }: DepartmentListingProps) {
                   ) : (
                     departments.map((dept, idx) => (
                       <TableRow key={dept.id}>
-                        <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + idx + 1}
+                        <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                          {String(
+                            (currentPage - 1) * pageSize + idx + 1,
+                          ).padStart(2, "0")}
                         </TableCell>
                         <TableCell className="font-semibold text-foreground">
                           {dept.name}

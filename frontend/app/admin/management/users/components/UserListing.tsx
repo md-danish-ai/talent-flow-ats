@@ -295,8 +295,10 @@ export function UserListing({ initialData }: UserListingProps) {
                   ) : (
                     users.map((row, idx) => (
                       <TableRow key={row.id}>
-                        <TableCell className="font-bold text-center align-middle py-3 text-slate-500">
-                          {(currentPage - 1) * pageSize + idx + 1}
+                        <TableCell className="font-medium text-center align-middle py-3 text-slate-600 dark:text-white">
+                          {String(
+                            (currentPage - 1) * pageSize + idx + 1,
+                          ).padStart(2, "0")}
                         </TableCell>
                         <TableCell className="align-middle py-3">
                           <div className="flex items-center gap-3">

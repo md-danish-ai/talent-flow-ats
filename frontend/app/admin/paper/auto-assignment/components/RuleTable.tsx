@@ -96,8 +96,8 @@ export function RuleTable({
               const isPast = isPastDate(row.assigned_date);
               return (
                 <TableRow key={row.id}>
-                  <TableCell className="font-medium text-center align-middle">
-                    {idx + 1}
+                  <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                    {String(idx + 1).padStart(2, "0")}
                   </TableCell>
                   <TableCell className="align-middle">
                     <div className="flex flex-col gap-1">
