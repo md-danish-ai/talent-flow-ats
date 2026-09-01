@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { evaluationsApi } from "@lib/api";
 import {
   UserCheck,
@@ -83,6 +83,13 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
 
   const handleEvaluationSuccess = useCallback(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const handleUpdate = () => void refresh();
+    window.addEventListener("notificationsUpdated", handleUpdate);
+    return () =>
+      window.removeEventListener("notificationsUpdated", handleUpdate);
   }, [refresh]);
 
   const onFilterChange = useCallback(
@@ -313,6 +320,8 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
         onClose={handleModalClose}
         userId={selectedTask?.user_id || 0}
         evaluationId={selectedTask?.id || 0}
+        candidateName={selectedTask?.candidate_name}
+        roundType={selectedTask?.round_type}
         onSuccess={handleEvaluationSuccess}
       />
     </>

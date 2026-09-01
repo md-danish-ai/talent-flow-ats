@@ -31,7 +31,7 @@ def get_notifications(
 
     total_records = query.count()
 
-    # Sorting
+    # Sorting: Unread first (is_read=False before is_read=True), then by sort_col (newest first)
     if pagination.sort_by == "created_at":
         sort_col = (
             AdminNotification.created_at.desc()
@@ -41,7 +41,7 @@ def get_notifications(
     else:
         sort_col = AdminNotification.created_at.desc()
 
-    query = query.order_by(sort_col)
+    query = query.order_by(AdminNotification.is_read.asc(), sort_col)
 
     offset = (pagination.page - 1) * pagination.limit
     results = query.offset(offset).limit(pagination.limit).all()
@@ -70,7 +70,12 @@ def get_counts(db: Session, user_id: Optional[int] = None):
 def update_notification_status(
     db: Session, ids: List[int], is_read: bool, user_id: Optional[int] = None
 ):
-    query = db.query(AdminNotification).filter(AdminNotification.id.in_(ids))
+    query = db.query(AdminNotification)
+    if ids:
+        query = query.filter(AdminNotification.id.in_(ids))
+    else:
+        query = query.filter(AdminNotification.is_read.is_(not is_read))
+
     if user_id is not None:
         query = query.filter(AdminNotification.user_id == user_id)
     else:
