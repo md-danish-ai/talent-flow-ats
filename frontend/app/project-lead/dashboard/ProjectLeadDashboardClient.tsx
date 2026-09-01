@@ -10,7 +10,6 @@ import {
   Clock,
   CheckCircle,
   Bell,
-  X,
   AlertTriangle,
   UserX,
   FileCheck,
@@ -30,8 +29,7 @@ import {
 import { EvaluationTask, NotificationItem, LeadDashboardStats } from "@types";
 import Link from "next/link";
 import { Button } from "@components/ui-elements/Button";
-import { cn, formatDateTime, parseUTCDate } from "@lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { cn, parseUTCDate } from "@lib/utils";
 import { ActivityItem } from "@components/ui-cards/ActivityItem";
 import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
 import { formatDistanceToNow } from "date-fns";
@@ -81,9 +79,6 @@ export default function ProjectLeadDashboardClient({
     null,
   );
   const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
-
-  const [selectedNotification, setSelectedNotification] =
-    useState<NotificationItem | null>(null);
 
   const fetchDashboardData = useCallback(
     async (silent = false) => {
@@ -299,15 +294,11 @@ export default function ProjectLeadDashboardClient({
   };
 
   const handleNotificationClick = async (notif: NotificationItem) => {
-    setSelectedNotification(notif);
     if (!notif.is_read) {
       try {
         await markNotificationsRead([notif.id]);
         setNotifications((prev) =>
           prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n)),
-        );
-        setSelectedNotification((prev) =>
-          prev ? { ...prev, is_read: true } : null,
         );
         setUnreadNotifCount((prev) => Math.max(0, prev - 1));
         window.dispatchEvent(new CustomEvent("notificationsUpdated"));
@@ -655,86 +646,6 @@ export default function ProjectLeadDashboardClient({
           onSuccess={handleEvaluationSuccess}
         />
       )}
-
-      {/* Notification Details Modal */}
-      <AnimatePresence>
-        {selectedNotification && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-card border-2 border-brand-primary/30 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
-            >
-              <div className="p-6 border-b border-border flex items-center justify-between bg-muted/20">
-                <div>
-                  <Typography
-                    variant="h4"
-                    className="font-extrabold text-foreground"
-                  >
-                    {selectedNotification.title}
-                  </Typography>
-                  <Typography
-                    variant="body5"
-                    className="text-brand-primary font-bold uppercase tracking-wider mt-0.5"
-                  >
-                    {selectedNotification.type} Notification
-                  </Typography>
-                </div>
-                <button
-                  onClick={() => setSelectedNotification(null)}
-                  className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted transition-all"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-4">
-                <div className="bg-muted/10 p-4 rounded-xl border border-border/30">
-                  <Typography
-                    variant="body5"
-                    className="text-muted-foreground mb-1"
-                  >
-                    Notification Message
-                  </Typography>
-                  <div className="text-foreground leading-relaxed text-sm">
-                    <NotificationFormatter
-                      message={selectedNotification.message}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-                  <span>
-                    Received on{" "}
-                    {formatDateTime(selectedNotification.created_at)}
-                  </span>
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px]",
-                      selectedNotification.is_read
-                        ? "bg-slate-200 dark:bg-slate-800 text-muted-foreground"
-                        : "bg-brand-primary/10 text-brand-primary",
-                    )}
-                  >
-                    {selectedNotification.is_read ? "Read" : "Unread"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-muted/20 border-t border-border flex justify-end">
-                <Button
-                  variant="outline"
-                  color="primary"
-                  onClick={() => setSelectedNotification(null)}
-                >
-                  Close
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </PageContainer>
   );
 }
