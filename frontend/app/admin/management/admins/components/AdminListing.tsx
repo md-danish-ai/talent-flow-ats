@@ -70,14 +70,9 @@ export function AdminListing({ initialData }: AdminListingProps) {
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            Admins
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Admins"
+        subtitle="Manage system administrators, security roles, and admin permissions."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={
@@ -141,8 +136,10 @@ export function AdminListing({ initialData }: AdminListingProps) {
                   ) : (
                     users.map((row, idx) => (
                       <TableRow key={row.id}>
-                        <TableCell className="font-medium text-center">
-                          {(currentPage - 1) * pageSize + idx + 1}
+                        <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                          {String(
+                            (currentPage - 1) * pageSize + idx + 1,
+                          ).padStart(2, "0")}
                         </TableCell>
                         <TableCell className="font-semibold">
                           {row.username || "-"}

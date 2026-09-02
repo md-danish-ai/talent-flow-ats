@@ -236,34 +236,34 @@ export const StructuredResultView = ({ answer }: StructuredResultViewProps) => {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Expected Structured Answer */}
       <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500`}
+        className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/20 bg-emerald-500/[0.04] p-4 flex flex-col space-y-2.5`}
       >
         <Typography
           variant="body5"
-          className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
+          className="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-mono text-xs"
         >
           EXPECTED DATASTRUCTURE
         </Typography>
 
         {expectedFormatted.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
             {expectedFormatted.map((item) => (
               <div
                 key={item.key}
-                className={`p-3 ${STYLE_CONFIG.innerCardRadius} bg-emerald-500/[0.03] border border-emerald-500/10 shadow-sm transition-all hover:bg-emerald-500/5`}
+                className={`p-2.5 px-3 ${STYLE_CONFIG.innerCardRadius} bg-emerald-500/[0.04] border border-emerald-500/20 shadow-sm transition-all hover:bg-emerald-500/10 flex flex-col justify-center`}
               >
                 <Typography
                   variant="body5"
-                  className="font-black text-[9px] uppercase tracking-wider text-emerald-600/50 mb-1 leading-none"
+                  className="font-bold text-[9px] uppercase tracking-wider text-emerald-600/70 mb-1 leading-none"
                 >
                   {item.label}
                 </Typography>
                 <Typography
                   variant="body2"
-                  className="font-bold text-emerald-700/80 break-words leading-tight text-sm md:text-base"
+                  className="font-semibold text-emerald-800 dark:text-emerald-300 break-words leading-tight text-xs sm:text-sm"
                 >
                   {item.value}
                 </Typography>
@@ -274,7 +274,7 @@ export const StructuredResultView = ({ answer }: StructuredResultViewProps) => {
           <Typography
             as="div"
             variant="body2"
-            className="font-mono leading-relaxed italic text-muted-foreground text-sm md:text-base"
+            className="font-mono leading-relaxed italic text-muted-foreground text-sm flex-1"
           >
             {answer.correct_answer || answer.passage || "N/A"}
           </Typography>
@@ -283,31 +283,31 @@ export const StructuredResultView = ({ answer }: StructuredResultViewProps) => {
 
       {/* Candidate Structured Response */}
       <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700`}
+        className={`${STYLE_CONFIG.innerCardRadius} border border-border/70 bg-card/60 p-4 flex flex-col space-y-2.5`}
       >
         <Typography
           variant="body5"
-          className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
+          className="font-bold text-muted-foreground uppercase tracking-wider text-xs"
         >
           CANDIDATE DATASTRUCTURE RESPONSE
         </Typography>
 
         {candidateFormatted.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
             {candidateFormatted.map((item) => (
               <div
                 key={item.key}
-                className={`p-3 ${STYLE_CONFIG.innerCardRadius} bg-white/40 border border-black/[0.03] shadow-sm`}
+                className={`p-2.5 px-3 ${STYLE_CONFIG.innerCardRadius} bg-muted/30 border border-border/60 shadow-sm flex flex-col justify-center`}
               >
                 <Typography
                   variant="body5"
-                  className="font-black text-[9px] uppercase tracking-wider text-muted-foreground/50 mb-1 leading-none"
+                  className="font-bold text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-1 leading-none"
                 >
                   {item.label}
                 </Typography>
                 <Typography
                   variant="body2"
-                  className="font-bold text-foreground break-words leading-tight text-sm md:text-base"
+                  className="font-semibold text-foreground break-words leading-tight text-xs sm:text-sm"
                 >
                   {item.value}
                 </Typography>
@@ -318,7 +318,7 @@ export const StructuredResultView = ({ answer }: StructuredResultViewProps) => {
           <Typography
             as="div"
             variant="body2"
-            className="font-mono leading-relaxed text-foreground text-sm md:text-base"
+            className="font-mono leading-relaxed text-foreground text-sm flex-1"
           >
             {answer.user_answer || "No response recorded."}
           </Typography>

@@ -164,14 +164,9 @@ export function UserResultsClient() {
   return (
     <PageContainer className="space-y-4">
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Users size={18} />
-            </div>
-            <span>Round 1 Results</span>
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Round 1 Results"
+        subtitle="Review candidate scores, sectional breakdown, and qualification status."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-col w-full"
         action={

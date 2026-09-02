@@ -14,6 +14,8 @@ export interface SubjectResult {
   percentage: number;
   grade: string;
   is_in_progress?: boolean;
+  time_minutes?: number | string | null;
+  duration_minutes?: number | string | null;
 }
 
 export interface TypingStats {
@@ -52,6 +54,8 @@ export interface AdminUserResultListItem {
   test_level?: string | null;
   department_id?: number | null;
   test_level_id?: number | null;
+  requires_interview?: boolean;
+  status?: string;
   attempts_count: number;
   is_reattempt?: boolean;
   process_status?: string;

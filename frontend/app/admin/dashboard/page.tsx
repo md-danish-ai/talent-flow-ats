@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users,
   FileText,
@@ -19,19 +19,24 @@ import {
   AlertTriangle,
   FileCheck,
   UserCheck,
+  Loader2,
+  CheckCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
-import { parseUTCDate } from "@lib/utils";
+import { cn, parseUTCDate } from "@lib/utils";
 
-import { MainCard } from "@components/ui-cards/MainCard";
+import { DashboardMainCard } from "@components/ui-cards/DashboardMainCard";
 import { StatCard } from "@components/ui-cards/StatCard";
 import { ActivityItem } from "@components/ui-cards/ActivityItem";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
+import { Badge } from "@components/ui-elements/Badge";
 import { useDashboardOverview } from "@hooks/api/dashboard/use-dashboard-stats";
-import { useNotifications } from "@hooks/api/notifications/use-notifications";
+import { getAllNotifications, markNotificationsRead } from "@lib/api";
+import { NotificationItem } from "@types";
+import { RecentNotificationsListSkeleton } from "@components/ui-skeleton/ProjectLeadDashboardSkeleton";
 import { PulseCard } from "@components/ui-cards/PulseCard";
 import { InsightCard } from "@components/ui-cards/InsightCard";
 import { DateRangePicker } from "@components/ui-elements/DateRangePicker";
@@ -40,14 +45,6 @@ import { GRADE_OPTIONS } from "@lib/utils/gradeUtils";
 import { NotificationFormatter } from "@components/ui-elements/NotificationFormatter";
 
 // Types for better safety
-interface DashboardNotification {
-  id: string | number;
-  type: string;
-  title: string;
-  message: string;
-  created_at: string;
-}
-
 interface GradeConfig {
   icon: React.ReactNode;
   color: string;
@@ -84,15 +81,144 @@ export default function DashboardPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  const { data: overview, isLoading: overviewLoading } = useDashboardOverview({
+  const {
+    data: overview,
+    isLoading: overviewLoading,
+    refetch: refetchOverview,
+  } = useDashboardOverview({
     start_date: startDate,
     end_date: endDate,
   });
-  const { data: notificationsData, isLoading: notificationsLoading } =
-    useNotifications({ limit: 20 });
 
-  const notifications = (notificationsData?.data ||
-    []) as DashboardNotification[];
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+  const [unreadNotifCount, setUnreadNotifCount] = useState<number>(0);
+  const [hasMoreNotifs, setHasMoreNotifs] = useState(false);
+  const [loadingMoreNotifs, setLoadingMoreNotifs] = useState(false);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
+
+  const notifPageRef = useRef(1);
+  const notifHasMoreRef = useRef(false);
+  const notifLoadingMoreRef = useRef(false);
+  const notifObserverTarget = useRef<HTMLDivElement | null>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoadingNotifications(true);
+      notifPageRef.current = 1;
+      const res = await getAllNotifications({ page: 1, limit: 10 });
+      if (res && res.data) {
+        setNotifications(res.data);
+        const totalPages = res.pagination?.total_pages || 1;
+        const canLoadMore = 1 < totalPages;
+        notifHasMoreRef.current = canLoadMore;
+        setHasMoreNotifs(canLoadMore);
+        setUnreadNotifCount(res.unread_count ?? 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications", err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
+  const loadMoreNotifications = useCallback(async () => {
+    if (
+      loadingNotifications ||
+      notifLoadingMoreRef.current ||
+      !notifHasMoreRef.current
+    )
+      return;
+
+    try {
+      notifLoadingMoreRef.current = true;
+      setLoadingMoreNotifs(true);
+      const nextPage = notifPageRef.current + 1;
+      const res = await getAllNotifications({ page: nextPage, limit: 10 });
+
+      if (res && res.data) {
+        setNotifications((prev) => [...prev, ...res.data]);
+        notifPageRef.current = nextPage;
+        const totalPages = res.pagination?.total_pages || 1;
+        const canLoadMore = nextPage < totalPages;
+        notifHasMoreRef.current = canLoadMore;
+        setHasMoreNotifs(canLoadMore);
+        if (res.unread_count !== undefined) {
+          setUnreadNotifCount(res.unread_count);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load more notifications", err);
+    } finally {
+      notifLoadingMoreRef.current = false;
+      setLoadingMoreNotifs(false);
+    }
+  }, [loadingNotifications]);
+
+  useEffect(() => {
+    void fetchNotifications();
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    const target = notifObserverTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          notifHasMoreRef.current &&
+          !notifLoadingMoreRef.current &&
+          !loadingNotifications
+        ) {
+          void loadMoreNotifications();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [loadMoreNotifications, loadingNotifications]);
+
+  // Listen for global notification update events
+  useEffect(() => {
+    const handleUpdate = () => {
+      void fetchNotifications();
+      void refetchOverview();
+    };
+    window.addEventListener("notificationsUpdated", handleUpdate);
+    return () =>
+      window.removeEventListener("notificationsUpdated", handleUpdate);
+  }, [fetchNotifications, refetchOverview]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      setMarkingAllRead(true);
+      await markNotificationsRead([]);
+      await fetchNotifications();
+      window.dispatchEvent(new CustomEvent("notificationsUpdated"));
+    } catch (err) {
+      console.error("Failed to mark all notifications as read", err);
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
+
+  const handleNotificationClick = async (notif: NotificationItem) => {
+    if (!notif.is_read) {
+      try {
+        await markNotificationsRead([notif.id]);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n)),
+        );
+        setUnreadNotifCount((prev) => Math.max(0, prev - 1));
+        window.dispatchEvent(new CustomEvent("notificationsUpdated"));
+      } catch (err) {
+        console.error("Failed to mark notification as read", err);
+      }
+    }
+  };
 
   const { stats, today_pulse } = overview ?? {
     stats: {
@@ -116,38 +242,42 @@ export default function DashboardPage() {
 
   const statCards = [
     {
-      label: "Total Users",
+      label: "TOTAL USERS",
       value: stats?.total_candidates ?? 0,
       icon: <Users />,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
+      borderColor: "border-l-blue-500",
     },
     {
-      label: "Active Papers",
+      label: "ACTIVE PAPERS",
       value: stats?.active_papers ?? 0,
       icon: <FileText />,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
+      borderColor: "border-l-emerald-500",
     },
     {
-      label: "Question Pool",
+      label: "QUESTION POOL",
       value: stats?.total_questions ?? 0,
       icon: <HelpCircle />,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
+      borderColor: "border-l-purple-500",
     },
     {
-      label: "Today's Efforts",
+      label: "TODAY'S EFFORTS",
       value: stats?.today_attempts ?? 0,
       icon: <Zap />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
+      borderColor: "border-l-amber-500",
     },
   ];
 
   const pulseMetrics = [
     {
-      label: "New Registrations",
+      label: "NEW REGISTRATIONS",
       value: today_pulse?.registrations ?? 0,
       icon: <UserPlus />,
       sub: "Fresh applicants",
@@ -155,7 +285,7 @@ export default function DashboardPage() {
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Re-interviews",
+      label: "RE-INTERVIEWS",
       value: today_pulse?.reinterviews ?? 0,
       icon: <RefreshCcw />,
       sub: "Candidates returning",
@@ -163,7 +293,7 @@ export default function DashboardPage() {
       bgColor: "bg-purple-500/10",
     },
     {
-      label: "Paper Assignments",
+      label: "PAPER ASSIGNMENTS",
       value: today_pulse?.assignments ?? 0,
       icon: <ClipboardCheck />,
       sub: "Auto & Manual allot",
@@ -171,7 +301,7 @@ export default function DashboardPage() {
       bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Completed Tests",
+      label: "COMPLETED TESTS",
       value: today_pulse?.attempts ?? 0,
       icon: <CheckCircle2 />,
       sub: "Finalized submissions",
@@ -195,9 +325,9 @@ export default function DashboardPage() {
     },
     "Above Average": {
       icon: <BadgeCheck />,
-      color: "text-violet-500",
-      bgColor: "bg-violet-500/10",
-      borderColor: "border-violet-500/20",
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/20",
     },
     Average: {
       icon: <Target />,
@@ -220,25 +350,22 @@ export default function DashboardPage() {
   };
 
   return (
-    <PageContainer className="space-y-8">
-      {/* PERSISTENT HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
+    <PageContainer animate className="space-y-8">
+      {/* Top Header: Title + Date Filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
           <Typography
-            variant="body1"
-            className="text-muted-foreground font-medium"
+            variant="h2"
+            weight="bold"
+            className="text-foreground tracking-tight"
           >
-            Monitor system health, candidate flow and performance insights.
+            Talent Dashboard
           </Typography>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex-shrink-0"
-        >
+          <Typography variant="body4" className="text-muted-foreground mt-0.5">
+            Overview of recruitment activities and candidate pipeline
+          </Typography>
+        </div>
+        <div className="w-full md:w-auto">
           <DateRangePicker
             onRangeChange={(range) => {
               if (range) {
@@ -252,209 +379,255 @@ export default function DashboardPage() {
             initialLabel="Today"
             className="w-[280px]"
           />
-        </motion.div>
+        </div>
       </div>
 
       <div className="space-y-8">
-        {/* Top Stat Cards Section with internal skeletons */}
+        {/* Top: 4 Stat Cards */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
         >
-          {statCards.map((stat) => (
-            <motion.div key={stat.label} variants={itemVariants}>
+          {statCards.map((card) => (
+            <motion.div key={card.label} variants={itemVariants}>
               <StatCard
-                label={stat.label}
-                value={stat.value.toLocaleString()}
-                icon={stat.icon}
-                color={stat.color}
-                bgColor={stat.bgColor}
+                label={card.label}
+                value={card.value.toString()}
+                icon={card.icon}
+                color={card.color}
+                bgColor={card.bgColor}
+                borderColor={card.borderColor}
                 isLoading={overviewLoading}
               />
             </motion.div>
           ))}
         </motion.div>
 
+        {/* Middle: Dashboard Pulse & Recent Notifications */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           {/* Top-Left: Dashboard Pulse */}
-          <div className="lg:col-span-2">
-            <MainCard
-              title={
-                <div className="flex items-center gap-3">
-                  <Zap size={22} className="text-brand-primary" />
-                  <Typography
-                    variant="h4"
-                    weight="black"
-                    className="pt-0.5 text-foreground"
-                  >
-                    Dashboard Pulse
-                  </Typography>
-                </div>
-              }
-              className="h-full"
-              bodyClassName="p-4 pb-2"
+          <div className="lg:col-span-2 flex flex-col">
+            <DashboardMainCard
+              icon={<Zap size={18} />}
+              title="Dashboard Pulse"
+              className="h-full flex flex-col"
+              bodyClassName="p-4 sm:p-5 flex-1 flex flex-col justify-between"
             >
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 p-1"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 p-1 flex-1 items-stretch"
               >
                 {pulseMetrics.map((metric) => (
-                  <motion.div key={metric.label} variants={itemVariants}>
-                    <PulseCard {...metric} isLoading={overviewLoading} />
+                  <motion.div
+                    key={metric.label}
+                    variants={itemVariants}
+                    className="h-full"
+                  >
+                    <PulseCard
+                      {...metric}
+                      isLoading={overviewLoading}
+                      className="h-full"
+                    />
                   </motion.div>
                 ))}
               </motion.div>
-            </MainCard>
+            </DashboardMainCard>
           </div>
 
-          {/* Top-Right: Activity & Focus */}
-          <div className="lg:col-span-1">
-            <MainCard
+          {/* Top-Right: Recent Notifications */}
+          <div className="lg:col-span-1 flex flex-col">
+            <DashboardMainCard
+              icon={<Bell size={18} />}
               title={
-                <div className="flex items-center gap-3">
-                  <Bell size={22} className="text-rose-500" />
-                  <Typography
-                    variant="h4"
-                    weight="black"
-                    className="pt-0.5 text-foreground"
-                  >
-                    Activity & Focus
-                  </Typography>
+                <div className="flex items-center gap-2.5">
+                  <span>Recent Notifications</span>
+                  {unreadNotifCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      color="primary"
+                      shape="square"
+                      className="rounded-md"
+                    >
+                      {unreadNotifCount} new
+                    </Badge>
+                  )}
                 </div>
               }
-              className="h-full"
-              bodyClassName="p-1"
+              action={
+                unreadNotifCount > 0 ||
+                notifications.some((n) => !n.is_read) ? (
+                  <Button
+                    variant="outline"
+                    color="primary"
+                    size="sm"
+                    disabled={markingAllRead}
+                    onClick={handleMarkAllRead}
+                    className="h-8 rounded-lg text-xs font-bold px-3 flex items-center gap-1.5"
+                    startIcon={
+                      markingAllRead ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <CheckCheck size={13} />
+                      )
+                    }
+                  >
+                    Mark All Read
+                  </Button>
+                ) : null
+              }
+              className="h-full flex flex-col"
+              bodyClassName="p-0 flex-1 flex flex-col min-h-0 overflow-hidden"
             >
-              <div className="flex flex-col flex-1">
-                <div className="flex-1 space-y-1 overflow-y-auto max-h-[365px] p-3 pt-1 custom-scrollbar">
-                  {notificationsLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="h-20 bg-muted/20 animate-pulse rounded-2xl"
-                        />
-                      ))}
-                    </div>
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 space-y-3 overflow-y-auto max-h-[290px] p-4 custom-scrollbar">
+                  {loadingNotifications ? (
+                    <RecentNotificationsListSkeleton count={3} />
                   ) : notifications.length === 0 ? (
-                    <div className="py-20 text-center text-muted-foreground/40 font-bold text-xs uppercase tracking-widest">
-                      No recent activity
+                    <div className="py-20 flex flex-col items-center justify-center text-center p-6 space-y-2">
+                      <Bell
+                        size={36}
+                        className="text-muted-foreground opacity-50"
+                      />
+                      <Typography
+                        variant="body4"
+                        className="text-muted-foreground"
+                      >
+                        No recent notifications found.
+                      </Typography>
                     </div>
                   ) : (
-                    <motion.div
-                      variants={containerVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="space-y-1"
+                    notifications.map((notif) => {
+                      const isRead = notif.is_read;
+                      const t = notif.title?.toLowerCase() || "";
+                      const tp = notif.type?.toLowerCase() || "";
+
+                      let icon = <Bell size={18} />;
+                      if (t.includes("duplicate") || tp.includes("duplicate")) {
+                        icon = <AlertTriangle size={18} />;
+                      } else if (
+                        t.includes("unassigned") ||
+                        tp.includes("unassigned")
+                      ) {
+                        icon = <UserX size={18} />;
+                      } else if (
+                        t.includes("submitted") ||
+                        tp.includes("submitted")
+                      ) {
+                        icon = <FileCheck size={18} />;
+                      } else if (
+                        t.includes("interview") ||
+                        t.includes("assigned") ||
+                        tp.includes("assigned")
+                      ) {
+                        icon = <UserCheck size={18} />;
+                      }
+
+                      // Read: success color (emerald), Unread: primary color (brand-primary)
+                      const colorClass = isRead
+                        ? "text-emerald-500"
+                        : "text-brand-primary";
+                      const bgClass = isRead
+                        ? "bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/30"
+                        : "bg-brand-primary/10 dark:bg-brand-primary/20 border-brand-primary/30";
+
+                      return (
+                        <div
+                          key={notif.id}
+                          onClick={() => void handleNotificationClick(notif)}
+                          className="cursor-pointer"
+                        >
+                          <ActivityItem
+                            icon={icon}
+                            title={notif.title}
+                            description={
+                              <NotificationFormatter message={notif.message} />
+                            }
+                            time={
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={cn(
+                                    "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border leading-none",
+                                    isRead
+                                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                      : "bg-brand-primary/10 text-brand-primary border-brand-primary/20",
+                                  )}
+                                >
+                                  {isRead ? "Read" : "Unread"}
+                                </span>
+                                <span className="text-muted-foreground/60 text-xs">
+                                  {formatDistanceToNow(
+                                    parseUTCDate(notif.created_at) ||
+                                      new Date(),
+                                    { addSuffix: true },
+                                  )}
+                                </span>
+                              </div>
+                            }
+                            color={colorClass}
+                            bgClassName={bgClass}
+                            className={cn(
+                              "p-3.5 border rounded-xl transition-all",
+                              isRead
+                                ? "border-emerald-500/20 dark:border-emerald-500/30 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:bg-emerald-500/[0.07]"
+                                : "border-brand-primary/35 dark:border-brand-primary/35 bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08] hover:bg-brand-primary/[0.12] shadow-xs",
+                            )}
+                          />
+                        </div>
+                      );
+                    })
+                  )}
+
+                  {/* Infinite Scroll Trigger & Bottom Loader */}
+                  {hasMoreNotifs && !loadingNotifications && (
+                    <div
+                      ref={notifObserverTarget}
+                      className="py-2.5 flex justify-center items-center"
                     >
-                      {notifications.slice(0, 20).map((notif) => {
-                        const t = notif.title?.toLowerCase() || "";
-                        const tp = notif.type?.toLowerCase() || "";
-
-                        let icon = <Bell size={18} />;
-                        let colorClass = "text-slate-500";
-                        let bgClass = "bg-slate-500/10 dark:bg-slate-500/20";
-
-                        if (
-                          t.includes("duplicate") ||
-                          tp.includes("duplicate")
-                        ) {
-                          icon = <AlertTriangle size={18} />;
-                          colorClass = "text-amber-500";
-                          bgClass = "bg-amber-500/10 dark:bg-amber-500/20";
-                        } else if (
-                          t.includes("unassigned") ||
-                          tp.includes("unassigned")
-                        ) {
-                          icon = <UserX size={18} />;
-                          colorClass = "text-red-500";
-                          bgClass = "bg-red-500/10 dark:bg-red-500/20";
-                        } else if (
-                          t.includes("submitted") ||
-                          tp.includes("submitted")
-                        ) {
-                          icon = <FileCheck size={18} />;
-                          colorClass = "text-emerald-500";
-                          bgClass = "bg-emerald-500/10 dark:bg-emerald-500/20";
-                        } else if (
-                          t.includes("interview") ||
-                          t.includes("assigned") ||
-                          tp.includes("assigned")
-                        ) {
-                          icon = <UserCheck size={18} />;
-                          colorClass = "text-brand-primary";
-                          bgClass =
-                            "bg-brand-primary/10 dark:bg-brand-primary/20";
-                        }
-
-                        return (
-                          <motion.div key={notif.id} variants={itemVariants}>
-                            <ActivityItem
-                              icon={icon}
-                              title={notif.title}
-                              description={
-                                <NotificationFormatter
-                                  message={notif.message}
-                                />
-                              }
-                              time={formatDistanceToNow(
-                                parseUTCDate(notif.created_at) || new Date(),
-                                { addSuffix: true },
-                              )}
-                              color={colorClass}
-                              bgClassName={bgClass}
-                              className="p-3"
-                            />
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
+                      {loadingMoreNotifs && (
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/30">
+                          <Loader2
+                            size={13}
+                            className="animate-spin text-brand-primary"
+                          />
+                          <span>Loading more notifications...</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                {notifications.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    color="primary"
-                    fullWidth
-                    animate="scale"
-                    onClick={() => router.push("/admin/notifications")}
-                    className="py-5 mt-auto text-xs font-black uppercase tracking-widest border-t border-border rounded-t-none rounded-b-3xl h-auto flex items-center justify-center gap-2 shadow-none hover:bg-muted/30"
-                    endIcon={<ArrowRight size={14} />}
-                  >
-                    View all
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  color="primary"
+                  fullWidth
+                  animate="scale"
+                  onClick={() => router.push("/admin/notifications")}
+                  className="py-3.5 mt-auto text-xs font-black uppercase tracking-widest border-t border-border/60 rounded-t-none rounded-b-2xl h-auto flex items-center justify-center gap-2 text-[#f96331] hover:text-[#f96331] shadow-none hover:bg-muted/30"
+                  endIcon={<ArrowRight size={14} className="text-[#f96331]" />}
+                >
+                  VIEW ALL
+                </Button>
               </div>
-            </MainCard>
+            </DashboardMainCard>
           </div>
         </div>
 
         {/* Bottom: Performance Insights */}
-        <MainCard
-          title={
-            <div className="flex items-center gap-3">
-              <Trophy size={22} className="text-emerald-500" />
-              <Typography
-                variant="h4"
-                weight="black"
-                className="pt-0.5 text-foreground"
-              >
-                Performance Insights
-              </Typography>
-            </div>
-          }
+        <DashboardMainCard
+          icon={<Trophy size={18} />}
+          title="Performance Insights"
           className="h-full"
+          bodyClassName="p-4 sm:p-5"
         >
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-1"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 p-1"
           >
             {displayGrades.map((grade) => {
               const config = gradeConfigs[grade.label] || gradeConfigs.Average;
@@ -476,7 +649,7 @@ export default function DashboardPage() {
               );
             })}
           </motion.div>
-        </MainCard>
+        </DashboardMainCard>
       </div>
     </PageContainer>
   );

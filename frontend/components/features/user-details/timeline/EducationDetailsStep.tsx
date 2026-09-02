@@ -2,7 +2,7 @@ import React from "react";
 import type { DeepKeys } from "@tanstack/react-form";
 import { motion } from "framer-motion";
 import { Input } from "@components/ui-elements/Input";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, GraduationCap } from "lucide-react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
 import { YearPicker } from "@components/ui-elements/YearPicker";
@@ -85,59 +85,105 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
       className="space-y-5 pt-2"
     >
       <div className="flex flex-col gap-5">
-        {/* Simple Guidelines Box for Candidates */}
-        <div className="p-4 rounded-xl bg-card border border-border/80 shadow-sm text-xs">
-          <p className="font-semibold text-foreground mb-2 flex items-center gap-1.5">
-            <span className="text-sm">📌</span>{" "}
-            <strong>How to Fill Education Details / Guidelines:</strong>
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-muted-foreground">
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                1️⃣ 10th / High School:
-              </span>
-              <span>
-                Enter <strong>General</strong> or <strong>All Subjects</strong>{" "}
-                in Education Details.
-              </span>
+        {/* Compact & Readable Guidelines Banner */}
+        <div className="rounded-xl border border-border/80 bg-card/60 dark:bg-card/40 p-3 shadow-xs">
+          <div className="flex items-center gap-2 mb-2.5">
+            <GraduationCap className="h-4 w-4 text-brand-primary shrink-0" />
+            <h4 className="text-sm font-bold text-foreground">
+              How to Fill Education Details / Guidelines:
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {/* 10th Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded">
+                  STEP 01
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  10th / High School
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                In{" "}
+                <span className="font-semibold text-foreground">
+                  Education Details
+                </span>
+                , enter:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  General
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  All Subjects
+                </span>
+              </div>
             </div>
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                2️⃣ 12th / Intermediate:
-              </span>
-              <span>
-                Enter your stream — <strong>PCM</strong> (Maths),{" "}
-                <strong>PCB</strong> (Biology), <strong>Commerce</strong>,{" "}
-                <strong>Arts</strong>, or <strong>Agriculture</strong>.
-              </span>
+
+            {/* 12th Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                  STEP 02
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  12th / Intermediate
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter your stream:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  PCM (Maths)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  PCB (Bio)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  Commerce
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  Arts
+                </span>
+              </div>
             </div>
-            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-              <span className="font-semibold text-foreground block mb-0.5">
-                3️⃣ Graduation / Diploma / PG:
-              </span>
-              <span>
-                Enter your course & branch — e.g. <strong>B.Tech (CSE)</strong>,{" "}
-                <strong>BCA</strong>, <strong>B.Com</strong>,{" "}
-                <strong>BA</strong>, <strong>B.Sc</strong>.
-              </span>
+
+            {/* Higher Ed Card */}
+            <div className="flex flex-col justify-between gap-1.5 p-2.5 rounded-lg bg-muted/40 dark:bg-slate-800/50 border border-border/60">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                  STEP 03
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  Graduation / PG / Diploma
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter course & branch:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  B.Tech (CSE)
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  BCA / MCA
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  B.Com
+                </span>
+                <span className="px-2 py-0.5 rounded bg-card dark:bg-slate-700/70 text-foreground text-xs font-medium border border-border/70">
+                  BA / B.Sc
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <form.Subscribe selector={(state) => [state.values.education]}>
           {([education]) => {
-            const lastEligibleIndex = education.reduce(
-              (lastIdx: number, item: Education, idx: number) => {
-                const isSchool =
-                  item.type === "10th / High School" ||
-                  item.type === "10th Std" ||
-                  item.type === "12th / Intermediate" ||
-                  item.type === "12th Std";
-                return !isSchool ? idx : lastIdx;
-              },
-              -1,
-            );
-
             return (
               <React.Fragment>
                 {education.map((item: Education, index: number) => {
@@ -150,8 +196,14 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                           String(opt.id) === String(item.type),
                       )),
                   );
-                  const prevEndYear =
-                    index > 0 ? education[index - 1]?.endYear : undefined;
+                  // Find the end year of the nearest previous completed education for min start year
+                  let prevEndYear: string | undefined;
+                  for (let i = index - 1; i >= 0; i--) {
+                    if (education[i]?.endYear && !education[i]?.isPursuing) {
+                      prevEndYear = education[i]?.endYear;
+                      break;
+                    }
+                  }
                   const selectedLabel = educationOptions.find(
                     (opt: { id: string | number; label: string }) =>
                       String(opt.id) === String(item.type),
@@ -162,8 +214,10 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   const isSchool =
                     item.type === "10th / High School" ||
                     item.type === "10th Std" ||
+                    item.type === "10th" ||
                     item.type === "12th / Intermediate" ||
-                    item.type === "12th Std";
+                    item.type === "12th Std" ||
+                    item.type === "12th";
                   const is10th =
                     item.type === "10th / High School" ||
                     item.type === "10th Std" ||
@@ -177,7 +231,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                   let detailsPlaceholder =
                     "e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General...";
                   let detailsNote =
-                    "Enter Stream / Specialization (e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General).";
+                    "Enter Stream Or Specialization (e.g. PCM, PCB, Commerce, Arts, Agriculture, B.Tech, General).";
 
                   if (is10th) {
                     detailsPlaceholder =
@@ -196,9 +250,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                       "Enter Degree & Branch (e.g. B.Tech CSE, BCA, B.Com, BA, B.Sc).";
                   }
 
-                  const isLastEligible =
-                    !isSchool && index === lastEligibleIndex;
-                  const isPursuing = isLastEligible && Boolean(item.isPursuing);
+                  // 10th and 12th cannot be pursuing; any higher education (Graduation, Post-Graduation, etc.) can be pursuing concurrently
+                  const canBePursuing = !isSchool && Boolean(item.type);
+                  const isPursuing = canBePursuing && Boolean(item.isPursuing);
 
                   const currentYear = new Date().getFullYear();
                   const endYrNum = parseInt(item.endYear || "", 10);
@@ -252,7 +306,21 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   options={educationOptions}
                                   value={field.state.value}
                                   onChange={(val) => {
-                                    field.handleChange(val as string);
+                                    const valStr = val as string;
+                                    field.handleChange(valStr);
+                                    const isSelectedSchool =
+                                      valStr === "10th / High School" ||
+                                      valStr === "10th Std" ||
+                                      valStr === "10th" ||
+                                      valStr === "12th / Intermediate" ||
+                                      valStr === "12th Std" ||
+                                      valStr === "12th";
+                                    if (isSelectedSchool) {
+                                      form.setFieldValue(
+                                        `education[${index}].isPursuing`,
+                                        false,
+                                      );
+                                    }
                                     if (val) {
                                       const fieldsToTouch = [
                                         "details",
@@ -299,7 +367,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* Education Details */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Education Details (Stream / Branch){" "}
+                            Education Details (Stream Or Branch){" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -329,12 +397,9 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                       )}
                                     </p>
                                   )}
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  <span className="font-semibold text-foreground/80">
-                                    Note:
-                                  </span>{" "}
+                                <span className="text-[10px] text-muted-foreground mt-0.5">
                                   {detailsNote}
-                                </p>
+                                </span>
                               </div>
                             )}
                           </form.Field>
@@ -343,7 +408,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* School/College */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            School/College{" "}
+                            School Or College Name{" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -359,7 +424,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   onBlur={field.handleBlur}
                                   disabled={!isEducationSelected}
                                   className="disabled:opacity-50 disabled:cursor-not-allowed"
-                                  placeholder="Enter school/college..."
+                                  placeholder="Enter school or college name"
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
@@ -381,7 +446,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                         {/* Board/University */}
                         <div className="flex flex-col gap-1.5">
                           <label className="text-xs font-medium text-muted-foreground">
-                            Board/University{" "}
+                            Board Or University Name{" "}
                             {(isMandatory || isEducationSelected) && (
                               <span className="text-red-500">*</span>
                             )}
@@ -397,7 +462,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                                   onBlur={field.handleBlur}
                                   disabled={!isEducationSelected}
                                   className="disabled:opacity-50 disabled:cursor-not-allowed"
-                                  placeholder="Enter board/university..."
+                                  placeholder="Enter board or university name"
                                   error={
                                     field.state.meta.isTouched &&
                                     field.state.meta.errors.length > 0
@@ -494,7 +559,7 @@ export function EducationDetailsStep({ form }: EducationDetailsStepProps) {
                               </div>
                             )}
                           </form.Field>
-                          {isLastEligible && (
+                          {canBePursuing && (
                             <form.Field name={`education[${index}].isPursuing`}>
                               {(field) => (
                                 <label className="flex items-center gap-2 mt-1 cursor-pointer text-xs font-medium text-foreground select-none">

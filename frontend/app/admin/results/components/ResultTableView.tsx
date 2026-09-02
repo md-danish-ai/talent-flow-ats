@@ -249,7 +249,7 @@ export function ResultTableView({
         <TableHeader>
           <TableRow>
             {onlyDownloadAction ? (
-              <TableHead className="w-[50px] text-center">#</TableHead>
+              <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
             ) : (
               <TableHead className="w-[100px]">
                 <div className="flex items-center gap-2">
@@ -353,6 +353,11 @@ export function ResultTableView({
                 latest?.status === "submitted" ||
                 latest?.status === "auto_submitted" ||
                 latest?.status === "completed";
+              const itemStatus = (
+                item.status ||
+                latest?.status ||
+                (item.requires_interview === false ? "not_required" : "ready")
+              ).toLowerCase();
               return (
                 <TableCollapsibleRow
                   key={`user-${item.user_id}-attempt-${latest?.attempt_id || "none"}`}
@@ -378,8 +383,11 @@ export function ResultTableView({
                   showToggleCell={false}
                 >
                   {onlyDownloadAction ? (
-                    <TableCell className="w-[50px] text-center font-medium text-slate-500">
-                      {(currentPage - 1) * pageSize + idx + 1}
+                    <TableCell className="w-[80px] text-center font-medium align-middle text-slate-600 dark:text-white">
+                      {String((currentPage - 1) * pageSize + idx + 1).padStart(
+                        2,
+                        "0",
+                      )}
                     </TableCell>
                   ) : (
                     <TableCell className="w-[100px]">
@@ -416,17 +424,22 @@ export function ResultTableView({
                           <span
                             className={cn(
                               "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full shadow-sm",
-                              latest?.status === "submitted" ||
-                                latest?.status === "completed" ||
-                                item.is_interview_submitted
-                                ? "bg-green-500"
-                                : latest?.status === "auto_submitted"
-                                  ? "bg-blue-500"
-                                  : latest?.status === "started"
-                                    ? "bg-violet-500"
-                                    : latest?.status === "expired"
-                                      ? "bg-red-500"
-                                      : "bg-slate-400",
+                              itemStatus === "not_required"
+                                ? "bg-slate-400"
+                                : itemStatus === "submitted" ||
+                                    itemStatus === "completed" ||
+                                    item.is_interview_submitted
+                                  ? "bg-green-500"
+                                  : itemStatus === "started" ||
+                                      itemStatus === "inprogress"
+                                    ? "bg-orange-500 animate-pulse"
+                                    : itemStatus === "auto_submitted"
+                                      ? "bg-blue-500"
+                                      : itemStatus === "expired"
+                                        ? "bg-red-500"
+                                        : itemStatus === "ready"
+                                          ? "bg-blue-500"
+                                          : "bg-amber-500",
                             )}
                           />
                         </div>
@@ -601,36 +614,57 @@ export function ResultTableView({
                   )}
                   {visibleColumns.includes("status") && (
                     <TableCell className="text-center">
-                      <Badge
-                        variant="outline"
-                        color={
-                          latest?.status === "started"
-                            ? "violet"
-                            : latest?.status === "submitted" ||
-                                latest?.status === "completed"
-                              ? "success"
-                              : latest?.status === "auto_submitted"
-                                ? "blue"
-                                : latest?.status === "expired"
-                                  ? "error"
-                                  : item.process_status === "ready"
-                                    ? "success"
-                                    : "default"
-                        }
-                        shape="square"
-                      >
-                        {latest?.status === "started"
-                          ? "STARTED"
-                          : latest?.status === "auto_submitted"
-                            ? "AUTO SUBMITTED"
-                            : latest?.status === "submitted"
-                              ? "SUBMITTED"
-                              : latest?.status
-                                ? humanizeString(latest.status).toUpperCase()
-                                : item.process_status === "ready"
-                                  ? "READY"
-                                  : "NOT STARTED"}
-                      </Badge>
+                      {itemStatus === "not_required" ? (
+                        <Badge variant="outline" shape="square" color="default">
+                          NOT REQUIRED
+                        </Badge>
+                      ) : itemStatus === "submitted" ||
+                        itemStatus === "completed" ? (
+                        <Badge
+                          variant="outline"
+                          color="success"
+                          animate="pulse"
+                          shape="square"
+                        >
+                          SUBMITTED
+                        </Badge>
+                      ) : itemStatus === "started" ||
+                        itemStatus === "inprogress" ? (
+                        <Badge
+                          variant="outline"
+                          color="primary"
+                          animate="pulse"
+                          shape="square"
+                        >
+                          IN PROGRESS
+                        </Badge>
+                      ) : itemStatus === "auto_submitted" ? (
+                        <Badge
+                          variant="outline"
+                          color="blue"
+                          animate="pulse"
+                          shape="square"
+                        >
+                          AUTO SUBMITTED
+                        </Badge>
+                      ) : itemStatus === "expired" ? (
+                        <Badge variant="outline" color="error" shape="square">
+                          EXPIRED
+                        </Badge>
+                      ) : itemStatus === "ready" ? (
+                        <Badge
+                          variant="outline"
+                          color="blue"
+                          animate="pulse"
+                          shape="square"
+                        >
+                          READY
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" shape="square" color="warning">
+                          {humanizeString(itemStatus).toUpperCase()}
+                        </Badge>
+                      )}
                     </TableCell>
                   )}
                   {visibleColumns.includes("project_lead") && (

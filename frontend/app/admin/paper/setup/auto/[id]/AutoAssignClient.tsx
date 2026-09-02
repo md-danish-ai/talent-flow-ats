@@ -14,6 +14,7 @@ interface AutoAssignClientProps {
 export function AutoAssignClient({ id }: AutoAssignClientProps) {
   const {
     paper,
+    subjects,
     questionTypes,
     isLoading,
     isSaving,
@@ -42,7 +43,7 @@ export function AutoAssignClient({ id }: AutoAssignClientProps) {
     <PageContainer animate>
       <div className="w-full space-y-8">
         {/* Top Header Card */}
-        <PaperHeaderCard paper={paper} />
+        <PaperHeaderCard paper={paper} subjects={subjects} />
 
         <div className="grid grid-cols-1 gap-8">
           {paper.subject_ids_data.map((subj) => {

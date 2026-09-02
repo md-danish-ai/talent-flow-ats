@@ -50,6 +50,8 @@ export function ReportsClient() {
   const availableColumns = useMemo(
     () => [
       { id: "candidate", label: "Candidate", pinned: true },
+      { id: "department", label: "Department" },
+      { id: "test_level", label: "Exam Level" },
       { id: "paper", label: "Assigned Paper" },
       { id: "attempts", label: "Attempts" },
       { id: "grade", label: "Grade" },
@@ -65,10 +67,11 @@ export function ReportsClient() {
 
   const DEFAULT_VISIBLE_COLUMNS = [
     "candidate",
-    "paper",
+    "department",
     "grade",
-    "date",
+    "status",
     "project_lead",
+    "date",
     "actions",
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
@@ -189,22 +192,9 @@ export function ReportsClient() {
   return (
     <PageContainer className="space-y-4">
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-              <FileText size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
-                Result Reports
-              </span>
-              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
-                View candidate results and download individual test evaluation
-                reports.
-              </p>
-            </div>
-          </div>
-        }
+        icon={<FileText size={18} />}
+        title="Result Reports"
+        subtitle="View candidate results and download individual test evaluation reports."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={

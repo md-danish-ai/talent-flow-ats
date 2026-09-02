@@ -114,12 +114,9 @@ export default function F2FResultsClient() {
   return (
     <PageContainer className="space-y-8">
       <MainCard
-        title={
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-brand-primary" />
-            <span>Round 2 Face-to-Face Round Results</span>
-          </div>
-        }
+        icon={<Users size={18} />}
+        title="Round 2 Face-to-Face Results"
+        subtitle="Evaluate interview feedback, face-to-face ratings, and hiring decisions."
         action={
           <ListingIcons
             isLoading={loading}

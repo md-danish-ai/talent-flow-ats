@@ -242,7 +242,9 @@ export const PaperSetupForm: React.FC<PaperSetupFormProps> = ({
           >
             <ArrowLeft size={18} />
           </Button>
-          {title}
+          <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
+            {title}
+          </span>
         </div>
       }
       className="mb-6 overflow-visible"

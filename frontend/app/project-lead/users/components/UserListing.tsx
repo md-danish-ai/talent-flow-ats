@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { evaluationsApi } from "@lib/api";
 import {
   UserCheck,
@@ -85,6 +85,13 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    const handleUpdate = () => void refresh();
+    window.addEventListener("notificationsUpdated", handleUpdate);
+    return () =>
+      window.removeEventListener("notificationsUpdated", handleUpdate);
+  }, [refresh]);
+
   const onFilterChange = useCallback(
     (key: string, val: unknown) => {
       handleFilterChange({ [key]: val });
@@ -106,14 +113,12 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
   return (
     <>
       <MainCard
+        icon={<Users size={18} />}
         title={
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-                <Users size={18} />
-              </div>
-              <span className="font-black text-foreground">Users</span>
-            </div>
+            <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
+              Users
+            </span>
 
             {/* Original Tabs Component for Status */}
             <Tabs
@@ -315,6 +320,8 @@ export const UserListing = React.memo(({ leadId }: UserListingProps) => {
         onClose={handleModalClose}
         userId={selectedTask?.user_id || 0}
         evaluationId={selectedTask?.id || 0}
+        candidateName={selectedTask?.candidate_name}
+        roundType={selectedTask?.round_type}
         onSuccess={handleEvaluationSuccess}
       />
     </>

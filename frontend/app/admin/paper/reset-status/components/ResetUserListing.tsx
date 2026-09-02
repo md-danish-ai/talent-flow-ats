@@ -162,22 +162,9 @@ export function ResetUserListing({
   return (
     <>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <RotateCcw size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
-                Reset User Status
-              </span>
-              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
-                Manage daily interview progress and application details for all
-                candidates.
-              </p>
-            </div>
-          </div>
-        }
+        icon={<RotateCcw size={18} />}
+        title="Reset User Status"
+        subtitle="Manage daily interview progress and application details for all candidates."
         className="mb-6 flex flex-col overflow-hidden"
         bodyClassName="p-0 flex flex-col w-full"
         action={
@@ -241,8 +228,10 @@ export function ResetUserListing({
                       ) : (
                         users.map((row, idx) => (
                           <TableRow key={row.id} className="group">
-                            <TableCell className="font-medium text-center align-middle">
-                              {(currentPage - 1) * pageSize + idx + 1}
+                            <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white">
+                              {String(
+                                (currentPage - 1) * pageSize + idx + 1,
+                              ).padStart(2, "0")}
                             </TableCell>
                             <TableCell className="align-middle py-3">
                               <div className="flex items-center gap-3">
