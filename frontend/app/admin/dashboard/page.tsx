@@ -27,7 +27,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { cn, parseUTCDate } from "@lib/utils";
 
-import { MainCard } from "@components/ui-cards/MainCard";
+import { DashboardMainCard } from "@components/ui-cards/DashboardMainCard";
 import { StatCard } from "@components/ui-cards/StatCard";
 import { ActivityItem } from "@components/ui-cards/ActivityItem";
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -242,38 +242,42 @@ export default function DashboardPage() {
 
   const statCards = [
     {
-      label: "Total Users",
+      label: "TOTAL USERS",
       value: stats?.total_candidates ?? 0,
       icon: <Users />,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
+      borderColor: "border-l-blue-500",
     },
     {
-      label: "Active Papers",
+      label: "ACTIVE PAPERS",
       value: stats?.active_papers ?? 0,
       icon: <FileText />,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
+      borderColor: "border-l-emerald-500",
     },
     {
-      label: "Question Pool",
+      label: "QUESTION POOL",
       value: stats?.total_questions ?? 0,
       icon: <HelpCircle />,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
+      borderColor: "border-l-purple-500",
     },
     {
-      label: "Today's Efforts",
+      label: "TODAY'S EFFORTS",
       value: stats?.today_attempts ?? 0,
       icon: <Zap />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
+      borderColor: "border-l-amber-500",
     },
   ];
 
   const pulseMetrics = [
     {
-      label: "New Registrations",
+      label: "NEW REGISTRATIONS",
       value: today_pulse?.registrations ?? 0,
       icon: <UserPlus />,
       sub: "Fresh applicants",
@@ -281,7 +285,7 @@ export default function DashboardPage() {
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Re-interviews",
+      label: "RE-INTERVIEWS",
       value: today_pulse?.reinterviews ?? 0,
       icon: <RefreshCcw />,
       sub: "Candidates returning",
@@ -289,7 +293,7 @@ export default function DashboardPage() {
       bgColor: "bg-purple-500/10",
     },
     {
-      label: "Paper Assignments",
+      label: "PAPER ASSIGNMENTS",
       value: today_pulse?.assignments ?? 0,
       icon: <ClipboardCheck />,
       sub: "Auto & Manual allot",
@@ -297,7 +301,7 @@ export default function DashboardPage() {
       bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Completed Tests",
+      label: "COMPLETED TESTS",
       value: today_pulse?.attempts ?? 0,
       icon: <CheckCircle2 />,
       sub: "Finalized submissions",
@@ -321,9 +325,9 @@ export default function DashboardPage() {
     },
     "Above Average": {
       icon: <BadgeCheck />,
-      color: "text-violet-500",
-      bgColor: "bg-violet-500/10",
-      borderColor: "border-violet-500/20",
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/20",
     },
     Average: {
       icon: <Target />,
@@ -350,10 +354,14 @@ export default function DashboardPage() {
       {/* Top Header: Title + Date Filter */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <Typography variant="h2" weight="bold">
+          <Typography
+            variant="h2"
+            weight="bold"
+            className="text-foreground tracking-tight"
+          >
             Talent Dashboard
           </Typography>
-          <Typography variant="body4" className="text-muted-foreground">
+          <Typography variant="body4" className="text-muted-foreground mt-0.5">
             Overview of recruitment activities and candidate pipeline
           </Typography>
         </div>
@@ -380,7 +388,7 @@ export default function DashboardPage() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-1"
         >
           {statCards.map((card) => (
             <motion.div key={card.label} variants={itemVariants}>
@@ -390,6 +398,7 @@ export default function DashboardPage() {
                 icon={card.icon}
                 color={card.color}
                 bgColor={card.bgColor}
+                borderColor={card.borderColor}
                 isLoading={overviewLoading}
               />
             </motion.div>
@@ -399,31 +408,39 @@ export default function DashboardPage() {
         {/* Middle: Dashboard Pulse & Recent Notifications */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           {/* Top-Left: Dashboard Pulse */}
-          <div className="lg:col-span-2">
-            <MainCard
+          <div className="lg:col-span-2 flex flex-col">
+            <DashboardMainCard
               icon={<Zap size={18} />}
               title="Dashboard Pulse"
-              className="h-full"
-              bodyClassName="p-4 pb-2"
+              className="h-full flex flex-col"
+              bodyClassName="p-4 sm:p-5 flex-1 flex flex-col justify-between"
             >
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 p-1"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 p-1 flex-1 items-stretch"
               >
                 {pulseMetrics.map((metric) => (
-                  <motion.div key={metric.label} variants={itemVariants}>
-                    <PulseCard {...metric} isLoading={overviewLoading} />
+                  <motion.div
+                    key={metric.label}
+                    variants={itemVariants}
+                    className="h-full"
+                  >
+                    <PulseCard
+                      {...metric}
+                      isLoading={overviewLoading}
+                      className="h-full"
+                    />
                   </motion.div>
                 ))}
               </motion.div>
-            </MainCard>
+            </DashboardMainCard>
           </div>
 
           {/* Top-Right: Recent Notifications */}
-          <div className="lg:col-span-1">
-            <MainCard
+          <div className="lg:col-span-1 flex flex-col">
+            <DashboardMainCard
               icon={<Bell size={18} />}
               title={
                 <div className="flex items-center gap-2.5">
@@ -463,10 +480,11 @@ export default function DashboardPage() {
                 ) : null
               }
               className="h-full flex flex-col"
-              bodyClassName="p-0 flex-1 flex flex-col overflow-hidden"
+              bodyClassName="p-0 flex-1 flex flex-col min-h-0 overflow-hidden"
             >
               <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 space-y-3 overflow-y-auto max-h-[380px] p-4 custom-scrollbar">
+                <div className="flex-1 min-h-0 space-y-3 overflow-y-auto max-h-[290px] p-4 custom-scrollbar">
+
                   {loadingNotifications ? (
                     <RecentNotificationsListSkeleton count={3} />
                   ) : notifications.length === 0 ? (
@@ -555,7 +573,7 @@ export default function DashboardPage() {
                             className={cn(
                               "p-3.5 border rounded-xl transition-all",
                               isRead
-                                ? "border-emerald-500/20 dark:border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:bg-emerald-500/[0.07]"
+                                ? "border-emerald-500/20 dark:border-emerald-500/30 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:bg-emerald-500/[0.07]"
                                 : "border-brand-primary/35 dark:border-brand-primary/35 bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08] hover:bg-brand-primary/[0.12] shadow-xs",
                             )}
                           />
@@ -589,27 +607,28 @@ export default function DashboardPage() {
                   fullWidth
                   animate="scale"
                   onClick={() => router.push("/admin/notifications")}
-                  className="py-3.5 mt-auto text-xs font-black uppercase tracking-widest border-t border-border rounded-t-none rounded-b-2xl h-auto flex items-center justify-center gap-2 shadow-none hover:bg-muted/30"
-                  endIcon={<ArrowRight size={14} />}
+                  className="py-3.5 mt-auto text-xs font-black uppercase tracking-widest border-t border-border/60 rounded-t-none rounded-b-2xl h-auto flex items-center justify-center gap-2 text-[#f96331] hover:text-[#f96331] shadow-none hover:bg-muted/30"
+                  endIcon={<ArrowRight size={14} className="text-[#f96331]" />}
                 >
-                  View all
+                  VIEW ALL
                 </Button>
               </div>
-            </MainCard>
+            </DashboardMainCard>
           </div>
         </div>
 
         {/* Bottom: Performance Insights */}
-        <MainCard
+        <DashboardMainCard
           icon={<Trophy size={18} />}
           title="Performance Insights"
           className="h-full"
+          bodyClassName="p-4 sm:p-5"
         >
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-1"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 p-1"
           >
             {displayGrades.map((grade) => {
               const config = gradeConfigs[grade.label] || gradeConfigs.Average;
@@ -631,7 +650,7 @@ export default function DashboardPage() {
               );
             })}
           </motion.div>
-        </MainCard>
+        </DashboardMainCard>
       </div>
     </PageContainer>
   );
