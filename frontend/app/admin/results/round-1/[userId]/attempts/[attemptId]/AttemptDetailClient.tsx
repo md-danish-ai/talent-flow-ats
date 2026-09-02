@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronUp, FileCheck2, BookOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronUp,
+  FileCheck2,
+  BookOpen,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+} from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
@@ -315,77 +323,91 @@ export function AttemptDetailClient({
                     >
                       <BookOpen size={16} />
                     </div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
                       <Typography
                         variant="h4"
                         className="font-bold tracking-tight text-foreground text-base md:text-lg whitespace-nowrap"
                       >
                         {subject.section_name}
                       </Typography>
-                      <Badge variant="outline" color="primary" shape="square">
+                      <Badge
+                        variant="outline"
+                        color={styles.badgeColor}
+                        shape="square"
+                        className="shrink-0"
+                      >
                         {subject.total_questions} Questions
                       </Badge>
                       {sectionDuration && (
-                        <Badge variant="outline" color="violet" shape="square">
+                        <Badge
+                          variant="outline"
+                          color="violet"
+                          shape="square"
+                          className="shrink-0"
+                        >
                           Time: {sectionDuration}
                         </Badge>
                       )}
                     </div>
                   </div>
 
-                  {/* Right: Correct / Incorrect / Skipped + GradeBadge + Chevron (Single Line) */}
-                  <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                    <div className="hidden sm:flex items-center gap-4 sm:gap-6 px-4 border-l border-r border-border/50 py-0.5">
-                      <div className="text-center group-hover:scale-105 transition-transform">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-bold text-[9px] uppercase tracking-widest mb-0.5 opacity-60"
-                        >
-                          Correct
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-bold text-emerald-600 leading-none text-sm md:text-base"
-                        >
-                          {subject.correct_count}
-                        </Typography>
-                      </div>
-                      <div className="text-center group-hover:scale-105 transition-transform delay-75">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-bold text-[9px] uppercase tracking-widest mb-0.5 opacity-60"
-                        >
-                          Incorrect
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-bold text-rose-600 leading-none text-sm md:text-base"
-                        >
-                          {subject.incorrect_count}
-                        </Typography>
-                      </div>
-                      <div className="text-center group-hover:scale-105 transition-transform delay-100">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-bold text-[9px] uppercase tracking-widest mb-0.5 opacity-60"
-                        >
-                          Skipped
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-bold text-amber-600 leading-none text-sm md:text-base"
-                        >
-                          {subject.unattempted_count}
-                        </Typography>
-                      </div>
-                    </div>
-
+                  {/* Right: GradeBadge + Compact Metrics HUD + Chevron (Single Line) */}
+                  <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                     {/* Unified Performance & Grade Badge */}
                     <GradeBadge
                       gradeLabel={subject.grade}
                       value={`${subject.percentage}%`}
-                      className="min-w-[130px] sm:min-w-[150px] px-3 py-1.5"
+                      className="min-w-[130px] h-9 px-3.5 py-0 text-xs shrink-0"
                     />
+
+                    {/* Compact Metric HUD (Matching GradeBadge Height, Width, & Font Size) */}
+                    <div className="flex items-center justify-between min-w-[130px] h-9 px-3.5 bg-slate-50 dark:bg-slate-900/60 border-2 border-border/80 rounded-sm text-xs shrink-0 select-none shadow-sm">
+                      {/* Correct */}
+                      <span
+                        className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"
+                        title={`Correct: ${subject.correct_count}`}
+                      >
+                        <CheckCircle2
+                          size={14}
+                          className="text-emerald-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.correct_count}
+                        </span>
+                      </span>
+
+                      <div className="w-1 h-3 bg-muted-foreground/20 mx-1 shrink-0 rounded-sm" />
+
+                      {/* Incorrect */}
+                      <span
+                        className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400"
+                        title={`Incorrect: ${subject.incorrect_count}`}
+                      >
+                        <XCircle
+                          size={14}
+                          className="text-rose-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.incorrect_count}
+                        </span>
+                      </span>
+
+                      <div className="w-1 h-3 bg-muted-foreground/20 mx-1 shrink-0 rounded-sm" />
+
+                      {/* Skipped */}
+                      <span
+                        className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400"
+                        title={`Skipped: ${subject.unattempted_count}`}
+                      >
+                        <MinusCircle
+                          size={14}
+                          className="text-amber-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.unattempted_count}
+                        </span>
+                      </span>
+                    </div>
 
                     <div
                       className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
