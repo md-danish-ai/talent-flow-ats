@@ -110,7 +110,7 @@ export const ProjectLeadDashboardSkeleton = () => {
             <Skeleton className="h-8 w-20 rounded-lg shrink-0" />
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            <PendingCandidatesListSkeleton count={4} />
+            <PendingCandidatesListSkeleton count={10} />
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export const ProjectLeadDashboardSkeleton = () => {
             <Skeleton className="h-8 w-28 rounded-lg shrink-0" />
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            <RecentNotificationsListSkeleton count={4} />
+            <RecentNotificationsListSkeleton count={10} />
           </div>
         </div>
       </div>
