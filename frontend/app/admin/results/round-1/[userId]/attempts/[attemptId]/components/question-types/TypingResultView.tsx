@@ -44,9 +44,9 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
   const sourceText = answer.correct_answer || (answer.passage as string) || "";
 
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="space-y-4">
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-1000">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           {[
             {
               label: "Speed",
@@ -55,7 +55,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
               icon: (
                 <Gauge
                   className="text-amber-500 dark:text-amber-400"
-                  size={18}
+                  size={16}
                 />
               ),
               accentBg: "bg-amber-500/10 dark:bg-amber-500/5",
@@ -69,7 +69,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
               icon: (
                 <Target
                   className="text-emerald-600 dark:text-emerald-400"
-                  size={18}
+                  size={16}
                 />
               ),
               accentBg: "bg-emerald-500/10 dark:bg-emerald-500/5",
@@ -83,7 +83,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
               icon: (
                 <AlertCircle
                   className="text-rose-500 dark:text-rose-400"
-                  size={18}
+                  size={16}
                 />
               ),
               accentBg: "bg-rose-500/10 dark:bg-rose-500/5",
@@ -97,7 +97,7 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
               icon: (
                 <Timer
                   className="text-indigo-500 dark:text-indigo-400"
-                  size={18}
+                  size={16}
                 />
               ),
               accentBg: "bg-indigo-500/10 dark:bg-indigo-500/5",
@@ -107,30 +107,25 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
           ].map((statItem, i) => (
             <div
               key={i}
-              className={`group/stat p-5 ${STYLE_CONFIG.innerCardRadius} border border-border/50 dark:border-white/[0.04] bg-card/60 backdrop-blur-md shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg flex items-center justify-between relative overflow-hidden ${statItem.accentBorder}`}
+              className={`group/stat p-3 ${STYLE_CONFIG.innerCardRadius} border border-border/50 dark:border-white/[0.04] bg-card/60 backdrop-blur-md shadow-sm transition-all duration-200 hover:shadow flex items-center justify-between relative overflow-hidden ${statItem.accentBorder}`}
             >
-              {/* Subtle background glow flare */}
-              <div
-                className={`absolute -top-6 -right-6 w-20 h-20 ${statItem.accentBg} rounded-full blur-xl opacity-60 group-hover/stat:opacity-100 transition-all duration-500 pointer-events-none`}
-              />
-
-              <div className="space-y-1.5 relative z-10">
+              <div className="space-y-0.5 relative z-10">
                 <Typography
                   variant="body5"
-                  className="font-black text-muted-foreground/60 uppercase tracking-widest text-[10px] select-none"
+                  className="font-bold text-muted-foreground/70 uppercase tracking-wider text-[10px] select-none"
                 >
                   {statItem.label}
                 </Typography>
                 <Typography
-                  variant="h2"
-                  className={`font-black ${statItem.color} tracking-tighter text-2xl md:text-3xl bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text select-none`}
+                  variant="h3"
+                  className={`font-black ${statItem.color} tracking-tight text-xl select-none leading-none`}
                 >
                   {statItem.value}
                 </Typography>
               </div>
 
               <div
-                className={`h-10 w-10 rounded-lg ${statItem.accentBg} border border-border/20 dark:border-white/[0.02] flex items-center justify-center shadow-sm relative z-10 group-hover/stat:scale-110 transition-all duration-300`}
+                className={`h-8 w-8 rounded-lg ${statItem.accentBg} border border-border/20 dark:border-white/[0.02] flex items-center justify-center shadow-sm relative z-10`}
               >
                 {statItem.icon}
               </div>
@@ -139,57 +134,59 @@ export const TypingResultView = ({ answer }: TypingResultViewProps) => {
         </div>
       )}
 
-      <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500`}
-      >
-        <Typography
-          variant="body5"
-          className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/20 bg-emerald-500/[0.04] p-4 flex flex-col space-y-2`}
         >
-          ORIGINAL TEXT
-        </Typography>
-        <Typography
-          as="div"
-          variant="body2"
-          className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-sm md:text-base"
-        >
-          {sourceText || "N/A"}
-        </Typography>
-      </div>
+          <Typography
+            variant="body5"
+            className="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-mono text-xs"
+          >
+            ORIGINAL TEXT
+          </Typography>
+          <Typography
+            as="div"
+            variant="body2"
+            className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-sm flex-1"
+          >
+            {sourceText || "N/A"}
+          </Typography>
+        </div>
 
-      <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700`}
-      >
-        <Typography
-          variant="body5"
-          className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
+        <div
+          className={`${STYLE_CONFIG.innerCardRadius} border border-border/70 bg-card/60 p-4 flex flex-col space-y-2`}
         >
-          CANDIDATE TYPED TEXT
-        </Typography>
-        <Typography
-          as="div"
-          variant="body2"
-          className="font-mono leading-relaxed whitespace-pre-wrap select-all text-sm md:text-base"
-        >
-          {(() => {
-            if (typedText && sourceText) {
-              const diffTokens = getTypingDiffTokens(typedText, sourceText);
-              return diffTokens.map((token, i) => (
-                <span
-                  key={i}
-                  className={
-                    token.isCorrect
-                      ? "text-foreground"
-                      : "text-rose-600 bg-rose-500/10 font-black underline decoration-rose-500/50 underline-offset-[3px]"
-                  }
-                >
-                  {token.text}
-                </span>
-              ));
-            }
-            return typedText || "No response recorded.";
-          })()}
-        </Typography>
+          <Typography
+            variant="body5"
+            className="font-bold text-muted-foreground uppercase tracking-wider text-xs"
+          >
+            CANDIDATE TYPED TEXT
+          </Typography>
+          <Typography
+            as="div"
+            variant="body2"
+            className="font-mono leading-relaxed whitespace-pre-wrap select-all text-sm flex-1"
+          >
+            {(() => {
+              if (typedText && sourceText) {
+                const diffTokens = getTypingDiffTokens(typedText, sourceText);
+                return diffTokens.map((token, i) => (
+                  <span
+                    key={i}
+                    className={
+                      token.isCorrect
+                        ? "text-foreground"
+                        : "text-rose-600 bg-rose-500/10 font-bold underline decoration-rose-500/50 underline-offset-[2px]"
+                    }
+                  >
+                    {token.text}
+                  </span>
+                ));
+              }
+              return typedText || "No response recorded.";
+            })()}
+          </Typography>
+        </div>
       </div>
     </div>
   );

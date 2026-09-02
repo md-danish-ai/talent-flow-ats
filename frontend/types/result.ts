@@ -14,6 +14,8 @@ export interface SubjectResult {
   percentage: number;
   grade: string;
   is_in_progress?: boolean;
+  time_minutes?: number | string | null;
+  duration_minutes?: number | string | null;
 }
 
 export interface TypingStats {

@@ -488,12 +488,19 @@ def _sort_subject_results_by_paper_order(
     }
 
     order_map: dict[str, int] = {}
+    time_map: dict[str, int] = {}
     for fallback_index, item in enumerate(
         sorted(selected_subjects, key=lambda value: int(value.get("order") or 0))
     ):
         subject_id = int(item.get("subject_id") or 0)
         classification = classification_by_id.get(subject_id)
         sort_index = int(item.get("order") or fallback_index)
+        time_val = int(
+            item.get("time_minutes")
+            or item.get("time")
+            or item.get("duration_minutes")
+            or 0
+        )
 
         for value in (
             item.get("subject_name"),
@@ -501,7 +508,17 @@ def _sort_subject_results_by_paper_order(
             classification.name if classification else None,
         ):
             if value:
-                order_map[_normalize_text(str(value))] = sort_index
+                norm = _normalize_text(str(value))
+                order_map[norm] = sort_index
+                if time_val > 0:
+                    time_map[norm] = time_val
+
+    for r in results:
+        code_norm = _normalize_text(str(r.get("section_code") or ""))
+        name_norm = _normalize_text(str(r.get("section_name") or ""))
+        matched_time = time_map.get(code_norm) or time_map.get(name_norm)
+        if matched_time and not r.get("time_minutes"):
+            r["time_minutes"] = matched_time
 
     if not order_map:
         return results

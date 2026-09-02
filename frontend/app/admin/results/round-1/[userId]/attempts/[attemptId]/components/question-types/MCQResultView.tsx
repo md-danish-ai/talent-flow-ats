@@ -28,7 +28,7 @@ export const MCQResultView = ({
 }: MCQResultViewProps) => {
   return (
     <div
-      className={`grid gap-4 ${
+      className={`grid gap-3.5 ${
         answer.question_type === "IMAGE_MULTIPLE_CHOICE" && answer.image_url
           ? "grid-cols-1"
           : "grid-cols-1 md:grid-cols-2"
@@ -41,8 +41,8 @@ export const MCQResultView = ({
         const isCorrect = opt.isCorrect;
         const isWrong = isSelected && !isCorrect;
 
-        let cardStyle = "border-border bg-card/50";
-        let labelStyle = "border-border text-muted-foreground/60";
+        let cardStyle = "border-border bg-card/60";
+        let labelStyle = "border-border text-muted-foreground";
 
         if (isCorrect) {
           cardStyle =
@@ -62,18 +62,18 @@ export const MCQResultView = ({
         return (
           <div
             key={opt.optionLabel}
-            className={`group/opt relative ${STYLE_CONFIG.innerCardRadius} border p-4 transition-all duration-300 hover:scale-[1.02] ${cardStyle}`}
+            className={`group/opt relative ${STYLE_CONFIG.innerCardRadius} border p-3.5 transition-all duration-200 hover:scale-[1.01] ${cardStyle}`}
           >
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3">
               <div
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center ${STYLE_CONFIG.iconRadius} border text-xs font-black transition-colors ${labelStyle}`}
+                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center ${STYLE_CONFIG.iconRadius} border text-xs font-bold transition-colors ${labelStyle}`}
               >
                 {opt.optionLabel}
               </div>
               <div className="flex-1 min-w-0">
                 {opt.imageUrl && (
                   <div
-                    className="mb-3.5 w-fit max-w-full border border-border/30 bg-muted/5 p-1.5 rounded-md shadow-inner cursor-zoom-in hover:scale-[1.02] hover:border-brand-primary/30 transition-all active:scale-[0.98] duration-300 group-hover/opt:border-border/60"
+                    className="mb-2.5 w-fit max-w-full border border-border/40 bg-muted/20 p-1.5 rounded-lg shadow-inner cursor-zoom-in hover:scale-[1.01] hover:border-brand-primary/30 transition-all active:scale-[0.98] duration-200 group-hover/opt:border-border/60"
                     onClick={(e) => {
                       e.stopPropagation();
                       openLightbox(
@@ -87,28 +87,28 @@ export const MCQResultView = ({
                       alt={`Option ${opt.optionLabel} Content`}
                       width={400}
                       height={300}
-                      className="w-auto h-auto max-h-[160px] object-contain rounded-[4px] bg-black/[0.02] dark:bg-white/[0.02]"
+                      className="w-auto h-auto max-h-[140px] object-contain rounded bg-black/[0.02] dark:bg-white/[0.02]"
                       unoptimized
                     />
                   </div>
                 )}
                 <Typography
                   variant="body2"
-                  className="font-bold leading-snug text-base md:text-lg"
+                  className="font-medium leading-snug text-sm sm:text-base text-foreground"
                 >
                   {opt.optionText}
                 </Typography>
-                <div className="mt-2.5 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {isSelected && (
                     <div
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[9px] font-black uppercase tracking-wider ${
+                      className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                         isWrong
-                          ? "bg-rose-500/10 text-rose-600"
-                          : "bg-brand-primary/10 text-brand-primary"
+                          ? "bg-rose-500/10 text-rose-600 border border-rose-500/20"
+                          : "bg-brand-primary/10 text-brand-primary border border-brand-primary/20"
                       }`}
                     >
                       <div
-                        className={`w-1 h-1 rounded-sm ${
+                        className={`w-1.5 h-1.5 rounded-full ${
                           isWrong ? "bg-rose-600" : "bg-brand-primary"
                         }`}
                       />
@@ -116,8 +116,8 @@ export const MCQResultView = ({
                     </div>
                   )}
                   {isCorrect && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-wider">
-                      <div className="w-1 h-1 rounded-sm bg-emerald-600" />
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                       Correct Choice
                     </div>
                   )}

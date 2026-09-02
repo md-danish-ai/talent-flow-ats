@@ -96,36 +96,36 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
   return (
     <div
       className={cn(
-        "bg-card border border-border/70 p-5 md:p-6 shadow-sm space-y-5",
+        "bg-card border border-border/70 p-4 md:p-4.5 shadow-sm space-y-3.5",
         STYLE_CONFIG.cardRadius,
       )}
     >
       {/* Top Header: Candidate & Attempt on Left, Timing / Paper Details on Right */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-border/50">
         {/* Left Info: User Avatar, Name, Attempt Number, Status */}
         <div className="flex items-center gap-3.5">
-          <div className="h-12 w-12 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shrink-0 shadow-inner">
-            <User size={22} />
+          <div className="h-11 w-11 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shrink-0 shadow-inner">
+            <User size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-lg font-bold text-foreground leading-snug">
+              <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
                 {username}
               </h2>
               <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-primary/10 text-brand-primary font-bold text-xs">
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-brand-primary/10 text-brand-primary font-bold text-xs">
                 Attempt #{attemptNumber}
               </span>
               <Badge
                 color={statusColor}
                 variant="outline"
                 shape="square"
-                className="uppercase font-bold text-[10px] tracking-wider"
+                className="uppercase font-bold tracking-wider"
               >
                 {status}
               </Badge>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 font-medium">
               <Phone size={11} className="opacity-70" />
               <span>{mobile}</span>
             </div>
@@ -133,13 +133,13 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
         </div>
 
         {/* Right Info: Compact Metadata Pills */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {/* Paper */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/50">
-            <FileText size={13} className="text-brand-primary shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/40 border border-border/50 text-[11px] sm:text-xs">
+            <FileText size={12} className="text-brand-primary shrink-0" />
             <span className="text-muted-foreground font-medium">Paper:</span>
             <span
-              className="font-bold text-foreground max-w-[150px] sm:max-w-[200px] truncate"
+              className="font-bold text-foreground max-w-[140px] sm:max-w-[180px] truncate"
               title={paperName}
             >
               {paperName}
@@ -147,16 +147,16 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
           </div>
 
           {/* Date */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/50">
-            <Calendar size={13} className="text-brand-primary shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/40 border border-border/50 text-[11px] sm:text-xs">
+            <Calendar size={12} className="text-brand-primary shrink-0" />
             <span className="font-bold text-foreground">
               {formatDate(startedAt)}
             </span>
           </div>
 
           {/* Started */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/50">
-            <Clock size={13} className="text-orange-500 shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/40 border border-border/50 text-[11px] sm:text-xs">
+            <Clock size={12} className="text-orange-500 shrink-0" />
             <span className="text-muted-foreground font-medium">Started:</span>
             <span className="font-bold text-foreground">
               {formatTime(startedAt)}
@@ -164,8 +164,8 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
           </div>
 
           {/* Submitted */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/50">
-            <CheckCircle size={13} className="text-emerald-500 shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/40 border border-border/50 text-[11px] sm:text-xs">
+            <CheckCircle size={12} className="text-emerald-500 shrink-0" />
             <span className="text-muted-foreground font-medium">
               Submitted:
             </span>
@@ -175,8 +175,8 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
           </div>
 
           {/* Duration */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/50">
-            <History size={13} className="text-indigo-500 shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/40 border border-border/50 text-[11px] sm:text-xs">
+            <History size={12} className="text-indigo-500 shrink-0" />
             <span className="text-muted-foreground font-medium">Duration:</span>
             <span className="font-bold text-brand-primary">{duration}</span>
           </div>
@@ -184,87 +184,87 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
       </div>
 
       {/* Middle Performance Metrics: 4 Sleek Integrated Tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
         {/* 1. Total Score */}
-        <div className="p-4 rounded-xl bg-muted/20 border border-border/40 hover:border-brand-primary/30 transition-colors flex flex-col justify-between gap-2.5">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-muted/20 border border-border/40 hover:border-brand-primary/30 transition-colors flex flex-col justify-between gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Total Score
             </span>
-            <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
-              <Trophy size={16} />
+            <div className="p-1 rounded-md bg-brand-primary/10 text-brand-primary">
+              <Trophy size={14} />
             </div>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-black text-foreground leading-none">
+            <span className="text-xl sm:text-2xl font-black text-foreground leading-none">
               {totalScore.toFixed(2)}
             </span>
-            <span className="text-xs sm:text-sm font-bold text-muted-foreground">
+            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground">
               / {totalMaxMarks}
             </span>
           </div>
         </div>
 
         {/* 2. Accuracy Rate */}
-        <div className="p-4 rounded-xl bg-muted/20 border border-border/40 hover:border-emerald-500/30 transition-colors flex flex-col justify-between gap-2.5">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-muted/20 border border-border/40 hover:border-emerald-500/30 transition-colors flex flex-col justify-between gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Accuracy Rate
             </span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Target size={16} />
+            <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Target size={14} />
             </div>
           </div>
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
+            <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
               {accuracy}%
             </span>
-            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase">
               of attempted
             </span>
           </div>
         </div>
 
         {/* 3. Completion */}
-        <div className="p-4 rounded-xl bg-muted/20 border border-border/40 hover:border-amber-500/30 transition-colors flex flex-col justify-between gap-2.5">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-muted/20 border border-border/40 hover:border-amber-500/30 transition-colors flex flex-col justify-between gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Completion
             </span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              <Activity size={16} />
+            <div className="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <Activity size={14} />
             </div>
           </div>
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-2xl sm:text-3xl font-black text-foreground leading-none">
+            <span className="text-xl sm:text-2xl font-black text-foreground leading-none">
               {attemptedCount}/{totalQuestions}
             </span>
-            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase">
               answered
             </span>
           </div>
         </div>
 
         {/* 4. Final Grade */}
-        <div className="p-4 rounded-xl bg-muted/20 border border-border/40 hover:border-indigo-500/30 transition-colors flex flex-col justify-between gap-2.5">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-muted/20 border border-border/40 hover:border-indigo-500/30 transition-colors flex flex-col justify-between gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Final Grade
             </span>
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Star size={16} />
+            <div className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+              <Star size={14} />
             </div>
           </div>
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <span
               className={cn(
-                "text-2xl sm:text-3xl font-black leading-none",
+                "text-xl sm:text-2xl font-black leading-none",
                 getGradeColor(overallGrade),
               )}
             >
               {(overallGrade || "N/A").toUpperCase()}
             </span>
-            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground">
               ({overallPercentage}%)
             </span>
           </div>
@@ -277,16 +277,16 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
         (() => {
           const sorted = [...gradeSettings].sort((a, b) => a.min - b.min);
           return (
-            <div className="pt-4 border-t border-border/40 space-y-2.5">
+            <div className="pt-3 border-t border-border/40 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Star size={13} className="text-brand-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Star size={12} className="text-brand-primary" />
                   Grade Scale Matrix
                 </span>
               </div>
 
               {/* Segmented Bar */}
-              <div className="relative w-full h-6 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+              <div className="relative w-full h-5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
                 {sorted.map((g, i) => {
                   const cfg =
                     GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
@@ -298,7 +298,7 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
                       style={{ left: `${g.min}%`, width: `${width}%` }}
                     >
                       {width >= 8 && (
-                        <span className="text-[10px] font-black text-white leading-none drop-shadow-sm whitespace-nowrap tabular-nums">
+                        <span className="text-[9px] font-bold text-white leading-none drop-shadow-sm whitespace-nowrap tabular-nums">
                           {g.min}–{g.max}%
                         </span>
                       )}
@@ -308,7 +308,7 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
               </div>
 
               {/* Grade Labels below */}
-              <div className="relative w-full h-4">
+              <div className="relative w-full h-3.5">
                 {sorted.map((g, i) => {
                   const cfg =
                     GRADE_CONFIG[g.grade_label] ?? GRADE_CONFIG["N/A"];
@@ -317,7 +317,7 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
                   return (
                     <span
                       key={i}
-                      className={`absolute text-[11px] font-bold ${cfg.color} whitespace-nowrap leading-none`}
+                      className={`absolute text-[10px] font-bold ${cfg.color} whitespace-nowrap leading-none`}
                       style={{
                         left: `${clampedLeft}%`,
                         transform: "translateX(-50%)",
