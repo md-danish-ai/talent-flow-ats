@@ -34,8 +34,8 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    # 10-core server: workers = 2 × nproc = 20 (using 16 as conservative start)
-    command: gunicorn app.main:app -w 16 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 100
+    # 6 Async workers (Handles 250-300 concurrent candidates)
+    command: gunicorn app.main:app -w 6 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 100
 
   frontend:
     container_name: talent-flow-frontend
@@ -43,12 +43,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Browser directly calls backend — use server IP or domain, not container name
+        # Browser client API URL
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:4000}
         NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-prod}
         NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR: ${NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR:-false}
     environment:
-      # SSR (server-side) calls go through Docker network to backend container
+      # Internal SSR backend URL
       BACKEND_URL: http://backend:4000
     ports:
       - "3000:3000"
@@ -117,14 +117,12 @@ services:
       - "9600:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Performance tuning for 250-300 concurrent candidates (16GB RAM server)
-    # shared_buffers = 16GB × 25% = 4GB
-    # effective_cache_size = 16GB × 50% = 8GB
+    # Optimized Postgres settings (1.5GB buffer + dynamic OS cache)
     command: >
       postgres
-      -c max_connections=150
-      -c shared_buffers=4GB
-      -c effective_cache_size=8GB
+      -c max_connections=100
+      -c shared_buffers=1536MB
+      -c effective_cache_size=6GB
       -c work_mem=6MB
       -c checkpoint_completion_target=0.9
       -c wal_buffers=16MB
@@ -136,15 +134,11 @@ services:
 
   redis:
     container_name: talent-flow-redis
-    image: redis/redis-stack:latest
+    image: redis:7-alpine
     restart: always
-    command: >
-      redis-stack-server
-      --maxmemory 512mb
-      --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
-      - "8001:8001"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
