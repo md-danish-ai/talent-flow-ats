@@ -484,7 +484,6 @@ export default function DashboardPage() {
             >
               <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <div className="flex-1 min-h-0 space-y-3 overflow-y-auto max-h-[290px] p-4 custom-scrollbar">
-
                   {loadingNotifications ? (
                     <RecentNotificationsListSkeleton count={3} />
                   ) : notifications.length === 0 ? (

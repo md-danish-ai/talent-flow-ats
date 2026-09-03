@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronUp, FileCheck2, BookOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronUp,
+  FileCheck2,
+  BookOpen,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+} from "lucide-react";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
@@ -176,20 +184,20 @@ export function AttemptDetailClient({
   );
 
   return (
-    <PageContainer className="py-6 space-y-6">
+    <PageContainer className="py-4 space-y-4">
       {/* Back to Attempt History link */}
       <Link
         href={`/admin/results/round-1/${userId}`}
         className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all w-fit"
       >
         <div
-          className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
+          className={`p-1 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={14} />
         </div>
         <Typography
           variant="body5"
-          className="font-black uppercase tracking-widest text-[10px]"
+          className="font-bold uppercase tracking-widest text-[10px]"
         >
           Back to Attempt History
         </Typography>
@@ -216,30 +224,30 @@ export function AttemptDetailClient({
 
       {/* Detailed Result Breakdown */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-6"
+        transition={{ delay: 0.15 }}
+        className="space-y-3.5"
       >
         <div
-          className={`flex flex-col md:flex-row md:items-center justify-between gap-5 bg-card p-5 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-2xl shadow-slate-300/30 dark:shadow-none`}
+          className={`flex flex-col md:flex-row md:items-center justify-between gap-3 bg-card p-3.5 px-4 md:p-4 ${STYLE_CONFIG.cardRadius} border border-border/50 shadow-sm`}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div
-              className={`p-3 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner`}
+              className={`p-2 ${STYLE_CONFIG.iconRadius} bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-inner`}
             >
-              <FileCheck2 size={20} />
+              <FileCheck2 size={18} />
             </div>
             <div>
               <Typography
                 variant="h4"
-                className="font-black leading-none mb-1.5"
+                className="font-bold leading-none mb-1 text-sm md:text-base"
               >
                 Result Breakdown
               </Typography>
               <Typography
                 variant="body5"
-                className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest ml-0.5 opacity-60"
+                className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest opacity-60"
               >
                 Subject-wise performance metrics.
               </Typography>
@@ -275,101 +283,131 @@ export function AttemptDetailClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-3.5">
           {data.subject_results.map((subject, idx) => {
             const styles = getGradeCardStyles(subject.grade);
+            const sectionAnswers = data.answers.filter(
+              (a) => a.section_name === subject.section_name,
+            );
+            const typingAnswer = sectionAnswers.find(
+              (a) => a.typing_stats?.time_taken,
+            );
+            const sectionDuration = subject.time_minutes
+              ? `${subject.time_minutes}m`
+              : subject.duration_minutes
+                ? `${subject.duration_minutes}m`
+                : typingAnswer?.typing_stats?.time_taken
+                  ? `${Math.round(typingAnswer.typing_stats.time_taken)}s`
+                  : null;
 
             return (
               <motion.div
                 key={subject.section_name}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + idx * 0.1 }}
-                className={`bg-card border ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-500 scroll-mt-24`}
+                transition={{ delay: 0.2 + idx * 0.05 }}
+                className={`bg-card border ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-300 scroll-mt-20`}
                 id={`section-card-${subject.section_name}`}
               >
                 <button
                   onClick={() => toggleSection(subject.section_name)}
-                  className="w-full flex items-center justify-between p-5 md:p-6 hover:bg-muted/30 transition-all duration-300 border-b border-border/50 group"
+                  className="w-full flex items-center justify-between p-3.5 px-4 sm:px-5 hover:bg-muted/30 transition-all duration-200 border-b border-border/50 group"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center gap-5 text-left">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-1.5 h-6 rounded-full transition-all duration-500 ${styles.bar}`}
-                      />
-                      <div
-                        className={`p-3 ${STYLE_CONFIG.iconRadius} ${styles.icon} transition-colors duration-500 shadow-inner`}
+                  {/* Left: Subject Name + Question Count + Time (Single Line) */}
+                  <div className="flex items-center gap-3 text-left min-w-0">
+                    <div
+                      className={`w-1.5 h-6 rounded-full transition-all duration-300 shrink-0 ${styles.bar}`}
+                    />
+                    <div
+                      className={`p-2 ${STYLE_CONFIG.iconRadius} ${styles.icon} transition-colors duration-300 shadow-inner shrink-0`}
+                    >
+                      <BookOpen size={16} />
+                    </div>
+                    <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
+                      <Typography
+                        variant="h4"
+                        className="font-bold tracking-tight text-foreground text-base md:text-lg whitespace-nowrap"
                       >
-                        <BookOpen size={20} />
-                      </div>
-                      <div>
-                        <Typography
-                          variant="h3"
-                          className="font-black tracking-tight leading-none mb-1.5"
+                        {subject.section_name}
+                      </Typography>
+                      <Badge
+                        variant="outline"
+                        color={styles.badgeColor}
+                        shape="square"
+                        className="shrink-0"
+                      >
+                        {subject.total_questions} Questions
+                      </Badge>
+                      {sectionDuration && (
+                        <Badge
+                          variant="outline"
+                          color="violet"
+                          shape="square"
+                          className="shrink-0"
                         >
-                          {subject.section_name}
-                        </Typography>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" shape="square">
-                            TOTAL: {subject.total_questions}
-                          </Badge>
-                        </div>
-                      </div>
+                          Time: {sectionDuration}
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-5">
-                    <div className="hidden lg:flex items-center gap-8 px-8 border-l border-r border-border/50 py-1">
-                      <div className="text-center group-hover:scale-110 transition-transform">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                        >
-                          Correct
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-black text-emerald-600 leading-none"
-                        >
-                          {subject.correct_count}
-                        </Typography>
-                      </div>
-                      <div className="text-center group-hover:scale-110 transition-transform delay-75">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                        >
-                          Incorrect
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-black text-rose-600 leading-none"
-                        >
-                          {subject.incorrect_count}
-                        </Typography>
-                      </div>
-                      <div className="text-center group-hover:scale-110 transition-transform delay-100">
-                        <Typography
-                          variant="body5"
-                          className="text-muted-foreground font-black text-[8px] uppercase tracking-widest mb-1 opacity-50"
-                        >
-                          Skipped
-                        </Typography>
-                        <Typography
-                          variant="h4"
-                          className="font-black text-amber-600 leading-none"
-                        >
-                          {subject.unattempted_count}
-                        </Typography>
-                      </div>
-                    </div>
-
-                    {/* Unified Performance & Grade Badge (Matrix Style) */}
+                  {/* Right: GradeBadge + Compact Metrics HUD + Chevron (Single Line) */}
+                  <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                    {/* Unified Performance & Grade Badge */}
                     <GradeBadge
                       gradeLabel={subject.grade}
                       value={`${subject.percentage}%`}
-                      className="min-w-[170px] group-hover:scale-105"
+                      className="min-w-[130px] h-9 px-3.5 py-0 text-xs shrink-0"
                     />
+
+                    {/* Compact Metric HUD (Matching GradeBadge Height, Width, & Font Size) */}
+                    <div className="flex items-center justify-between min-w-[130px] h-9 px-3.5 bg-slate-50 dark:bg-slate-900/60 border-2 border-border/80 rounded-sm text-xs shrink-0 select-none shadow-sm">
+                      {/* Correct */}
+                      <span
+                        className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"
+                        title={`Correct: ${subject.correct_count}`}
+                      >
+                        <CheckCircle2
+                          size={14}
+                          className="text-emerald-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.correct_count}
+                        </span>
+                      </span>
+
+                      <div className="w-1 h-3 bg-muted-foreground/20 mx-1 shrink-0 rounded-sm" />
+
+                      {/* Incorrect */}
+                      <span
+                        className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400"
+                        title={`Incorrect: ${subject.incorrect_count}`}
+                      >
+                        <XCircle
+                          size={14}
+                          className="text-rose-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.incorrect_count}
+                        </span>
+                      </span>
+
+                      <div className="w-1 h-3 bg-muted-foreground/20 mx-1 shrink-0 rounded-sm" />
+
+                      {/* Skipped */}
+                      <span
+                        className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400"
+                        title={`Skipped: ${subject.unattempted_count}`}
+                      >
+                        <MinusCircle
+                          size={14}
+                          className="text-amber-500 shrink-0 stroke-[2.5]"
+                        />
+                        <span className="font-bold text-xs">
+                          {subject.unattempted_count}
+                        </span>
+                      </span>
+                    </div>
 
                     <div
                       className={`p-1.5 ${STYLE_CONFIG.iconRadius} bg-slate-100 dark:bg-slate-800 transition-colors group-hover:bg-brand-primary/10`}
@@ -379,9 +417,9 @@ export function AttemptDetailClient({
                           rotate:
                             activeSection === subject.section_name ? 0 : 180,
                         }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        <ChevronUp size={18} />
+                        <ChevronUp size={16} />
                       </motion.div>
                     </div>
                   </div>
@@ -393,10 +431,10 @@ export function AttemptDetailClient({
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 md:p-6 space-y-6 bg-slate-50/30 dark:bg-slate-900/10">
+                      <div className="p-3 md:p-4 space-y-3.5 bg-slate-50/30 dark:bg-slate-900/10">
                         {(answersBySubject[subject.section_name] || []).map(
                           (item) => (
                             <QuestionResultCard
