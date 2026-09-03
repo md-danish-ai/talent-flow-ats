@@ -96,37 +96,56 @@ export const getGradeConfig = (grade?: string): GradeConfig => {
 };
 
 export const getGradeCardStyles = (grade?: string) => {
-  const norm = grade?.toLowerCase() || "";
+  const norm = (grade?.toLowerCase() || "").replace(/[\s_-]+/g, "");
   switch (norm) {
     case "excellent":
       return {
         card: "border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500/60 ring-2 ring-emerald-500/5 dark:ring-emerald-500/10 shadow-lg shadow-emerald-500/[0.03]",
         icon: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 dark:bg-emerald-500/5 border border-emerald-500/20",
         bar: "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]",
+        badgeColor: "success" as const,
       };
     case "good":
       return {
-        card: "border-brand-primary/40 dark:border-brand-primary/30 hover:border-brand-primary/60 ring-2 ring-brand-primary/5 dark:ring-brand-primary/10 shadow-lg shadow-brand-primary/[0.03]",
-        icon: "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/5 border border-brand-primary/20",
-        bar: "bg-brand-primary shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]",
+        card: "border-blue-500/40 dark:border-blue-500/30 hover:border-blue-500/60 ring-2 ring-blue-500/5 dark:ring-blue-500/10 shadow-lg shadow-blue-500/[0.03]",
+        icon: "bg-blue-500/10 text-blue-600 dark:text-blue-400 dark:bg-blue-500/5 border border-blue-500/20",
+        bar: "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]",
+        badgeColor: "blue" as const,
+      };
+    case "aboveaverage":
+      return {
+        card: "border-violet-500/40 dark:border-violet-500/30 hover:border-violet-500/60 ring-2 ring-violet-500/5 dark:ring-violet-500/10 shadow-lg shadow-violet-500/[0.03]",
+        icon: "bg-violet-500/10 text-violet-600 dark:text-violet-400 dark:bg-violet-500/5 border border-violet-500/20",
+        bar: "bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]",
+        badgeColor: "violet" as const,
       };
     case "average":
       return {
         card: "border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500/60 ring-2 ring-amber-500/5 dark:ring-amber-500/10 shadow-lg shadow-amber-500/[0.03]",
         icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400 dark:bg-amber-500/5 border border-amber-500/20",
         bar: "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]",
+        badgeColor: "warning" as const,
+      };
+    case "belowaverage":
+      return {
+        card: "border-orange-500/40 dark:border-orange-500/30 hover:border-orange-500/60 ring-2 ring-orange-500/5 dark:ring-orange-500/10 shadow-lg shadow-orange-500/[0.03]",
+        icon: "bg-orange-500/10 text-orange-600 dark:text-orange-400 dark:bg-orange-500/5 border border-orange-500/20",
+        bar: "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]",
+        badgeColor: "warning" as const,
       };
     case "poor":
       return {
         card: "border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500/60 ring-2 ring-rose-500/5 dark:ring-rose-500/10 shadow-lg shadow-rose-500/[0.03]",
         icon: "bg-rose-500/10 text-rose-600 dark:text-rose-400 dark:bg-rose-500/5 border border-rose-500/20",
         bar: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]",
+        badgeColor: "error" as const,
       };
     default:
       return {
-        card: "border-border/50 hover:border-brand-primary/30 shadow-2xl shadow-slate-300/30 dark:shadow-none",
-        icon: "bg-slate-100 dark:bg-slate-800 text-slate-500 border border-transparent",
+        card: "border-border/60 hover:border-brand-primary/30 shadow-sm",
+        icon: "bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200/50",
         bar: "bg-slate-400",
+        badgeColor: "default" as const,
       };
   }
 };
