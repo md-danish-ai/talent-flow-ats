@@ -78,6 +78,7 @@ export async function getUsersByRole(
     test_level_id?: number | string;
     status?: string;
     exclude_software?: boolean;
+    is_synced?: boolean;
   },
 ): Promise<PaginatedResponse<UserListResponse>> {
   const queryParams = new URLSearchParams({ role });
@@ -92,6 +93,8 @@ export async function getUsersByRole(
     queryParams.append("test_level_id", options.test_level_id.toString());
   if (options?.status) queryParams.append("status", options.status);
   if (options?.exclude_software) queryParams.append("exclude_software", "true");
+  if (options?.is_synced !== undefined)
+    queryParams.append("is_synced", String(options.is_synced));
 
   const apiOptions = options ? { ...options } : undefined;
   if (apiOptions) {
@@ -102,6 +105,7 @@ export async function getUsersByRole(
     delete (apiOptions as { date_to?: string }).date_to;
     delete (apiOptions as { department_id?: number | string }).department_id;
     delete (apiOptions as { test_level_id?: number | string }).test_level_id;
+    delete (apiOptions as { is_synced?: boolean }).is_synced;
   }
 
   return api.get<PaginatedResponse<UserListResponse>>(

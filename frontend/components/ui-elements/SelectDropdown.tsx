@@ -280,9 +280,9 @@ export function SelectDropdown({
           className,
           isOpen && "border-brand-primary ring-1 ring-brand-primary",
           error &&
-            "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
+          "!border-red-500 ring-1 !ring-red-500/20 hover:!border-red-500",
           disabled &&
-            "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
+          "opacity-50 !cursor-not-allowed bg-muted/20 hover:!bg-muted/20",
         )}
       >
         <div className="flex items-center justify-between w-full gap-2 min-w-0">

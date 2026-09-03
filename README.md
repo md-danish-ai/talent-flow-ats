@@ -105,10 +105,13 @@ NEXT_PUBLIC_APP_ENV=prod
 NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR=false
 
 # -------------------------------------------------------------
-# AI / External Services
+# AI / External Services & Integrations
 # -------------------------------------------------------------
 # Hugging Face token (required for AI features)
 HF_TOKEN=your_hugging_face_token_here
+
+# Google Chat Incoming Webhook URL (optional: for instant interview evaluation notifications)
+GOOGLE_CHAT_WEBHOOK_URL=https://chat.googleapis.com/v1/spaces/XXXX/messages?key=YYYY&token=ZZZZ
 
 # -------------------------------------------------------------
 # Database Backup & Upload Settings
@@ -327,8 +330,14 @@ To restore a backup file (automatically resolves circular foreign-key constraint
     docker exec -it talent-flow-backend bash -c "/backend/scripts/restore_db.sh backend/backups/your_specific_file.sql"
     ```
 
+**Option C: Direct Docker Import (Direct `psql` command)**
+*   Import a **specific** backup file directly into the PostgreSQL container:
+    ```bash
+    docker exec -i talent-flow-postgres psql -U postgres -d talent_flow_ats < backend/backups/talent_flow_ats_backup_04-08-2026-17-10.sql
+    ```
+
 > [!CAUTION]
-> The restore process will **truncate (empty)** existing tables and re-insert the data in hierarchical order. It preserves the table structure created by your migrations.
+> The automated restore script (`restore_db.sh` in Option A/B) will **truncate (empty)** existing tables and re-insert data while disabling foreign-key triggers during insertion to prevent key conflicts. If you use Option C (direct `psql`), ensure existing tables are cleared first to avoid `duplicate key` errors.
 
 #### 3. Automated Backup Scheduling
 

@@ -149,4 +149,13 @@ export const ENDPOINTS = {
     UNASSIGN: (evaluationId: string | number) =>
       `/evaluations/remove-lead-assignment/${evaluationId}`,
   },
+
+  SYNC: {
+    START_BATCH: "/api/v1/sync/start-batch",
+    START_ALL_PENDING: "/api/v1/sync/start-all-pending",
+    JOB_STATUS: (jobId: string) => `/api/v1/sync/job-status/${jobId}`,
+    ACTIVE_JOB: "/api/v1/sync/active-job",
+    UNSYNCED_COUNT: "/api/v1/sync/unsynced-count",
+    USER_LOGS: (userId: string | number) => `/api/v1/sync/logs/${userId}`,
+  },
 } as const;
