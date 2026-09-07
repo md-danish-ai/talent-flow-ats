@@ -3,7 +3,7 @@ import { cn } from "@lib/utils";
 
 interface GradeBadgeProps {
   gradeLabel: string;
-  value: string; // e.g., "50%" or "0% - 39.99%"
+  value?: string; // e.g., "50%" or "0% - 39.99%"
   shape?: "curve" | "square";
   className?: string;
 }
@@ -45,7 +45,7 @@ export const GradeBadge = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-4 py-2.5 border-2 shadow-sm transition-all duration-300",
+        "flex items-center justify-between px-3 py-1.5 border shadow-sm transition-all duration-300",
         rounding,
         style,
         className,
@@ -54,12 +54,19 @@ export const GradeBadge = ({
       <span className="font-black text-xs uppercase tracking-widest leading-none">
         {gradeLabel}
       </span>
-      <div
-        className={cn("w-1 h-3 bg-current opacity-20 mx-3 shrink-0", rounding)}
-      />
-      <span className="font-bold text-xs tracking-wide leading-none whitespace-nowrap">
-        {value}
-      </span>
+      {value ? (
+        <>
+          <div
+            className={cn(
+              "w-1 h-3 bg-current opacity-20 mx-2 shrink-0",
+              rounding,
+            )}
+          />
+          <span className="font-bold text-xs tracking-wide leading-none whitespace-nowrap">
+            {value}
+          </span>
+        </>
+      ) : null}
     </div>
   );
 };
