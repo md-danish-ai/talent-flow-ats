@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, LayoutGrid, List, FileSpreadsheet } from "lucide-react";
+import { Users, SquareKanban, List, FileSpreadsheet } from "lucide-react";
 import { cn, getTodayISODate, getYesterdayISODate } from "@lib/utils";
 
 import { PageContainer } from "@components/ui-layout/PageContainer";
@@ -192,17 +192,6 @@ export function UserResultsClient() {
             )}
 
             <div className="flex items-center gap-2">
-              <Tooltip content="Switch to Card View" side="bottom">
-                <Button
-                  variant="action"
-                  size="rounded-icon"
-                  isActive={viewMode === "card"}
-                  animate="scale"
-                  onClick={() => setViewMode("card")}
-                >
-                  <LayoutGrid size={18} />
-                </Button>
-              </Tooltip>
               <Tooltip content="Switch to Table View" side="bottom">
                 <Button
                   variant="action"
@@ -212,6 +201,17 @@ export function UserResultsClient() {
                   onClick={() => setViewMode("table")}
                 >
                   <List size={18} />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Switch to Card View" side="bottom">
+                <Button
+                  variant="action"
+                  size="rounded-icon"
+                  isActive={viewMode === "card"}
+                  animate="scale"
+                  onClick={() => setViewMode("card")}
+                >
+                  <SquareKanban size={18} />
                 </Button>
               </Tooltip>
 
@@ -263,7 +263,7 @@ export function UserResultsClient() {
                       description={`We couldn't find any candidates matching your criteria. Try adjusting your search or filters.`}
                     />
                   ) : (
-                    <ResultCardView items={items} />
+                    <ResultCardView items={items} onRefresh={refresh} />
                   )
                 ) : (
                   <ResultTableView

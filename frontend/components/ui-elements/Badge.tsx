@@ -12,7 +12,9 @@ export type BadgeColor =
   | "warning"
   | "violet"
   | "default"
-  | "blue";
+  | "blue"
+  | "orange"
+  | "rose";
 
 export type BadgeAnimate = "pulse" | "none";
 
@@ -29,33 +31,47 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const colorStyles: Record<BadgeColor, { fill: string; outline: string }> = {
   primary: {
     fill: "bg-brand-primary text-white",
-    outline: "border-brand-primary/30 text-brand-primary bg-brand-primary/5",
+    outline: "border-brand-primary/30 text-brand-primary bg-brand-primary/10",
   },
   secondary: {
     fill: "bg-brand-secondary text-white",
     outline:
-      "border-brand-secondary/30 text-brand-secondary bg-brand-secondary/5",
+      "border-brand-secondary/30 text-brand-secondary bg-brand-secondary/10",
   },
   success: {
     fill: "bg-emerald-500 text-white",
-    outline: "border-emerald-500/30 text-emerald-600 bg-emerald-500/5",
+    outline:
+      "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
   },
   error: {
-    fill: "bg-red-500 text-white",
-    outline: "border-red-500/30 text-red-600 bg-red-500/5",
+    fill: "bg-rose-500 text-white",
+    outline:
+      "border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10",
   },
   warning: {
     fill: "bg-amber-500 text-black",
-    outline: "border-amber-500/30 text-amber-600 bg-amber-500/5",
+    outline:
+      "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  },
+  orange: {
+    fill: "bg-orange-500 text-white",
+    outline:
+      "border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/10",
+  },
+  rose: {
+    fill: "bg-rose-500 text-white",
+    outline:
+      "border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10",
   },
   violet: {
     fill: "bg-violet-500 text-white shadow-sm shadow-violet-500/10",
     outline:
-      "border-violet-500/20 text-violet-600 bg-violet-500/10 shadow-sm shadow-violet-500/10",
+      "border-violet-500/30 text-violet-600 dark:text-violet-400 bg-violet-500/10 shadow-sm shadow-violet-500/10",
   },
   blue: {
     fill: "bg-blue-500 text-white",
-    outline: "border-blue-500/30 text-blue-600 bg-blue-500/5",
+    outline:
+      "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10",
   },
   default: {
     fill: "bg-muted text-foreground",

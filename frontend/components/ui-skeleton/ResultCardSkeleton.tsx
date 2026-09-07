@@ -7,46 +7,47 @@ interface ResultCardSkeletonProps {
 
 export function ResultCardSkeleton({ rowCount = 10 }: ResultCardSkeletonProps) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 p-6">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6 p-4 sm:p-6 bg-slate-100/70 dark:bg-slate-950/60 min-h-full">
       {Array.from({ length: rowCount }).map((_, idx) => (
         <div
           key={idx}
-          className="rounded-3xl border border-border/50 bg-card p-6 shadow-sm overflow-hidden"
+          className="rounded-2xl border-2 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-lg shadow-slate-200/70 dark:shadow-slate-950/70 overflow-hidden flex flex-col justify-between"
         >
           {/* Header Skeleton */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-14 w-14 rounded-2xl" />
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-5 w-40 rounded" />
-                  <Skeleton className="h-5 w-16 rounded-full" />
+          <div className="flex items-start justify-between gap-3 mb-3.5">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-32 rounded" />
+                  <Skeleton className="h-4 w-14 rounded-md" />
                 </div>
                 <div className="flex gap-2">
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <Skeleton className="h-4 w-32 rounded opacity-60" />
+                  <Skeleton className="h-3 w-24 rounded opacity-60" />
+                  <Skeleton className="h-3 w-20 rounded opacity-60" />
                 </div>
               </div>
             </div>
-            <Skeleton className="h-10 w-10 rounded-xl" />
+            <Skeleton className="h-6 w-20 rounded-md" />
           </div>
 
-          <div className="h-px bg-border/50 w-full mb-6" />
+          <div className="space-y-2.5 pt-3 border-t border-border/50">
+            {/* Paper Strip Skeleton */}
+            <Skeleton className="h-7 w-full rounded-lg" />
 
-          {/* Body Skeleton */}
-          <div className="grid grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-16 rounded opacity-40" />
-              <Skeleton className="h-5 w-20 rounded" />
+            {/* 4 Stats Grid Skeleton */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-16 rounded opacity-40" />
-              <Skeleton className="h-5 w-24 rounded" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-16 rounded opacity-40" />
-              <Skeleton className="h-5 w-20 rounded" />
-            </div>
+          </div>
+
+          {/* Footer Skeleton */}
+          <div className="flex items-center justify-between pt-3 mt-3.5 border-t border-border/50">
+            <Skeleton className="h-4 w-28 rounded" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
           </div>
         </div>
       ))}

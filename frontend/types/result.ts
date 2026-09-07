@@ -23,6 +23,10 @@ export interface TypingStats {
   accuracy: number;
   errors: number;
   time_taken: number;
+  obtained_marks?: number | null;
+  total_marks?: number | null;
+  percentage?: number | null;
+  grade?: string | null;
 }
 
 export interface AdminUserLatestAttempt {
@@ -40,6 +44,7 @@ export interface AdminUserLatestAttempt {
   total_marks?: number;
   overall_grade?: string;
   typing_stats?: TypingStats | null;
+  active_duration_seconds?: number | null;
   subject_results?: SubjectResult[];
   is_in_progress?: boolean;
   interviewers?: Array<{ name: string; status: string }>;

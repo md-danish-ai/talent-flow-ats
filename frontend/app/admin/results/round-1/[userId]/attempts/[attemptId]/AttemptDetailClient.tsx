@@ -306,7 +306,7 @@ export function AttemptDetailClient({
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + idx * 0.05 }}
-                className={`bg-card border ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-300 scroll-mt-20`}
+                className={`bg-card ${styles.card} ${STYLE_CONFIG.cardRadius} overflow-hidden transition-all duration-300 scroll-mt-20`}
                 id={`section-card-${subject.section_name}`}
               >
                 <button

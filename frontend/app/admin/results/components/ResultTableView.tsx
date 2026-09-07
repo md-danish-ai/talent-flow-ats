@@ -571,15 +571,41 @@ export function ResultTableView({
                     <TableCell className="text-center">
                       {latest?.overall_grade &&
                       latest?.overall_grade !== "N/A" ? (
-                        <Badge
-                          variant="outline"
-                          color={
-                            getGradeConfig(latest.overall_grade).badgeColor
-                          }
-                          shape="square"
-                        >
-                          {latest.overall_grade}
-                        </Badge>
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Badge
+                            variant="outline"
+                            color={
+                              getGradeConfig(latest.overall_grade).badgeColor
+                            }
+                            shape="square"
+                            className="font-bold uppercase"
+                          >
+                            {latest.overall_grade}
+                          </Badge>
+                          {typeof latest?.total_marks === "number" &&
+                          latest.total_marks > 0 ? (
+                            <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline gap-0.5">
+                              <span className="text-foreground font-bold">
+                                {latest.obtained_marks ?? 0}
+                              </span>
+                              <span className="text-muted-foreground/40 font-medium">
+                                /
+                              </span>
+                              <span>{latest.total_marks}</span>
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : typeof latest?.total_marks === "number" &&
+                        latest.total_marks > 0 ? (
+                        <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline justify-center gap-0.5">
+                          <span className="text-foreground font-bold">
+                            {latest.obtained_marks ?? 0}
+                          </span>
+                          <span className="text-muted-foreground/40 font-medium">
+                            /
+                          </span>
+                          <span>{latest.total_marks}</span>
+                        </span>
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
                           N/A
