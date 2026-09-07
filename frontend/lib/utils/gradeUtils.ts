@@ -1,3 +1,5 @@
+import { type BadgeColor } from "@components/ui-elements/Badge";
+
 export type GradeLabel =
   | "Excellent"
   | "Good"
@@ -12,65 +14,81 @@ export interface GradeConfig {
   color: string;
   bg: string;
   border: string;
-  badgeColor: "success" | "blue" | "warning" | "error" | "default" | "violet";
+  hoverBorder: string;
+  pillar: string;
+  badgeColor: BadgeColor;
   barBg: string;
 }
 
 export const GRADE_CONFIG: Record<string, GradeConfig> = {
   Excellent: {
     label: "Excellent",
-    color: "text-emerald-500",
+    color: "text-emerald-600 dark:text-emerald-400",
     bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
+    border: "border-emerald-500/30",
+    hoverBorder: "hover:border-emerald-500 dark:hover:border-emerald-400",
+    pillar: "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]",
     barBg: "bg-emerald-500",
     badgeColor: "success",
   },
   Good: {
     label: "Good",
-    color: "text-blue-500",
+    color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
+    border: "border-blue-500/30",
+    hoverBorder: "hover:border-blue-500 dark:hover:border-blue-400",
+    pillar: "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]",
     barBg: "bg-blue-500",
     badgeColor: "blue",
   },
   "Above Average": {
     label: "Above Average",
-    color: "text-violet-500",
+    color: "text-violet-600 dark:text-violet-400",
     bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
+    border: "border-violet-500/30",
+    hoverBorder: "hover:border-violet-500 dark:hover:border-violet-400",
+    pillar: "bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]",
     barBg: "bg-violet-500",
     badgeColor: "violet",
   },
   Average: {
     label: "Average",
-    color: "text-amber-500",
+    color: "text-amber-600 dark:text-amber-400",
     bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
+    border: "border-amber-500/30",
+    hoverBorder: "hover:border-amber-500 dark:hover:border-amber-400",
+    pillar: "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]",
     barBg: "bg-amber-500",
     badgeColor: "warning",
   },
   "Below Average": {
     label: "Below Average",
-    color: "text-orange-500",
+    color: "text-orange-600 dark:text-orange-400",
     bg: "bg-orange-500/10",
-    border: "border-orange-500/20",
+    border: "border-orange-500/30",
+    hoverBorder: "hover:border-orange-500 dark:hover:border-orange-400",
+    pillar: "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]",
     barBg: "bg-orange-500",
-    badgeColor: "warning",
+    badgeColor: "orange",
   },
   Poor: {
     label: "Poor",
-    color: "text-rose-500",
+    color: "text-rose-600 dark:text-rose-400",
     bg: "bg-rose-500/10",
-    border: "border-rose-500/20",
+    border: "border-rose-500/30",
+    hoverBorder: "hover:border-rose-500 dark:hover:border-rose-400",
+    pillar: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]",
     barBg: "bg-rose-500",
-    badgeColor: "error",
+    badgeColor: "rose",
   },
   "N/A": {
     label: "N/A",
-    color: "text-slate-500",
+    color: "text-slate-600 dark:text-slate-400",
     bg: "bg-slate-500/10",
-    border: "border-slate-500/20",
-    barBg: "bg-slate-500/30",
+    border: "border-slate-500/30",
+    hoverBorder: "hover:border-brand-primary dark:hover:border-brand-primary",
+    pillar: "bg-slate-400 dark:bg-slate-600",
+    barBg: "bg-slate-500/40",
     badgeColor: "default",
   },
 };
@@ -85,14 +103,20 @@ export const GRADE_OPTIONS = [
 ];
 
 export const getGradeConfig = (grade?: string): GradeConfig => {
-  if (!grade) return GRADE_CONFIG["N/A"];
-  const normalized = Object.keys(GRADE_CONFIG).find(
-    (key) =>
-      key.toLowerCase() === grade.toLowerCase() ||
-      key.toLowerCase().replace(/\s+/g, "") ===
-        grade.toLowerCase().replace(/\s+/g, ""),
-  );
-  return normalized ? GRADE_CONFIG[normalized] : GRADE_CONFIG["N/A"];
+  if (!grade || grade === "N/A") return GRADE_CONFIG["N/A"];
+  const cleanGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
+
+  if (cleanGrade === "excellent") return GRADE_CONFIG["Excellent"];
+  if (cleanGrade === "good") return GRADE_CONFIG["Good"];
+  if (cleanGrade === "aboveaverage" || cleanGrade === "aboveavg")
+    return GRADE_CONFIG["Above Average"];
+  if (cleanGrade === "average" || cleanGrade === "avg")
+    return GRADE_CONFIG["Average"];
+  if (cleanGrade === "belowaverage" || cleanGrade === "belowavg")
+    return GRADE_CONFIG["Below Average"];
+  if (cleanGrade === "poor") return GRADE_CONFIG["Poor"];
+
+  return GRADE_CONFIG["N/A"];
 };
 
 export const getGradeCardStyles = (grade?: string) => {
@@ -113,6 +137,7 @@ export const getGradeCardStyles = (grade?: string) => {
         badgeColor: "blue" as const,
       };
     case "aboveaverage":
+    case "aboveavg":
       return {
         card: "border-2 border-violet-500/40 dark:border-violet-500/30 hover:border-violet-500 dark:hover:border-violet-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-violet-500/15 dark:hover:shadow-violet-500/25",
         icon: "bg-violet-500/10 text-violet-600 dark:text-violet-400 dark:bg-violet-500/5 border border-violet-500/20",
@@ -120,6 +145,7 @@ export const getGradeCardStyles = (grade?: string) => {
         badgeColor: "violet" as const,
       };
     case "average":
+    case "avg":
       return {
         card: "border-2 border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 dark:hover:border-amber-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-amber-500/15 dark:hover:shadow-amber-500/25",
         icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400 dark:bg-amber-500/5 border border-amber-500/20",
@@ -127,18 +153,19 @@ export const getGradeCardStyles = (grade?: string) => {
         badgeColor: "warning" as const,
       };
     case "belowaverage":
+    case "belowavg":
       return {
         card: "border-2 border-orange-500/40 dark:border-orange-500/30 hover:border-orange-500 dark:hover:border-orange-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-orange-500/15 dark:hover:shadow-orange-500/25",
         icon: "bg-orange-500/10 text-orange-600 dark:text-orange-400 dark:bg-orange-500/5 border border-orange-500/20",
         bar: "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]",
-        badgeColor: "warning" as const,
+        badgeColor: "orange" as const,
       };
     case "poor":
       return {
         card: "border-2 border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 dark:hover:border-rose-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-rose-500/15 dark:hover:shadow-rose-500/25",
         icon: "bg-rose-500/10 text-rose-600 dark:text-rose-400 dark:bg-rose-500/5 border border-rose-500/20",
         bar: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]",
-        badgeColor: "error" as const,
+        badgeColor: "rose" as const,
       };
     default:
       return {

@@ -56,19 +56,10 @@ function getCardPillarClass(
     return "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]";
   }
   if (grade && grade !== "N/A") {
-    const normGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
-    if (normGrade === "excellent")
-      return "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]";
-    if (normGrade === "good")
-      return "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
-    if (normGrade === "aboveaverage")
-      return "bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]";
-    if (normGrade === "average")
-      return "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]";
-    if (normGrade === "belowaverage")
-      return "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]";
-    if (normGrade === "poor")
-      return "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]";
+    const config = getGradeConfig(grade);
+    if (config.label !== "N/A") {
+      return config.pillar;
+    }
   }
   if (
     normStatus === "submitted" ||
@@ -101,19 +92,10 @@ function getCardHoverBorderClass(
     return "hover:border-rose-500 dark:hover:border-rose-400";
   }
   if (grade && grade !== "N/A") {
-    const normGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
-    if (normGrade === "excellent")
-      return "hover:border-emerald-500 dark:hover:border-emerald-400";
-    if (normGrade === "good")
-      return "hover:border-blue-500 dark:hover:border-blue-400";
-    if (normGrade === "aboveaverage")
-      return "hover:border-violet-500 dark:hover:border-violet-400";
-    if (normGrade === "average")
-      return "hover:border-amber-500 dark:hover:border-amber-400";
-    if (normGrade === "belowaverage")
-      return "hover:border-orange-500 dark:hover:border-orange-400";
-    if (normGrade === "poor")
-      return "hover:border-rose-500 dark:hover:border-rose-400";
+    const config = getGradeConfig(grade);
+    if (config.label !== "N/A") {
+      return config.hoverBorder;
+    }
   }
   if (
     normStatus === "submitted" ||
@@ -714,23 +696,7 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                         "w-1.5 h-1.5 rounded-full shrink-0",
                                         sub.is_in_progress
                                           ? "bg-orange-500 animate-pulse"
-                                          : subGradeConfig.color.includes(
-                                                "emerald",
-                                              )
-                                            ? "bg-emerald-500"
-                                            : subGradeConfig.color.includes(
-                                                  "blue",
-                                                )
-                                              ? "bg-blue-500"
-                                              : subGradeConfig.color.includes(
-                                                    "amber",
-                                                  )
-                                                ? "bg-amber-500"
-                                                : subGradeConfig.color.includes(
-                                                      "orange",
-                                                    )
-                                                  ? "bg-orange-500"
-                                                  : "bg-rose-500",
+                                          : subGradeConfig.barBg,
                                       )}
                                     />
                                     <span
@@ -778,7 +744,7 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                         "text-[10px] font-black uppercase px-2 py-0.5 rounded border",
                                         subGradeConfig.bg,
                                         subGradeConfig.color,
-                                        "border-current/20",
+                                        subGradeConfig.border,
                                       )}
                                     >
                                       {sub.grade}
