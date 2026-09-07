@@ -80,6 +80,51 @@ function getCardPillarClass(
   return "bg-slate-300 dark:bg-slate-700";
 }
 
+function getCardHoverBorderClass(
+  grade?: string,
+  status?: string,
+  isInProgress?: boolean,
+) {
+  const normStatus = (status || "").toLowerCase();
+  if (
+    isInProgress ||
+    normStatus === "started" ||
+    normStatus === "inprogress" ||
+    normStatus === "in_progress"
+  ) {
+    return "hover:border-amber-500 dark:hover:border-amber-400";
+  }
+  if (normStatus === "not_required") {
+    return "hover:border-slate-400 dark:hover:border-slate-400";
+  }
+  if (normStatus === "expired") {
+    return "hover:border-rose-500 dark:hover:border-rose-400";
+  }
+  if (grade && grade !== "N/A") {
+    const normGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
+    if (normGrade === "excellent")
+      return "hover:border-emerald-500 dark:hover:border-emerald-400";
+    if (normGrade === "good")
+      return "hover:border-blue-500 dark:hover:border-blue-400";
+    if (normGrade === "aboveaverage")
+      return "hover:border-violet-500 dark:hover:border-violet-400";
+    if (normGrade === "average")
+      return "hover:border-amber-500 dark:hover:border-amber-400";
+    if (normGrade === "belowaverage")
+      return "hover:border-orange-500 dark:hover:border-orange-400";
+    if (normGrade === "poor")
+      return "hover:border-rose-500 dark:hover:border-rose-400";
+  }
+  if (
+    normStatus === "submitted" ||
+    normStatus === "completed" ||
+    normStatus === "auto_submitted"
+  ) {
+    return "hover:border-emerald-500 dark:hover:border-emerald-400";
+  }
+  return "hover:border-brand-primary dark:hover:border-brand-primary";
+}
+
 function renderStatusBadge(itemStatus: string) {
   switch (itemStatus) {
     case "not_required":
@@ -208,6 +253,12 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
             isInProgress,
           );
 
+          const hoverBorderClass = getCardHoverBorderClass(
+            latest?.overall_grade,
+            itemStatus,
+            isInProgress,
+          );
+
           const gradeConfig = getGradeConfig(latest?.overall_grade);
           const subjectResults: SubjectResult[] = latest?.subject_results ?? [];
           const typingStats = latest?.typing_stats;
@@ -237,8 +288,8 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
             itemStatus === "not_required"
               ? "bg-slate-400"
               : itemStatus === "submitted" ||
-                itemStatus === "completed" ||
-                item.is_interview_submitted
+                  itemStatus === "completed" ||
+                  item.is_interview_submitted
                 ? "bg-emerald-500"
                 : isInProgress
                   ? "bg-orange-500 animate-pulse"
@@ -254,10 +305,11 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
               className={cn(
                 "group relative flex flex-col justify-between overflow-hidden p-5 sm:p-6 transition-all duration-300 ease-out",
                 "bg-white dark:bg-slate-900",
-                "border border-slate-200/90 dark:border-slate-800",
-                "shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgb(0,0,0,0.65)]",
-                "hover:-translate-y-1 hover:border-brand-primary/60 dark:hover:border-brand-primary/60",
-                "hover:shadow-[0_20px_45px_rgba(0,0,0,0.14),0_4px_12px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)]",
+                "border-2 border-slate-200/90 dark:border-slate-800",
+                "shadow-lg shadow-slate-200/70 dark:shadow-slate-950/70",
+                "hover:-translate-y-1.5",
+                hoverBorderClass,
+                "hover:shadow-2xl hover:shadow-slate-300/80 dark:hover:shadow-black/90",
                 STYLE_CONFIG.cardRadius,
               )}
             >
@@ -377,24 +429,24 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                     {(latest?.status === "submitted" ||
                       latest?.status === "auto_submitted" ||
                       latest?.status === "completed") && (
-                        <TableIconButton
-                          iconColor="green"
-                          btnSize="sm"
-                          animate="scale"
-                          title="Assign to Project Lead"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAssignModal({
-                              isOpen: true,
-                              userId: item.user_id,
-                              attemptId: latest.attempt_id,
-                              name: item.username,
-                            });
-                          }}
-                        >
-                          <UserPlus size={15} />
-                        </TableIconButton>
-                      )}
+                      <TableIconButton
+                        iconColor="green"
+                        btnSize="sm"
+                        animate="scale"
+                        title="Assign to Project Lead"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignModal({
+                            isOpen: true,
+                            userId: item.user_id,
+                            attemptId: latest.attempt_id,
+                            name: item.username,
+                          });
+                        }}
+                      >
+                        <UserPlus size={15} />
+                      </TableIconButton>
+                    )}
 
                     <Link href={detailHref}>
                       <TableIconButton
@@ -432,7 +484,7 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                           variant="outline"
                           color={gradeConfig.badgeColor}
                           shape="square"
-                          className="font-black text-[10px] px-2 py-0.5 uppercase tracking-wide"
+                          className="text-[10px] font-bold"
                         >
                           {latest.overall_grade}
                         </Badge>
@@ -583,7 +635,7 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
 
                         {/* Score (Moved to right side of Subject Breakdown header) */}
                         {typeof latest?.total_marks === "number" &&
-                          latest.total_marks > 0 ? (
+                        latest.total_marks > 0 ? (
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-muted-foreground uppercase text-[11px] tracking-wide">
                               Score:
@@ -594,27 +646,29 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                 /{latest.total_marks}
                               </span>
                             </span>
-                            <span
-                              className={cn(
-                                "text-[10.5px] font-bold px-1.5 py-0.2 rounded border",
+                            <Badge
+                              variant="outline"
+                              shape="square"
+                              color={
                                 (latest.obtained_marks || 0) /
                                   latest.total_marks >=
-                                  0.6
-                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                0.6
+                                  ? "success"
                                   : (latest.obtained_marks || 0) /
-                                    latest.total_marks >=
-                                    0.4
-                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-                              )}
+                                        latest.total_marks >=
+                                      0.4
+                                    ? "warning"
+                                    : "error"
+                              }
+                              className="text-[10px] font-bold"
                             >
                               {Math.round(
                                 ((latest.obtained_marks || 0) /
                                   latest.total_marks) *
-                                100,
+                                  100,
                               )}
                               %
-                            </span>
+                            </Badge>
                           </div>
                         ) : null}
                       </div>
@@ -639,10 +693,10 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                             const progressPct =
                               sub.total_questions > 0
                                 ? Math.round(
-                                  (sub.attempted_count /
-                                    sub.total_questions) *
-                                  100,
-                                )
+                                    (sub.attempted_count /
+                                      sub.total_questions) *
+                                      100,
+                                  )
                                 : 0;
                             const timeVal =
                               sub.time_minutes ?? sub.duration_minutes;
@@ -661,20 +715,20 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                         sub.is_in_progress
                                           ? "bg-orange-500 animate-pulse"
                                           : subGradeConfig.color.includes(
-                                            "emerald",
-                                          )
+                                                "emerald",
+                                              )
                                             ? "bg-emerald-500"
                                             : subGradeConfig.color.includes(
-                                              "blue",
-                                            )
+                                                  "blue",
+                                                )
                                               ? "bg-blue-500"
                                               : subGradeConfig.color.includes(
-                                                "amber",
-                                              )
+                                                    "amber",
+                                                  )
                                                 ? "bg-amber-500"
                                                 : subGradeConfig.color.includes(
-                                                  "orange",
-                                                )
+                                                      "orange",
+                                                    )
                                                   ? "bg-orange-500"
                                                   : "bg-rose-500",
                                       )}

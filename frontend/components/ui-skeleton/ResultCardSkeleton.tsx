@@ -11,7 +11,7 @@ export function ResultCardSkeleton({ rowCount = 10 }: ResultCardSkeletonProps) {
       {Array.from({ length: rowCount }).map((_, idx) => (
         <div
           key={idx}
-          className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgb(0,0,0,0.65)] overflow-hidden flex flex-col justify-between"
+          className="rounded-2xl border-2 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-lg shadow-slate-200/70 dark:shadow-slate-950/70 overflow-hidden flex flex-col justify-between"
         >
           {/* Header Skeleton */}
           <div className="flex items-start justify-between gap-3 mb-3.5">
