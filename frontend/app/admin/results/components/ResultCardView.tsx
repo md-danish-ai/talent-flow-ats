@@ -56,19 +56,10 @@ function getCardPillarClass(
     return "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]";
   }
   if (grade && grade !== "N/A") {
-    const normGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
-    if (normGrade === "excellent")
-      return "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]";
-    if (normGrade === "good")
-      return "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
-    if (normGrade === "aboveaverage")
-      return "bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]";
-    if (normGrade === "average")
-      return "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]";
-    if (normGrade === "belowaverage")
-      return "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]";
-    if (normGrade === "poor")
-      return "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]";
+    const config = getGradeConfig(grade);
+    if (config.label !== "N/A") {
+      return config.pillar;
+    }
   }
   if (
     normStatus === "submitted" ||
@@ -101,19 +92,10 @@ function getCardHoverBorderClass(
     return "hover:border-rose-500 dark:hover:border-rose-400";
   }
   if (grade && grade !== "N/A") {
-    const normGrade = grade.toLowerCase().replace(/[\s_-]+/g, "");
-    if (normGrade === "excellent")
-      return "hover:border-emerald-500 dark:hover:border-emerald-400";
-    if (normGrade === "good")
-      return "hover:border-blue-500 dark:hover:border-blue-400";
-    if (normGrade === "aboveaverage")
-      return "hover:border-violet-500 dark:hover:border-violet-400";
-    if (normGrade === "average")
-      return "hover:border-amber-500 dark:hover:border-amber-400";
-    if (normGrade === "belowaverage")
-      return "hover:border-orange-500 dark:hover:border-orange-400";
-    if (normGrade === "poor")
-      return "hover:border-rose-500 dark:hover:border-rose-400";
+    const config = getGradeConfig(grade);
+    if (config.label !== "N/A") {
+      return config.hoverBorder;
+    }
   }
   if (
     normStatus === "submitted" ||
@@ -690,14 +672,6 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                         <tbody className="divide-y divide-border/30 bg-card/50 text-[13px]">
                           {subjectResults.map((sub, sidx) => {
                             const subGradeConfig = getGradeConfig(sub.grade);
-                            const progressPct =
-                              sub.total_questions > 0
-                                ? Math.round(
-                                    (sub.attempted_count /
-                                      sub.total_questions) *
-                                      100,
-                                  )
-                                : 0;
                             const timeVal =
                               sub.time_minutes ?? sub.duration_minutes;
 
@@ -714,23 +688,7 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                         "w-1.5 h-1.5 rounded-full shrink-0",
                                         sub.is_in_progress
                                           ? "bg-orange-500 animate-pulse"
-                                          : subGradeConfig.color.includes(
-                                                "emerald",
-                                              )
-                                            ? "bg-emerald-500"
-                                            : subGradeConfig.color.includes(
-                                                  "blue",
-                                                )
-                                              ? "bg-blue-500"
-                                              : subGradeConfig.color.includes(
-                                                    "amber",
-                                                  )
-                                                ? "bg-amber-500"
-                                                : subGradeConfig.color.includes(
-                                                      "orange",
-                                                    )
-                                                  ? "bg-orange-500"
-                                                  : "bg-rose-500",
+                                          : subGradeConfig.barBg,
                                       )}
                                     />
                                     <span
@@ -742,47 +700,45 @@ export function ResultCardView({ items, onRefresh }: ResultCardViewProps) {
                                   </div>
                                 </td>
 
-                                {/* Marks & Percentage */}
+                                {/* Marks */}
                                 <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                                  <span className="font-extrabold text-foreground">
-                                    {sub.obtained_marks ?? 0}
-                                  </span>
-                                  <span className="text-[11px] text-muted-foreground font-medium">
-                                    /{sub.total_marks}
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      "text-[11px] font-bold ml-1.5",
+                                  <Badge
+                                    variant="outline"
+                                    shape="square"
+                                    color={
                                       sub.is_in_progress
-                                        ? "text-orange-500"
-                                        : subGradeConfig.color,
-                                    )}
+                                        ? "orange"
+                                        : subGradeConfig.badgeColor
+                                    }
+                                    className="text-[11px] font-bold px-2 py-0.5"
                                   >
-                                    (
-                                    {sub.is_in_progress
-                                      ? `${progressPct}%`
-                                      : `${sub.percentage}%`}
-                                    )
-                                  </span>
+                                    <span className="font-extrabold text-inherit">
+                                      {sub.obtained_marks ?? 0} /{" "}
+                                      {sub.total_marks}
+                                    </span>
+                                  </Badge>
                                 </td>
 
                                 {/* Grade */}
                                 <td className="py-2.5 px-3 text-center whitespace-nowrap">
                                   {sub.is_in_progress ? (
-                                    <span className="text-[9.5px] font-black uppercase px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                                    <Badge
+                                      variant="outline"
+                                      shape="square"
+                                      color="orange"
+                                      className="text-[11px] font-bold px-2 py-0.5"
+                                    >
                                       Live
-                                    </span>
-                                  ) : sub.grade ? (
-                                    <span
-                                      className={cn(
-                                        "text-[10px] font-black uppercase px-2 py-0.5 rounded border",
-                                        subGradeConfig.bg,
-                                        subGradeConfig.color,
-                                        "border-current/20",
-                                      )}
+                                    </Badge>
+                                  ) : sub.grade && sub.grade !== "N/A" ? (
+                                    <Badge
+                                      variant="outline"
+                                      shape="square"
+                                      color={subGradeConfig.badgeColor}
+                                      className="text-[11px] font-bold px-2 py-0.5"
                                     >
                                       {sub.grade}
-                                    </span>
+                                    </Badge>
                                   ) : (
                                     <span className="text-muted-foreground/60 text-[11.5px]">
                                       N/A

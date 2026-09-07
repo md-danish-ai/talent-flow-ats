@@ -17,7 +17,7 @@ import {
 import { Badge } from "@components/ui-elements/Badge";
 import { cn, formatDate, formatTime, parseUTCDate } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
-import { GRADE_CONFIG } from "@lib/utils/gradeUtils";
+import { GRADE_CONFIG, getGradeConfig } from "@lib/utils/gradeUtils";
 import { GradeSetting } from "@types";
 
 interface AttemptSummaryCardProps {
@@ -80,18 +80,7 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
   const accuracy =
     attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 100) : 0;
 
-  const getGradeColor = (grade: string) => {
-    const upper = (grade || "").toUpperCase();
-    if (upper.includes("EXCELLENT") || upper.includes("A"))
-      return "text-emerald-600 dark:text-emerald-400";
-    if (upper.includes("GOOD") || upper.includes("B"))
-      return "text-brand-primary";
-    if (upper.includes("AVERAGE") || upper.includes("C"))
-      return "text-amber-600 dark:text-amber-400";
-    if (upper.includes("POOR") || upper.includes("D") || upper.includes("FAIL"))
-      return "text-rose-600 dark:text-rose-400";
-    return "text-indigo-600 dark:text-indigo-400";
-  };
+  const gradeConfig = getGradeConfig(overallGrade);
 
   return (
     <div
@@ -246,12 +235,24 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
         </div>
 
         {/* 4. Final Grade */}
-        <div className="p-3 sm:p-3.5 rounded-lg bg-muted/20 border border-border/40 hover:border-indigo-500/30 transition-colors flex flex-col justify-between gap-1.5">
+        <div
+          className={cn(
+            "p-3 sm:p-3.5 rounded-lg bg-muted/20 border transition-colors flex flex-col justify-between gap-1.5",
+            gradeConfig.border,
+            gradeConfig.hoverBorder,
+          )}
+        >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Final Grade
             </span>
-            <div className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div
+              className={cn(
+                "p-1 rounded-md",
+                gradeConfig.bg,
+                gradeConfig.color,
+              )}
+            >
               <Star size={14} />
             </div>
           </div>
@@ -259,7 +260,7 @@ export const AttemptSummaryCard: React.FC<AttemptSummaryCardProps> = ({
             <span
               className={cn(
                 "text-xl sm:text-2xl font-black leading-none",
-                getGradeColor(overallGrade),
+                gradeConfig.color,
               )}
             >
               {(overallGrade || "N/A").toUpperCase()}
