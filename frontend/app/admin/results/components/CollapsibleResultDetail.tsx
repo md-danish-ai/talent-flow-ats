@@ -91,7 +91,7 @@ export function CollapsibleResultDetail({
                 Total History:{" "}
                 <span className="font-bold text-brand-primary uppercase text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-brand-primary/10">
                   {attempts_count}{" "}
-                  {attempts_count === 1 ? "Session" : "Sessions"}
+                  {attempts_count === 1 ? "Attempt" : "Attempts"}
                 </span>
               </span>
             </div>
@@ -129,7 +129,7 @@ export function CollapsibleResultDetail({
               return (
                 <div
                   key={ridx}
-                  className="group relative bg-card p-4 sm:p-4.5 rounded-xl border border-orange-400/40 hover:border-orange-500/50 hover:shadow-orange-500/10 hover:shadow-md flex flex-col gap-3.5 shadow-sm transition-all duration-300"
+                  className="group relative bg-card p-4 sm:p-4.5 rounded-xl border-2 border-orange-400/40 dark:border-orange-500/30 hover:border-orange-500 dark:hover:border-orange-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-orange-500/15 dark:hover:shadow-orange-500/25 flex flex-col gap-3.5 transition-all duration-300 ease-out"
                 >
                   {/* Pulse dot for in-progress */}
                   <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
@@ -248,7 +248,7 @@ export function CollapsibleResultDetail({
               <div
                 key={ridx}
                 className={cn(
-                  "group relative bg-card p-4 sm:p-4.5 rounded-xl border flex flex-col gap-3.5 shadow-sm transition-all duration-300 hover:shadow-md",
+                  "group relative bg-card p-4 sm:p-4.5 rounded-xl flex flex-col gap-3.5 transition-all duration-300 ease-out",
                   gradeStyles.card,
                 )}
               >
@@ -392,7 +392,7 @@ export function CollapsibleResultDetail({
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {/* 1. Speed */}
-            <div className="p-3.5 rounded-xl bg-card border border-amber-500/30 dark:border-amber-500/20 hover:border-amber-500/60 shadow-2xs transition-all duration-300 flex flex-col justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-card border-2 border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 dark:hover:border-amber-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-amber-500/15 dark:hover:shadow-amber-500/25 transition-all duration-300 ease-out flex flex-col justify-between gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Speed
@@ -412,7 +412,7 @@ export function CollapsibleResultDetail({
             </div>
 
             {/* 2. Accuracy */}
-            <div className="p-3.5 rounded-xl bg-card border border-emerald-500/30 dark:border-emerald-500/20 hover:border-emerald-500/60 shadow-2xs transition-all duration-300 flex flex-col justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-card border-2 border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-emerald-500/15 dark:hover:shadow-emerald-500/25 transition-all duration-300 ease-out flex flex-col justify-between gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Accuracy
@@ -432,7 +432,7 @@ export function CollapsibleResultDetail({
             </div>
 
             {/* Errors */}
-            <div className="p-3.5 rounded-xl bg-card border border-rose-500/30 dark:border-rose-500/20 hover:border-rose-500/60 shadow-2xs transition-all duration-300 flex flex-col justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-card border-2 border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 dark:hover:border-rose-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-rose-500/15 dark:hover:shadow-rose-500/25 transition-all duration-300 ease-out flex flex-col justify-between gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Errors
@@ -452,7 +452,7 @@ export function CollapsibleResultDetail({
             </div>
 
             {/* Duration */}
-            <div className="p-3.5 rounded-xl bg-card border border-indigo-500/30 dark:border-indigo-500/20 hover:border-indigo-500/60 shadow-2xs transition-all duration-300 flex flex-col justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-card border-2 border-indigo-500/40 dark:border-indigo-500/30 hover:border-indigo-500 dark:hover:border-indigo-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-indigo-500/15 dark:hover:shadow-indigo-500/25 transition-all duration-300 ease-out flex flex-col justify-between gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Duration
