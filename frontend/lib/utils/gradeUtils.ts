@@ -176,3 +176,63 @@ export const getGradeCardStyles = (grade?: string) => {
       };
   }
 };
+
+export const getThemedCardHoverStyles = (colorOrName?: string): string => {
+  if (!colorOrName) {
+    return "border-2 border-brand-primary/40 dark:border-brand-primary/30 hover:border-brand-primary dark:hover:border-brand-primary hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25";
+  }
+
+  const clean = colorOrName.toLowerCase();
+
+  if (clean.includes("blue") || clean.includes("good")) {
+    return "border-2 border-blue-500/40 dark:border-blue-500/30 hover:border-blue-500 dark:hover:border-blue-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-blue-500/15 dark:hover:shadow-blue-500/25";
+  }
+  if (
+    clean.includes("emerald") ||
+    clean.includes("green") ||
+    clean.includes("excellent")
+  ) {
+    return "border-2 border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-emerald-500/15 dark:hover:shadow-emerald-500/25";
+  }
+  if (
+    clean.includes("purple") ||
+    clean.includes("violet") ||
+    clean.includes("above average") ||
+    clean.includes("aboveavg") ||
+    clean.includes("aboveaverage")
+  ) {
+    return "border-2 border-purple-500/40 dark:border-purple-500/30 hover:border-purple-500 dark:hover:border-purple-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-purple-500/15 dark:hover:shadow-purple-500/25";
+  }
+  if (
+    clean.includes("amber") ||
+    clean.includes("yellow") ||
+    (clean.includes("average") &&
+      !clean.includes("below") &&
+      !clean.includes("above"))
+  ) {
+    return "border-2 border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 dark:hover:border-amber-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-amber-500/15 dark:hover:shadow-amber-500/25";
+  }
+  if (
+    clean.includes("orange") ||
+    clean.includes("below average") ||
+    clean.includes("belowavg") ||
+    clean.includes("belowaverage")
+  ) {
+    return "border-2 border-orange-500/40 dark:border-orange-500/30 hover:border-orange-500 dark:hover:border-orange-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-orange-500/15 dark:hover:shadow-orange-500/25";
+  }
+  if (
+    clean.includes("rose") ||
+    clean.includes("red") ||
+    clean.includes("poor")
+  ) {
+    return "border-2 border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 dark:hover:border-rose-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-rose-500/15 dark:hover:shadow-rose-500/25";
+  }
+  if (clean.includes("indigo")) {
+    return "border-2 border-indigo-500/40 dark:border-indigo-500/30 hover:border-indigo-500 dark:hover:border-indigo-400 hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-indigo-500/15 dark:hover:shadow-indigo-500/25";
+  }
+  if (clean.includes("brand-primary") || clean.includes("primary")) {
+    return "border-2 border-brand-primary/40 dark:border-brand-primary/30 hover:border-brand-primary dark:hover:border-brand-primary hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25";
+  }
+
+  return "border-2 border-border/60 hover:border-brand-primary dark:hover:border-brand-primary hover:-translate-y-1 shadow-md hover:shadow-xl hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25";
+};

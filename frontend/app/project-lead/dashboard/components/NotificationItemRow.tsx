@@ -73,10 +73,10 @@ export const NotificationItemRow = memo(function NotificationItemRow({
         color={colorClass}
         bgClassName={bgClass}
         className={cn(
-          "p-3.5 border rounded-xl transition-all",
+          "p-3.5 border-2 rounded-xl transition-all duration-300 ease-out",
           isRead
-            ? "border-emerald-500/20 dark:border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:bg-emerald-500/[0.07]"
-            : "border-brand-primary/35 dark:border-brand-primary/35 bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08] hover:bg-brand-primary/[0.12] shadow-xs",
+            ? "border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-500/[0.06] dark:hover:bg-emerald-500/[0.08] hover:-translate-y-0.5 shadow-sm hover:shadow-lg hover:shadow-emerald-500/15 dark:hover:shadow-emerald-500/25"
+            : "border-brand-primary/40 dark:border-brand-primary/30 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.06] hover:border-brand-primary dark:hover:border-brand-primary hover:bg-brand-primary/[0.07] dark:hover:bg-brand-primary/[0.10] hover:-translate-y-0.5 shadow-sm hover:shadow-lg hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25",
         )}
       />
     </div>

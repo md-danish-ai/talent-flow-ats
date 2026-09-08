@@ -163,7 +163,6 @@ export function TodayUserListing({
             />
           </div>
         }
-        className="mb-6 flex flex-col overflow-hidden"
         bodyClassName="p-0 flex flex-col w-full"
       >
         <AttemptStatusLegendBar />
