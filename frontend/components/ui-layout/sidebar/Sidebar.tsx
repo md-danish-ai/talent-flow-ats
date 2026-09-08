@@ -123,7 +123,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
 
         <div className="flex flex-col h-full overflow-hidden">
           {isCollapsed && (
-            <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">
+            <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-2 px-2 space-y-2">
               {routes.map((section: NavSection) => (
                 <CollapsedNavItem
                   key={section.title}
@@ -139,7 +139,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
           )}
 
           {!isCollapsed && (
-            <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-6 px-4 space-y-2">
+            <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-2 px-4 space-y-2">
               {routes.map((section: NavSection) => (
                 <NavItem
                   key={section.title}
@@ -153,7 +153,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
             </nav>
           )}
 
-          <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
+          <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-2 space-y-2">
             {routes.map((section: NavSection) => (
               <NavItem
                 key={section.title}
