@@ -170,11 +170,6 @@ export function RuleTable({
                         }
                         onClick={() => onEdit(row)}
                         disabled={isPast}
-                        className={
-                          isPast
-                            ? "opacity-30 cursor-not-allowed shadow-none"
-                            : "hover:scale-105 transition-transform"
-                        }
                       >
                         <Edit2 size={15} />
                       </TableIconButton>
@@ -187,11 +182,6 @@ export function RuleTable({
                         }
                         onClick={() => handleDeleteClick(row.id)}
                         disabled={isPast}
-                        className={
-                          isPast
-                            ? "opacity-30 cursor-not-allowed shadow-none"
-                            : "hover:scale-105 transition-transform"
-                        }
                       >
                         <Trash2 size={15} />
                       </TableIconButton>
