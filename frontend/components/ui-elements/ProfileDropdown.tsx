@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getInitials } from "@lib/auth/user-utils";
 import type { CurrentUser } from "@lib/auth/user-utils";
 import { Button } from "@components/ui-elements/Button";
 import { Typography } from "@components/ui-elements/Typography";
+import { Avatar } from "@components/ui-elements/Avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRipple, RippleContainer } from "@components/ui-elements/Ripple";
 
@@ -62,7 +62,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   // Derived display values — fall back gracefully if cookie not yet parsed
   const displayName = user?.username ?? "User";
-  const initials = user?.username ? getInitials(user.username) : "?";
 
   const logout = () => {
     document.cookie =
@@ -75,23 +74,13 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   return (
     <div className="relative">
-      <Button
-        variant="ghost"
-        color="default"
-        size="icon"
-        className="group p-1 outline-none"
+      <button
+        type="button"
+        className="p-0 outline-none focus:outline-none bg-transparent hover:bg-transparent border-0 flex items-center justify-center cursor-pointer"
         onClick={onToggle}
       >
-        <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden group-hover:ring-2 group-hover:ring-brand-primary/10 transition-all shadow-sm select-none">
-          <Typography
-            variant="body4"
-            weight="extrabold"
-            color="text-brand-primary"
-          >
-            {initials}
-          </Typography>
-        </div>
-      </Button>
+        <Avatar name={user?.username || "User"} variant="brand" size="sm" />
+      </button>
 
       <AnimatePresence>
         {isOpen && (
@@ -106,15 +95,11 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             className="absolute right-0 mt-3 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden py-1 origin-top-right transition-colors"
           >
             <div className="px-4 py-4 border-b border-border bg-muted/20 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center shadow-sm shrink-0 select-none overflow-hidden">
-                <Typography
-                  variant="body3"
-                  weight="black"
-                  color="text-brand-primary"
-                >
-                  {initials}
-                </Typography>
-              </div>
+              <Avatar
+                name={user?.username || "User"}
+                variant="brand"
+                size="sm"
+              />
               <div className="min-w-0">
                 <Typography
                   variant="body3"
