@@ -14,10 +14,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      pgbouncer:
-        condition: service_started
     environment:
-      DB_HOST: pgbouncer
+      DB_HOST: db
       DB_PORT: 5432
       DB_NAME: talent_flow_ats
       DB_USER: postgres
@@ -30,12 +28,7 @@ services:
     volumes:
       - ./backend:/backend
       - .env:/backend/.env:ro
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    # 6 Async workers (Handles 250-300 concurrent candidates)
-    command: gunicorn app.main:app -w 6 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 100
+    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:4000 --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50
 
   frontend:
     container_name: talent-flow-frontend
@@ -43,12 +36,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Browser client API URL
+        # Browser directly calls backend — use server IP or domain, not container name
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:4000}
         NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-prod}
         NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR: ${NEXT_PUBLIC_ENABLE_AI_QUESTION_GENERATOR:-false}
     environment:
-      # Internal SSR backend URL
+      # SSR (server-side) calls go through Docker network to backend container
       BACKEND_URL: http://backend:4000
     ports:
       - "3000:3000"
@@ -80,31 +73,6 @@ services:
       ]
     command: ["upgrade", "head"]
 
-  pgbouncer:
-    container_name: talent-flow-pgbouncer
-    image: edoburu/pgbouncer:latest
-    restart: always
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: Pass2020NothingSpecial
-      DB_NAME: talent_flow_ats
-      POOL_MODE: transaction
-      MAX_CLIENT_CONN: 500
-      DEFAULT_POOL_SIZE: 50
-      MIN_POOL_SIZE: 10
-      RESERVE_POOL_SIZE: 10
-      IGNORE_STARTUP_PARAMETERS: extra_float_digits
-      AUTH_TYPE: scram-sha-256
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    depends_on:
-      db:
-        condition: service_healthy
-
   db:
     container_name: talent-flow-postgres
     image: postgres:16
@@ -117,16 +85,14 @@ services:
       - "9600:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Optimized Postgres settings (1.5GB buffer + dynamic OS cache)
+    # Performance tuning for 50-100 concurrent candidates
     command: >
       postgres
-      -c max_connections=100
-      -c shared_buffers=1536MB
-      -c effective_cache_size=6GB
-      -c work_mem=6MB
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=512MB
+      -c work_mem=4MB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
-      -c random_page_cost=1.1
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -134,11 +100,11 @@ services:
 
   redis:
     container_name: talent-flow-redis
-    image: redis:7-alpine
+    image: redis/redis-stack:latest
     restart: always
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
+      - "8001:8001"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
