@@ -1,7 +1,7 @@
 import React from "react";
 import { InsightCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
-import { cn } from "@lib/utils";
+import { cn, getThemedCardHoverStyles } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 
 interface InsightCardProps {
@@ -10,7 +10,8 @@ interface InsightCardProps {
   icon: React.ReactNode;
   color: string;
   bgColor: string;
-  borderColor: string;
+  borderColor?: string;
+  className?: string;
   onClick?: () => void;
   isLoading?: boolean;
 }
@@ -22,25 +23,23 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   color,
   bgColor,
   borderColor,
+  className = "",
   onClick,
   isLoading = false,
 }) => {
   if (isLoading) return <InsightCardSkeleton />;
 
-  const leftBorderClass =
-    borderColor ||
-    (color.startsWith("text-")
-      ? color.replace("text-", "border-l-")
-      : "border-l-brand-primary");
+  const themeStyle = getThemedCardHoverStyles(borderColor || color || label);
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        "relative p-5 sm:p-6 border border-border/80 border-l-[3px] transition-all duration-300 bg-card hover:border-brand-primary/30 group overflow-hidden flex items-center gap-5 sm:gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]",
+        "relative p-5 sm:p-6 transition-all duration-300 ease-out bg-card group overflow-hidden flex items-center gap-5 sm:gap-6",
         STYLE_CONFIG.cardRadius,
-        leftBorderClass,
+        themeStyle,
         onClick && "cursor-pointer",
+        className,
       )}
     >
       {/* Icon Box */}
