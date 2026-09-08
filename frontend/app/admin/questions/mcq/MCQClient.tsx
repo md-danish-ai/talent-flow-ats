@@ -205,14 +205,9 @@ export function MCQClient({
   return (
     <PageContainer animate>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <ListChecks size={18} />
-            </div>
-            Multiple Choice Questions
-          </div>
-        }
+        icon={<ListChecks size={18} />}
+        title="Multiple Choice Questions"
+        subtitle="Create, edit, and organize single and multiple response objective questions."
         className="mb-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
         action={

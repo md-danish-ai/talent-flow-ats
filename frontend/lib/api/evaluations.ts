@@ -7,6 +7,7 @@ import {
   EvaluationHistoryItem,
   EvaluationTask,
   InterviewEvaluation,
+  LeadDashboardStats,
   PaginatedResponse,
 } from "@types";
 
@@ -31,6 +32,12 @@ export const evaluationsApi = {
     return api.get(ENDPOINTS.EVALUATIONS.LEAD_TASKS(leadId), {
       params,
     });
+  },
+
+  getLeadDashboardStats: async (
+    leadId: number,
+  ): Promise<LeadDashboardStats> => {
+    return api.get(ENDPOINTS.EVALUATIONS.LEAD_STATS(leadId));
   },
 
   getEvaluationDetail: async (

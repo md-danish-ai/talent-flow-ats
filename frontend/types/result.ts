@@ -14,6 +14,8 @@ export interface SubjectResult {
   percentage: number;
   grade: string;
   is_in_progress?: boolean;
+  time_minutes?: number | string | null;
+  duration_minutes?: number | string | null;
 }
 
 export interface TypingStats {
@@ -21,6 +23,10 @@ export interface TypingStats {
   accuracy: number;
   errors: number;
   time_taken: number;
+  obtained_marks?: number | null;
+  total_marks?: number | null;
+  percentage?: number | null;
+  grade?: string | null;
 }
 
 export interface AdminUserLatestAttempt {
@@ -38,6 +44,7 @@ export interface AdminUserLatestAttempt {
   total_marks?: number;
   overall_grade?: string;
   typing_stats?: TypingStats | null;
+  active_duration_seconds?: number | null;
   subject_results?: SubjectResult[];
   is_in_progress?: boolean;
   interviewers?: Array<{ name: string; status: string }>;
@@ -52,6 +59,8 @@ export interface AdminUserResultListItem {
   test_level?: string | null;
   department_id?: number | null;
   test_level_id?: number | null;
+  requires_interview?: boolean;
+  status?: string;
   attempts_count: number;
   is_reattempt?: boolean;
   process_status?: string;

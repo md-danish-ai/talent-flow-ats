@@ -945,7 +945,7 @@ export function UserForm({
               )}
             </form.Subscribe>
             {/* Header: Title */}
-            <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-8">
+            <div className="flex items-center justify-between border-b border-border/50 pb-5 mb-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 flex items-center justify-center text-brand-primary shadow-inner">
                   {(() => {

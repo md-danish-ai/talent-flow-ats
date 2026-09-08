@@ -4,6 +4,7 @@ from app.users.models import User
 from app.paper_assignments.models import PaperAssignment
 from app.user_details.models import UserDetail
 from app.departments.models import Department
+from app.classifications.models import Classification
 from app.utils.enums import ProcessStatus, RoleType
 
 
@@ -13,6 +14,7 @@ def run_auto_expiration(db_session):
     marking them as 'expired' and deactivating their accounts.
     Runs a bulk update for all eligible users.
     """
+    _ = Classification  # Ensure mapper registry initialization
     today = date.today()
 
     # Subquery: Users who have an assignment for TODAY (don't expire them yet)
@@ -51,7 +53,13 @@ def run_auto_expiration(db_session):
             # MUST NOT have an assignment for today
             ~User.id.in_(has_today_assignment),
             # Exclude users who are reset for re-interview today
-            ~(UserDetail.is_reinterview & (UserDetail.reinterview_date == today)),
+            or_(
+                UserDetail.id.is_(None),
+                ~(
+                    UserDetail.is_reinterview.is_(True)
+                    & (UserDetail.reinterview_date == today)
+                ),
+            ),
         )
         .distinct()
     )

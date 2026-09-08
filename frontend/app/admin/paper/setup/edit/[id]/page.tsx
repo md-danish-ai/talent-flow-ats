@@ -7,7 +7,6 @@ import { papersApi } from "@lib/api/papers";
 import { PaperSetup, PaperSetupCreate } from "@types";
 import { toast } from "@lib/toast";
 import { PageContainer } from "@components/ui-layout/PageContainer";
-import { PageHeader } from "@components/ui-elements/PageHeader";
 import { PaperFormSkeleton } from "@components/ui-skeleton/PaperFormSkeleton";
 
 export default function EditPaperPage() {
@@ -54,35 +53,22 @@ export default function EditPaperPage() {
   if (isLoading) {
     return (
       <PageContainer animate>
-        <PageHeader
-          title="Modify Test Paper"
-          description="Update paper details, adjust subject weightage, or reorder the exam structure."
-        />
-        <div className="mt-6">
-          <PaperFormSkeleton />
-        </div>
+        <PaperFormSkeleton />
       </PageContainer>
     );
   }
 
   return (
     <PageContainer animate>
-      <PageHeader
-        title="Modify Test Paper"
-        description="Update paper details, adjust subject weightage, or reorder the exam structure."
-      />
-
-      <div className="mt-6">
-        {paper && (
-          <PaperSetupForm
-            title="Edit Paper Configuration"
-            initialData={paper}
-            onSubmit={handleUpdate}
-            onCancel={() => router.push("/admin/paper/setup")}
-            isLoading={isSubmitting}
-          />
-        )}
-      </div>
+      {paper && (
+        <PaperSetupForm
+          title="Edit Paper Configuration"
+          initialData={paper}
+          onSubmit={handleUpdate}
+          onCancel={() => router.push("/admin/paper/setup")}
+          isLoading={isSubmitting}
+        />
+      )}
     </PageContainer>
   );
 }

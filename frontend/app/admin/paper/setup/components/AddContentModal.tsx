@@ -471,10 +471,10 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                   ) : (
                     questions.map((q, index) => (
                       <TableRow key={q.id} className="group min-h-16">
-                        <TableCell className="text-center text-slate-500 dark:text-slate-400 font-bold text-sm pl-6 w-20 font-mono">
-                          {((currentPage - 1) * pageSize + index + 1)
-                            .toString()
-                            .padStart(2, "0")}
+                        <TableCell className="text-center font-medium align-middle text-slate-600 dark:text-white pl-6 w-20">
+                          {String(
+                            (currentPage - 1) * pageSize + index + 1,
+                          ).padStart(2, "0")}
                         </TableCell>
                         {hasPassage && (
                           <TableCell className="max-w-[300px] pl-4">

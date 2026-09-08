@@ -6,7 +6,7 @@ interface ActivityItemProps {
   icon: React.ReactNode;
   title: string;
   description: React.ReactNode;
-  time: string;
+  time: React.ReactNode;
   color?: string;
   bgClassName?: string;
   className?: string;
@@ -48,6 +48,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({
             {title}
           </Typography>
           <Typography
+            as="div"
             variant="body5"
             className="text-muted-foreground/50 whitespace-nowrap pt-0.5"
           >

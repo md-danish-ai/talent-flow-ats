@@ -11,6 +11,7 @@ interface PulseCardProps {
   icon: React.ReactNode;
   color: string;
   bgColor: string;
+  className?: string;
   isLoading?: boolean;
 }
 
@@ -21,21 +22,28 @@ export const PulseCard: React.FC<PulseCardProps> = ({
   icon,
   color,
   bgColor,
+  className = "",
   isLoading = false,
 }) => {
   if (isLoading) return <PulseCardSkeleton />;
 
+  const leftBorderClass = color.startsWith("text-")
+    ? color.replace("text-", "border-l-")
+    : "border-l-brand-primary";
+
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-6 p-6 bg-card border border-border/80 shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
+        "group relative flex items-center gap-5 sm:gap-6 p-5 sm:p-6 bg-card border border-border/80 border-l-[3px] shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
         STYLE_CONFIG.cardRadius,
+        leftBorderClass,
+        className,
       )}
     >
       {/* Icon Box */}
       <div
         className={cn(
-          "w-16 h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 bg-background shrink-0",
+          "w-14 h-14 sm:w-16 sm:h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
           STYLE_CONFIG.iconRadius,
           bgColor,
         )}
@@ -44,7 +52,11 @@ export const PulseCard: React.FC<PulseCardProps> = ({
           ? React.cloneElement(
               icon as React.ReactElement<{ className?: string }>,
               {
-                className: cn("w-8 h-8", color, "transition-colors"),
+                className: cn(
+                  "w-7 h-7 sm:w-8 sm:h-8",
+                  color,
+                  "transition-colors",
+                ),
               },
             )
           : icon}
@@ -53,7 +65,7 @@ export const PulseCard: React.FC<PulseCardProps> = ({
       <div className="relative z-10 flex-1 min-w-0">
         <Typography
           variant="h5"
-          className="text-muted-foreground uppercase tracking-widest font-black mb-1.5 opacity-80 truncate"
+          className="text-muted-foreground/80 uppercase tracking-wider font-bold text-xs mb-1 truncate"
         >
           {label}
         </Typography>
@@ -61,14 +73,14 @@ export const PulseCard: React.FC<PulseCardProps> = ({
           <Typography
             variant="h1"
             weight="black"
-            className="text-foreground leading-tight"
+            className="text-foreground text-2xl sm:text-3xl leading-tight"
           >
             {value}
           </Typography>
         </div>
         <Typography
           variant="body4"
-          className="text-muted-foreground/60 italic font-bold truncate"
+          className="text-muted-foreground/70 italic text-xs font-normal truncate mt-0.5"
         >
           {sub}
         </Typography>
@@ -77,7 +89,7 @@ export const PulseCard: React.FC<PulseCardProps> = ({
       {/* Backdrop Icon */}
       <div
         className={cn(
-          "absolute -top-1 -right-2 opacity-[0.08] dark:opacity-[0.12] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+          "absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
           color,
         )}
       >

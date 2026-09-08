@@ -249,6 +249,14 @@ export function UserDetailView({
   };
 
   const formatEducationScore = (edu: (typeof educationDetails)[number]) => {
+    if (
+      (edu as unknown as { isPursuing?: boolean })?.isPursuing ||
+      String(edu.year || "")
+        .toLowerCase()
+        .includes("pursuing")
+    ) {
+      return "N/A (Pursuing)";
+    }
     if (!edu.percentage || String(edu.percentage).trim() === "") return "N/A";
     const val = String(edu.percentage).trim();
     if (val.includes("%") || val.toLowerCase().includes("cgpa")) return val;

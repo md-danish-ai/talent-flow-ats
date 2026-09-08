@@ -114,7 +114,7 @@ export function Pagination({
           size="icon-sm"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="rounded-xl border-border/50 hover:bg-brand-primary/5 transition-all duration-300"
+          className="rounded-lg border-border/50 hover:bg-brand-primary/5 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           title="First Page"
         >
           <ChevronsLeft size={16} />
@@ -125,7 +125,7 @@ export function Pagination({
           size="icon-sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="rounded-xl border-border/50 hover:bg-brand-primary/5 transition-all duration-300"
+          className="rounded-lg border-border/50 hover:bg-brand-primary/5 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           title="Previous Page"
         >
           <ChevronLeft size={16} />
@@ -144,10 +144,10 @@ export function Pagination({
                   color="primary"
                   onClick={() => onPageChange(page as number)}
                   className={cn(
-                    "w-9 h-9 rounded-xl p-0 font-medium transition-all duration-300 text-sm",
+                    "w-9 h-9 rounded-lg p-0 font-medium transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] text-sm",
                     currentPage === page
-                      ? "shadow-lg shadow-brand-primary/25 scale-110 z-10"
-                      : "border-brand-primary/20 hover:border-brand-primary hover:bg-brand-primary/5 text-brand-primary",
+                      ? "shadow-lg shadow-brand-primary/25 scale-105 z-10"
+                      : "border-brand-primary/20 hover:border-brand-primary hover:bg-brand-primary/5 hover:scale-105 text-brand-primary",
                   )}
                 >
                   {page}
@@ -163,7 +163,7 @@ export function Pagination({
           size="icon-sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="rounded-xl border-border/50 hover:bg-brand-primary/5 transition-all duration-300"
+          className="rounded-lg border-border/50 hover:bg-brand-primary/5 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           title="Next Page"
         >
           <ChevronRight size={16} />
@@ -174,7 +174,7 @@ export function Pagination({
           size="icon-sm"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="rounded-xl border-border/50 hover:bg-brand-primary/5 transition-all duration-300"
+          className="rounded-lg border-border/50 hover:bg-brand-primary/5 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           title="Last Page"
         >
           <ChevronsRight size={16} />

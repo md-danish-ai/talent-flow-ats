@@ -1,6 +1,6 @@
 import json
 import math
-from sqlalchemy import case, desc, func
+from sqlalchemy import case, desc, func, or_
 
 from app.database.db import SessionLocal
 from app.users.models import User
@@ -9,7 +9,8 @@ from app.classifications.models import Classification
 from app.papers.models import Paper
 from app.interview_attempts.models import InterviewRecord
 from app.evaluations.models import InterviewEvaluation
-from app.utils.enums import RoleType, EvaluationStatus
+from app.utils.enums import RoleType, EvaluationStatus, ProcessStatus
+from app.utils.expiration import run_auto_expiration
 
 
 def get_report_user_list(
@@ -32,6 +33,7 @@ def get_report_user_list(
     """
     db = SessionLocal()
     try:
+        run_auto_expiration(db)
         TestLevel = Classification
 
         # Subquery to get max InterviewRecord ID for each user
@@ -50,6 +52,7 @@ def get_report_user_list(
                 Department.name.label("dept_name"),
                 TestLevel.name.label("level_name"),
                 InterviewRecord,
+                Department.requires_interview.label("requires_interview"),
             )
             .outerjoin(Department, Department.id == User.department_id)
             .outerjoin(TestLevel, TestLevel.id == User.test_level_id)
@@ -83,7 +86,30 @@ def get_report_user_list(
 
         # Status filter
         if status and status != "all":
-            query = query.filter(InterviewRecord.status == status)
+            if status == "expired":
+                query = query.filter(
+                    or_(
+                        InterviewRecord.status == "expired",
+                        (
+                            latest_attempt_subquery.c.max_id.is_(None)
+                            & (User.process_status == ProcessStatus.EXPIRED.value)
+                        ),
+                    )
+                )
+            elif status == "ready":
+                query = query.filter(
+                    or_(
+                        InterviewRecord.status == "ready",
+                        (
+                            latest_attempt_subquery.c.max_id.is_(None)
+                            & (User.process_status == ProcessStatus.READY.value)
+                        ),
+                    )
+                )
+            elif status == "not_required":
+                query = query.filter(Department.requires_interview.is_(False))
+            else:
+                query = query.filter(InterviewRecord.status == status)
 
         # Completion reason filter
         if completion_reason and completion_reason != "all":
@@ -125,7 +151,13 @@ def get_report_user_list(
 
         results: list[dict] = []
 
-        for user, dept_name, level_name, latest_record in user_rows:
+        for (
+            user,
+            dept_name,
+            level_name,
+            latest_record,
+            requires_interview,
+        ) in user_rows:
             attempts_count = (
                 db.query(InterviewRecord)
                 .filter(InterviewRecord.user_id == user.id)
@@ -230,6 +262,19 @@ def get_report_user_list(
                     "interviewers": interviewers,
                 }
 
+            if requires_interview is False:
+                computed_status = "not_required"
+            elif latest_record and latest_record.status:
+                computed_status = latest_record.status
+            elif user.process_status == ProcessStatus.EXPIRED.value:
+                computed_status = "expired"
+            elif user.process_status == ProcessStatus.READY.value:
+                computed_status = "ready"
+            elif user.process_status:
+                computed_status = user.process_status
+            else:
+                computed_status = "ready"
+
             results.append(
                 {
                     "user_id": user.id,
@@ -237,6 +282,11 @@ def get_report_user_list(
                     "mobile": user.mobile,
                     "department": dept_name,
                     "test_level": level_name,
+                    "requires_interview": (
+                        requires_interview if requires_interview is not None else True
+                    ),
+                    "status": computed_status,
+                    "process_status": user.process_status,
                     "attempts_count": attempts_count,
                     "is_reattempt": attempts_count > 1,
                     "latest_attempt": latest_attempt,

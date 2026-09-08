@@ -27,20 +27,26 @@ export const InsightCard: React.FC<InsightCardProps> = ({
 }) => {
   if (isLoading) return <InsightCardSkeleton />;
 
+  const leftBorderClass =
+    borderColor ||
+    (color.startsWith("text-")
+      ? color.replace("text-", "border-l-")
+      : "border-l-brand-primary");
+
   return (
     <div
       onClick={onClick}
       className={cn(
-        "relative p-6 border border-border/80 transition-all duration-300 bg-card hover:border-brand-primary/30 group overflow-hidden flex items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]",
+        "relative p-5 sm:p-6 border border-border/80 border-l-[3px] transition-all duration-300 bg-card hover:border-brand-primary/30 group overflow-hidden flex items-center gap-5 sm:gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]",
         STYLE_CONFIG.cardRadius,
-        borderColor.replace("border-", "hover:border-"),
+        leftBorderClass,
         onClick && "cursor-pointer",
       )}
     >
       {/* Icon Box */}
       <div
         className={cn(
-          "w-16 h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 group-hover:bg-muted/50 shrink-0",
+          "w-14 h-14 sm:w-16 sm:h-16 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
           STYLE_CONFIG.iconRadius,
           bgColor,
         )}
@@ -49,7 +55,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           ? React.cloneElement(
               icon as React.ReactElement<{ className?: string }>,
               {
-                className: cn("w-8 h-8", color),
+                className: cn("w-7 h-7 sm:w-8 sm:h-8", color),
               },
             )
           : icon}
@@ -58,30 +64,23 @@ export const InsightCard: React.FC<InsightCardProps> = ({
       <div className="flex-1 min-w-0 relative z-10">
         <Typography
           variant="h5"
-          className="text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-80"
+          className="text-muted-foreground/80 uppercase tracking-wider font-bold text-xs mb-1 truncate"
         >
           {label}
         </Typography>
         <Typography
           variant="h1"
           weight="black"
-          className={cn("leading-tight", color)}
+          className={cn("text-2xl sm:text-3xl leading-tight font-black", color)}
         >
           {value}
         </Typography>
       </div>
 
-      <div
-        className={cn(
-          "absolute inset-y-0 left-0 w-1.5 opacity-[0.2]",
-          color.startsWith("text-") && color.replace("text-", "bg-"),
-        )}
-      />
-
       {/* Backdrop Icon */}
       <div
         className={cn(
-          "absolute -top-1 -right-2 opacity-[0.08] dark:opacity-[0.12] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+          "absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
           color,
         )}
       >

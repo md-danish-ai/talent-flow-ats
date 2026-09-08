@@ -117,22 +117,9 @@ export function PaperSetupClient() {
   return (
     <PageContainer animate className="pt-0">
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <FileText size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-[17px] sm:text-lg text-slate-900 dark:text-white leading-tight">
-                Paper Setup
-              </span>
-              <p className="text-[11.5px] sm:text-xs text-muted-foreground font-medium tracking-wide">
-                Configure and manage test papers, subject-wise weightage, and
-                evaluation criteria with ease.
-              </p>
-            </div>
-          </div>
-        }
+        icon={<FileText size={18} />}
+        title="Paper Setup"
+        subtitle="Configure and manage test papers, subject-wise weightage, and evaluation criteria with ease."
         action={
           <div className="flex items-center gap-3">
             <ListingBadge

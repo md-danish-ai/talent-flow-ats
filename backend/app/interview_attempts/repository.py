@@ -149,9 +149,11 @@ def calculate_levenshtein_alignment(typed: str, passage: str) -> tuple[int, int]
 
 def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: float):
     """
-    Evaluates typing test answer using Levenshtein Edit Distance alignment.
-    Formula: Accuracy = (1 - (EditDistance / max(MatchedPassageLength, TypedLength))) * 100
-    Marks = (Accuracy / 100) * Max Marks
+    Evaluates typing test answer using Levenshtein Edit Distance alignment and passage completion ratio.
+    Formula:
+        Accuracy = (1 - (EditDistance / max(MatchedPassageLength, TypedLength))) * 100
+        Completion Ratio = min(1.0, MatchedPassageLength / TotalPassageLength)
+        Obtained Marks = round(Completion Ratio * (Accuracy / 100) * Max Marks, 2)
     """
     typed_text = user_answer_raw or ""
     typing_stats = None
@@ -177,9 +179,11 @@ def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: 
     if typed_len == 0 and passage_len == 0:
         accuracy_pct = 100.0
         edit_distance = 0
+        completion_ratio = 1.0
     elif typed_len == 0:
         accuracy_pct = 0.0
         edit_distance = passage_len
+        completion_ratio = 0.0
     else:
         edit_distance, matched_len = calculate_levenshtein_alignment(
             safe_typed, safe_passage
@@ -190,9 +194,16 @@ def _evaluate_typing_test_answer(user_answer_raw: str, passage: str, max_marks: 
         )
         accuracy_pct = max(0.0, min(100.0, round(raw_accuracy, 2)))
 
-    # Calculate obtained marks proportionally to accuracy
-    obtained_marks = round((accuracy_pct / 100.0) * max_marks, 2)
-    is_correct = accuracy_pct >= 50.0
+        # Completion ratio represents the proportion of the original passage completed by the candidate (capped at 1.0)
+        completion_ratio = (
+            min(1.0, float(matched_len or typed_len) / float(passage_len))
+            if passage_len > 0
+            else 1.0
+        )
+
+    # Calculate obtained marks proportionally to both completion ratio and typing accuracy
+    obtained_marks = round(completion_ratio * (accuracy_pct / 100.0) * max_marks, 2)
+    is_correct = obtained_marks >= (max_marks * 0.5)
     status_label = "correct" if is_correct else "incorrect"
 
     if typing_stats and isinstance(typing_stats, dict):
@@ -477,12 +488,19 @@ def _sort_subject_results_by_paper_order(
     }
 
     order_map: dict[str, int] = {}
+    time_map: dict[str, int] = {}
     for fallback_index, item in enumerate(
         sorted(selected_subjects, key=lambda value: int(value.get("order") or 0))
     ):
         subject_id = int(item.get("subject_id") or 0)
         classification = classification_by_id.get(subject_id)
         sort_index = int(item.get("order") or fallback_index)
+        time_val = int(
+            item.get("time_minutes")
+            or item.get("time")
+            or item.get("duration_minutes")
+            or 0
+        )
 
         for value in (
             item.get("subject_name"),
@@ -490,7 +508,17 @@ def _sort_subject_results_by_paper_order(
             classification.name if classification else None,
         ):
             if value:
-                order_map[_normalize_text(str(value))] = sort_index
+                norm = _normalize_text(str(value))
+                order_map[norm] = sort_index
+                if time_val > 0:
+                    time_map[norm] = time_val
+
+    for r in results:
+        code_norm = _normalize_text(str(r.get("section_code") or ""))
+        name_norm = _normalize_text(str(r.get("section_name") or ""))
+        matched_time = time_map.get(code_norm) or time_map.get(name_norm)
+        if matched_time and not r.get("time_minutes"):
+            r["time_minutes"] = matched_time
 
     if not order_map:
         return results

@@ -3,31 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@lib/utils";
-import { STYLE_CONFIG } from "@lib/config/style";
 import { Typography } from "@components/ui-elements/Typography";
 import { Button } from "@components/ui-elements/Button";
 import { Switch } from "@components/ui-elements/Switch";
-import { Badge } from "@components/ui-elements/Badge";
 import { papersApi } from "@lib/api/papers";
 import { questionsApi } from "@lib/api/questions";
 import { classificationsApi } from "@lib/api/classifications";
 import { PaperSetup, Question, Classification } from "@types";
 import { toast } from "@lib/toast";
 import { PaperPreviewSection } from "./components/PaperPreviewSection";
-import {
-  ArrowLeft,
-  Download,
-  Loader2,
-  Eye,
-  EyeOff,
-  Clock,
-  Trophy,
-  Layers,
-  HelpCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Download, Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useMe } from "@hooks/api/user/use-me";
 import { PaperDetailSkeleton } from "@components/ui-skeleton/PaperDetailSkeleton";
+import { PaperOverviewCard } from "@components/features/paper-setup/PaperOverviewCard";
 
 interface PaperPreviewClientProps {
   paperId: number;
@@ -164,37 +152,47 @@ export function PaperPreviewClient({ paperId }: PaperPreviewClientProps) {
   });
 
   return (
-    <div className="w-full space-y-4">
-      {/* Unified Single Header Card */}
-      <div
-        className={cn(
-          "bg-white dark:bg-slate-900 border border-border/80 shadow-sm p-5 sm:p-6 space-y-5 relative overflow-hidden",
-          STYLE_CONFIG.cardRadius,
-        )}
-      >
-        {/* Top Action Row: Navigation, Breadcrumb & Action Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border/60">
-          {/* Left: Back button */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              color="primary"
-              size="sm"
-              animate="scale"
-              startIcon={<ArrowLeft size={16} />}
-              onClick={() =>
-                router.push(`/admin/paper/setup/detail/${paperId}`)
-              }
-            >
-              Back to Setup
-            </Button>
+    <div className="w-full space-y-6">
+      <PaperOverviewCard
+        paper={paper}
+        allClassifications={allClassifications}
+        assignedQuestionsCount={assignedQuestions.length}
+        modeLabel="PREVIEW MODE"
+        modeColor="primary"
+        backLabel="Back to Setup"
+        onBack={() => router.push(`/admin/paper/setup/detail/${paperId}`)}
+        rightCard={
+          <div
+            className={cn(
+              "px-3.5 py-2 rounded-md h-[52px] border text-right flex flex-col justify-center space-y-0.5",
+              showAnswers
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                : "bg-slate-100 dark:bg-slate-800 border-border text-muted-foreground",
+            )}
+          >
+            <div className="text-[10px] font-black uppercase tracking-wider">
+              Current View Mode
+            </div>
+            <div className="text-xs font-black flex items-center gap-1.5 justify-end">
+              {showAnswers ? (
+                <>
+                  <CheckCircle
+                    size={14}
+                    className="text-emerald-600 dark:text-emerald-400"
+                  />
+                  <span>Answer Key Included</span>
+                </>
+              ) : (
+                <span>Candidate Question Paper</span>
+              )}
+            </div>
           </div>
-
-          {/* Right: View Controls & Download PDF */}
+        }
+        actions={
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Show Answers Toggle Switch */}
             <div
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-border/80 cursor-pointer select-none transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-border/80 cursor-pointer select-none transition-colors hover:bg-slate-200/70 dark:hover:bg-slate-800"
               onClick={() => setShowAnswers(!showAnswers)}
             >
               <Switch
@@ -243,184 +241,8 @@ export function PaperPreviewClient({ paperId }: PaperPreviewClientProps) {
               </Button>
             )}
           </div>
-        </div>
-
-        {/* Paper Overview Details */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="fill"
-                color="primary"
-                shape="square"
-                className="font-extrabold uppercase text-[10px] tracking-wider"
-              >
-                Assessment Paper
-              </Badge>
-              {paper.department_name && (
-                <Badge
-                  variant="outline"
-                  shape="square"
-                  className="font-bold text-[11px]"
-                >
-                  Dept: {paper.department_name}
-                </Badge>
-              )}
-              {paper.test_level_name && (
-                <Badge
-                  variant="outline"
-                  shape="square"
-                  color="primary"
-                  className="font-bold text-[11px]"
-                >
-                  Level: {paper.test_level_name}
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center flex-wrap gap-2.5">
-              <Typography
-                variant="h2"
-                weight="black"
-                className="text-foreground tracking-tight text-2xl sm:text-3xl font-black"
-              >
-                {paper.paper_name}
-              </Typography>
-              <Badge
-                variant="fill"
-                color="secondary"
-                shape="square"
-                className="font-black uppercase text-[10px] tracking-wider"
-              >
-                Preview Mode
-              </Badge>
-            </div>
-
-            {paper.description && (
-              <Typography
-                variant="body4"
-                className="text-muted-foreground leading-relaxed italic max-w-4xl"
-              >
-                &quot;{paper.description}&quot;
-              </Typography>
-            )}
-          </div>
-
-          {/* Answer Key Indicator */}
-          <div className="shrink-0">
-            <div
-              className={cn(
-                "p-3 rounded-md border text-right space-y-0.5",
-                showAnswers
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
-                  : "bg-slate-100 dark:bg-slate-800 border-border text-muted-foreground",
-              )}
-            >
-              <div className="text-[10px] font-black uppercase tracking-wider">
-                Current View Mode
-              </div>
-              <div className="text-xs font-black flex items-center gap-1.5 justify-end">
-                {showAnswers ? (
-                  <>
-                    <CheckCircle size={14} className="text-emerald-600" />
-                    <span>Answer Key Included</span>
-                  </>
-                ) : (
-                  <span>Candidate Question Paper</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Subjects List: Outline with Primary Badges */}
-        {orderedSubjects.length > 0 && (
-          <div className="pt-2 border-t border-border/50 flex flex-wrap items-center gap-2">
-            {orderedSubjects.map((s, idx) => {
-              const info = getSubjectNameAndCode(s.subject_id);
-              return (
-                <Badge
-                  key={s.subject_id}
-                  variant="outline"
-                  color="primary"
-                  shape="square"
-                  className="font-semibold text-xs py-1 px-2.5 flex items-center gap-1.5"
-                >
-                  <span>
-                    {idx + 1}. {info.name}
-                  </span>
-                </Badge>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Quick Metrics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* Total Duration */}
-          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/40 border border-border/70 rounded-xl flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
-              <Clock size={18} />
-            </div>
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Total Duration
-              </div>
-              <div className="text-sm sm:text-base font-black text-foreground">
-                {paper.total_time || "N/A"}
-              </div>
-            </div>
-          </div>
-
-          {/* Total Marks */}
-          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/40 border border-border/70 rounded-xl flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
-              <Trophy size={18} />
-            </div>
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Total Marks
-              </div>
-              <div className="text-sm sm:text-base font-black text-foreground">
-                {Number(paper.total_marks || 0) % 1 === 0
-                  ? Number(paper.total_marks || 0).toString()
-                  : Number(paper.total_marks || 0).toFixed(1)}{" "}
-                Marks
-              </div>
-            </div>
-          </div>
-
-          {/* Total Questions */}
-          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/40 border border-border/70 rounded-xl flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
-              <HelpCircle size={18} />
-            </div>
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Assigned Qs
-              </div>
-              <div className="text-sm sm:text-base font-black text-foreground">
-                {assignedQuestions.length} Questions
-              </div>
-            </div>
-          </div>
-
-          {/* Total Subjects */}
-          <div className="p-3.5 bg-slate-50/80 dark:bg-slate-800/40 border border-border/70 rounded-xl flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
-              <Layers size={18} />
-            </div>
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Sections
-              </div>
-              <div className="text-sm sm:text-base font-black text-foreground">
-                {orderedSubjects.length} Subjects
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Render All Subject Sections */}
       <div className="space-y-6">

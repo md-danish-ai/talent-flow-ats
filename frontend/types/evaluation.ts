@@ -48,3 +48,9 @@ export interface SubmitEvaluationPayload {
   final_result_id?: number;
   comments?: string;
 }
+
+export interface LeadDashboardStats {
+  total_assigned: number;
+  pending: number;
+  completed: number;
+}

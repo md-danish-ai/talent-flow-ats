@@ -255,14 +255,9 @@ export function TypesManagementClient({
   return (
     <PageContainer animate>
       <MainCard
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-              <Layers size={18} />
-            </div>
-            Master Data
-          </div>
-        }
+        icon={<Layers size={18} />}
+        title="Master Data"
+        subtitle="Manage system classifications, categories, exam levels, and master taxonomies."
         className="mb-6 flex flex-col min-h-0"
         bodyClassName="p-0 flex flex-col md:flex-row items-stretch w-full flex-1 min-h-[500px]"
         action={

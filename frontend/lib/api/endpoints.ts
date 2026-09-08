@@ -135,6 +135,8 @@ export const ENDPOINTS = {
     BULK_ASSIGN: "/evaluations/bulk-assign-lead-evaluation",
     LEAD_TASKS: (leadId: string | number) =>
       `/evaluations/list-lead-tasks/${leadId}`,
+    LEAD_STATS: (leadId: string | number) =>
+      `/evaluations/lead-dashboard-stats/${leadId}`,
     DETAIL: (evaluationId: string | number) =>
       `/evaluations/get-evaluation-detail/${evaluationId}`,
     SUBMIT: (evaluationId: string | number) =>

@@ -93,6 +93,15 @@ def get_lead_tasks(
         return ResponseHandler.error(message=str(e))
 
 
+@router.get("/lead-dashboard-stats/{lead_id}")
+def get_lead_dashboard_stats(lead_id: int, db: Session = Depends(get_db)):
+    try:
+        stats = repository.get_lead_dashboard_stats(db, lead_id)
+        return ResponseHandler.success(data=stats)
+    except Exception as e:
+        return ResponseHandler.error(message=str(e))
+
+
 @router.get("/get-evaluation-detail/{evaluation_id}")
 def get_evaluation_detail(evaluation_id: int, db: Session = Depends(get_db)):
     try:

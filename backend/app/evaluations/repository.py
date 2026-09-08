@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from .models import InterviewEvaluation
 from .schemas import InterviewEvaluationCreate, InterviewEvaluationUpdate
 from app.users.models import User
@@ -168,6 +168,7 @@ def get_evaluations_by_lead(
             InterviewEvaluation.id,
             InterviewEvaluation.user_id,
             InterviewEvaluation.attempt_id,
+            InterviewEvaluation.round_type,
             InterviewEvaluation.status,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,
@@ -195,6 +196,38 @@ def get_evaluations_by_lead(
     )
 
     return [dict(r._asdict()) for r in results], total
+
+
+def get_lead_dashboard_stats(db: Session, lead_id: int):
+    total = (
+        db.query(func.count(InterviewEvaluation.id))
+        .filter(InterviewEvaluation.project_lead_id == lead_id)
+        .scalar()
+        or 0
+    )
+    pending = (
+        db.query(func.count(InterviewEvaluation.id))
+        .filter(
+            InterviewEvaluation.project_lead_id == lead_id,
+            InterviewEvaluation.status == EvaluationStatus.PENDING.value,
+        )
+        .scalar()
+        or 0
+    )
+    completed = (
+        db.query(func.count(InterviewEvaluation.id))
+        .filter(
+            InterviewEvaluation.project_lead_id == lead_id,
+            InterviewEvaluation.status == EvaluationStatus.COMPLETED.value,
+        )
+        .scalar()
+        or 0
+    )
+    return {
+        "total_assigned": total,
+        "pending": pending,
+        "completed": completed,
+    }
 
 
 async def update_evaluation(
@@ -339,6 +372,7 @@ def get_all_evaluations_with_details(
         db.query(
             InterviewEvaluation.id,
             InterviewEvaluation.status,
+            InterviewEvaluation.round_type,
             InterviewEvaluation.attempt_id,
             InterviewEvaluation.overall_grade,
             InterviewEvaluation.created_at,

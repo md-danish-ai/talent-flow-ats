@@ -79,7 +79,7 @@ export function SubjectAssignmentCard({
               weight="black"
               className="text-slate-800 dark:text-white tracking-tight group-hover/header:text-brand-primary transition-colors"
             >
-              {humanizeString(subj.subject_name || `${subjCode} Subject`)}
+              {humanizeString(subj.subject_name || `${subjCode}`)}
             </Typography>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">

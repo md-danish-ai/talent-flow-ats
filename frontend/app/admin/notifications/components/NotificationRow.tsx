@@ -67,8 +67,8 @@ export const NotificationRow = React.memo<NotificationRowProps>(
             />
           </div>
         </TableCell>
-        <TableCell className="font-medium text-center text-muted-foreground whitespace-nowrap">
-          {index}
+        <TableCell className="font-medium text-center align-middle text-slate-600 dark:text-white whitespace-nowrap">
+          {String(index).padStart(2, "0")}
         </TableCell>
         <TableCell>
           <Typography

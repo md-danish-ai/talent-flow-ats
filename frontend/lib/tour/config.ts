@@ -24,7 +24,7 @@ export const ONBOARDING_TOUR_STEPS: DriveStep[] = [
   {
     element: "#user-dashboard-header",
     popover: {
-      title: "👋 Welcome to TalentFlow",
+      title: "👋 Welcome to Arc Interview App",
       description:
         "This is your candidate dashboard. Follow the 3 simple steps below to complete your application process.",
       side: "bottom",
@@ -107,7 +107,7 @@ export const REINTERVIEW_TOUR_STEPS: DriveStep[] = [
   {
     element: "#user-dashboard-header",
     popover: {
-      title: "👋 Welcome to TalentFlow",
+      title: "👋 Welcome to Arc Interview App",
       description:
         "This is your candidate dashboard. Here is the updated status of your application steps.",
       side: "bottom",

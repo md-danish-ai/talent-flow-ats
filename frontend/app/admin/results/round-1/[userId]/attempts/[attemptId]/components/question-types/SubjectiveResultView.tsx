@@ -11,21 +11,21 @@ interface SubjectiveResultViewProps {
 
 export const SubjectiveResultView = ({ answer }: SubjectiveResultViewProps) => {
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Expected Answer Textblock */}
       <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/10 bg-emerald-500/[0.03] p-5 animate-in fade-in slide-in-from-top-4 duration-500`}
+        className={`${STYLE_CONFIG.innerCardRadius} border border-emerald-500/20 bg-emerald-500/[0.04] p-4 flex flex-col space-y-2`}
       >
         <Typography
           variant="body5"
-          className="font-black text-emerald-600/60 mb-2 uppercase tracking-widest font-mono"
+          className="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-mono text-xs"
         >
           EXPECTED ANSWER
         </Typography>
         <Typography
           as="div"
           variant="body2"
-          className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-sm md:text-base"
+          className="font-mono leading-relaxed italic text-muted-foreground whitespace-pre-wrap text-sm flex-1"
         >
           {answer.correct_answer || answer.passage || "N/A"}
         </Typography>
@@ -33,18 +33,18 @@ export const SubjectiveResultView = ({ answer }: SubjectiveResultViewProps) => {
 
       {/* Candidate Response Textblock */}
       <div
-        className={`${STYLE_CONFIG.innerCardRadius} border border-black/[0.03] bg-black/[0.02] p-5 animate-in fade-in slide-in-from-bottom-4 duration-700`}
+        className={`${STYLE_CONFIG.innerCardRadius} border border-border/70 bg-card/60 p-4 flex flex-col space-y-2`}
       >
         <Typography
           variant="body5"
-          className="font-black text-muted-foreground/60 mb-2 uppercase tracking-widest"
+          className="font-bold text-muted-foreground uppercase tracking-wider text-xs"
         >
           CANDIDATE RESPONSE
         </Typography>
         <Typography
           as="div"
           variant="body2"
-          className="font-mono leading-relaxed whitespace-pre-wrap select-all text-sm md:text-base"
+          className="font-mono leading-relaxed whitespace-pre-wrap select-all text-foreground text-sm flex-1"
         >
           {answer.user_answer || "No response recorded."}
         </Typography>

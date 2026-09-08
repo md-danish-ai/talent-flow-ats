@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Input } from "@components/ui-elements/Input";
 import { DatePicker } from "@components/ui-elements/DatePicker";
 import { Tooltip } from "@components/ui-elements/Tooltip";
-import { Trash2, Plus } from "lucide-react";
 import { SelectDropdown } from "@components/ui-elements/SelectDropdown";
+import { Trash2, Plus, Info } from "lucide-react";
 import { Radio } from "@components/ui-elements/Radio";
 import { useClassifications } from "@hooks/api/classifications/use-classifications";
 import {
@@ -89,33 +89,73 @@ export function WorkExperienceStep({ form }: WorkExperienceStepProps) {
 
           return (
             <React.Fragment>
-              {/* Experience Type Selector (Fresher vs Experienced) */}
-              <div className="p-5 border border-border rounded-xl bg-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <label className="text-sm font-semibold text-foreground flex items-center gap-1">
-                    Work Experience Status{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Select &quot;Fresher&quot; if you have no prior work
-                    experience, or &quot;Experienced&quot; to add company
-                    details.
-                  </p>
+              {/* Unified Experience Status & Guidelines Card */}
+              <div className="p-4 sm:p-5 border border-border rounded-xl bg-card shadow-sm space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                      Work Experience Status{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Select &quot;Fresher&quot; if you have no prior work
+                      experience, or &quot;Experienced&quot; to add company
+                      details.
+                    </p>
+                  </div>
+                  <div className="flex gap-6 items-center shrink-0">
+                    <Radio
+                      label="Fresher"
+                      name="experienceStatus"
+                      checked={isFresher}
+                      onChange={() => handleExperienceTypeChange(true)}
+                    />
+                    <Radio
+                      label="Experienced"
+                      name="experienceStatus"
+                      checked={!isFresher}
+                      onChange={() => handleExperienceTypeChange(false)}
+                    />
+                  </div>
                 </div>
-                <div className="flex gap-6 items-center">
-                  <Radio
-                    label="Fresher"
-                    name="experienceStatus"
-                    checked={isFresher}
-                    onChange={() => handleExperienceTypeChange(true)}
-                  />
-                  <Radio
-                    label="Experienced"
-                    name="experienceStatus"
-                    checked={!isFresher}
-                    onChange={() => handleExperienceTypeChange(false)}
-                  />
-                </div>
+
+                {!isFresher && (
+                  <div className="pt-3 border-t border-border/60 flex items-start gap-2 text-xs">
+                    <Info className="h-4 w-4 text-brand-primary shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-muted-foreground">
+                        <strong className="text-foreground font-semibold">
+                          Important Note:
+                        </strong>{" "}
+                        Please enter your work experience in{" "}
+                        <strong className="text-foreground">
+                          Ascending Order (Past to Present)
+                        </strong>{" "}
+                        starting from your first job.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs">
+                        <span className="text-muted-foreground font-medium text-[11px]">
+                          Example:
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-muted/70 dark:bg-slate-800/80 text-foreground text-xs font-medium border border-border/70">
+                          1st Company (2012 – 2014)
+                        </span>
+                        <span className="text-muted-foreground text-xs font-bold">
+                          ➔
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-muted/70 dark:bg-slate-800/80 text-foreground text-xs font-medium border border-border/70">
+                          2nd Company (2014 – 2016)
+                        </span>
+                        <span className="text-muted-foreground text-xs font-bold">
+                          ➔
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-brand-primary/10 text-brand-primary text-xs font-semibold border border-brand-primary/20">
+                          Current Company (2016 – Present)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isFresher ? (
