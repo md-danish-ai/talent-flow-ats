@@ -164,7 +164,6 @@ export function PaperSetupClient() {
             </div>
           </div>
         }
-        className="mt-6 flex flex-col"
         bodyClassName="p-0 flex flex-row items-stretch w-full"
       >
         <div

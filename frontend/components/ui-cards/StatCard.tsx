@@ -1,7 +1,7 @@
 import React from "react";
 import { StatCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
-import { cn } from "@lib/utils";
+import { cn, getThemedCardHoverStyles } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 
 interface StatCardProps {
@@ -12,6 +12,7 @@ interface StatCardProps {
   color?: string;
   bgColor?: string;
   borderColor?: string;
+  className?: string;
   onClick?: () => void;
   isLoading?: boolean;
 }
@@ -23,25 +24,23 @@ export const StatCard: React.FC<StatCardProps> = ({
   color = "text-brand-primary",
   bgColor = "bg-brand-primary/10",
   borderColor,
+  className = "",
   onClick,
   isLoading = false,
 }) => {
   if (isLoading) return <StatCardSkeleton />;
 
-  const leftBorderClass =
-    borderColor ||
-    (color.startsWith("text-")
-      ? color.replace("text-", "border-l-")
-      : "border-l-brand-primary");
+  const themeStyle = getThemedCardHoverStyles(borderColor || color);
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        "bg-card p-5 sm:p-6 border border-border/80 border-l-[3px] shadow-sm flex items-center gap-5 sm:gap-6 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] group relative overflow-hidden",
+        "bg-card p-5 sm:p-6 flex items-center gap-5 sm:gap-6 transition-all duration-300 ease-out group relative overflow-hidden",
         STYLE_CONFIG.cardRadius,
-        leftBorderClass,
+        themeStyle,
         onClick && "cursor-pointer",
+        className,
       )}
     >
       {/* Icon Box */}

@@ -47,7 +47,7 @@ export default async function ResetStatusPage({ searchParams }: PageProps) {
   }
 
   return (
-    <PageContainer className="py-2">
+    <PageContainer>
       <ResetUserListing
         initialData={initialData || undefined}
         initialLabel={initialLabel}

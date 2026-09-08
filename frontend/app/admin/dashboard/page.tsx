@@ -247,7 +247,7 @@ export default function DashboardPage() {
       icon: <Users />,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      borderColor: "border-l-blue-500",
+      borderColor: "blue",
     },
     {
       label: "ACTIVE PAPERS",
@@ -255,7 +255,7 @@ export default function DashboardPage() {
       icon: <FileText />,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
-      borderColor: "border-l-emerald-500",
+      borderColor: "emerald",
     },
     {
       label: "QUESTION POOL",
@@ -263,7 +263,7 @@ export default function DashboardPage() {
       icon: <HelpCircle />,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      borderColor: "border-l-purple-500",
+      borderColor: "purple",
     },
     {
       label: "TODAY'S EFFORTS",
@@ -271,7 +271,7 @@ export default function DashboardPage() {
       icon: <Zap />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
-      borderColor: "border-l-amber-500",
+      borderColor: "amber",
     },
   ];
 
@@ -315,37 +315,37 @@ export default function DashboardPage() {
       icon: <Trophy />,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
+      borderColor: "emerald",
     },
     Good: {
       icon: <BadgeCheck />,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      borderColor: "border-blue-500/20",
+      borderColor: "blue",
     },
     "Above Average": {
       icon: <BadgeCheck />,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      borderColor: "border-purple-500/20",
+      borderColor: "purple",
     },
     Average: {
       icon: <Target />,
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
+      borderColor: "amber",
     },
     "Below Average": {
       icon: <Target />,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
-      borderColor: "border-orange-500/20",
+      borderColor: "orange",
     },
     Poor: {
       icon: <UserX />,
       color: "text-rose-500",
       bgColor: "bg-rose-500/10",
-      borderColor: "border-rose-500/20",
+      borderColor: "rose",
     },
   };
 
@@ -570,10 +570,10 @@ export default function DashboardPage() {
                             color={colorClass}
                             bgClassName={bgClass}
                             className={cn(
-                              "p-3.5 border rounded-xl transition-all",
+                              "p-3.5 border-2 rounded-xl transition-all duration-300 ease-out",
                               isRead
-                                ? "border-emerald-500/20 dark:border-emerald-500/30 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:bg-emerald-500/[0.07]"
-                                : "border-brand-primary/35 dark:border-brand-primary/35 bg-brand-primary/[0.04] dark:bg-brand-primary/[0.08] hover:bg-brand-primary/[0.12] shadow-xs",
+                                ? "border-emerald-500/30 dark:border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.04] hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-500/[0.06] dark:hover:bg-emerald-500/[0.08] hover:-translate-y-0.5 shadow-sm hover:shadow-lg hover:shadow-emerald-500/15 dark:hover:shadow-emerald-500/25"
+                                : "border-brand-primary/40 dark:border-brand-primary/30 bg-brand-primary/[0.03] dark:bg-brand-primary/[0.06] hover:border-brand-primary dark:hover:border-brand-primary hover:bg-brand-primary/[0.07] dark:hover:bg-brand-primary/[0.10] hover:-translate-y-0.5 shadow-sm hover:shadow-lg hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25",
                             )}
                           />
                         </div>
