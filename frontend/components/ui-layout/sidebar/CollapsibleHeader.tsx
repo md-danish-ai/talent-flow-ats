@@ -25,7 +25,7 @@ export const CollapsibleHeader: React.FC<CollapsibleHeaderProps> = ({
     color="default"
     fullWidth
     onClick={onToggle}
-    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] group ${
+    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 group ${
       isActive ? NAV_ACTIVE : NAV_IDLE
     }`}
   >

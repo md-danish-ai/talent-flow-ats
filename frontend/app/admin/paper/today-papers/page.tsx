@@ -49,7 +49,7 @@ export default async function TodayPapersPage({ searchParams }: PageProps) {
   }
 
   return (
-    <PageContainer className="py-2">
+    <PageContainer>
       <TodayUserListing initialData={initialData} initialLabel={initialLabel} />
     </PageContainer>
   );

@@ -25,10 +25,10 @@ export const CollapsedNavItem: React.FC<CollapsedNavItemProps> = ({
     ? pathname === section.href
     : section.items.some((item) => pathname === item.href);
 
-  const iconCls = `w-12 h-12 flex items-center justify-center rounded-md transition-all duration-200 hover:scale-[1.05] active:scale-[0.95] ${
+  const iconCls = `w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-300 ${
     isSectionActive
-      ? "bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary shadow-sm"
-      : "text-slate-500 dark:text-slate-400 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/15 hover:text-brand-primary"
+      ? "bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary shadow-md shadow-brand-primary/10 border-2 border-brand-primary/60 dark:border-brand-primary/50"
+      : "text-slate-500 dark:text-slate-400 border-2 border-transparent hover:border-brand-primary/40 dark:hover:border-brand-primary/30 hover:bg-brand-primary/[0.06] dark:hover:bg-brand-primary/[0.12] hover:text-brand-primary hover:shadow-md hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25 hover:-translate-y-0.5"
   }`;
 
   return (

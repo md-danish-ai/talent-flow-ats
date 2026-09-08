@@ -22,10 +22,8 @@ export default async function ProjectLeadLayout({
         <div className="flex flex-1 overflow-hidden">
           <Sidebar role={user?.role} />
 
-          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-5 overflow-y-auto min-w-0 bg-layout-bg transition-colors rounded-tl-xl lg:rounded-tl-2xl">
-            <div className="mx-auto w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1600px] min-h-full">
-              {children}
-            </div>
+          <main className="flex-1 p-3 sm:p-4 lg:p-5 overflow-y-auto min-w-0 bg-layout-bg transition-colors rounded-tl-xl lg:rounded-tl-2xl">
+            <div className="mx-auto w-full min-h-full">{children}</div>
           </main>
         </div>
       </div>

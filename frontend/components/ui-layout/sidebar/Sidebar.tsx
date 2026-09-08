@@ -123,7 +123,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
 
         <div className="flex flex-col h-full overflow-hidden">
           {isCollapsed && (
-            <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-6 px-2 space-y-2">
+            <nav className="hidden min-[900px]:flex flex-col flex-1 overflow-y-auto py-2 px-2 space-y-2">
               {routes.map((section: NavSection) => (
                 <CollapsedNavItem
                   key={section.title}
@@ -139,7 +139,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
           )}
 
           {!isCollapsed && (
-            <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-6 px-4 space-y-2">
+            <nav className="hidden min-[900px]:block flex-1 overflow-y-auto py-2 px-4 space-y-2">
               {routes.map((section: NavSection) => (
                 <NavItem
                   key={section.title}
@@ -153,7 +153,7 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
             </nav>
           )}
 
-          <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-6 space-y-2">
+          <nav className="min-[900px]:hidden flex-1 overflow-y-auto px-4 py-2 space-y-2">
             {routes.map((section: NavSection) => (
               <NavItem
                 key={section.title}
@@ -202,10 +202,10 @@ export const Sidebar = ({ role = "admin" }: { role?: string }) => {
               variant="ghost"
               onClick={handleLogout}
               className={cn(
-                "w-full transition-all duration-300 group flex items-center text-slate-500 dark:text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20",
+                "w-full transition-all duration-300 ease-out group flex items-center text-slate-500 dark:text-slate-400 hover:text-brand-primary hover:bg-brand-primary/[0.06] dark:hover:bg-brand-primary/[0.12] border-2 border-transparent hover:border-brand-primary/40 dark:hover:border-brand-primary/30 hover:shadow-md hover:shadow-brand-primary/15 dark:hover:shadow-brand-primary/25 hover:-translate-y-0.5",
                 isCollapsed
-                  ? "justify-center h-10 p-0"
-                  : "justify-start px-3 h-11 gap-3 rounded-xl",
+                  ? "justify-center h-10 p-0 rounded-lg"
+                  : "justify-start px-3 h-11 gap-3 rounded-lg",
               )}
               title="Logout"
             >

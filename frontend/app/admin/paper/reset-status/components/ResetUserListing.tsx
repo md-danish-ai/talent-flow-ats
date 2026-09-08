@@ -165,7 +165,7 @@ export function ResetUserListing({
         icon={<RotateCcw size={18} />}
         title="Reset User Status"
         subtitle="Manage daily interview progress and application details for all candidates."
-        className="mb-6 flex flex-col overflow-hidden"
+        // className="mb-6 flex flex-col overflow-hidden"
         bodyClassName="p-0 flex flex-col w-full"
         action={
           <ListingHeaderActions

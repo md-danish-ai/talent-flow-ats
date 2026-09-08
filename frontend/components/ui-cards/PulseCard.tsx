@@ -1,7 +1,7 @@
 import React from "react";
 import { PulseCardSkeleton } from "@components/ui-skeleton/DashboardSkeleton";
 import { Typography } from "@components/ui-elements/Typography";
-import { cn } from "@lib/utils";
+import { cn, getThemedCardHoverStyles } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 
 interface PulseCardProps {
@@ -27,16 +27,14 @@ export const PulseCard: React.FC<PulseCardProps> = ({
 }) => {
   if (isLoading) return <PulseCardSkeleton />;
 
-  const leftBorderClass = color.startsWith("text-")
-    ? color.replace("text-", "border-l-")
-    : "border-l-brand-primary";
+  const themeStyle = getThemedCardHoverStyles(color);
 
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-5 sm:gap-6 p-5 sm:p-6 bg-card border border-border/80 border-l-[3px] shadow-sm transition-all duration-300 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] overflow-hidden",
+        "group relative flex items-center gap-5 sm:gap-6 p-5 sm:p-6 bg-card transition-all duration-300 ease-out overflow-hidden",
         STYLE_CONFIG.cardRadius,
-        leftBorderClass,
+        themeStyle,
         className,
       )}
     >

@@ -24,7 +24,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({
   return (
     <div
       className={cn(
-        "flex items-start gap-4 p-4 rounded-2xl hover:bg-muted/30 transition-all group border border-transparent hover:border-border/40",
+        "flex items-start gap-3.5 p-3.5 rounded-xl transition-all duration-300 ease-out group",
         className,
       )}
     >
