@@ -25,6 +25,9 @@ from app.database.db import SessionLocal
 from app.sync.models import SyncJob, UserSyncLog
 from app.user_details.models import UserDetail
 from app.users.models import User
+from app.classifications.models import Classification  # noqa: F401
+from app.departments.models import Department  # noqa: F401
+from app.sync.logger import sync_logger
 
 logger = logging.getLogger(__name__)
 
@@ -163,47 +166,57 @@ async def _sync_single_candidate(client: httpx.AsyncClient, candidate: dict) -> 
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Internal: persist results to DB after each chunk
+# Internal: persist single chunk results immediately to DB
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def _persist_chunk_results(db, job_id: Optional[str], results: list[dict]):
+def _persist_chunk_results(
+    db, job_id: Optional[str], results: list[dict]
+) -> tuple[int, int]:
     """
     Write UserSyncLog rows, update user_details.is_synced, and update SyncJob counters.
+    Uses bulk operations for maximum performance.
+    Returns (success_count, failed_count).
     """
-    success_count = 0
+    success_user_ids = []
     failed_count = 0
+    logs = []
 
     for result in results:
         user_id = result["user_id"]
         is_success = result["sync_status"] == "SUCCESS"
 
-        # Write audit log
-        log = UserSyncLog(
-            job_id=job_id,
-            user_id=user_id,
-            external_id=result.get("external_id"),
-            sync_status=result["sync_status"],
-            verification_status=result["verification_status"],
-            request_payload=result.get("request_payload"),
-            response_payload=result.get("response_payload"),
-            error_message=result.get("error_message"),
-        )
-        db.add(log)
-
-        # Update user_details sync flag
-        detail = db.query(UserDetail).filter(UserDetail.user_id == user_id).first()
-        if detail:
-            detail.is_synced = is_success
-            if is_success:
-                detail.synced_at = datetime.now(timezone.utc)
-
         if is_success:
-            success_count += 1
+            success_user_ids.append(user_id)
         else:
             failed_count += 1
 
-    # Update SyncJob progress counters
+        logs.append(
+            UserSyncLog(
+                job_id=job_id,
+                user_id=user_id,
+                external_id=result.get("external_id"),
+                sync_status=result["sync_status"],
+                verification_status=result.get("verification_status", False),
+                request_payload=result.get("request_payload"),
+                response_payload=result.get("response_payload"),
+                error_message=result.get("error_message"),
+            )
+        )
+
+    # Bulk insert audit logs
+    if logs:
+        db.add_all(logs)
+
+    # Bulk update successful user_details records in 1 query
+    if success_user_ids:
+        db.query(UserDetail).filter(UserDetail.user_id.in_(success_user_ids)).update(
+            {"is_synced": True, "synced_at": datetime.now(timezone.utc)},
+            synchronize_session=False,
+        )
+
+    # Update SyncJob progress counters in 1 query
+    success_count = len(success_user_ids)
     if job_id:
         job = db.query(SyncJob).filter(SyncJob.id == job_id).first()
         if job:
@@ -212,6 +225,7 @@ def _persist_chunk_results(db, job_id: Optional[str], results: list[dict]):
             job.failed_count = (job.failed_count or 0) + failed_count
 
     db.commit()
+    return success_count, failed_count
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -219,23 +233,60 @@ def _persist_chunk_results(db, job_id: Optional[str], results: list[dict]):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-async def run_batch_sync(job_id: str, user_ids: list[int]):
+async def run_batch_sync(job_id: str, user_ids: list[int]) -> dict:
     """
     Main async background task.
     Fetches fresh data, sends to 3rd-party in parallel chunks of 10.
     Designed to be called via FastAPI BackgroundTasks — non-blocking.
+    Returns summary stats dict: {"success_count": int, "failed_count": int, "total": int}.
     """
-    logger.info(f"[SyncJob:{job_id}] Starting batch sync for {len(user_ids)} users")
-
     db = SessionLocal()
+    total_success = 0
+    total_failed = 0
+
     try:
         candidates = _fetch_candidates(db, user_ids)
         if not candidates:
-            logger.warning(
-                f"[SyncJob:{job_id}] No candidates found in DB for given user_ids"
+            sync_logger.log_warning(
+                f"No candidate profiles found in DB for given {len(user_ids)} user ID(s)"
             )
             _mark_job_done(db, job_id, failed=True)
-            return
+            return {
+                "success_count": 0,
+                "failed_count": len(user_ids),
+                "total": len(user_ids),
+            }
+
+        if not ARCCRM_SYNC_URL:
+            err_msg = (
+                "ArcCRM Sync URL is not configured in .env (ARCCRM_SYNC_URL is empty)"
+            )
+            sync_logger.log_error(err_msg)
+            # Create failed audit logs
+            failed_results = [
+                {
+                    "user_id": c["user_id"],
+                    "sync_status": "FAILED",
+                    "verification_status": False,
+                    "external_id": None,
+                    "request_payload": c,
+                    "response_payload": None,
+                    "error_message": err_msg,
+                }
+                for c in candidates
+            ]
+            _persist_chunk_results(db, job_id, failed_results)
+            sync_logger.log_database(
+                f"Recorded {len(candidates)} failure audit logs in user_sync_logs table"
+            )
+            _mark_job_done(db, job_id, failed=True)
+            return {
+                "success_count": 0,
+                "failed_count": len(candidates),
+                "total": len(candidates),
+            }
+
+        total_chunks = (len(candidates) + CHUNK_SIZE - 1) // CHUNK_SIZE
 
         async with httpx.AsyncClient() as client:
             for i in range(0, len(candidates), CHUNK_SIZE):
@@ -246,20 +297,47 @@ async def run_batch_sync(job_id: str, user_ids: list[int]):
                 results = await asyncio.gather(*tasks)
 
                 # Persist results immediately after each chunk
-                _persist_chunk_results(db, job_id, list(results))
+                sc, fc = _persist_chunk_results(db, job_id, list(results))
+                total_success += sc
+                total_failed += fc
 
-                logger.info(
-                    f"[SyncJob:{job_id}] Chunk {i // CHUNK_SIZE + 1} done "
-                    f"({min(i + CHUNK_SIZE, len(candidates))}/{len(candidates)})"
-                )
+        # High-level ArcCRM transmission log matching backup.log style
+        if total_failed == 0:
+            sync_logger.log_sync(
+                f"ArcCRM API: Successfully transmitted {total_success}/{len(candidates)} candidates across {total_chunks} chunk(s)"
+            )
+        elif total_success > 0:
+            sync_logger.log_warning(
+                f"ArcCRM API: Partial transmission — {total_success} succeeded, {total_failed} failed across {total_chunks} chunk(s)"
+            )
+        else:
+            sync_logger.log_error(
+                f"ArcCRM API: All {total_failed} candidate transmission(s) failed across {total_chunks} chunk(s)"
+            )
+
+        # Database state update log
+        sync_logger.log_database(
+            f"Updated user_details table: {total_success} marked is_synced=True & {len(candidates)} audit records saved in user_sync_logs"
+        )
 
         # Mark job as completed
-        _mark_job_done(db, job_id, failed=False)
-        logger.info(f"[SyncJob:{job_id}] Batch sync COMPLETED")
+        is_failed = total_success == 0 and total_failed > 0
+        _mark_job_done(db, job_id, failed=is_failed)
+
+        return {
+            "success_count": total_success,
+            "failed_count": total_failed,
+            "total": len(candidates),
+        }
 
     except Exception as e:
-        logger.error(f"[SyncJob:{job_id}] Fatal error: {e}")
+        sync_logger.log_error(f"SyncJob {job_id} encountered fatal error: {e}")
         _mark_job_done(db, job_id, failed=True)
+        return {
+            "success_count": total_success,
+            "failed_count": len(user_ids) - total_success,
+            "total": len(user_ids),
+        }
     finally:
         db.close()
 
