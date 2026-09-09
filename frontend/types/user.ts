@@ -41,4 +41,7 @@ export interface UserListResponse extends User {
   } | null;
   is_details_submitted: boolean;
   is_interview_submitted: boolean;
+  is_synced?: boolean;
+  synced_at?: string | null;
+  last_sync_error?: string | null;
 }

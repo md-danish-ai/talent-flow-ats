@@ -7,6 +7,7 @@ from app.utils.status_codes import StatusCode
 from app.users.models import User
 from app.interview_attempts.models import InterviewRecord
 from app.user_details.models import UserDetail
+from app.sync.models import UserSyncLog
 from app.paper_assignments.repository import assign_best_paper
 from datetime import date as dt_date, datetime, time
 from sqlalchemy import func, or_
@@ -365,6 +366,7 @@ def get_users_by_role(
     test_level_id: int = None,
     status: str = None,
     exclude_software: bool = False,
+    is_synced: bool = None,
 ):
     db_session = SessionLocal()
     try:
@@ -440,6 +442,18 @@ def get_users_by_role(
             .label("rn"),
         ).subquery()
 
+        # Latest sync log per user via row_number()
+        sync_log_subq = db_session.query(
+            UserSyncLog.user_id,
+            UserSyncLog.error_message,
+            func.row_number()
+            .over(
+                partition_by=UserSyncLog.user_id,
+                order_by=UserSyncLog.synced_at.desc(),
+            )
+            .label("rn"),
+        ).subquery()
+
         results_query = (
             db_session.query(
                 User,
@@ -460,6 +474,9 @@ def get_users_by_role(
                 UserDetail.is_interview_submitted,
                 UserDetail.is_reinterview,
                 UserDetail.reinterview_date,
+                UserDetail.is_synced,
+                UserDetail.synced_at,
+                sync_log_subq.c.error_message.label("last_sync_error"),
             )
             .outerjoin(
                 assignment_subq,
@@ -472,6 +489,10 @@ def get_users_by_role(
             .outerjoin(
                 attempt_subq,
                 (User.id == attempt_subq.c.user_id) & (attempt_subq.c.rn == 1),
+            )
+            .outerjoin(
+                sync_log_subq,
+                (User.id == sync_log_subq.c.user_id) & (sync_log_subq.c.rn == 1),
             )
             .outerjoin(UserDetail, User.id == UserDetail.user_id)
             .filter(User.role == role)
@@ -502,6 +523,8 @@ def get_users_by_role(
                     User.mobile.ilike(pattern),
                 )
             )
+        if is_synced is not None:
+            results_query = results_query.filter(UserDetail.is_synced == is_synced)
 
         # 3. DATE FILTERS (Strictly New Registrations or Re-interviews)
         if range_from:
@@ -579,6 +602,13 @@ def get_users_by_role(
                 else False,
                 "reinterview_date": row.reinterview_date.isoformat()
                 if row.reinterview_date
+                else None,
+                "is_synced": bool(row.is_synced)
+                if row.is_synced is not None
+                else False,
+                "synced_at": row.synced_at.isoformat() if row.synced_at else None,
+                "last_sync_error": row.last_sync_error
+                if hasattr(row, "last_sync_error")
                 else None,
                 "user_type": "returning"
                 if (
