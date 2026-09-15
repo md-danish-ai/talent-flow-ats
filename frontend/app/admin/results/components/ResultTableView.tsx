@@ -31,6 +31,11 @@ import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 import { useState, useMemo } from "react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Checkbox } from "@components/ui-elements/Checkbox";
+import { UserCheck, UserPlus } from "lucide-react";
+import { Button } from "@components/ui-elements/Button";
+import { AssignLeadModal } from "./AssignLeadModal";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 // ---------------------------------------------------------------------------
 // PDF download helper (calls backend directly, no new tab)
@@ -128,12 +133,6 @@ function DownloadButton({
     </TableIconButton>
   );
 }
-
-import { Checkbox } from "@components/ui-elements/Checkbox";
-import { UserCheck, UserPlus } from "lucide-react";
-import { Button } from "@components/ui-elements/Button";
-import { AssignLeadModal } from "./AssignLeadModal";
-import { STYLE_CONFIG } from "@lib/config/style";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -298,7 +297,6 @@ export function ResultTableView({
                 Overall Grade
               </TableHead>
             )}
-
             {visibleColumns.includes("typing_wpm") && (
               <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Typing WPM
@@ -427,11 +425,11 @@ export function ResultTableView({
                               itemStatus === "not_required"
                                 ? "bg-slate-400"
                                 : itemStatus === "submitted" ||
-                                    itemStatus === "completed" ||
-                                    item.is_interview_submitted
+                                  itemStatus === "completed" ||
+                                  item.is_interview_submitted
                                   ? "bg-green-500"
                                   : itemStatus === "started" ||
-                                      itemStatus === "inprogress"
+                                    itemStatus === "inprogress"
                                     ? "bg-orange-500 animate-pulse"
                                     : itemStatus === "auto_submitted"
                                       ? "bg-blue-500"
@@ -570,7 +568,7 @@ export function ResultTableView({
                   {visibleColumns.includes("grade") && (
                     <TableCell className="text-center">
                       {latest?.overall_grade &&
-                      latest?.overall_grade !== "N/A" ? (
+                        latest?.overall_grade !== "N/A" ? (
                         <div className="flex flex-col items-center justify-center gap-1">
                           <Badge
                             variant="outline"
@@ -583,7 +581,7 @@ export function ResultTableView({
                             {latest.overall_grade}
                           </Badge>
                           {typeof latest?.total_marks === "number" &&
-                          latest.total_marks > 0 ? (
+                            latest.total_marks > 0 ? (
                             <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline gap-0.5">
                               <span className="text-foreground font-bold">
                                 {latest.obtained_marks ?? 0}
@@ -606,7 +604,7 @@ export function ResultTableView({
                             Not Available
                           </Badge>
                           {typeof latest?.total_marks === "number" &&
-                          latest.total_marks > 0 ? (
+                            latest.total_marks > 0 ? (
                             <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline gap-0.5">
                               <span className="text-foreground font-bold">
                                 {latest.obtained_marks ?? 0}
@@ -625,11 +623,10 @@ export function ResultTableView({
                       )}
                     </TableCell>
                   )}
-
                   {visibleColumns.includes("typing_wpm") && (
                     <TableCell className="text-center font-medium">
                       {latest?.typing_stats &&
-                      typeof latest.typing_stats.wpm === "number" ? (
+                        typeof latest.typing_stats.wpm === "number" ? (
                         latest.typing_stats.wpm
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
@@ -641,7 +638,7 @@ export function ResultTableView({
                   {visibleColumns.includes("typing_acc") && (
                     <TableCell className="text-center font-medium">
                       {latest?.typing_stats &&
-                      typeof latest.typing_stats.accuracy === "number" ? (
+                        typeof latest.typing_stats.accuracy === "number" ? (
                         `${latest.typing_stats.accuracy}%`
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
@@ -709,7 +706,7 @@ export function ResultTableView({
                     <TableCell className="align-middle">
                       <div className="flex flex-wrap gap-1.5 max-w-[180px]">
                         {latest?.interviewers &&
-                        latest.interviewers.length > 0 ? (
+                          latest.interviewers.length > 0 ? (
                           <Tooltip
                             content={
                               <div className="flex flex-col gap-2 p-1 min-w-[140px]">
