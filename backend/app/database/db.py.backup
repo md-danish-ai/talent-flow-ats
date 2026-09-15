@@ -9,14 +9,13 @@ DATABASE_URL = (
     f"{settings.DB_PORT}/{settings.DB_NAME}"
 )
 
-# Database connection pool (Tuned for 6 workers + PgBouncer)
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    pool_size=10,  # Persistent connections per worker
-    max_overflow=10,  # Max burst connections per worker
-    pool_timeout=15,  # Timeout (seconds) waiting for connection
-    pool_recycle=600,  # Recycle connections every 10 minutes
+    pool_size=20,  # Base persistent connections
+    max_overflow=30,  # Extra burst connections (total max = 50)
+    pool_timeout=30,  # Wait up to 30s for a free connection
+    pool_recycle=1800,  # Recycle connections every 30min (avoids stale connections)
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
