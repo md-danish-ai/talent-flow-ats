@@ -134,11 +134,13 @@ services:
 
   redis:
     container_name: talent-flow-redis
-    image: redis:7-alpine
+    image: redis/redis-stack:latest
     restart: always
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    environment:
+      REDIS_ARGS: "--maxmemory 256mb --maxmemory-policy allkeys-lru"
     ports:
       - "6379:6379"
+      - "8001:8001"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

@@ -183,8 +183,8 @@ GDRIVE_FOLDER_PATH=TalentFlow/Backups
 | Frontend (Next.js) | [http://localhost:3000](http://localhost:3000) | Web Application UI |
 | Backend (FastAPI) | [http://localhost:4000](http://localhost:4000) | REST API Server |
 | API Docs (Swagger) | [http://localhost:4000/docs](http://localhost:4000/docs) | Interactive API Documentation |
-| PostgreSQL | `localhost:9600` | Database Server |
 | Redis | `localhost:6379` | In-Memory Cache (Paper & Realtime) |
+| RedisInsight | [http://localhost:8001](http://localhost:8001) | Redis GUI & Visualization |
 
 ## Database Migrations
 
@@ -392,7 +392,7 @@ To maintain a clean and stable codebase, follow this branching strategy:
 
 ## Redis Cache Management
 
-Redis (`redis:7-alpine`) is used for ultra-fast Paper Caching (`paper:{id}:details`) and Realtime Pub/Sub events.
+Redis (`redis/redis-stack:latest`) is used for ultra-fast Paper Caching (`paper:{id}:details`) and Realtime Pub/Sub events. It also provides the RedisInsight GUI on `http://localhost:8001`.
 
 ### 1. View all cached keys (CLI)
 ```bash
