@@ -201,11 +201,28 @@ export function AttemptDetailClient({
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (!res.ok) throw new Error("PDF failed");
+      const contentDisposition = res.headers.get("content-disposition");
+      let filename = "";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      if (!filename) {
+        const username = data?.user?.username || "Candidate";
+        const mobile = data?.user?.mobile || "";
+        const safeName = username.replace(/\s+/g, "_");
+        filename = mobile ? `${safeName}_${mobile}.pdf` : `${safeName}.pdf`;
+      }
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
-      a.download = `report_${data?.user.username || "candidate"}_attempt_${data?.attempt.attempt_number || attemptId}.pdf`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

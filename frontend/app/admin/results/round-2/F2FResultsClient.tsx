@@ -144,7 +144,9 @@ export default function F2FResultsClient() {
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px] text-center">Sr. No.</TableHead>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
                     <TableHead>Candidate</TableHead>
                     <TableHead>Project Lead</TableHead>
                     <TableHead className="text-center">Status</TableHead>
