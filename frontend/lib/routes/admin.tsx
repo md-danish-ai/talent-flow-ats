@@ -6,6 +6,7 @@ import {
   Package,
   Building2,
   Bell,
+  RefreshCw,
 } from "lucide-react";
 import { NavSection, NavSectionType } from "./types";
 
@@ -47,7 +48,7 @@ export const ADMIN_ROUTES: NavSection[] = [
     ],
   },
   {
-    title: "Result & Reports",
+    title: "Results & Reports",
     icon: <BarChart3 className="w-5 h-5" />,
     type: "collapsible",
     items: [
@@ -68,6 +69,13 @@ export const ADMIN_ROUTES: NavSection[] = [
       { label: "Master Data", href: "/admin/management/master-data" },
       { label: "Locations", href: "/admin/management/locations" },
     ],
+  },
+  {
+    title: "ArcCRM Sync",
+    icon: <RefreshCw className="w-5 h-5" />,
+    type: "item",
+    href: "/admin/management/sync",
+    items: [],
   },
   {
     title: "Notifications",

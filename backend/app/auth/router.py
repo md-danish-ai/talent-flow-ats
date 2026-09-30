@@ -41,6 +41,7 @@ async def get_users(
     exclude_software: bool = Query(
         False, description="Exclude Software department users"
     ),
+    is_synced: bool = Query(None, description="Filter by sync status"),
 ):
     data = get_users_by_role(
         role,
@@ -53,6 +54,7 @@ async def get_users(
         test_level_id=test_level_id,
         status=status,
         exclude_software=exclude_software,
+        is_synced=is_synced,
     )
     return api_response(
         StatusCode.OK,

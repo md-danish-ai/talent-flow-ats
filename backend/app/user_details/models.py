@@ -34,6 +34,10 @@ class UserDetail(Base):
     is_reinterview = Column(Boolean, server_default="false", nullable=False)
     reinterview_date = Column(Date, nullable=True)
 
+    # Third-party sync tracking
+    is_synced = Column(Boolean, server_default="false", nullable=False, index=True)
+    synced_at = Column(TIMESTAMP, nullable=True)
+
     updated_at = Column(
         TIMESTAMP,
         server_default=func.current_timestamp(),

@@ -32,3 +32,5 @@ pandas
 openpyxl
 xhtml2pdf
 redis
+httpx
+apscheduler
