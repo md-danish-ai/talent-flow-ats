@@ -33,9 +33,9 @@ import { cn, formatDate } from "@lib/utils";
 import { STYLE_CONFIG } from "@lib/config/style";
 import { EmptyState } from "@components/ui-elements/EmptyState";
 import { UserResultDetailSkeleton } from "@components/ui-skeleton/UserResultDetailSkeleton";
-import { Tabs } from "@components/ui-elements/Tabs";
 import { Round2History } from "./Round2History";
 import { UserX, RefreshCcw } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface UserResultDetailClientProps {
   userId: number;
@@ -100,7 +100,7 @@ export function UserResultDetailClient({
 
   if (loadingAttempts) {
     return (
-      <PageContainer className="py-6">
+      <PageContainer>
         <UserResultDetailSkeleton />
       </PageContainer>
     );
@@ -160,136 +160,136 @@ export function UserResultDetailClient({
     ? formatDate(attemptData.attempts[0].started_at)
     : "N/A";
 
-  const TABS = [
+  const ROUND_TABS = [
     {
-      value: "round1",
+      id: "round1",
       label: "Round 1 (Technical)",
       icon: <History size={16} />,
+      badge: `${totalAttempts} ${totalAttempts === 1 ? "Attempt" : "Attempts"}`,
     },
     {
-      value: "round2",
+      id: "round2",
       label: "Round 2 (F2F Interview)",
       icon: <UserCheck size={16} />,
+      badge: "F2F",
     },
   ];
 
+  const handleDownloadPdf = async () => {
+    const latest = attemptData?.attempts?.[0];
+    if (!latest) return;
+    setDownloadingPdf(true);
+    try {
+      const authRow = document.cookie
+        .split(";")
+        .find((r) => r.trim().startsWith("auth_token="));
+      let token = authRow ? authRow.trim().substring("auth_token=".length) : "";
+      token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+      try {
+        token = decodeURIComponent(token);
+      } catch {
+        /* keep raw */
+      }
+
+      const res = await fetch(
+        `${BASE_URL}/admin/results/report/${userId}/${latest.attempt_id}/pdf`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!res.ok) throw new Error("PDF failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const contentDisposition = res.headers.get("content-disposition");
+      let filename = "";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      if (!filename) {
+        const username = attemptData?.user?.username || "Candidate";
+        const mobile = attemptData?.user?.mobile || "";
+        const safeName = username.replace(/\s+/g, "_");
+        filename = mobile ? `${safeName}_${mobile}.pdf` : `${safeName}.pdf`;
+      }
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to download report. Please try again.");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   return (
-    <PageContainer className="py-6 space-y-8">
-      {/* Top Navigation & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <Link
-            href={basePath}
-            className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-colors mb-2"
-          >
-            <div className="p-1 rounded-full bg-muted group-hover:bg-brand-primary/10 transition-colors">
-              <ArrowLeft size={16} />
-            </div>
-            <Typography variant="body5" className="font-medium">
-              Back to User Results
-            </Typography>
-          </Link>
-          <Typography variant="h2" className="tracking-tight font-black">
-            Interview Analytics
-          </Typography>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            color="primary"
-            className="shadow-md shadow-brand-primary/10"
-            startIcon={
-              downloadingPdf ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Download size={16} />
-              )
-            }
-            disabled={!attemptData?.attempts?.length || downloadingPdf}
-            onClick={async () => {
-              const latest = attemptData?.attempts?.[0];
-              if (!latest) return;
-              setDownloadingPdf(true);
-              try {
-                const authRow = document.cookie
-                  .split(";")
-                  .find((r) => r.trim().startsWith("auth_token="));
-                let token = authRow
-                  ? authRow.trim().substring("auth_token=".length)
-                  : "";
-                token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
-                try {
-                  token = decodeURIComponent(token);
-                } catch {
-                  /* keep raw */
-                }
-
-                const res = await fetch(
-                  `${BASE_URL}/admin/results/report/${userId}/${latest.attempt_id}/pdf`,
-                  { headers: { Authorization: `Bearer ${token}` } },
-                );
-                if (!res.ok) throw new Error("PDF failed");
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-
-                const contentDisposition = res.headers.get(
-                  "content-disposition",
-                );
-                let filename = "";
-                if (contentDisposition) {
-                  const match = contentDisposition.match(
-                    /filename=["']?([^"';]+)["']?/i,
-                  );
-                  if (match && match[1]) {
-                    filename = match[1];
-                  }
-                }
-
-                if (!filename) {
-                  const username = attemptData?.user?.username || "Candidate";
-                  const mobile = attemptData?.user?.mobile || "";
-                  const safeName = username.replace(/\s+/g, "_");
-                  filename = mobile
-                    ? `${safeName}_${mobile}.pdf`
-                    : `${safeName}.pdf`;
-                }
-
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-              } catch {
-                toast.error("Failed to download report. Please try again.");
-              } finally {
-                setDownloadingPdf(false);
-              }
-            }}
-          >
-            {downloadingPdf ? "Generating PDF..." : "Download Report Sheet"}
-          </Button>
-          <Link href={basePath}>
-            <Button
-              color="primary"
-              className="shadow-lg shadow-brand-primary/20"
-            >
-              Manage All Results
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* User Information Profile Card - Compact & Space Efficient */}
+    <PageContainer className="space-y-8">
+      {/* Candidate Overview Card (Designed in PaperOverviewCard Style) */}
       <div
         className={cn(
-          "bg-card border border-border/70 p-5 md:p-6 shadow-sm space-y-4",
+          "bg-card border border-border/80 shadow-xs p-5 sm:p-6 space-y-5 relative overflow-hidden transition-all",
           STYLE_CONFIG.cardRadius,
         )}
       >
+        {/* Top Action Row: Navigation on Left & Actions on Right */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border/60">
+          <div className="flex items-center gap-3">
+            <Link href={basePath}>
+              <Button
+                variant="outline"
+                color="primary"
+                size="sm"
+                animate="scale"
+                startIcon={<ArrowLeft size={16} />}
+                className="font-bold text-xs"
+              >
+                Back to User Results
+              </Button>
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 sm:ml-auto">
+            <Button
+              variant="outline"
+              color="primary"
+              size="sm"
+              animate="scale"
+              className="shadow-sm font-bold text-xs"
+              startIcon={
+                downloadingPdf ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Download size={15} />
+                )
+              }
+              disabled={!attemptData?.attempts?.length || downloadingPdf}
+              onClick={handleDownloadPdf}
+            >
+              {downloadingPdf ? "Generating PDF..." : "Download Report Sheet"}
+            </Button>
+            <Link href={basePath}>
+              <Button
+                color="primary"
+                size="sm"
+                animate="scale"
+                className="shadow-md shadow-brand-primary/20 font-bold text-xs"
+              >
+                Manage All Results
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Candidate Profile Row: Identity on Left + 4 Mini UI Info Cards on Right */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Left: Avatar + Candidate Details */}
+          {/* Left Side: Avatar + Candidate Details */}
           <div className="flex items-center gap-4">
             <div className="relative shrink-0">
               <div className="h-14 w-14 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary font-bold text-xl shadow-inner">
@@ -307,11 +307,12 @@ export function UserResultDetailClient({
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <Typography
-                  variant="h3"
-                  className="font-bold text-foreground text-lg sm:text-xl"
+                  variant="h2"
+                  weight="black"
+                  className="text-foreground tracking-tight text-xl sm:text-2xl font-black leading-tight"
                 >
                   {attemptData.user.username}
                 </Typography>
@@ -345,7 +346,7 @@ export function UserResultDetailClient({
                     navigator.clipboard.writeText(attemptData.user.mobile);
                     toast.success("Mobile number copied!");
                   }}
-                  className="flex items-center gap-1.5 hover:text-brand-primary transition-colors"
+                  className="flex items-center gap-1.5 hover:text-brand-primary transition-colors cursor-pointer"
                   title="Click to copy mobile"
                 >
                   <Smartphone size={13} className="text-orange-500" />
@@ -363,7 +364,7 @@ export function UserResultDetailClient({
                         );
                         toast.success("Email address copied!");
                       }}
-                      className="flex items-center gap-1.5 hover:text-brand-primary transition-colors"
+                      className="flex items-center gap-1.5 hover:text-brand-primary transition-colors cursor-pointer"
                       title="Click to copy email"
                     >
                       <Mail size={13} className="text-brand-primary" />
@@ -376,67 +377,66 @@ export function UserResultDetailClient({
             </div>
           </div>
 
-          {/* Right: 4 Metadata Chips */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap items-center gap-2 text-xs">
-            {/* Department */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-orange-500/5 border border-orange-500/20 rounded-xl">
-              <Briefcase
-                size={15}
-                className="text-orange-600 dark:text-orange-400 shrink-0"
-              />
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+          {/* Right Side: 4 Mini UI Cards matching PaperOverviewCard */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {/* Department Card */}
+            <div className="flex items-center gap-2.5 px-3.5 h-[52px] rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 shadow-xs transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                <Briefcase size={15} strokeWidth={2.2} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                   Department
                 </span>
-                <span className="font-bold text-foreground truncate max-w-[120px] block">
+                <span className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight">
                   {attemptData.user.department || "N/A"}
                 </span>
               </div>
             </div>
 
-            {/* Level */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-              <Target
-                size={15}
-                className="text-blue-600 dark:text-blue-400 shrink-0"
-              />
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            {/* Exam Level Card */}
+            <div className="flex items-center gap-2.5 px-3.5 h-[52px] rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 shadow-xs transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Target size={15} strokeWidth={2.2} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                   Level
                 </span>
-                <span className="font-bold text-foreground truncate max-w-[100px] block">
+                <span className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight">
                   {attemptData.user.test_level || "N/A"}
                 </span>
               </div>
             </div>
 
-            {/* Sessions */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
-              <Layers
-                size={15}
-                className="text-emerald-600 dark:text-emerald-400 shrink-0"
-              />
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Sessions
+            {/* Attempts Card */}
+            <div className="flex items-center gap-2.5 px-3.5 h-[52px] rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 shadow-xs transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Layers size={15} strokeWidth={2.2} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                  Attempts
                 </span>
-                <span className="font-bold text-foreground">
+                <span className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight">
                   {totalAttempts}{" "}
-                  <span className="text-[11px] font-semibold text-muted-foreground">
+                  <span className="text-[11px] font-normal text-muted-foreground">
                     ({submittedAttempts} Done)
                   </span>
                 </span>
               </div>
             </div>
 
-            {/* Last Activity */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border border-border/50 rounded-xl">
-              <Calendar size={15} className="text-brand-primary shrink-0" />
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            {/* Last Activity Card */}
+            <div className="flex items-center gap-2.5 px-3.5 h-[52px] rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 shadow-xs transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <Calendar size={15} strokeWidth={2.2} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                   Last Activity
                 </span>
-                <span className="font-bold text-foreground whitespace-nowrap">
+                <span className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap">
                   {lastAttemptDate}
                 </span>
               </div>
@@ -445,50 +445,103 @@ export function UserResultDetailClient({
         </div>
       </div>
 
-      {/* Tabs for Round 1 and Round 2 */}
-      <Tabs
-        tabs={TABS}
-        activeTab={activeTab}
-        onChange={setActiveTab}
-        variant="pills"
-        className="w-full"
-      />
-
-      <div className="mt-8">
-        {activeTab === "round1" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "p-2.5 bg-brand-primary/10 text-brand-primary shadow-sm",
-                    STYLE_CONFIG.iconRadius,
-                  )}
-                >
-                  <History size={20} />
-                </div>
-                <div>
-                  <Typography variant="h4" className="font-bold leading-none">
-                    Attempt History
-                  </Typography>
-                  <Typography
-                    variant="body5"
-                    className="text-muted-foreground mt-1"
-                  >
-                    Recent interview sessions and their scoring outcomes.
-                  </Typography>
-                </div>
-              </div>
-              <Badge variant="outline" shape="square">
-                {totalAttempts} Total
-              </Badge>
+      {/* Evaluation & Attempt History Section */}
+      <div className="space-y-6">
+        {/* Section Header: Attempt History */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "p-2.5 bg-brand-primary/10 text-brand-primary shadow-sm border border-brand-primary/15",
+                STYLE_CONFIG.iconRadius,
+              )}
+            >
+              <History size={20} />
             </div>
+            <div>
+              <Typography
+                variant="h4"
+                className="font-bold leading-none text-slate-900 dark:text-white"
+              >
+                Attempt History
+              </Typography>
+              <Typography
+                variant="body5"
+                className="text-muted-foreground mt-1"
+              >
+                Recent interview attempts, evaluation rounds and scoring
+                outcomes.
+              </Typography>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            shape="square"
+            className="px-3 py-1 font-bold text-xs uppercase tracking-wider"
+          >
+            {totalAttempts} {totalAttempts === 1 ? "Attempt" : "Attempts"}
+          </Badge>
+        </div>
 
+        {/* Redesigned Tab Navigation Bar below Attempt History */}
+        <div className="flex items-center p-1.5 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-inner backdrop-blur-md w-full sm:w-fit gap-1.5">
+          {ROUND_TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "relative flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 select-none outline-none flex-1 sm:flex-initial",
+                  isActive
+                    ? "text-brand-primary"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100",
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeRoundTabIndicator"
+                    className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200/80 dark:border-slate-700 z-0"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      "transition-transform duration-200 shrink-0",
+                      isActive && "scale-110 text-brand-primary",
+                    )}
+                  >
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                  {tab.badge !== undefined && (
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold px-2 py-0.5 rounded-full transition-colors shrink-0",
+                        isActive
+                          ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20"
+                          : "bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300/40 dark:border-slate-700/40",
+                      )}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "round1" && (
+          <div>
             {attemptData.attempts.length === 0 ? (
               <EmptyState
                 variant="database"
                 title="No attempts found"
-                description="This candidate has not started any interview sessions yet. Attempts will appear here once they begin."
+                description="This candidate has not started any interview attempts yet. Attempts will appear here once they begin."
               />
             ) : (
               <div className="grid grid-cols-1 gap-6">

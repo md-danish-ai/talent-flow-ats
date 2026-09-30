@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ChevronUp,
   FileCheck2,
   BookOpen,
   CheckCircle2,
   XCircle,
   MinusCircle,
+  Download,
+  Loader2,
 } from "lucide-react";
+import { BASE_URL } from "@lib/api/client";
+import { toast } from "@lib/toast";
 import { PageContainer } from "@components/ui-layout/PageContainer";
 import { Typography } from "@components/ui-elements/Typography";
 import { Alert } from "@components/ui-elements/Alert";
@@ -53,6 +56,7 @@ export function AttemptDetailClient({
     Record<string, string>
   >({});
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -136,7 +140,7 @@ export function AttemptDetailClient({
 
   if (loading) {
     return (
-      <PageContainer className="py-8">
+      <PageContainer>
         <AttemptDetailSkeleton />
       </PageContainer>
     );
@@ -144,7 +148,7 @@ export function AttemptDetailClient({
 
   if (error || !data) {
     return (
-      <PageContainer className="py-8">
+      <PageContainer>
         <Alert
           variant="error"
           description={
@@ -178,33 +182,102 @@ export function AttemptDetailClient({
     {} as Record<string, { answer: (typeof data.answers)[0]; index: number }[]>,
   );
 
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      const authRow = document.cookie
+        .split(";")
+        .find((r) => r.trim().startsWith("auth_token="));
+      let token = authRow ? authRow.trim().substring("auth_token=".length) : "";
+      token = token.replace(/^"|"$/g, "").replace(/^%22|%22$/g, "");
+      try {
+        token = decodeURIComponent(token);
+      } catch {
+        /* keep raw */
+      }
+
+      const res = await fetch(
+        `${BASE_URL}/admin/results/report/${userId}/${attemptId}/pdf`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!res.ok) throw new Error("PDF failed");
+      const contentDisposition = res.headers.get("content-disposition");
+      let filename = "";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename=["']?([^"';]+)["']?/i);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      if (!filename) {
+        const username = data?.user?.username || "Candidate";
+        const mobile = data?.user?.mobile || "";
+        const safeName = username.replace(/\s+/g, "_");
+        filename = mobile ? `${safeName}_${mobile}.pdf` : `${safeName}.pdf`;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Report downloaded successfully");
+    } catch {
+      toast.error("Failed to download PDF report");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const totalMaxMarks = data.answers.reduce(
     (acc, curr) => acc + curr.max_marks,
     0,
   );
 
   return (
-    <PageContainer className="py-4 space-y-4">
-      {/* Back to Attempt History link */}
-      <Link
-        href={`/admin/results/round-1/${userId}`}
-        className="group flex items-center gap-2 text-muted-foreground hover:text-brand-primary transition-all w-fit"
-      >
-        <div
-          className={`p-1 ${STYLE_CONFIG.iconRadius} bg-muted group-hover:bg-brand-primary/10 transition-colors border border-border group-hover:border-brand-primary/30`}
-        >
-          <ArrowLeft size={14} />
-        </div>
-        <Typography
-          variant="body5"
-          className="font-bold uppercase tracking-widest text-[10px]"
-        >
-          Back to Attempt History
-        </Typography>
-      </Link>
-
-      {/* Unified Attempt Summary Card (with Profile, Metrics & Grade Scale Matrix) */}
+    <PageContainer className="space-y-4">
+      {/* Unified Attempt Summary Card (with Profile, Metrics, Grade Scale Matrix, Back Button & Actions) */}
       <AttemptSummaryCard
+        backHref={`/admin/results/round-1/${userId}`}
+        backLabel="Back to Attempt History"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              color="primary"
+              size="sm"
+              animate="scale"
+              className="shadow-sm font-bold text-xs"
+              startIcon={
+                downloadingPdf ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Download size={15} />
+                )
+              }
+              disabled={downloadingPdf}
+              onClick={handleDownloadPdf}
+            >
+              {downloadingPdf ? "Generating PDF..." : "Download Report Sheet"}
+            </Button>
+            <Link href={`/admin/results/round-1/${userId}`}>
+              <Button
+                color="primary"
+                size="sm"
+                animate="scale"
+                className="shadow-md shadow-brand-primary/20 font-bold text-xs"
+              >
+                Candidate Attempts
+              </Button>
+            </Link>
+          </div>
+        }
         attemptNumber={data.attempt.attempt_number}
         status={data.attempt.status}
         username={data.user.username}

@@ -12,10 +12,17 @@ import {
   History as HistoryIcon,
   Eye,
   Trophy,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { STYLE_CONFIG } from "@lib/config/style";
-import { cn, formatDate, formatTime, parseUTCDate } from "@lib/utils";
+import {
+  cn,
+  formatDate,
+  formatTime,
+  parseUTCDate,
+  getThemedCardHoverStyles,
+} from "@lib/utils";
 import { useMe } from "@hooks/api/user/use-me";
 import { getGradeConfig } from "@lib/utils/gradeUtils";
 
@@ -50,7 +57,6 @@ export const AttemptHistoryCard = ({
   attemptId,
   paperId,
   paperName,
-  status,
   index,
   totalAttempts,
   isAutoSubmitted,
@@ -80,66 +86,47 @@ export const AttemptHistoryCard = ({
     }
 
     // Fallback for legacy attempts or in-progress states
-    if (!startedAt || !submittedAt) return "--:--";
+    if (!startedAt || !submittedAt) return "N/A";
     const start = parseUTCDate(startedAt)?.getTime();
     const end = parseUTCDate(submittedAt)?.getTime();
-    if (!start || !end) return "--:--";
+    if (!start || !end) return "N/A";
     const diff = Math.max(0, Math.floor((end - start) / 1000));
     const mins = Math.floor(diff / 60);
     const secs = diff % 60;
     return `${mins}m ${secs}s`;
   };
 
-  // Map status to pillar colors
-  const getPillarColor = (s: string) => {
-    switch (s.toLowerCase()) {
-      case "submitted":
-      case "auto_submitted":
-        return "bg-brand-primary";
-      case "started":
-        return "bg-amber-500";
-      default:
-        return "bg-rose-500";
-    }
-  };
+  const gradeConfig = getGradeConfig(overallGrade);
+  const duration = getDuration();
+  const completionPercentage =
+    totalQuestions > 0
+      ? Math.round((attemptedCount / totalQuestions) * 100)
+      : 0;
 
   return (
     <div
       className={cn(
-        "group relative flex flex-col gap-6 overflow-hidden border border-border bg-card p-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-2 hover:border-brand-primary/50 hover:shadow-2xl hover:shadow-brand-primary/10",
+        "bg-card border border-border/70 p-4 md:p-5 shadow-sm space-y-4 transition-all duration-300",
         STYLE_CONFIG.cardRadius,
       )}
     >
-      {/* Left Side Status Pillar */}
-      <div
-        className={`absolute inset-y-0 left-0 w-1.5 transition-colors duration-300 ${getPillarColor(status)}`}
-      />
-
-      {/* Creative Background Glow */}
-      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-brand-primary/5 blur-3xl transition-all group-hover:bg-brand-primary/15" />
-
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-        {/* Creative Identity Section */}
-        <div className="flex items-center gap-5">
-          <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary/20 via-brand-primary/10 to-transparent text-xl font-black text-brand-primary ring-2 ring-brand-primary/10 transition-all group-hover:ring-brand-primary/30 group-hover:rotate-12">
-              #{totalAttempts - index}
-            </div>
-            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-card text-brand-primary shadow-sm">
-              <HistoryIcon size={10} />
-            </div>
+      {/* Top Header Row: Attempt Info, Paper & Timings on Left, Action Button on Top Right */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-3.5 border-b border-border/50">
+        {/* Left: Attempt Number Avatar, Title, Status Badges & Subtitle */}
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary font-black text-sm shrink-0 shadow-inner">
+            #{totalAttempts - index}
           </div>
-
-          <div className="space-y-2">
-            <Typography
-              variant="h4"
-              className="text-foreground tracking-tight font-bold"
-            >
-              Interview Attempt #{totalAttempts - index}
-            </Typography>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="space-y-1 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Typography
+                variant="h4"
+                className="text-base sm:text-lg font-bold text-foreground leading-snug"
+              >
+                Interview Attempt #{totalAttempts - index}
+              </Typography>
+              <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse shrink-0" />
               {statusBadge}
-
               {(completionReason || isAutoSubmitted) && (
                 <Badge
                   variant="outline"
@@ -149,7 +136,7 @@ export const AttemptHistoryCard = ({
                       : "secondary"
                   }
                   shape="square"
-                  className="font-black uppercase"
+                  className="font-bold uppercase tracking-wider text-[10px]"
                 >
                   {completionReason === "time_over"
                     ? "TIME OVER"
@@ -162,183 +149,42 @@ export const AttemptHistoryCard = ({
                 </Badge>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Time Data Row (Integrated into specialized card) */}
-        <div
-          className={cn(
-            "flex flex-wrap items-center gap-x-4 gap-y-3 bg-muted/20 px-4 py-3 border border-border/30",
-            STYLE_CONFIG.innerCardRadius,
-          )}
-        >
-          {/* Date Column */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Date
-            </span>
-            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
-              <HistoryIcon size={12} className="text-brand-primary" />
-              <span>{formatDate(startedAt)}</span>
-            </div>
-          </div>
-
-          <div className="h-6 w-px bg-border/40 hidden md:block" />
-
-          {/* Started At Column */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Started At
-            </span>
-            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
-              <Clock3 size={12} className="text-brand-primary" />
-              <span>{formatTime(startedAt)}</span>
-            </div>
-          </div>
-
-          <div className="h-6 w-px bg-border/40 hidden md:block" />
-
-          {/* Submitted At Column */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Submitted At
-            </span>
-            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-foreground">
-              <CheckCircle2 size={12} className={`text-emerald-500`} />
-              <span>{submittedAt ? formatTime(submittedAt) : "--:--"}</span>
-            </div>
-          </div>
-
-          <div className="h-6 w-px bg-border/40 hidden md:block" />
-
-          {/* Duration Column */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Duration
-            </span>
-            <div className="flex items-center gap-1.5 text-[12px] font-black text-brand-primary">
-              <HistoryIcon size={12} />
-              <span>{getDuration()}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Typing Stats Preview (if available) */}
-      {typingStats && (
-        <div
-          className={cn(
-            "flex flex-wrap items-center gap-4 px-4 py-2 bg-brand-primary/5 border border-brand-primary/10 -mt-2 animate-in fade-in slide-in-from-left-2 duration-700",
-            STYLE_CONFIG.innerCardRadius,
-          )}
-        >
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-brand-primary opacity-60">
-              Typing Speed
-            </span>
-            <Typography
-              variant="body4"
-              className="font-black text-brand-primary"
-            >
-              {typingStats.wpm} WPM
-            </Typography>
-          </div>
-          <div className="h-3 w-px bg-brand-primary/20" />
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 opacity-60">
-              Accuracy
-            </span>
-            <Typography variant="body4" className="font-black text-emerald-600">
-              {typingStats.accuracy}%
-            </Typography>
-          </div>
-          <div className="h-3 w-px bg-brand-primary/20" />
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 opacity-60">
-              Time
-            </span>
-            <Typography variant="body4" className="font-black text-amber-600">
-              {Math.round(typingStats.time_taken)}s
-            </Typography>
-          </div>
-        </div>
-      )}
-
-      {/* Performance Footer */}
-      <div
-        className={cn(
-          "flex flex-wrap items-center justify-between bg-muted/30 p-4 ring-1 ring-border/50 gap-4",
-          STYLE_CONFIG.innerCardRadius,
-        )}
-      >
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Paper
-            </span>
-            <div className="flex items-center gap-1.5 text-brand-primary font-bold">
-              <FileText size={14} />
-              <span>{paperName || `Paper #${paperId}`}</span>
-            </div>
-          </div>
-          <div className="hidden sm:block h-8 w-px bg-border/60" />
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Questions Solved
-            </span>
-            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-              <CheckCircle2 size={14} />
-              <span>
-                {attemptedCount}/{totalQuestions}
-              </span>
-            </div>
-          </div>
-          <div className="hidden sm:block h-8 w-px bg-border/60" />
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Questions Missed
-            </span>
-            <div className="flex items-center gap-1.5 text-rose-500 font-bold">
-              <CircleAlert size={14} />
-              <span>{unattemptedCount}</span>
-            </div>
-          </div>
-
-          <div className="hidden lg:block h-8 w-px bg-border/60" />
-
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Overall Grade
-            </span>
-            <div
-              className={cn(
-                "flex items-center gap-1.5 font-black",
-                getGradeConfig(overallGrade).color,
-              )}
-            >
-              <Trophy size={14} />
-              <span>{overallGrade || "N/A"}</span>
-            </div>
-          </div>
-
-          <div className="hidden lg:block h-8 w-px bg-border/60" />
-
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Interview Date
-            </span>
-            <div className="flex items-center gap-1.5 text-brand-primary font-bold">
-              <CheckCircle2 size={14} />
-              <span>{formatDate(interviewDate, "N/A")}</span>
+            {/* Subtitle: Paper Name, Date & Session Window */}
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap font-medium">
+              <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                <FileText size={13} className="text-brand-primary shrink-0" />
+                <span
+                  className="truncate max-w-[200px] sm:max-w-[280px]"
+                  title={paperName || `Paper #${paperId}`}
+                >
+                  {paperName || `Paper #${paperId}`}
+                </span>
+              </div>
+              <span className="text-border">•</span>
+              <div className="flex items-center gap-1.5">
+                <Calendar size={13} className="text-orange-500 shrink-0" />
+                <span>{formatDate(interviewDate || startedAt)}</span>
+              </div>
+              <span className="text-border">•</span>
+              <div className="flex items-center gap-1.5">
+                <Clock3 size={13} className="text-blue-500 shrink-0" />
+                <span>
+                  {formatTime(startedAt)} –{" "}
+                  {submittedAt ? formatTime(submittedAt) : "In Progress"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Top Right: Analyze Attempt CTA Button */}
         {!isProjectLead && (
           <Link
             href={`/admin/results/round-1/${userId}/attempts/${attemptId}`}
             target="_blank"
             rel="noopener noreferrer"
+            className="sm:ml-auto shrink-0"
           >
             <Button
               size="sm"
@@ -347,12 +193,223 @@ export const AttemptHistoryCard = ({
               shadow
               animate="scale"
               endIcon={<Eye size={14} />}
+              className="shadow-md shadow-brand-primary/20 px-3.5 py-1.5 text-xs font-bold"
             >
               Analyze Attempt
             </Button>
           </Link>
         )}
       </div>
+
+      {/* 4 Dashboard Performance Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
+        {/* 1. Questions Solved */}
+        <div
+          className={cn(
+            "bg-card p-3.5 sm:p-4 flex items-center gap-3.5 transition-all duration-300 ease-out group relative overflow-hidden h-full min-h-[88px] sm:min-h-[92px]",
+            STYLE_CONFIG.cardRadius,
+            getThemedCardHoverStyles("emerald"),
+          )}
+        >
+          <div
+            className={cn(
+              "w-11 h-11 sm:w-12 sm:h-12 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
+              STYLE_CONFIG.iconRadius,
+              "bg-emerald-500/10",
+            )}
+          >
+            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 transition-colors" />
+          </div>
+
+          <div className="flex-1 min-w-0 relative z-10">
+            <Typography
+              variant="h5"
+              className="text-muted-foreground/80 uppercase tracking-wider font-bold text-[10px] sm:text-[10.5px] mb-0.5 truncate"
+            >
+              Questions Solved
+            </Typography>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight tracking-tight">
+                {attemptedCount}/{totalQuestions}
+              </span>
+              <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase whitespace-nowrap">
+                ({completionPercentage}%)
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3 text-emerald-500">
+            <CheckCircle2 size={64} />
+          </div>
+        </div>
+
+        {/* 2. Questions Missed */}
+        <div
+          className={cn(
+            "bg-card p-3.5 sm:p-4 flex items-center gap-3.5 transition-all duration-300 ease-out group relative overflow-hidden h-full min-h-[88px] sm:min-h-[92px]",
+            STYLE_CONFIG.cardRadius,
+            getThemedCardHoverStyles("amber"),
+          )}
+        >
+          <div
+            className={cn(
+              "w-11 h-11 sm:w-12 sm:h-12 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
+              STYLE_CONFIG.iconRadius,
+              "bg-amber-500/10",
+            )}
+          >
+            <CircleAlert className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 transition-colors" />
+          </div>
+
+          <div className="flex-1 min-w-0 relative z-10">
+            <Typography
+              variant="h5"
+              className="text-muted-foreground/80 uppercase tracking-wider font-bold text-[10px] sm:text-[10.5px] mb-0.5 truncate"
+            >
+              Questions Missed
+            </Typography>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight tracking-tight">
+                {unattemptedCount}
+              </span>
+              <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase whitespace-nowrap">
+                unattempted
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3 text-amber-500">
+            <CircleAlert size={64} />
+          </div>
+        </div>
+
+        {/* 3. Active Duration */}
+        <div
+          className={cn(
+            "bg-card p-3.5 sm:p-4 flex items-center gap-3.5 transition-all duration-300 ease-out group relative overflow-hidden h-full min-h-[88px] sm:min-h-[92px]",
+            STYLE_CONFIG.cardRadius,
+            getThemedCardHoverStyles("blue"),
+          )}
+        >
+          <div
+            className={cn(
+              "w-11 h-11 sm:w-12 sm:h-12 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
+              STYLE_CONFIG.iconRadius,
+              "bg-blue-500/10",
+            )}
+          >
+            <HistoryIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 transition-colors" />
+          </div>
+
+          <div className="flex-1 min-w-0 relative z-10">
+            <Typography
+              variant="h5"
+              className="text-muted-foreground/80 uppercase tracking-wider font-bold text-[10px] sm:text-[10.5px] mb-0.5 truncate"
+            >
+              Active Duration
+            </Typography>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-black text-brand-primary leading-tight tracking-tight">
+                {duration}
+              </span>
+              <span className="text-[10.5px] sm:text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                test time
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3 text-blue-500">
+            <HistoryIcon size={64} />
+          </div>
+        </div>
+
+        {/* 4. Overall Grade */}
+        <div
+          className={cn(
+            "bg-card p-3.5 sm:p-4 flex items-center gap-3.5 transition-all duration-300 ease-out group relative overflow-hidden h-full min-h-[88px] sm:min-h-[92px]",
+            STYLE_CONFIG.cardRadius,
+            getThemedCardHoverStyles(gradeConfig.label || overallGrade),
+          )}
+        >
+          <div
+            className={cn(
+              "w-11 h-11 sm:w-12 sm:h-12 shadow-sm border border-border/40 flex items-center justify-center transition-all group-hover:scale-105 shrink-0",
+              STYLE_CONFIG.iconRadius,
+              gradeConfig.bg,
+            )}
+          >
+            <Trophy
+              className={cn(
+                "w-5 h-5 sm:w-6 sm:h-6 transition-colors",
+                gradeConfig.color,
+              )}
+            />
+          </div>
+
+          <div className="flex-1 min-w-0 relative z-10">
+            <Typography
+              variant="h5"
+              className="text-muted-foreground/80 uppercase tracking-wider font-bold text-[10px] sm:text-[10.5px] mb-0.5 truncate"
+            >
+              Overall Grade
+            </Typography>
+            <span
+              className={cn(
+                "text-lg sm:text-xl font-black leading-tight tracking-tight truncate block",
+                gradeConfig.color,
+              )}
+              title={overallGrade || "N/A"}
+            >
+              {(overallGrade || "N/A").toUpperCase()}
+            </span>
+          </div>
+
+          <div
+            className={cn(
+              "absolute -top-1 -right-2 opacity-[0.06] dark:opacity-[0.1] pointer-events-none transition-transform group-hover:scale-110 group-hover:-rotate-3",
+              gradeConfig.color,
+            )}
+          >
+            <Trophy size={64} />
+          </div>
+        </div>
+      </div>
+
+      {/* Typing Stats Strip (Clean Footer Bar if typing stats are recorded) */}
+      {typingStats && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-border/60 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⌨️</span>
+            <span className="font-bold text-foreground text-xs">
+              Typing Speed Assessment
+            </span>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground text-[11px]">Speed:</span>
+              <span className="font-bold text-brand-primary">
+                {typingStats.wpm} WPM
+              </span>
+            </div>
+            <span className="text-border">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground text-[11px]">
+                Accuracy:
+              </span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                {typingStats.accuracy}%
+              </span>
+            </div>
+            <span className="text-border">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground text-[11px]">Time:</span>
+              <span className="font-bold text-amber-600 dark:text-amber-400">
+                {Math.round(typingStats.time_taken)}s
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

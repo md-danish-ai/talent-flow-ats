@@ -31,6 +31,11 @@ import { type AdminUserResultListItem } from "@types";
 import { CollapsibleResultDetail } from "./CollapsibleResultDetail";
 import { useState, useMemo } from "react";
 import { Tooltip } from "@components/ui-elements/Tooltip";
+import { Checkbox } from "@components/ui-elements/Checkbox";
+import { UserCheck, UserPlus } from "lucide-react";
+import { Button } from "@components/ui-elements/Button";
+import { AssignLeadModal } from "./AssignLeadModal";
+import { STYLE_CONFIG } from "@lib/config/style";
 
 // ---------------------------------------------------------------------------
 // PDF download helper (calls backend directly, no new tab)
@@ -128,12 +133,6 @@ function DownloadButton({
     </TableIconButton>
   );
 }
-
-import { Checkbox } from "@components/ui-elements/Checkbox";
-import { UserCheck, UserPlus } from "lucide-react";
-import { Button } from "@components/ui-elements/Button";
-import { AssignLeadModal } from "./AssignLeadModal";
-import { STYLE_CONFIG } from "@lib/config/style";
 
 interface ResultTableViewProps {
   items: AdminUserResultListItem[];
@@ -298,7 +297,6 @@ export function ResultTableView({
                 Overall Grade
               </TableHead>
             )}
-
             {visibleColumns.includes("typing_wpm") && (
               <TableHead className="text-center min-w-[110px] whitespace-nowrap">
                 Typing WPM
@@ -595,17 +593,29 @@ export function ResultTableView({
                             </span>
                           ) : null}
                         </div>
-                      ) : typeof latest?.total_marks === "number" &&
-                        latest.total_marks > 0 ? (
-                        <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline justify-center gap-0.5">
-                          <span className="text-foreground font-bold">
-                            {latest.obtained_marks ?? 0}
-                          </span>
-                          <span className="text-muted-foreground/40 font-medium">
-                            /
-                          </span>
-                          <span>{latest.total_marks}</span>
-                        </span>
+                      ) : latest ? (
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Badge
+                            variant="outline"
+                            color="default"
+                            shape="square"
+                            className="font-bold uppercase"
+                          >
+                            Not Available
+                          </Badge>
+                          {typeof latest?.total_marks === "number" &&
+                          latest.total_marks > 0 ? (
+                            <span className="text-[11px] font-semibold text-muted-foreground flex items-baseline gap-0.5">
+                              <span className="text-foreground font-bold">
+                                {latest.obtained_marks ?? 0}
+                              </span>
+                              <span className="text-muted-foreground/40 font-medium">
+                                /
+                              </span>
+                              <span>{latest.total_marks}</span>
+                            </span>
+                          ) : null}
+                        </div>
                       ) : (
                         <span className="text-muted-foreground/60 font-medium">
                           N/A
@@ -613,7 +623,6 @@ export function ResultTableView({
                       )}
                     </TableCell>
                   )}
-
                   {visibleColumns.includes("typing_wpm") && (
                     <TableCell className="text-center font-medium">
                       {latest?.typing_stats &&

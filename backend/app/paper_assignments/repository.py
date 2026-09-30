@@ -23,7 +23,7 @@ from .schemas import (
 )
 from app.departments.models import Department
 
-PAPER_CACHE_TTL = 8 * 3600  # 8 Hours in seconds (28,800s)
+PAPER_CACHE_TTL = 4 * 3600  # 4 Hours in seconds (14,400s)
 
 
 def create_auto_assignment_rule(
@@ -88,7 +88,8 @@ def get_auto_assignment_rule(db: Session, rule_id: int) -> AutoAssignmentRule | 
 
     # Fetch paper names
     if rule.paper_ids:
-        papers = db.query(Paper.paper_name).filter(Paper.id.in_(rule.paper_ids)).all()
+        papers = db.query(Paper.paper_name).filter(
+            Paper.id.in_(rule.paper_ids)).all()
         rule.paper_names = [p.paper_name for p in papers]
     else:
         rule.paper_names = []
@@ -173,7 +174,8 @@ def get_auto_assignment_rules(
 def update_auto_assignment_rule(
     db: Session, rule_id: int, payload: AutoAssignmentRuleUpdate
 ) -> AutoAssignmentRule:
-    rule = db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
+    rule = db.query(AutoAssignmentRule).filter(
+        AutoAssignmentRule.id == rule_id).first()
     if not rule:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
@@ -206,7 +208,8 @@ def update_auto_assignment_rule(
 
 
 def delete_auto_assignment_rule(db: Session, rule_id: int) -> dict:
-    rule = db.query(AutoAssignmentRule).filter(AutoAssignmentRule.id == rule_id).first()
+    rule = db.query(AutoAssignmentRule).filter(
+        AutoAssignmentRule.id == rule_id).first()
     if not rule:
         raise HTTPException(
             status_code=StatusCode.NOT_FOUND, detail="Auto-assignment rule not found"
@@ -264,7 +267,8 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     started_user_ids = {a.user_id for a in started_assignments}
 
     # Potential users to assign or re-assign
-    assignable_user_ids = [uid for uid in user_ids if uid not in started_user_ids]
+    assignable_user_ids = [
+        uid for uid in user_ids if uid not in started_user_ids]
     if not assignable_user_ids:
         return
 
@@ -313,7 +317,8 @@ def backfill_assignments_for_rule(db: Session, rule: AutoAssignmentRule):
     active_paper_ids = {p.id for p in active_ids_query}
 
     # Ensure all IDs are treated as integers for robust matching
-    paper_ids = [int(pid) for pid in raw_paper_ids if int(pid) in active_paper_ids]
+    paper_ids = [int(pid)
+                 for pid in raw_paper_ids if int(pid) in active_paper_ids]
 
     if not paper_ids:
         print(
@@ -429,7 +434,8 @@ def assign_best_paper(
     # Subquery to get counts for these specific papers today
     counts = (
         db.query(
-            PaperAssignment.paper_id, func.count(PaperAssignment.id).label("total")
+            PaperAssignment.paper_id, func.count(
+                PaperAssignment.id).label("total")
         )
         .filter(
             PaperAssignment.assigned_date == assigned_date,
@@ -538,7 +544,8 @@ def _extract_question_ids(question_payload: Any) -> list[int]:
 
 
 def _resolve_question_type(question: dict) -> str:
-    type_code = ((question.get("question_type") or {}).get("code") or "").upper()
+    type_code = ((question.get("question_type")
+                 or {}).get("code") or "").upper()
     if type_code in {"IMAGE_MULTIPLE_CHOICE", "IMAGE_MCQ"}:
         return "IMAGE_MULTIPLE_CHOICE"
     if type_code in {"IMAGE_SUBJECTIVE", "IMAGE_DESCRIPTIVE", "IMAGE_WRITTEN"}:
@@ -746,7 +753,8 @@ def build_paper_details(db: Session, paper_id: int) -> dict | None:
         if isinstance(item.get("subject_id"), int)
     ]
     subject_rows = (
-        db.query(Classification).filter(Classification.id.in_(subject_ids)).all()
+        db.query(Classification).filter(
+            Classification.id.in_(subject_ids)).all()
         if subject_ids
         else []
     )
@@ -847,4 +855,5 @@ def rebuild_paper_cache(db: Session, paper_id: int) -> None:
 
     paper_details = build_paper_details(db, paper_id)
     if paper_details:
-        set_cached_data(cache_key, paper_details, expire_seconds=PAPER_CACHE_TTL)
+        set_cached_data(cache_key, paper_details,
+                        expire_seconds=PAPER_CACHE_TTL)

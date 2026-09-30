@@ -144,6 +144,9 @@ export default function F2FResultsClient() {
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[80px] text-center">
+                      Sr. No.
+                    </TableHead>
                     <TableHead>Candidate</TableHead>
                     <TableHead>Project Lead</TableHead>
                     <TableHead className="text-center">Status</TableHead>
@@ -157,14 +160,14 @@ export default function F2FResultsClient() {
                   {loading ? (
                     [1, 2, 3, 4, 5].map((i) => (
                       <TableRow key={i}>
-                        <TableCell colSpan={7}>
+                        <TableCell colSpan={8}>
                           <Skeleton className="h-12 w-full" />
                         </TableCell>
                       </TableRow>
                     ))
                   ) : data.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={8}>
                         <EmptyState
                           variant="search"
                           title="No F2F interviews found"
@@ -173,11 +176,16 @@ export default function F2FResultsClient() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data.map((item) => (
+                    data.map((item, idx) => (
                       <TableRow
                         key={item.id}
                         className="hover:bg-muted/20 transition-colors"
                       >
+                        <TableCell className="font-medium text-center align-middle py-3 text-slate-600 dark:text-white">
+                          {String(
+                            (currentPage - 1) * pageSize + idx + 1,
+                          ).padStart(2, "0")}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar
